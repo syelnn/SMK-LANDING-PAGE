@@ -12,6 +12,10 @@ import {
 import './App.css';
 import ManageNews from './pages/ManageNews';
 import ManageSettings from './pages/ManageSettings';
+import ManageUsers from './pages/ManageUsers';
+import ForgotPassword from './pages/ForgotPassword'; 
+import DetailKurikulum from './pages/DetailKurikulum';
+import ManageJurusanProgram from './pages/ManageJurusanProgram'; // <--- File gabungan scrolldown utama
 
 // 1. Tata Letak Publik (Untuk Pengunjung)
 const PublicLayout = () => (
@@ -88,7 +92,7 @@ const DashboardLayout = () => {
         <div className="sidebar-overlay" onClick={toggleMobileMenu}></div>
       )}
 
-      {/* SIDEBAR: Ditambah class dynamic "open" */}
+      {/* SIDEBAR */}
       <div className={`dashboard-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="sidebar-header">
           <h2>CMS Sekolah</h2>
@@ -123,7 +127,7 @@ const DashboardLayout = () => {
       {/* AREA KONTEN UTAMA */}
       <div className="dashboard-content">
         
-        {/* Tombol */}
+        {/* Tombol Hamburger HP */}
         <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
           <button className="menu-toggle-btn" onClick={toggleMobileMenu}>
             {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -139,6 +143,11 @@ const DashboardLayout = () => {
           } />
           <Route path="/berita" element={<ManageNews />} />
           <Route path="/settings" element={<ManageSettings />} />
+          <Route path="/pengguna" element={<ManageUsers />} />
+          
+          {/* Rute Jurusan, Kurikulum, dan Program yang sudah dirapikan */}
+          <Route path="/jurusan" element={<ManageJurusanProgram />} />
+          <Route path="/kurikulum/:slug" element={<DetailKurikulum />} />
         </Routes>
       </div>
       
@@ -153,6 +162,7 @@ function App() {
       <Route path="/" element={<PublicLayout />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/lupa-password" element={<ForgotPassword />} />
       
       {/* Route Dashboard (Terlindungi) */}
       <Route 

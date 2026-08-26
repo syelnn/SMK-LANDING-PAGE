@@ -1,11 +1,14 @@
 /* =========================================
-   GLOBAL RESET & BASE STYLES
+   1. GLOBAL RESET & BASE STYLES
    ========================================= */
+/* Impor font kekinian dari Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', sans-serif; /* Terapkan ke semua elemen */
 }
 
 body, html, #root {
@@ -13,15 +16,14 @@ body, html, #root {
   padding: 0 !important;
   height: 100%;
   width: 100%;
-  font-family: 'Inter', sans-serif;
   background-color: #f8fafc;
   overflow-x: hidden;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased; /* Biar font-nya makin mulus di layar */
 }
-
 /* =========================================
-   GLOBAL AUTHENTICATION STYLES (App.css)
+   2. GLOBAL AUTHENTICATION STYLES
    ========================================= */
-
 .auth-container {
   display: flex;
   justify-content: center;
@@ -147,7 +149,6 @@ body, html, #root {
   margin-top: 10px;
 }
 
-/* Tombol sukses */
 .auth-button.success-btn {
   background-color: #2563eb;
   margin-top: 25px;
@@ -235,7 +236,6 @@ body, html, #root {
   margin: 0;
 }
 
-
 .check-circle {
   width: 70px;
   height: 70px;
@@ -248,9 +248,8 @@ body, html, #root {
 }
 
 /* =========================================
-   DASHBOARD & RESPONSIVE LAYOUT STYLES
+   3. DASHBOARD & RESPONSIVE LAYOUT STYLES
    ========================================= */
-
 .dashboard-container {
   display: flex;
   width: 100vw;
@@ -262,7 +261,6 @@ body, html, #root {
   overflow: hidden;
 }
 
-/* Sidebar */
 .dashboard-sidebar {
   width: 260px;
   height: 100vh;
@@ -295,7 +293,7 @@ body, html, #root {
   margin: 4px 0 0 0;
   font-size: 12px;
   font-weight: 600;
-  color: #475569; /* Diperjelas dari #64748b */
+  color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -319,7 +317,7 @@ body, html, #root {
   display: flex;
   align-items: center;
   padding: 11px 16px;
-  color: #334155; /* Ubah warna font*/
+  color: #334155;
   text-decoration: none;
   gap: 12px;
   transition: all 0.2s ease;
@@ -334,7 +332,6 @@ body, html, #root {
   transform: translateX(3px);
 }
 
-/* Status Menu Aktif */
 .sidebar-link.active {
   background-color: #eff6ff;
   color: #2563eb;
@@ -346,7 +343,6 @@ body, html, #root {
   border-top: 1px solid #f1f5f9;
 }
 
-/* Logout Button  */
 .logout-btn {
   width: 100%;
   display: flex;
@@ -370,7 +366,6 @@ body, html, #root {
   box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3);
 }
 
-/* Main Content Area */
 .dashboard-content {
   flex: 1;
   height: 100vh;
@@ -386,7 +381,6 @@ body, html, #root {
   box-shadow: 0 4px 6px rgba(0,0,0,0.05);
 }
 
-/* Tabel Modern Styling */
 .table-responsive {
   overflow-x: auto;
 }
@@ -411,7 +405,6 @@ body, html, #root {
   color: #1e293b;
 }
 
-/* Form & Input di Settings */
 .form-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -447,7 +440,6 @@ body, html, #root {
   border-color: #2563eb;
 }
 
-/* Gold Theme Extras */
 .gold-btn {
   display: flex;
   align-items: center;
@@ -466,7 +458,6 @@ body, html, #root {
   background-color: #b45309;
 }
 
-/* Tombol hamburger untuk HP */
 .menu-toggle-btn {
   display: none;
   background: transparent;
@@ -481,10 +472,224 @@ body, html, #root {
 }
 
 /* =========================================
-   RESPONSIVE DESIGN (Media Queries)
+   4. FORGOT PASSWORD & MANAGE USERS STYLES
    ========================================= */
+.forgot-icon-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
 
-/* RESPONSIVE LAYAR HP (MAX 768px) */
+.success-banner {
+  background-color: #dcfce7;
+  color: #16a34a;
+  padding: 10px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-field {
+  padding-right: 40px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  right: 12px;
+  cursor: pointer;
+  color: #6b7280;
+  display: flex;
+  align-items: center;
+}
+
+.password-checklist {
+  font-size: 11px;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.check-valid {
+  color: #16a34a;
+}
+
+.check-invalid {
+  color: #dc2626;
+}
+
+.password-match-status {
+  font-size: 11px;
+  margin-top: 4px;
+  display: block;
+  font-weight: normal;
+}
+
+.match-ok {
+  color: #16a34a;
+}
+
+.match-no {
+  color: #dc2626;
+}
+
+.error-message-text {
+  margin-bottom: 15px;
+  color: #dc2626;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.forgot-submit-btn {
+  background-color: #d97706;
+  margin-top: 10px;
+}
+
+.forgot-back-link {
+  margin-top: 20px;
+}
+
+.back-link-flex {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  color: #4b5563;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.manage-users-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+.manage-users-title {
+  margin: 0;
+  color: #111827;
+  font-size: 20px;
+}
+
+.manage-users-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.manage-users-alert {
+  background-color: #fef3c7;
+  color: #b45309;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  font-weight: bold;
+  border: 1px solid #fde68a;
+}
+
+.table-center {
+  text-align: center;
+}
+
+.user-name-cell {
+  font-weight: 500;
+}
+
+.user-email-cell {
+  color: #6b7280;
+}
+
+.role-badge {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.badge-admin {
+  background-color: #fee2e2;
+  color: #dc2626;
+}
+
+.badge-editor {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.badge-viewer {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.action-button-group {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+}
+
+.select-wrapper-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.role-select-dropdown {
+  padding: 6px 8px;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  outline: none;
+  font-size: 12px;
+  background-color: #fff;
+  cursor: pointer;
+}
+
+.btn-action-reset {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  padding: 6px 8px;
+  background-color: #d97706;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.btn-action-delete {
+  display: flex;
+  align-items: center;
+  padding: 6px 8px;
+  background-color: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.forgot-icon-svg, .manage-header-icon {
+  color: #d97706;
+}
+
+.select-check-icon {
+  color: #4b5563;
+}
+
+/* =========================================
+   5. RESPONSIVE DESIGN (Media Queries)
+   ========================================= */
 @media screen and (max-width: 768px) {
   .menu-toggle-btn {
     display: block;
@@ -493,14 +698,14 @@ body, html, #root {
   .dashboard-sidebar {
     position: fixed;
     top: 0;
-    left: -260px; /* Sembunyikan sidebar ke luar layar kiri */
+    left: -260px;
     height: 100vh;
     z-index: 999;
     transition: left 0.3s ease;
   }
 
   .dashboard-sidebar.open {
-    left: 0; /* Tampilkan sidebar saat diklik */
+    left: 0;
   }
 
   .sidebar-overlay {
@@ -522,4 +727,329 @@ body, html, #root {
   .form-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* =========================================
+   STYLING JURUSAN & PROGRAM UNGGULAN (SMKN COMPRENG)
+   ========================================= */
+
+.section-container {
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+  font-family: 'Inter', sans-serif;
+}
+
+.section-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.section-tag {
+  font-size: 12px;
+  font-weight: 700;
+  color: #d97706; /* Kuning Keemasan */
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  background-color: #fef3c7;
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.section-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0 0 10px 0;
+}
+
+.section-title span {
+  color: #16a34a; /* Hijau Khas SMKN Compreng */
+}
+
+.section-desc {
+  font-size: 15px;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Grid Kartu Modern */
+.cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 30px;
+}
+
+.modern-card {
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.modern-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 25px -5px rgba(22, 163, 74, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  border-color: #16a34a;
+}
+
+.card-icon-box {
+  width: 50px;
+  height: 50px;
+  background-color: #f0fdf4;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #16a34a;
+  margin-bottom: 20px;
+}
+
+.card-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 10px;
+}
+
+.card-text {
+  font-size: 14px;
+  color: #475569;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+
+/* List Poin Unggulan dalam Kartu */
+.card-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 25px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card-list li {
+  font-size: 13px;
+  font-weight: 600;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.card-list li::before {
+  content: "•";
+  color: #d97706; /* Titik Bullet Kuning Keemasan */
+  font-size: 18px;
+}
+
+/* Tombol Detail Kurikulum */
+.card-link-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: #16a34a;
+  text-decoration: none;
+  transition: 0.2s;
+}
+
+.card-link-btn:hover {
+  color: #15803d;
+  gap: 12px;
+}
+
+/* =========================================
+   STYLING TOMBOL CRUD & MODAL
+   ========================================= */
+.admin-action-bar {
+  display: flex;
+  justify-content: flex-start;
+  margin-bottom: 30px;
+}
+
+.btn-add-new {
+  background-color: #16a34a;
+  color: white;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  border: none;
+  cursor: pointer;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-add-new:hover {
+  background-color: #15803d;
+  transform: translateY(-2px);
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 30px;
+  border-radius: 12px;
+  width: 100%;
+  max-width: 500px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content h3 {
+  margin-top: 0;
+  margin-bottom: 20px;
+  color: #0f172a;
+}
+
+.image-upload-toggle {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.image-upload-toggle label {
+  font-size: 12px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+}
+
+/* =========================================
+   STYLING KHUSUS PROGRAM UNGGULAN (MINIMALIS)
+   ========================================= */
+
+.section-divider {
+  margin: 80px 0; /* Memberi jarak luas agar tidak dempet */
+  border: 0;
+  height: 1px;
+  background: #e2e8f0;
+}
+/* =========================================
+   STYLING KHUSUS PROGRAM UNGGULAN (MINIMALIS)
+   ========================================= */
+.program-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.program-card-minimal {
+  position: relative; /* Penting untuk tombol melayang */
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 32px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  height: 100%; /* Mencegah kartu melar acak */
+}
+
+.program-card-minimal:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  border-color: #e2e8f0;
+}
+
+/* Kotak Ikon Khas CMS Sekolahku */
+.program-icon-box {
+  width: 56px;
+  height: 56px;
+  background-color: #eef2ff; /* Warna latar biru muda */
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 24px;
+}
+
+.program-icon-box img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.program-title-minimal {
+  font-size: 18px;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.program-desc-minimal {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* --- TOMBOL ADMIN MELAYANG --- */
+.program-admin-actions-float {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  display: flex;
+  gap: 8px;
+  opacity: 0; /* Sengaja dihilangkan... */
+  transition: all 0.2s ease;
+}
+
+.program-card-minimal:hover .program-admin-actions-float {
+  opacity: 1; /* ...dan akan muncul jelas saat mouse diarahkan ke kartu! */
+}
+
+.program-admin-actions-float button {
+  background: #f1f5f9;
+  border: none;
+  color: #94a3b8;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.program-admin-actions-float button:hover:first-child {
+  background: #fef3c7;
+  color: #d97706; /* Kuning untuk edit */
+}
+
+.program-admin-actions-float button:hover:last-child {
+  background: #fee2e2;
+  color: #ef4444; /* Merah untuk hapus */
 }

@@ -3,7 +3,260 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id        Int        @id @default(autoincrement())
+  username  String     @unique @db.VarChar(100)
+  email     String     @unique @db.VarChar(200)
+  password  String     @db.VarChar(255)
+  fullName  String?    @map("full_name") @db.VarChar(200)
+  avatar    String?    @db.VarChar(255)
+  role      String?    @default("editor") @db.VarChar(50)
+  isActive  Int?       @default(1) @map("is_active")
+  lastLogin DateTime?  @map("last_login") @db.Timestamp(6)
+  createdAt DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  auditLogs AuditLog[]
+  news      News[]     @relation("NewsAuthor")
+
+  @@map("users")
+}
+
+model Setting {
+  id        Int       @id @default(autoincrement())
+  key       String    @unique @db.VarChar(100)
+  value     String?
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("settings")
+}
+
+model News {
+  id              Int           @id @default(autoincrement())
+  category        String?       @db.VarChar(100)
+  tags            Json?
+  title           String        @db.VarChar(255)
+  slug            String        @unique @db.VarChar(255)
+  excerpt         String?
+  content         String?
+  image           String?       @db.VarChar(255)
+  author          String?       @default("Admin") @db.VarChar(100)
+  publishedAt     DateTime?     @map("published_at") @db.Timestamp(6)
+  status          String?       @default("draft") @db.VarChar(50)
+  isFeatured      Int?          @default(0) @map("is_featured")
+  metaTitle       String?       @map("meta_title") @db.VarChar(255)
+  metaDescription String?       @map("meta_description") @db.VarChar(255)
+  viewCount       Int?          @default(0) @map("view_count")
+  createdAt       DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  authorId        Int?          @map("author_id")
+  authorUser      User?         @relation("NewsAuthor", fields: [authorId], references: [id], onUpdate: NoAction, map: "fk_news_author")
+  comments        NewsComment[]
+
+  @@index([publishedAt], map: "idx_news_published")
+  @@index([status], map: "idx_news_status")
+  @@map("news")
+}
+
+model NewsComment {
+  id         Int           @id @default(autoincrement())
+  newsId     Int           @map("news_id")
+  parentId   Int?          @map("parent_id")
+  name       String        @db.VarChar(200)
+  email      String?       @db.VarChar(200)
+  avatar     String?       @db.VarChar(255)
+  comment    String
+  isApproved Int?          @default(0) @map("is_approved")
+  createdAt  DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  news       News          @relation(fields: [newsId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_news_fk")
+  parent     NewsComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_parent_fk")
+  replies    NewsComment[] @relation("CommentReplies")
+
+  @@index([isApproved], map: "idx_comments_approved")
+  @@map("news_comments")
+}
+
+model Program {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category    String
+  code        String?
+  title       String
+  description String?
+  icon        String?   @default("star")
+  imageUrl    String?   @map("image_url")
+  sortOrder   Int?      @default(0) @map("sort_order") @db.SmallInt
+  show        Boolean?  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([category, title], map: "uq_programs_category_title")
+  @@map("programs")
+}
+
+model AuditLog {
+  id          Int       @id @default(autoincrement())
+  userId      Int?      @map("user_id")
+  action      String    @db.VarChar(50)
+  tableName   String    @map("table_name") @db.VarChar(100)
+  recordId    String?   @map("record_id")
+  description String?
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  user        User?     @relation(fields: [userId], references: [id], onUpdate: NoAction, map: "fk_audit_user")
+
+  @@map("audit_logs")
+}
+
+model Extracurricular {
+  id          Int       @id @default(autoincrement())
+  title       String    @db.VarChar(200)
+  description String?
+  icon        String?   @default("star") @db.VarChar(50)
+  iconColor   String?   @default("#14b8a6") @map("icon_color") @db.VarChar(7)
+  sortOrder   Int?      @default(0) @map("sort_order")
+  show        Int?      @default(1)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("extracurriculars")
+}
+
+model Faq {
+  id        Int       @id @default(autoincrement())
+  question  String    @db.VarChar(255)
+  answer    String
+  category  String?   @db.VarChar(100)
+  sortOrder Int?      @default(0) @map("sort_order")
+  show      Int?      @default(1)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("faq")
+}
+
+model Gallery {
+  id         Int       @id @default(autoincrement())
+  category   String?   @db.VarChar(100)
+  image      String    @db.VarChar(255)
+  caption    String?   @db.VarChar(255)
+  isFeatured Int?      @default(0) @map("is_featured")
+  sortOrder  Int?      @default(0) @map("sort_order")
+  show       Int?      @default(1)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("galleries")
+}
+
+model Page {
+  id              Int        @id @default(autoincrement())
+  title           String     @db.VarChar(255)
+  slug            String     @unique @db.VarChar(255)
+  content         String?
+  excerpt         String?
+  image           String?    @db.VarChar(255)
+  status          String?    @default("draft") @db.VarChar(50)
+  metaTitle       String?    @map("meta_title") @db.VarChar(255)
+  metaDescription String?    @map("meta_description") @db.VarChar(255)
+  createdAt       DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  menuItems       MenuItem[]
+
+  @@map("pages")
+}
+
+model MenuItem {
+  id         Int        @id @default(autoincrement())
+  parentId   Int?       @map("parent_id")
+  title      String     @db.VarChar(200)
+  url        String     @db.VarChar(255)
+  target     String?    @default("_self") @db.VarChar(50)
+  icon       String?    @db.VarChar(50)
+  sectionKey String?    @map("section_key") @db.VarChar(100)
+  sortOrder  Int?       @default(0) @map("sort_order")
+  status     Int?       @default(1)
+  type       String?    @default("custom") @db.VarChar(20)
+  pageId     Int?       @map("page_id")
+  createdAt  DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  page       Page?      @relation(fields: [pageId], references: [id], onUpdate: NoAction, map: "menu_items_page_fk")
+  parent     MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "menu_items_parent_fk")
+  children   MenuItem[] @relation("MenuHierarchy")
+
+  @@map("menu_items")
+}
+
+model Teacher {
+  id              Int       @id @default(autoincrement())
+  name            String    @db.VarChar(200)
+  photo           String?   @db.VarChar(255)
+  role            String?   @db.VarChar(200)
+  experience      String?   @db.VarChar(100)
+  education       String?   @db.VarChar(100)
+  socialFacebook  String?   @map("social_facebook") @db.VarChar(255)
+  socialInstagram String?   @map("social_instagram") @db.VarChar(255)
+  socialLinkedin  String?   @map("social_linkedin") @db.VarChar(255)
+  sortOrder       Int?      @default(0) @map("sort_order")
+  show            Int?      @default(1)
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("teachers")
+}
+
+model Testimonial {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(200)
+  photo     String?   @db.VarChar(255)
+  role      String?   @db.VarChar(200)
+  quote     String
+  sortOrder Int?      @default(0) @map("sort_order")
+  show      Int?      @default(1)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("testimonials")
+}
+
+model StudentWorkAchievement {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category    String
+  studentName String    @map("student_name")
+  className   String?   @map("class_name")
+  title       String
+  description String?
+  photoUrl    String?   @map("photo_url")
+  level       String?
+  year        Int?      @db.SmallInt
+  medal       String?
+  sortOrder   Int?      @default(0) @map("sort_order") @db.SmallInt
+  show        Boolean?  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("student_works_achievements")
+}
+
+model Download {
+  id          Int       @id @default(autoincrement())
+  category    String    @db.VarChar(100)
+  title       String    @db.VarChar(255)
+  description String?
+  url         String    @db.VarChar(500)
+  fileSize    String?   @map("file_size") @db.VarChar(50)
+  sortOrder   Int?      @default(0) @map("sort_order")
+  show        Int?      @default(1)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([category], map: "idx_downloads_category")
+  @@index([sortOrder], map: "idx_downloads_sort_order")
+  @@map("downloads")
 }
 
 model achievements {
@@ -21,223 +274,28 @@ model achievements {
   updated_at   DateTime? @default(now()) @db.Timestamp(6)
 }
 
-model contact_messages {
-  id         Int       @id @default(autoincrement())
-  name       String    @db.VarChar(200)
-  email      String    @db.VarChar(200)
-  subject    String?   @db.VarChar(255)
-  message    String
-  is_read    Int?      @default(0)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
+model JurusanCustom {
+  id          Int      @id @default(autoincrement())
+  title       String
+  slug        String   @unique
+  desc        String
+  imageIcon   String   @map("image_icon")
+  subjects    String
+  career      String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
-  @@index([is_read], map: "idx_messages_read")
+  @@map("jurusan_custom")
 }
 
-model downloads {
-  id          Int       @id @default(autoincrement())
-  category    String    @db.VarChar(100)
-  title       String    @db.VarChar(255)
-  description String?
-  url         String    @db.VarChar(500)
-  file_size   String?   @db.VarChar(50)
-  sort_order  Int?      @default(0)
-  show        Int?      @default(1)
-  created_at  DateTime? @default(now()) @db.Timestamp(6)
-  updated_at  DateTime? @default(now()) @db.Timestamp(6)
+model ProgramUnggulanCustom {
+  id          Int      @id @default(autoincrement())
+  title       String
+  desc        String
+  badge       String
+  imageIcon   String   @map("image_icon")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
-  @@index([category], map: "idx_downloads_category")
-  @@index([sort_order], map: "idx_downloads_sort_order")
-}
-
-model events {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(255)
-  slug        String    @unique @db.VarChar(255)
-  description String?
-  location    String?   @db.VarChar(255)
-  event_date  DateTime  @db.Date
-  event_time  String?   @db.VarChar(50)
-  sort_order  Int?      @default(0)
-  status      String?   @default("upcoming") @db.VarChar(50)
-  show        Int?      @default(1)
-  created_at  DateTime? @default(now()) @db.Timestamp(6)
-  updated_at  DateTime? @default(now()) @db.Timestamp(6)
-
-  @@index([event_date], map: "idx_events_date")
-  @@index([status], map: "idx_events_status")
-}
-
-model extracurriculars {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(200)
-  description String?
-  icon        String?   @default("star") @db.VarChar(50)
-  icon_color  String?   @default("#14b8a6") @db.VarChar(7)
-  sort_order  Int?      @default(0)
-  show        Int?      @default(1)
-  created_at  DateTime? @default(now()) @db.Timestamp(6)
-  updated_at  DateTime? @default(now()) @db.Timestamp(6)
-}
-
-model faq {
-  id         Int       @id @default(autoincrement())
-  question   String    @db.VarChar(255)
-  answer     String
-  category   String?   @db.VarChar(100)
-  sort_order Int?      @default(0)
-  show       Int?      @default(1)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-}
-
-model galleries {
-  id          Int       @id @default(autoincrement())
-  category    String?   @db.VarChar(100)
-  image       String    @db.VarChar(255)
-  caption     String?   @db.VarChar(255)
-  is_featured Int?      @default(0)
-  sort_order  Int?      @default(0)
-  show        Int?      @default(1)
-  created_at  DateTime? @default(now()) @db.Timestamp(6)
-  updated_at  DateTime? @default(now()) @db.Timestamp(6)
-}
-
-model menu_items {
-  id               Int          @id @default(autoincrement())
-  parent_id        Int?
-  title            String       @db.VarChar(200)
-  url              String       @db.VarChar(255)
-  target           String?      @default("_self") @db.VarChar(50)
-  icon             String?      @db.VarChar(50)
-  section_key      String?      @db.VarChar(100)
-  sort_order       Int?         @default(0)
-  status           Int?         @default(1)
-  type             String?      @default("custom") @db.VarChar(20)
-  page_id          Int?
-  created_at       DateTime?    @default(now()) @db.Timestamp(6)
-  updated_at       DateTime?    @default(now()) @db.Timestamp(6)
-  pages            pages?       @relation(fields: [page_id], references: [id], onUpdate: NoAction, map: "menu_items_page_fk")
-  menu_items       menu_items?  @relation("menu_itemsTomenu_items", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "menu_items_parent_fk")
-  other_menu_items menu_items[] @relation("menu_itemsTomenu_items")
-}
-
-model news {
-  id               Int             @id @default(autoincrement())
-  category         String?         @db.VarChar(100)
-  tags             Json?
-  title            String          @db.VarChar(255)
-  slug             String          @unique @db.VarChar(255)
-  excerpt          String?
-  content          String?
-  image            String?         @db.VarChar(255)
-  author           String?         @default("Admin") @db.VarChar(100)
-  published_at     DateTime?       @db.Timestamp(6)
-  status           String?         @default("draft") @db.VarChar(50)
-  is_featured      Int?            @default(0)
-  meta_title       String?         @db.VarChar(255)
-  meta_description String?         @db.VarChar(255)
-  view_count       Int?            @default(0)
-  created_at       DateTime?       @default(now()) @db.Timestamp(6)
-  updated_at       DateTime?       @default(now()) @db.Timestamp(6)
-  news_comments    news_comments[]
-
-  @@index([published_at], map: "idx_news_published")
-  @@index([status], map: "idx_news_status")
-}
-
-model news_comments {
-  id                  Int             @id @default(autoincrement())
-  news_id             Int
-  parent_id           Int?
-  name                String          @db.VarChar(200)
-  email               String?         @db.VarChar(200)
-  avatar              String?         @db.VarChar(255)
-  comment             String
-  is_approved         Int?            @default(0)
-  created_at          DateTime?       @default(now()) @db.Timestamp(6)
-  updated_at          DateTime?       @default(now()) @db.Timestamp(6)
-  news                news            @relation(fields: [news_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_news_fk")
-  news_comments       news_comments?  @relation("news_commentsTonews_comments", fields: [parent_id], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_parent_fk")
-  other_news_comments news_comments[] @relation("news_commentsTonews_comments")
-
-  @@index([is_approved], map: "idx_comments_approved")
-}
-
-model pages {
-  id               Int          @id @default(autoincrement())
-  title            String       @db.VarChar(255)
-  slug             String       @unique @db.VarChar(255)
-  content          String?
-  excerpt          String?
-  image            String?      @db.VarChar(255)
-  status           String?      @default("draft") @db.VarChar(50)
-  meta_title       String?      @db.VarChar(255)
-  meta_description String?      @db.VarChar(255)
-  created_at       DateTime?    @default(now()) @db.Timestamp(6)
-  updated_at       DateTime?    @default(now()) @db.Timestamp(6)
-  menu_items       menu_items[]
-}
-
-model programs {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(200)
-  description String?
-  icon        String?   @default("star") @db.VarChar(50)
-  link_url    String?   @db.VarChar(255)
-  link_text   String?   @default("Selengkapnya") @db.VarChar(100)
-  sort_order  Int?      @default(0)
-  show        Int?      @default(1)
-  created_at  DateTime? @default(now()) @db.Timestamp(6)
-  updated_at  DateTime? @default(now()) @db.Timestamp(6)
-}
-
-model settings {
-  id         Int       @id @default(autoincrement())
-  key        String    @unique @db.VarChar(100)
-  value      String?
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-}
-
-model teachers {
-  id               Int       @id @default(autoincrement())
-  name             String    @db.VarChar(200)
-  photo            String?   @db.VarChar(255)
-  role             String?   @db.VarChar(200)
-  experience       String?   @db.VarChar(100)
-  education        String?   @db.VarChar(100)
-  social_facebook  String?   @db.VarChar(255)
-  social_instagram String?   @db.VarChar(255)
-  social_linkedin  String?   @db.VarChar(255)
-  sort_order       Int?      @default(0)
-  show             Int?      @default(1)
-  created_at       DateTime? @default(now()) @db.Timestamp(6)
-  updated_at       DateTime? @default(now()) @db.Timestamp(6)
-}
-
-model testimonials {
-  id         Int       @id @default(autoincrement())
-  name       String    @db.VarChar(200)
-  photo      String?   @db.VarChar(255)
-  role       String?   @db.VarChar(200)
-  quote      String
-  sort_order Int?      @default(0)
-  show       Int?      @default(1)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
-}
-
-model users {
-  id         Int       @id @default(autoincrement())
-  username   String    @unique @db.VarChar(100)
-  email      String    @unique @db.VarChar(200)
-  password   String    @db.VarChar(255)
-  full_name  String?   @db.VarChar(200)
-  avatar     String?   @db.VarChar(255)
-  role       String?   @default("editor") @db.VarChar(50)
-  is_active  Int?      @default(1)
-  last_login DateTime? @db.Timestamp(6)
-  created_at DateTime? @default(now()) @db.Timestamp(6)
-  updated_at DateTime? @default(now()) @db.Timestamp(6)
+  @@map("program_unggulan_custom")
 }

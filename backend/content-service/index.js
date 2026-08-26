@@ -2,52 +2,123 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
-const { Pool } = require('pg');
-const { PrismaPg } = require('@prisma/adapter-pg');
 
-// Panggil "Satpam" kita
-const { verifyToken, checkRole } = require('./middleware/authMiddleware');
-
-const connectionString = process.env.DATABASE_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
-
+const prisma = new PrismaClient();
 const app = express();
-const PORT = process.env.PORT || 5002;
+const PORT = process.env.PORT || 5002; // Bedakan port-nya, misal 5002 untuk content-service
 
 app.use(cors());
-app.use(express.json());
+// Tambahkan limit 50mb agar gambar Base64 tidak error 413
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Tes rute utama content-service
+// Cek status server content-service
 app.get('/', (req, res) => {
-  res.json({ message: 'Content Service berjalan di Port 5002!' });
+  res.json({ status: 'success', message: 'Content Service siap melayani!' });
 });
 
-// ==========================================
-// RUTE API (Hanya bisa diakses Admin & Editor)
-// ==========================================
-const allowedRoles = ['admin', 'editor'];
+// ==========================
+// API JURUSAN CUSTOM
+// ==========================
+app.get('/api/jurusan', async (req, res) => {
+  try {
+    const data = await prisma.jurusanCustom.findMany({
+      orderBy: {
+        id: 'asc' // <--- Tambahkan ini agar urutannya mengunci pada ID awal
+      }
+    });
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal memuat jurusan' });
+  }
+});
+// ===================================
+// API EDIT (PUT) JURUSAN & PROGRAM
+// ===================================
 
-// 1. API Berita
-app.post('/api/berita', verifyToken, checkRole(allowedRoles), async (req, res) => {
-  res.json({ message: 'Berhasil mengakses API Tambah Berita', user: req.user });
-  // Nanti logika Prisma.news.create taruh di sini
+app.put('/api/jurusan/:id', async (req, res) => {
+  try {
+    const { title, slug, desc, imageIcon, subjects, career } = req.body;
+    const updated = await prisma.jurusanCustom.update({
+      where: { id: parseInt(req.params.id) },
+      data: { title, slug, desc, imageIcon, subjects, career }
+    });
+    res.json({ success: true, message: 'Jurusan diupdate', data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal update jurusan' });
+  }
 });
 
-// 2. API Testimoni
-app.get('/api/testimoni', verifyToken, checkRole(allowedRoles), async (req, res) => {
-  res.json({ message: 'Berhasil mengakses API Lihat Testimoni', user: req.user });
+app.put('/api/program/:id', async (req, res) => {
+  try {
+    const { title, desc, badge, imageIcon } = req.body;
+    const updated = await prisma.programUnggulanCustom.update({
+      where: { id: parseInt(req.params.id) },
+      data: { title, desc, badge, imageIcon }
+    });
+    res.json({ success: true, message: 'Program diupdate', data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal update program' });
+  }
+});
+app.post('/api/jurusan', async (req, res) => {
+  try {
+    const { title, slug, desc, imageIcon, subjects, career } = req.body;
+    const newData = await prisma.jurusanCustom.create({
+      data: { title, slug, desc, imageIcon, subjects, career }
+    });
+    res.json({ success: true, message: 'Jurusan berhasil ditambah', data: newData });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal menambah jurusan' });
+  }
 });
 
-// 3. API Jurusan & Program Keahlian
-app.post('/api/jurusan', verifyToken, checkRole(allowedRoles), async (req, res) => {
-  res.json({ message: 'Berhasil mengakses API Tambah Jurusan' });
+app.delete('/api/jurusan/:id', async (req, res) => {
+  try {
+    await prisma.jurusanCustom.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ success: true, message: 'Jurusan dihapus' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal menghapus jurusan' });
+  }
 });
 
-// 4. API Ekstrakurikuler
-app.post('/api/ekskul', verifyToken, checkRole(allowedRoles), async (req, res) => {
-  res.json({ message: 'Berhasil mengakses API Tambah Ekskul' });
+// ==========================
+// API PROGRAM UNGGULAN CUSTOM
+// ==========================
+
+app.get('/api/program', async (req, res) => {
+  try {
+    const data = await prisma.programUnggulanCustom.findMany({
+      orderBy: {
+        id: 'asc' // <--- Tambahkan ini juga
+      }
+    });
+    res.json({ success: true, data });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal memuat program' });
+  }
+});
+
+app.post('/api/program', async (req, res) => {
+  try {
+    const { title, desc, badge, imageIcon } = req.body;
+    const newData = await prisma.programUnggulanCustom.create({
+      data: { title, desc, badge, imageIcon }
+    });
+    res.json({ success: true, message: 'Program berhasil ditambah', data: newData });
+  } catch (error) {
+    console.error("Error Tambah Program:", error);
+    res.status(500).json({ success: false, message: 'Gagal menambah program' });
+  }
+});
+
+app.delete('/api/program/:id', async (req, res) => {
+  try {
+    await prisma.programUnggulanCustom.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ success: true, message: 'Program dihapus' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal menghapus program' });
+  }
 });
 
 app.listen(PORT, () => {

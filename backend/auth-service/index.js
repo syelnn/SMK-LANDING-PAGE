@@ -125,6 +125,104 @@ app.post('/api/auth/register', async (req, res) => {
     res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
   }
 });
+
+// API untuk mengambil semua daftar pengguna (Khusus Admin)
+app.get('/api/users', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        fullName: true,
+        role: true,
+        createdAt: true
+      }
+    });
+    res.json({ success: true, data: users });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal memuat data pengguna' });
+  }
+});
+
+// API untuk mengubah role pengguna
+app.put('/api/users/:id/role', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { role } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: parseInt(id) },
+      data: { role: role }
+    });
+
+    res.json({ success: true, message: 'Role berhasil diubah', data: updatedUser });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal mengubah role' });
+  }
+});
+
+// API untuk Admin mereset password pengguna
+app.put('/api/users/:id/reset-password', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { password } = req.body;
+
+    // Enkripsi password baru sebelum disimpan ke database
+    const hashedPassword = await bcrypt.hash(password, 12);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: parseInt(id) },
+      data: { password: hashedPassword }
+    });
+
+    res.json({ success: true, message: 'Password pengguna berhasil direset!', data: updatedUser });
+  } catch (error) {
+    console.error('Error saat reset password:', error);
+    res.status(500).json({ success: false, message: 'Gagal mereset password' });
+  }
+});
+
+// API untuk Lupa Password (Langsung Ganti Tanpa OTP)
+app.post('/api/auth/forgot-password', async (req, res) => {
+  try {
+    const { username, newPassword } = req.body;
+
+    // 1. Cek apakah username terdaftar di database
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'Username tidak ditemukan di database!' });
+    }
+
+    // 2. Enkripsi password baru
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+
+    // 3. Update password user tersebut
+    await prisma.user.update({
+      where: { username },
+      data: { password: hashedPassword }
+    });
+
+    res.json({ success: true, message: 'Password berhasil diubah! Silakan login kembali.' });
+  } catch (error) {
+    console.error('Error saat lupa password:', error);
+    res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server.' });
+  }
+});
+
+// API untuk menghapus pengguna berdasarkan ID
+app.delete('/api/users/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.user.delete({
+      where: { id: parseInt(id) }
+    });
+    res.json({ success: true, message: 'Pengguna berhasil dihapus' });
+  } catch (error) {
+    console.error('Error saat menghapus user:', error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus pengguna' });
+  }
+});
 // Menyalakan server
 app.listen(PORT, () => {
   console.log(`🚀 Auth Service berjalan di http://localhost:${PORT}`);

@@ -1,13 +1,21 @@
-import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
-import './App.css'; // Mengimpor CSS global
+import './App.css';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Menangkap username jika dikirim dari halaman lupa password
+  useEffect(() => {
+    if (location.state?.username) {
+      setUsername(location.state.username);
+    }
+  }, [location]);
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -40,7 +48,7 @@ export default function Login() {
           <div className="form-group">
             <div className="form-label">
               <label>Password</label>
-              <a href="#" className="auth-link forgot-password">LUPA PASSWORD?</a>
+              <Link to="/lupa-password" className="auth-link forgot-password">LUPA PASSWORD?</Link>
             </div>
             <input type="password" placeholder="Ketik Sandi Anda" className="form-input" required value={password} onChange={(e) => setPassword(e.target.value)} />
           </div>
