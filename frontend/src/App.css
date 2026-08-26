@@ -1,0 +1,525 @@
+/* =========================================
+   GLOBAL RESET & BASE STYLES
+   ========================================= */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body, html, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  height: 100%;
+  width: 100%;
+  font-family: 'Inter', sans-serif;
+  background-color: #f8fafc;
+  overflow-x: hidden;
+}
+
+/* =========================================
+   GLOBAL AUTHENTICATION STYLES (App.css)
+   ========================================= */
+
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: #f4f7f6;
+  font-family: sans-serif;
+  padding: 20px;
+}
+
+.auth-card {
+  background-color: white;
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.auth-logo {
+  width: 80px;
+  margin-bottom: 15px;
+  border-radius: 50%;
+}
+
+.auth-title {
+  margin: 15px 0 5px 0;
+  font-size: 22px;
+  font-weight: bold;
+  color: #1a1a1a;
+}
+
+.auth-title.login-title {
+  margin: 0 0 5px 0;
+}
+
+.auth-subtitle {
+  margin: 0 0 25px 0;
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.form-group {
+  text-align: left;
+  margin-bottom: 15px;
+}
+
+.form-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-weight: bold;
+  color: #6b7280;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.input-wrapper {
+  position: relative;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 15px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background-color: #f3f4f6;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+  color: #1a1a1a;
+}
+
+.form-input.error {
+  border: 1px solid #ef4444;
+  background-color: #fef2f2;
+}
+
+.eye-icon {
+  position: absolute;
+  right: 15px;
+  top: 10px;
+  cursor: pointer;
+  color: #9ca3af;
+  display: flex;
+  align-items: center;
+}
+
+.error-message {
+  color: white;
+  background-color: #ef4444;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 15px;
+}
+
+.error-message.login-error {
+  background-color: transparent;
+  color: red;
+  font-size: 13px;
+  padding: 0;
+}
+
+.field-error-text {
+  font-size: 11px;
+  color: #ef4444;
+  margin-top: 5px;
+  font-weight: bold;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 8px;
+  border: none;
+  background-color: #2563eb;
+  color: white;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+/* Tombol sukses */
+.auth-button.success-btn {
+  background-color: #2563eb;
+  margin-top: 25px;
+}
+
+.auth-link {
+  color: #2563eb;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.forgot-password {
+  font-size: 10px;
+}
+
+.footer-text {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 25px;
+}
+
+.back-home {
+  font-size: 11px;
+  margin-top: 10px;
+}
+
+.back-home a {
+  color: #9ca3af;
+  text-decoration: none;
+}
+
+/* --- STYLING LAYAR SUKSES --- */
+.success-box {
+  background-color: #fafafa;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: left;
+  margin-top: 20px;
+  border: 1px solid #f3f4f6;
+}
+
+.success-row {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px dashed #e5e7eb;
+  padding-bottom: 12px;
+  margin-bottom: 12px;
+}
+
+.success-row.last {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.success-icon-box {
+  width: 42px;
+  height: 42px;
+  background-color: #ffffff;
+  border: 1px solid #f3f4f6;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-right: 15px;
+}
+
+.success-icon {
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.success-label {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 0 0 2px 0;
+}
+
+.success-value {
+  font-size: 14px;
+  font-weight: bold;
+  color: #111827;
+  margin: 0;
+}
+
+
+.check-circle {
+  width: 70px;
+  height: 70px;
+  background-color: #dbeafe; 
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0 auto 15px auto;
+}
+
+/* =========================================
+   DASHBOARD & RESPONSIVE LAYOUT STYLES
+   ========================================= */
+
+.dashboard-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: #f3f4f6;
+  font-family: sans-serif;
+  overflow: hidden;
+}
+
+/* Sidebar */
+.dashboard-sidebar {
+  width: 260px;
+  height: 100vh;
+  flex-shrink: 0;
+  background-color: #ffffff;
+  border-right: 1px solid #e2e8f0;
+  color: #0f172a;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+  box-shadow: 2px 0 12px rgba(0, 0, 0, 0.03);
+}
+
+.sidebar-header {
+  padding: 24px 20px;
+  border-bottom: 1px solid #f1f5f9;
+  text-align: left;
+}
+
+.sidebar-header h2 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.02em;
+}
+
+.sidebar-header p {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569; /* Diperjelas dari #64748b */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.sidebar-menu ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 11px 16px;
+  color: #334155; /* Ubah warna font*/
+  text-decoration: none;
+  gap: 12px;
+  transition: all 0.2s ease;
+  font-size: 14px;
+  font-weight: 500; 
+  border-radius: 8px;
+}
+
+.sidebar-link:hover {
+  background-color: #f1f5f9;
+  color: #0f172a;
+  transform: translateX(3px);
+}
+
+/* Status Menu Aktif */
+.sidebar-link.active {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid #f1f5f9;
+}
+
+/* Logout Button  */
+.logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 11px 16px;
+  background-color: #dc2626; 
+  color: #ffffff; 
+  border: none; 
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.2);
+}
+
+.logout-btn:hover {
+  background-color: #b91c1c; 
+  box-shadow: 0 4px 10px rgba(185, 28, 28, 0.3);
+}
+
+/* Main Content Area */
+.dashboard-content {
+  flex: 1;
+  height: 100vh;
+  padding: 30px;
+  overflow-y: auto;
+  box-sizing: border-box;
+}
+
+.content-card {
+  background-color: white;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+/* Tabel Modern Styling */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.custom-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.custom-table th {
+  background-color: #f8fafc;
+  border-bottom: 2px solid #e2e8f0;
+  color: #475569;
+  padding: 12px;
+}
+
+.custom-table td {
+  padding: 12px;
+  border-bottom: 1px solid #e2e8f0;
+  color: #1e293b;
+}
+
+/* Form & Input di Settings */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.setting-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.setting-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: bold;
+  color: #475569;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+}
+
+.setting-input {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  font-size: 14px;
+  outline: none;
+  box-sizing: border-box;
+  color: #1e293b;
+}
+
+.setting-input:focus {
+  border-color: #2563eb;
+}
+
+/* Gold Theme Extras */
+.gold-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background-color: #d97706;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: 0.2s;
+}
+
+.gold-btn:hover {
+  background-color: #b45309;
+}
+
+/* Tombol hamburger untuk HP */
+.menu-toggle-btn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: #1e293b;
+  cursor: pointer;
+  padding: 5px;
+}
+
+.sidebar-overlay {
+  display: none;
+}
+
+/* =========================================
+   RESPONSIVE DESIGN (Media Queries)
+   ========================================= */
+
+/* RESPONSIVE LAYAR HP (MAX 768px) */
+@media screen and (max-width: 768px) {
+  .menu-toggle-btn {
+    display: block;
+  }
+
+  .dashboard-sidebar {
+    position: fixed;
+    top: 0;
+    left: -260px; /* Sembunyikan sidebar ke luar layar kiri */
+    height: 100vh;
+    z-index: 999;
+    transition: left 0.3s ease;
+  }
+
+  .dashboard-sidebar.open {
+    left: 0; /* Tampilkan sidebar saat diklik */
+  }
+
+  .sidebar-overlay {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
+  }
+
+  .dashboard-content {
+    padding: 15px;
+    width: 100%;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}

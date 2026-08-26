@@ -1,0 +1,14 @@
+# Mengabaikan folder library/dependencies (karena ukurannya besar)
+node_modules/
+vendor/
+
+# Mengabaikan file yang berisi password & konfigurasi rahasia
+.env
+.env.*
+
+# Mengabaikan folder hasil build (biasanya kalau pakai React/Vite)
+dist/
+build/
+
+# Mengabaikan file sistem
+.DS_Store

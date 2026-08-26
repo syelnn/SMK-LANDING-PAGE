@@ -1,0 +1,275 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ==========================
+// USERS & AUTH (Model buatanmu)
+// ==========================
+model User {
+  id         Int       @id @default(autoincrement())
+  username   String    @unique
+  email      String    @unique
+  password   String
+  fullName   String?   @map("full_name")
+  avatar     String?
+  role       String    @default("editor") // admin | editor
+  isActive   Int       @default(1) @map("is_active")
+  lastLogin  DateTime? @map("last_login")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  news       News[]       @relation("NewsAuthor")
+  auditLogs  AuditLog[]
+
+  @@map("users")
+}
+
+// ==========================
+// SETTINGS (Model buatanmu)
+// ==========================
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("settings")
+}
+
+// ==========================
+// NEWS & COMMENTS (Model buatanmu)
+// ==========================
+model News {
+  id              Int       @id @default(autoincrement())
+  category        String?
+  tags            Json?
+  title           String
+  slug            String    @unique
+  excerpt         String?
+  content         String?
+  image           String?
+  author          String    @default("Admin")
+  authorId        Int?      @map("author_id")
+  publishedAt     DateTime? @map("published_at")
+  status          String    @default("draft") // draft | published
+  isFeatured      Int       @default(0) @map("is_featured")
+  metaTitle       String?   @map("meta_title")
+  metaDescription String?   @map("meta_description")
+  viewCount       Int       @default(0) @map("view_count")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  authorUser User?         @relation("NewsAuthor", fields: [authorId], references: [id])
+  comments   NewsComment[]
+
+  @@map("news")
+}
+
+model NewsComment {
+  id         Int      @id @default(autoincrement())
+  newsId     Int      @map("news_id")
+  parentId   Int?     @map("parent_id")
+  name       String
+  email      String?
+  avatar     String?
+  comment    String
+  isApproved Int      @default(0) @map("is_approved")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  news       News          @relation(fields: [newsId], references: [id])
+  parent     NewsComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies    NewsComment[] @relation("CommentReplies")
+
+  @@map("news_comments")
+}
+
+// ==========================
+// PROGRAMS / JURUSAN (Model buatanmu)
+// ==========================
+model Program {
+  id          String   @id @default(uuid()) @db.Uuid
+  category    String   // "jurusan" | "unggulan"
+  code        String?
+  title       String
+  description String?
+  icon        String?  @default("star")
+  imageUrl    String?  @map("image_url")
+  sortOrder   Int      @default(0) @map("sort_order") @db.SmallInt
+  show        Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("programs")
+}
+
+// ==========================
+// AUDIT LOG (Model buatanmu)
+// ==========================
+model AuditLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int?     @map("user_id")
+  action      String   // INSERT | UPDATE | DELETE
+  tableName   String   @map("table_name")
+  recordId    String?  @map("record_id")
+  description String?
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user User? @relation(fields: [userId], references: [id])
+
+  @@map("audit_logs")
+}
+
+// ==========================
+// TABEL TAMBAHAN (Pelengkap Sesuai ERD & SQL)
+// ==========================
+model Extracurricular {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  icon        String?  @default("star")
+  iconColor   String?  @default("#14b8a6") @map("icon_color")
+  sortOrder   Int      @default(0) @map("sort_order")
+  show        Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("extracurriculars")
+}
+
+model Faq {
+  id        Int      @id @default(autoincrement())
+  question  String
+  answer    String
+  category  String?
+  sortOrder Int      @default(0) @map("sort_order")
+  show      Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("faq")
+}
+
+model Gallery {
+  id         Int      @id @default(autoincrement())
+  category   String?
+  image      String
+  caption    String?
+  isFeatured Int      @default(0) @map("is_featured")
+  sortOrder  Int      @default(0) @map("sort_order")
+  show       Int      @default(1)
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("galleries")
+}
+
+model Page {
+  id              Int       @id @default(autoincrement())
+  title           String
+  slug            String    @unique
+  content         String?
+  excerpt         String?
+  image           String?
+  status          String    @default("draft")
+  metaTitle       String?   @map("meta_title")
+  metaDescription String?   @map("meta_description")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at")
+  menuItems       MenuItem[]
+
+  @@map("pages")
+}
+
+model MenuItem {
+  id          Int       @id @default(autoincrement())
+  parentId    Int?      @map("parent_id")
+  title       String
+  url         String
+  target      String    @default("_self")
+  icon        String?
+  sectionKey  String?   @map("section_key")
+  sortOrder   Int       @default(0) @map("sort_order")
+  status      Int       @default(1)
+  type        String    @default("custom")
+  pageId      Int?      @map("page_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  parent      MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id])
+  children    MenuItem[] @relation("MenuHierarchy")
+  page        Page?      @relation(fields: [pageId], references: [id])
+
+  @@map("menu_items")
+}
+
+model Teacher {
+  id               Int      @id @default(autoincrement())
+  name             String
+  photo            String?
+  role             String?
+  experience       String?
+  education        String?
+  socialFacebook   String?  @map("social_facebook")
+  socialInstagram  String?  @map("social_instagram")
+  socialLinkedin   String?  @map("social_linkedin")
+  sortOrder        Int      @default(0) @map("sort_order")
+  show             Int      @default(1)
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("teachers")
+}
+
+model Testimonial {
+  id        Int      @id @default(autoincrement())
+  name      String
+  photo     String?
+  role      String?
+  quote     String
+  sortOrder Int      @default(0) @map("sort_order")
+  show      Int      @default(1)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("testimonials")
+}
+
+model StudentWorkAchievement {
+  id          String   @id @default(uuid()) @db.Uuid
+  category    String   // "karya" | "prestasi_akademik" | "prestasi_non_akademik"
+  studentName String   @map("student_name")
+  className   String?  @map("class_name")
+  title       String
+  description String?
+  photoUrl    String?  @map("photo_url")
+  level       String?  // "Nasional" | "Provinsi" | "Kota" | "Kecamatan"
+  year        Int?     @db.SmallInt
+  medal       String?  // "gold" | "silver" | "bronze"
+  sortOrder   Int      @default(0) @map("sort_order") @db.SmallInt
+  show        Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("student_works_achievements")
+}
+
+model Download {
+  id          Int      @id @default(autoincrement())
+  category    String
+  title       String
+  description String?
+  url         String
+  fileSize    String?  @map("file_size")
+  sortOrder   Int      @default(0) @map("sort_order")
+  show        Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("downloads")
+}
