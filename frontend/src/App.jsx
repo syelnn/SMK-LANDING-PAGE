@@ -16,7 +16,7 @@ import ManageUsers from './pages/ManageUsers';
 import ForgotPassword from './pages/ForgotPassword'; 
 import DetailKurikulum from './pages/DetailKurikulum';
 import ManageJurusanProgram from './pages/ManageJurusanProgram';
-
+import ManagePengajar from './pages/ManagePengajar';
 // Assets
 import logoSekolah from './assets/logo1.png'; 
 import heroBg from './assets/lab.jpg'; 
@@ -355,10 +355,10 @@ const DashboardLayout = () => {
                 </div>
 
                 {/* 8. SECTION TENAGA PENGAJAR (Hanya Admin) */}
+                {/* 8. SECTION TENAGA PENGAJAR (Hanya Admin) */}
                 {userRole === 'admin' && (
                   <div id="section-pengajar" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-                    <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>Tenaga Pengajar</h2>
-                    <p style={{ color: '#64748b' }}>Daftar guru dan staf pengajar.</p>
+                    <ManagePengajar />
                   </div>
                 )}
 

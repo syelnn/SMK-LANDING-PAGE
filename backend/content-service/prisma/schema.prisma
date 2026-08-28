@@ -192,19 +192,14 @@ model MenuItem {
 }
 
 model Teacher {
-  id              Int       @id @default(autoincrement())
-  name            String    @db.VarChar(200)
-  photo           String?   @db.VarChar(255)
-  role            String?   @db.VarChar(200)
-  experience      String?   @db.VarChar(100)
-  education       String?   @db.VarChar(100)
-  socialFacebook  String?   @map("social_facebook") @db.VarChar(255)
-  socialInstagram String?   @map("social_instagram") @db.VarChar(255)
-  socialLinkedin  String?   @map("social_linkedin") @db.VarChar(255)
-  sortOrder       Int?      @default(0) @map("sort_order")
-  show            Int?      @default(1)
-  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt       DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(200)
+  photo     String?   @db.Text
+  role      String?   @db.VarChar(200)
+  sortOrder Int?      @default(0) @map("sort_order")
+  show      Int?      @default(1)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
 
   @@map("teachers")
 }
@@ -275,27 +270,27 @@ model achievements {
 }
 
 model JurusanCustom {
-  id          Int      @id @default(autoincrement())
-  title       String
-  slug        String   @unique
-  desc        String
-  imageIcon   String   @map("image_icon")
-  subjects    String
-  career      String
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  desc      String
+  imageIcon String   @map("image_icon")
+  subjects  String
+  career    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("jurusan_custom")
 }
 
 model ProgramUnggulanCustom {
-  id          Int      @id @default(autoincrement())
-  title       String
-  desc        String
-  badge       String
-  imageIcon   String   @map("image_icon")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+  id        Int      @id @default(autoincrement())
+  title     String
+  desc      String
+  badge     String
+  imageIcon String   @map("image_icon")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("program_unggulan_custom")
 }

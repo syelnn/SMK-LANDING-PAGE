@@ -15,7 +15,7 @@ const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 
 // 3. Masukkan adapter ke dalam PrismaClient
-const prisma = new PrismaClient({ adapter });
+const prisma = new PrismaClient();
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -94,15 +94,15 @@ app.post('/api/auth/register', async (req, res) => {
     // 2. Hash password sebelum disimpan
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    // 3. Simpan ke database (berdasarkan kolom di tabel users kamu)
+    // 3. Simpan ke database (Gunakan camelCase sesuai schema.prisma)
     const newUser = await prisma.user.create({
       data: {
-        full_name: full_name,
+        fullName: full_name,
         username: username,
         email: email,
         password: hashedPassword,
-        role: 'viewer', // Role standar untuk pendaftar baru
-        is_active: 1
+        role: 'viewer', 
+        isActive: 1          
       }
     });
 
@@ -136,11 +136,14 @@ app.get('/api/users', async (req, res) => {
         email: true,
         fullName: true,
         role: true,
-        createdAt: true
+        isActive: true,    // <--- WAJIB ADA AGAR STATUS MUNCUL
+        lastLogin: true,   // <--- WAJIB ADA AGAR TERAKHIR LOGIN MUNCUL
+        createdAt: true    // <--- Untuk tanggal pembuatan user jika lastLogin kosong
       }
     });
     res.json({ success: true, data: users });
   } catch (error) {
+    console.error('Gagal memuat users:', error);
     res.status(500).json({ success: false, message: 'Gagal memuat data pengguna' });
   }
 });
@@ -221,6 +224,21 @@ app.delete('/api/users/:id', async (req, res) => {
   } catch (error) {
     console.error('Error saat menghapus user:', error);
     res.status(500).json({ success: false, message: 'Gagal menghapus pengguna' });
+  }
+});
+
+// Endpoint untuk mengubah status keaktifan user (Aktif/Nonaktif)
+app.put('/api/users/:id/status', async (req, res) => {
+  try {
+    const { is_active } = req.body;
+    const updatedUser = await prisma.user.update({
+      where: { id: parseInt(req.params.id) },
+      data: { isActive: Number(is_active) } // Ubah jadi 1 (aktif) atau 0 (nonaktif)
+    });
+    res.json({ success: true, message: 'Status keaktifan pengguna diperbarui', data: updatedUser });
+  } catch (error) {
+    console.error("Gagal update status:", error);
+    res.status(500).json({ success: false, message: 'Gagal mengubah status pengguna' });
   }
 });
 // Menyalakan server

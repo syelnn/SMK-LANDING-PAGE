@@ -120,7 +120,76 @@ app.delete('/api/program/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Gagal menghapus program' });
   }
 });
+// ==========================
+// API TENAGA PENGAJAR (GURU)
+// ==========================
 
+// 1. Ambil semua data guru (GET)
+app.get('/api/teacher', async (req, res) => {
+  try {
+    const data = await prisma.teacher.findMany({
+      orderBy: { sortOrder: 'asc' } // Gunakan camelCase sortOrder
+    });
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data guru' });
+  }
+});
+
+// 2. Tambah guru baru (POST)
+app.post('/api/teacher', async (req, res) => {
+  try {
+    const { name, role, photo, sort_order, show } = req.body;
+    const newData = await prisma.teacher.create({
+      data: { 
+        name, 
+        role, 
+        photo, 
+        sortOrder: Number(sort_order), // Gunakan camelCase sortOrder
+        show: Number(show) 
+      }
+    });
+    res.json({ success: true, message: 'Guru berhasil ditambah', data: newData });
+  } catch (error) {
+    console.error("Error Tambah Guru:", error);
+    res.status(500).json({ success: false, message: 'Gagal menambah guru' });
+  }
+});
+
+// 3. Edit / Update data guru (PUT)
+app.put('/api/teacher/:id', async (req, res) => {
+  try {
+    const { name, role, photo, sort_order, show } = req.body;
+    const updated = await prisma.teacher.update({
+      where: { id: parseInt(req.params.id) },
+      data: { 
+        name, 
+        role, 
+        photo, 
+        sortOrder: Number(sort_order), // Gunakan camelCase sortOrder
+        show: Number(show) 
+      }
+    });
+    res.json({ success: true, message: 'Data guru diupdate', data: updated });
+  } catch (error) {
+    console.error("Error Update Guru:", error);
+    res.status(500).json({ success: false, message: 'Gagal update guru' });
+  }
+});
+
+// 4. Hapus guru (DELETE)
+app.delete('/api/teacher/:id', async (req, res) => {
+  try {
+    await prisma.teacher.delete({ 
+      where: { id: parseInt(req.params.id) } 
+    });
+    res.json({ success: true, message: 'Guru dihapus' });
+  } catch (error) {
+    console.error("Error Hapus Guru:", error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus guru' });
+  }
+});
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);
 });
