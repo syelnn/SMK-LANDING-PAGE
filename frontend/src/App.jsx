@@ -258,10 +258,12 @@ const DashboardLayout = () => {
                   className="spmb-hero-card"
                   style={{ 
                     backgroundImage: `url(${heroBg})`, 
-                    minHeight: '85vh', 
+                    minHeight: 'calc(100vh - 65px)', /* Memastikan tingginya pas selayar penuh dikurangi tinggi navbar */
+                    height: 'calc(100vh - 65px)',  /* Mengunci tinggi agar tidak cingkrang */
                     margin: 0, 
                     borderRadius: 0,
-                    paddingBottom: '20px'
+                    paddingBottom: '20px',
+                    boxSizing: 'border-box'
                   }}
                 >
                   <div className="spmb-hero-overlay"></div>
