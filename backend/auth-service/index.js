@@ -14,8 +14,9 @@ const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 
+
 // 3. Masukkan adapter ke dalam PrismaClient
-const prisma = new PrismaClient();
+const prisma = new PrismaClient({ adapter });
 const app = express();
 const PORT = process.env.PORT || 5001;
 
@@ -241,6 +242,10 @@ app.put('/api/users/:id/status', async (req, res) => {
     res.status(500).json({ success: false, message: 'Gagal mengubah status pengguna' });
   }
 });
+
+
+
+
 // Menyalakan server
 app.listen(PORT, () => {
   console.log(`🚀 Auth Service berjalan di http://localhost:${PORT}`);

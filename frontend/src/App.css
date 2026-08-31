@@ -14,11 +14,20 @@ body, html, #root {
   margin: 0 !important;
   padding: 0 !important;
   min-height: 100vh;
-  width: 100vw;
+  width: 100%; /* Ubah dari 100vw menjadi 100% agar tidak tembus ke area scrollbar */
   background-color: #f8fafc;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Mencegah geseran ke samping */
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
+}
+
+.dashboard-container {
+  display: flex;
+  width: 100%; /* Pastikan ini juga 100%, bukan 100vw */
+  height: 100vh;
+  overflow: hidden; 
+  background-color: #f8fafc;
+  position: relative;
 }
 
 /* =========================================
@@ -56,15 +65,17 @@ body, html, #root {
 .success-value { font-size: 14px; font-weight: bold; color: #111827; margin: 0; }
 .check-circle { width: 70px; height: 70px; background-color: #dbeafe; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; }
 
+
 /* =========================================
-   3. DASHBOARD & PANEL LAYOUT STYLES (DIPERBAIKI)
+   3. DASHBOARD & PANEL LAYOUT STYLES
    ========================================= */
 .dashboard-container {
   display: flex;
-  width: 100vw;
+  width: 100%;
   height: 100vh;
-  overflow: hidden; /* Mengunci agar layout tidak terdorong keluar layar */
+  overflow: hidden; 
   background-color: #f8fafc;
+  position: relative;
 }
 
 /* SIDEBAR KIRI */
@@ -76,7 +87,7 @@ body, html, #root {
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transisi halus saat ditutup/dibuka */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 100;
 }
 
@@ -189,7 +200,7 @@ body, html, #root {
   color: #ffffff;
 }
 
-/* AREA KONTEN KANAN - PENTING: min-width: 0 Mencegah konten mendesak keluar layar */
+/* AREA KONTEN KANAN */
 .dashboard-content {
   flex: 1;
   min-width: 0; 
@@ -200,7 +211,6 @@ body, html, #root {
   flex-direction: column;
   transition: all 0.3s ease;
 }
-
 /* =========================================
    4. FORGOT PASSWORD & MANAGE USERS STYLES
    ========================================= */
@@ -349,14 +359,15 @@ body, html, #root {
   position: sticky;
   top: 0;
   width: 100%;
-  box-sizing: border-box; /* Agar padding tidak merusak width 100% */
-  z-index: 10;
+  box-sizing: border-box;
+  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 24px;
   background: rgba(15, 23, 42, 0.98);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none !important; /* Menghilangkan garis putih horizontal di bawah navbar */
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2); /* Memberikan efek bayangan halus pengganti garis */
   gap: 20px;
 }
 
@@ -956,4 +967,489 @@ body, html, #root {
   .modal-header-modern {
     padding: 15px 20px;
   }
+}
+
+
+/* Profil Sekolah */
+
+/* Container Utama */
+
+.profil-container {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Memastikan Header Utama Rata Tengah */
+.profil-header {
+  text-align: center !important;
+  margin-bottom: 50px;
+}
+
+.profil-header h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.profil-header p {
+  color: #475569;
+  font-size: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Memperbaiki Bagian Judul Visi & Misi agar Tepat di Tengah */
+.misi-section-title {
+  width: 100% !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 50px 0 30px 0 !important;
+}
+
+.misi-section-title h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 10px;
+  text-align: center !important;
+}
+
+/* Badge (Tujuan Strategis / Visi / Misi) */
+.section-tag, .badge-title {
+  display: inline-block;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Wrapper Foto dengan Efek Pergerakan (Hover Zoom) */
+.photo-hover-wrapper {
+  width: 100%;
+  max-width: 800px; /* Batasi lebar maksimal agar tidak selebar container utama */
+  height: 320px;    /* Tentukan tinggi pasti, misalnya 320px agar pas dipandang */
+  margin: 30px auto; /* auto agar posisinya otomatis di tengah */
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.school-image-zoom {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Memastikan foto menutupi area tanpa merusak proporsi (cropping rapi) */
+  object-position: center; /* Fokus foto di bagian tengah */
+  transition: transform 0.5s ease-in-out;
+}
+
+/* Efek saat kursor mengarah ke foto (Zoom In) */
+.photo-hover-wrapper:hover .school-image-zoom {
+  transform: scale(1.08); 
+}
+
+/* Efek saat kursor mengarah ke foto (Zoom In) */
+.photo-hover-wrapper:hover .school-image-zoom {
+  transform: scale(1.08); 
+}
+
+/* Card Visi */
+.visi-card {
+  max-width: 800px; /* Batasi lebar maksimal kotak visi */
+  margin: 30px auto; /* Membuat posisinya otomatis berada di tengah */
+  padding: 30px 40px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.badge-title {
+  background: #eff6ff;
+  color: #000000;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.visi-text {
+  font-size: 20px;
+  font-style: italic;
+  color: #1e293b;
+  margin-top: 20px;
+  line-height: 1.6;
+}
+
+
+/* Judul Visi & Misi di Tengah */
+.misi-section-title {
+  width: 100%;
+  text-align: center !important;
+  margin: 50px auto 30px auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Pastikan badge dan teks di dalamnya ikut rata tengah */
+.misi-section-title * {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.misi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.misi-card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border: 1px solid #f1f5f9;
+  transition: transform 0.2s ease;
+}
+
+.misi-card:hover {
+  transform: translateY(-4px);
+}
+
+.misi-number {
+  background: #2563eb;
+  color: white;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.misi-card p {
+  color: #334155;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Responsif untuk Layar HP / Mobile */
+@media (max-width: 768px) {
+  .profil-container {
+    padding: 20px 15px;
+  }
+  
+  .profil-header h1 {
+    font-size: 28px;
+  }
+
+  .visi-text {
+    font-size: 16px;
+  }
+
+  .misi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Styling Utama Kotak Visi */
+.visi-card {
+  max-width: 850px;
+  margin: 40px auto;
+  padding: 40px 30px 30px 30px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Efek transisi halus */
+}
+
+/* Efek Pergerakan saat Kursor Mengarah ke Visi (Hover) */
+.visi-card:hover {
+  transform: translateY(-8px); /* Kotak naik sedikit ke atas */
+  box-shadow: 0 15px 35px rgba(37, 99, 235, 0.1); /* Bayangan sedikit membiru */
+}
+
+/* Styling Icon di Atas Visi */
+.visi-icon-wrapper {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 48px;
+  background: #2563eb;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: transform 0.3s ease;
+}
+
+/* Efek ikon ikut berputar/membesar sedikit saat di-hover */
+.visi-card:hover .visi-icon-wrapper {
+  transform: translateX(-50%) scale(1.1) rotate(5deg);
+}
+
+.visi-icon {
+  width: 24px;
+  height: 24px;
+  color: #ffffff;
+}
+
+/* Styling Teks Visi */
+.visi-text {
+  font-size: 18px;
+  font-style: italic;
+  color: #1e293b;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+
+/* =========================================
+   STYLE KHUSUS HALAMAN EKSTRAKURIKULER 
+   ========================================= */
+.ekskul-container {
+  background-color: #ffffff; 
+  min-height: 100vh;
+  padding: 40px 20px;
+  color: #1e293b;
+  font-family: inherit;
+}
+
+.ekskul-header {
+  max-width: 1200px;
+  margin: 0 auto 30px auto;
+  text-align: center;
+}
+
+.ekskul-add-btn {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ekskul-add-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.ekskul-badge {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid #bfdbfe;
+}
+
+.ekskul-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.ekskul-title span {
+  color: #2563eb;
+}
+
+.ekskul-desc {
+  color: #64748b;
+  font-size: 14px;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.ekskul-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+  gap: 16px;
+}
+
+.ekskul-card {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.ekskul-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  transform: translateY(-2px);
+}
+
+.ekskul-icon-box {
+  width: 44px;
+  height: 44px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.ekskul-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.text-blue { color: #2563eb; }
+.text-green { color: #16a34a; }
+.text-yellow { color: #ca8a04; }
+.text-orange { color: #ea580c; }
+.text-red { color: #dc2626; }
+.text-emerald { color: #059669; }
+.text-pink { color: #db2777; }
+.text-purple { color: #9333ea; }
+
+.ekskul-card-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.ekskul-card-text {
+  color: #64748b;
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.ekskul-btn {
+  width: 100%;
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+}
+
+.ekskul-btn:hover {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* Style Tambahan CRUD */
+.ekskul-card-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+}
+
+.ekskul-action-btn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ekskul-action-btn.edit:hover {
+  background-color: #fef9c3;
+  border-color: #facc15;
+  color: #ca8a04;
+}
+
+.ekskul-action-btn.delete:hover {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.ekskul-add-btn {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ekskul-add-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.ekskul-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.ekskul-modal-box {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
 }

@@ -190,6 +190,78 @@ app.delete('/api/teacher/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Gagal menghapus guru' });
   }
 });
+
+// Ambil semua data ekstrakurikuler (GET)
+app.get('/api/extracurriculars', async (req, res) => {
+  try {
+    const data = await prisma.extracurricular.findMany({
+      where: { show: 1 }, // Hanya ambil yang statusnya show = 1
+      orderBy: { sortOrder: 'asc' }
+    });
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Error Memuat Ekstrakurikuler:", error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data ekstrakurikuler' });
+  }
+});
+
+// Tambah ekstrakurikuler baru (POST)
+app.post('/api/extracurriculars', async (req, res) => {
+  try {
+    const { title, description, icon, iconColor, sort_order, show } = req.body;
+    const newData = await prisma.extracurricular.create({
+      data: { 
+        title, 
+        description, 
+        icon, 
+        iconColor, 
+        sortOrder: Number(sort_order || 0), 
+        show: Number(show !== undefined ? show : 1) 
+      }
+    });
+    res.json({ success: true, message: 'Ekstrakurikuler berhasil ditambah', data: newData });
+  } catch (error) {
+    console.error("Error Tambah Ekstrakurikuler:", error);
+    res.status(500).json({ success: false, message: 'Gagal menambah ekstrakurikuler' });
+  }
+});
+
+// Update ekstrakurikuler (PUT)
+app.put('/api/extracurriculars/:id', async (req, res) => {
+  try {
+    const { title, description, icon, iconColor, sort_order, show } = req.body;
+    const updated = await prisma.extracurricular.update({
+      where: { id: parseInt(req.params.id) },
+      data: { 
+        title, 
+        description, 
+        icon, 
+        iconColor, 
+        sortOrder: Number(sort_order), 
+        show: Number(show) 
+      }
+    });
+    res.json({ success: true, message: 'Ekstrakurikuler diupdate', data: updated });
+  } catch (error) {
+    console.error("Error Update Ekstrakurikuler:", error);
+    res.status(500).json({ success: false, message: 'Gagal update ekstrakurikuler' });
+  }
+});
+
+//  Hapus ekstrakurikuler (DELETE)
+app.delete('/api/extracurriculars/:id', async (req, res) => {
+  try {
+    await prisma.extracurricular.delete({ 
+      where: { id: parseInt(req.params.id) } 
+    });
+    res.json({ success: true, message: 'Ekstrakurikuler dihapus' });
+  } catch (error) {
+    console.error("Error Hapus Ekstrakurikuler:", error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus ekstrakurikuler' });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);
 });
