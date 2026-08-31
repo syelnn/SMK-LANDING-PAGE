@@ -14,7 +14,18 @@ export default function ManageUsers() {
     try {
       const response = await axios.get(`${API_URL}/users`);
       const rolePriority = { admin: 1, editor: 2, viewer: 3 };
+
       const sortedUsers = (response.data.data || []).sort((a, b) => {
+        // Ambil status aktif (1/true untuk aktif, 0/false untuk nonaktif)
+        const statusA = (a.isActive ?? a.is_active) ? 1 : 0;
+        const statusB = (b.isActive ?? b.is_active) ? 1 : 0;
+
+        // 1. Urutkan berdasarkan keaktifan: yang Aktif (1) selalu di atas Nonaktif (0)
+        if (statusA !== statusB) {
+          return statusB - statusA; 
+        }
+
+        // 2. Jika statusnya sama (sama-sama aktif atau sama-sama nonaktif), urutkan berdasarkan role
         return (rolePriority[a.role] || 99) - (rolePriority[b.role] || 99);
       });
 

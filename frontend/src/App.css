@@ -64,8 +64,10 @@ body, html, #root {
 .success-label { font-size: 11px; color: #6b7280; margin: 0 0 2px 0; }
 .success-value { font-size: 14px; font-weight: bold; color: #111827; margin: 0; }
 .check-circle { width: 70px; height: 70px; background-color: #dbeafe; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; }
+
+
 /* =========================================
-   3. DASHBOARD & PANEL LAYOUT STYLES (RESPONSIF PENUH)
+   3. DASHBOARD & PANEL LAYOUT STYLES
    ========================================= */
 .dashboard-container {
   display: flex;
@@ -966,3 +968,867 @@ body, html, #root {
     padding: 15px 20px;
   }
 }
+
+
+/* Profil Sekolah */
+
+/* Container Utama */
+
+.profil-container {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Memastikan Header Utama Rata Tengah */
+.profil-header {
+  text-align: center !important;
+  margin-bottom: 50px;
+}
+
+.profil-header h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 12px;
+}
+
+.profil-header p {
+  color: #475569;
+  font-size: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Memperbaiki Bagian Judul Visi & Misi agar Tepat di Tengah */
+.misi-section-title {
+  width: 100% !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 50px 0 30px 0 !important;
+}
+
+.misi-section-title h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: #0f172a;
+  margin-top: 10px;
+  text-align: center !important;
+}
+
+/* Badge (Tujuan Strategis / Visi / Misi) */
+.section-tag, .badge-title {
+  display: inline-block;
+  background: #eff6ff;
+  color: #2563eb;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Wrapper Foto dengan Efek Pergerakan (Hover Zoom) */
+.photo-hover-wrapper {
+  width: 100%;
+  max-width: 800px; /* Batasi lebar maksimal agar tidak selebar container utama */
+  height: 320px;    /* Tentukan tinggi pasti, misalnya 320px agar pas dipandang */
+  margin: 30px auto; /* auto agar posisinya otomatis di tengah */
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.school-image-zoom {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Memastikan foto menutupi area tanpa merusak proporsi (cropping rapi) */
+  object-position: center; /* Fokus foto di bagian tengah */
+  transition: transform 0.5s ease-in-out;
+}
+
+/* Efek saat kursor mengarah ke foto (Zoom In) */
+.photo-hover-wrapper:hover .school-image-zoom {
+  transform: scale(1.08); 
+}
+
+/* Efek saat kursor mengarah ke foto (Zoom In) */
+.photo-hover-wrapper:hover .school-image-zoom {
+  transform: scale(1.08); 
+}
+
+/* Card Visi */
+.visi-card {
+  max-width: 800px; /* Batasi lebar maksimal kotak visi */
+  margin: 30px auto; /* Membuat posisinya otomatis berada di tengah */
+  padding: 30px 40px;
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.badge-title {
+  background: #eff6ff;
+  color: #000000;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.visi-text {
+  font-size: 20px;
+  font-style: italic;
+  color: #1e293b;
+  margin-top: 20px;
+  line-height: 1.6;
+}
+
+
+/* Judul Visi & Misi di Tengah */
+.misi-section-title {
+  width: 100%;
+  text-align: center !important;
+  margin: 50px auto 30px auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Pastikan badge dan teks di dalamnya ikut rata tengah */
+.misi-section-title * {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.misi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.misi-card {
+  background: #ffffff;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border: 1px solid #f1f5f9;
+  transition: transform 0.2s ease;
+}
+
+.misi-card:hover {
+  transform: translateY(-4px);
+}
+
+.misi-number {
+  background: #2563eb;
+  color: white;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.misi-card p {
+  color: #334155;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Responsif untuk Layar HP / Mobile */
+@media (max-width: 768px) {
+  .profil-container {
+    padding: 20px 15px;
+  }
+  
+  .profil-header h1 {
+    font-size: 28px;
+  }
+
+  .visi-text {
+    font-size: 16px;
+  }
+
+  .misi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Styling Utama Kotak Visi */
+.visi-card {
+  max-width: 850px;
+  margin: 40px auto;
+  padding: 40px 30px 30px 30px;
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Efek transisi halus */
+}
+
+/* Efek Pergerakan saat Kursor Mengarah ke Visi (Hover) */
+.visi-card:hover {
+  transform: translateY(-8px); /* Kotak naik sedikit ke atas */
+  box-shadow: 0 15px 35px rgba(37, 99, 235, 0.1); /* Bayangan sedikit membiru */
+}
+
+/* Styling Icon di Atas Visi */
+.visi-icon-wrapper {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 48px;
+  background: #2563eb;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: transform 0.3s ease;
+}
+
+/* Efek ikon ikut berputar/membesar sedikit saat di-hover */
+.visi-card:hover .visi-icon-wrapper {
+  transform: translateX(-50%) scale(1.1) rotate(5deg);
+}
+
+.visi-icon {
+  width: 24px;
+  height: 24px;
+  color: #ffffff;
+}
+
+/* Styling Teks Visi */
+.visi-text {
+  font-size: 18px;
+  font-style: italic;
+  color: #1e293b;
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+
+/* =========================================
+   STYLE KHUSUS HALAMAN EKSTRAKURIKULER 
+   ========================================= */
+.ekskul-container {
+  background-color: #ffffff; 
+  min-height: 100vh;
+  padding: 40px 20px;
+  color: #1e293b;
+  font-family: inherit;
+}
+
+.ekskul-header {
+  max-width: 1200px;
+  margin: 0 auto 30px auto;
+  text-align: center;
+}
+
+.ekskul-add-btn {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ekskul-add-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.ekskul-badge {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 50px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: 1px solid #bfdbfe;
+}
+
+.ekskul-title {
+  font-size: 26px;
+  font-weight: bold;
+  margin-top: 10px;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.ekskul-title span {
+  color: #2563eb;
+}
+
+.ekskul-desc {
+  color: #64748b;
+  font-size: 14px;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.ekskul-grid {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
+  gap: 16px;
+}
+
+.ekskul-card {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: all 0.2s ease;
+}
+
+.ekskul-card:hover {
+  border-color: #2563eb;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
+  transform: translateY(-2px);
+}
+
+.ekskul-icon-box {
+  width: 44px;
+  height: 44px;
+  background-color: #ffffff;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+  border: 1px solid #e2e8f0;
+}
+
+.ekskul-icon {
+  width: 22px;
+  height: 22px;
+}
+
+.text-blue { color: #2563eb; }
+.text-green { color: #16a34a; }
+.text-yellow { color: #ca8a04; }
+.text-orange { color: #ea580c; }
+.text-red { color: #dc2626; }
+.text-emerald { color: #059669; }
+.text-pink { color: #db2777; }
+.text-purple { color: #9333ea; }
+
+.ekskul-card-title {
+  font-size: 17px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #0f172a;
+}
+
+.ekskul-card-text {
+  color: #64748b;
+  font-size: 12.5px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.ekskul-btn {
+  width: 100%;
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #bfdbfe;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+}
+
+.ekskul-btn:hover {
+  background-color: #2563eb;
+  color: #ffffff;
+}
+
+/* Style Tambahan CRUD */
+.ekskul-card-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 4px;
+}
+
+.ekskul-action-btn {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 4px 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.ekskul-action-btn.edit:hover {
+  background-color: #fef9c3;
+  border-color: #facc15;
+  color: #ca8a04;
+}
+
+.ekskul-action-btn.delete:hover {
+  background-color: #fee2e2;
+  border-color: #fca5a5;
+  color: #dc2626;
+}
+
+.ekskul-add-btn {
+  background-color: #2563eb;
+  color: #ffffff;
+  font-weight: 500;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ekskul-add-btn:hover {
+  background-color: #1d4ed8;
+}
+
+.ekskul-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.6);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.ekskul-modal-box {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+/* =========================================
+   MODERN TESTIMONIAL STYLES (NO TAILWIND DEPENDENCY)
+========================================= */
+
+.modern-testi-wrapper {
+  padding-bottom: 3rem;
+  font-family: inherit;
+}
+
+/* 1. KARTU PREVIEW PUBLIK */
+.modern-testi-public {
+  max-width: 1200px;
+  margin: 3rem auto;
+  padding: 0 20px;
+}
+.modern-testi-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+.modern-badge-title {
+  display: inline-block;
+  background-color: #dcfce7;
+  color: #166534;
+  padding: 4px 16px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.modern-testi-header h2 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+.modern-testi-header h2 span { color: #16a34a; }
+.modern-testi-header p { color: #64748b; font-size: 1.1rem; }
+
+.modern-testi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 2rem;
+}
+.modern-testi-card {
+  background: #ffffff;
+  border: 1px solid #f1f5f9;
+  border-radius: 24px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.modern-testi-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+.modern-testi-quote-mark {
+  font-size: 2.5rem;          /* Diperkecil agar tidak terlalu besar */
+  color: #94a3b8;             /* Diubah dari kuning menjadi abu-abu elegan (bisa diganti #15803d untuk hijau) */
+  font-family: serif;
+  line-height: 1;
+  margin-bottom: 1rem;
+}
+.modern-testi-quote-text {
+  color: #475569;
+  font-style: italic;
+  line-height: 1.7;
+  flex-grow: 1;
+  margin-bottom: 2rem;
+}
+.modern-testi-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.modern-avatar-img {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #dcfce7;
+}
+.modern-avatar-initial {
+  width: 50px; height: 50px;
+  border-radius: 50%;
+  background-color: #15803d;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+.modern-profile-info h4 { margin: 0; color: #0f172a; font-size: 1.05rem; font-weight: 700; }
+.modern-profile-info p { margin: 0; color: #64748b; font-size: 0.9rem; }
+
+/* 2. FORMS & INPUTS */
+.modern-viewer-form-container {
+  max-width: 550px;
+  margin: 4rem auto;
+  background: white;
+  padding: 2.5rem;
+  border-radius: 24px;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+}
+.modern-viewer-form-container h3 {
+  text-align: center;
+  color: #0f172a;
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+  font-weight: 700;
+}
+.modern-alert {
+  padding: 1rem;
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 500;
+}
+.modern-alert.normal { background: #f8fafc; color: #64748b; }
+.modern-alert.success { background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; }
+
+.modern-form { display: flex; flex-direction: column; gap: 1.25rem; }
+.modern-form-group label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.5rem;
+}
+.modern-form input[type="text"], 
+.modern-form select, 
+.modern-form textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  font-family: inherit;
+  outline: none;
+  transition: all 0.2s;
+  background: white;
+}
+.modern-form textarea { resize: none; height: 100px; }
+.modern-form input:focus, .modern-form select:focus, .modern-form textarea:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.modern-photo-box {
+  border: 1px solid #e2e8f0;
+  padding: 1rem;
+  border-radius: 12px;
+  background: #f8fafc;
+}
+.modern-photo-box label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+.modern-tabs {
+  display: flex;
+  background: #e2e8f0;
+  padding: 4px;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+}
+.modern-tabs button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.modern-tabs button.active {
+  background: white;
+  color: #2563eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.modern-file-input {
+  font-size: 0.85rem;
+  color: #64748b;
+}
+.modern-file-input::file-selector-button {
+  background: #eff6ff;
+  color: #2563eb;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 50px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 12px;
+  transition: background 0.2s;
+}
+.modern-file-input::file-selector-button:hover { background: #dbeafe; }
+
+/* BUTTONS */
+.modern-btn-primary {
+  background-color: #16a34a;
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2);
+  transition: all 0.2s;
+}
+.modern-btn-primary:hover { background-color: #15803d; transform: translateY(-1px); }
+.modern-btn-outline {
+  background-color: white;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  padding: 12px 20px;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.modern-btn-outline:hover { background-color: #f1f5f9; }
+.w-full { width: 100%; }
+.flex-center { display: flex; align-items: center; justify-content: center; }
+
+/* 3. TABEL ADMIN */
+.modern-admin-section {
+  max-width: 1200px;
+  margin: 4rem auto 0;
+  padding: 3rem 20px 0;
+  border-top: 2px dashed #e2e8f0;
+}
+.modern-admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+.modern-admin-header h2 { color: #0f172a; font-size: 1.5rem; font-weight: 700; margin: 0; }
+.modern-admin-header p { color: #64748b; font-size: 0.9rem; margin: 4px 0 0; }
+
+.modern-table-card {
+  background: white;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+  overflow-x: auto;
+}
+.modern-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+.modern-table th {
+  background: #f8fafc;
+  padding: 16px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid #e2e8f0;
+}
+.modern-table td {
+  padding: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  vertical-align: middle;
+}
+.modern-table tbody tr:hover { background: #f8fafc; }
+
+.modern-table-profile { display: flex; align-items: center; gap: 12px; }
+.modern-table-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 1px solid #e2e8f0; }
+.modern-table-initial {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: #e2e8f0; color: #475569;
+  display: flex; align-items: center; justify-content: center; font-weight: bold;
+}
+.font-semibold { font-weight: 600; color: #0f172a; }
+.text-muted { color: #64748b; font-size: 0.9rem; }
+.modern-quote-cell { max-width: 250px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #475569; font-size: 0.9rem; }
+
+.modern-status-badge {
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.modern-status-badge.show { background: #dcfce7; color: #15803d; }
+.modern-status-badge.hide { background: #fef3c7; color: #b45309; }
+
+.modern-action-btns { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.modern-icon-btn {
+  padding: 8px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+.btn-gray { background: #f1f5f9; color: #64748b; }
+.btn-gray:hover { background: #e2e8f0; }
+.btn-green { background: #dcfce7; color: #16a34a; }
+.btn-green:hover { background: #bbf7d0; }
+.btn-blue { background: #eff6ff; color: #2563eb; }
+.btn-blue:hover { background: #dbeafe; }
+.btn-red { background: #fef2f2; color: #dc2626; }
+.btn-red:hover { background: #fee2e2; }
+.text-center { text-align: center; }
+
+/* 4. MODAL ADMIN */
+.modern-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.modern-modal {
+  background: white;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 20px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  animation: zoomIn 0.2s ease-out;
+}
+@keyframes zoomIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+
+.modern-modal-header {
+  padding: 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.modern-modal-header h3 { margin: 0; color: #0f172a; font-size: 1.15rem; font-weight: 700; }
+.modern-close-btn {
+  background: transparent; border: none; color: #64748b; cursor: pointer;
+  padding: 4px; border-radius: 50%; transition: background 0.2s;
+}
+.modern-close-btn:hover { background: #f1f5f9; }
+
+.modern-modal-body {
+  padding: 1.5rem;
+  overflow-y: auto;
+}
+.modern-modal-footer {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid #f1f5f9;
+  background: #f8fafc;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  border-bottom-left-radius: 20px;
+  border-bottom-right-radius: 20px;
+}
+.modern-modal-footer .modern-btn-primary { background-color: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
+.modern-modal-footer .modern-btn-primary:hover { background-color: #1d4ed8; }

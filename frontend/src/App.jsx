@@ -17,9 +17,15 @@ import ForgotPassword from './pages/ForgotPassword';
 import DetailKurikulum from './pages/DetailKurikulum';
 import ManageJurusanProgram from './pages/ManageJurusanProgram';
 import ManagePengajar from './pages/ManagePengajar';
+import ProfilSekolah from './pages/ProfilSekolah';
+import Ekstrakurikuler from './pages/Ekstrakurikuler';
+import TestimonialPage from './pages/TestimonialPage';
+
+
+
 // Assets
 import logoSekolah from './assets/logo1.png'; 
-import heroBg from './assets/lab.jpg'; 
+import heroBg from './assets/latar.webp'; 
 import studentImg from './assets/hero.png'; 
 
 // 1. Tata Letak Publik
@@ -123,7 +129,7 @@ const DashboardLayout = () => {
   const menuItems = [
     { title: 'Dashboard', icon: <LayoutDashboard size={18} />, target: 'section-hero', roles: ['admin', 'editor'] },
     { title: 'Kelola Pengguna', icon: <Users size={18} />, target: 'section-pengguna', roles: ['admin'] },
-    { title: 'Profil Sekolah', icon: <School size={18} />, target: 'section-profil', roles: ['admin'] },
+    { title: 'Profil Sekolah', icon: <School size={18} />, target: 'section-profil', roles: ['admin', 'editor'] },
     { title: 'Pengaturan Website', icon: <Settings size={18} />, target: 'section-settings', roles: ['admin'] },
     { title: 'Berita & Artikel', icon: <Newspaper size={18} />, target: 'section-berita', roles: ['admin', 'editor'] },
     { title: 'Jurusan & Program', icon: <BookOpen size={18} />, target: 'section-jurusan', roles: ['admin', 'editor'] },
@@ -271,14 +277,14 @@ const DashboardLayout = () => {
                     <div className="spmb-left-col">
                       <div className="spmb-badge-pill">
                         <span className="dot-pulse"></span>
-                        <span>SMK NEGERI COMPRENG</span>
+                        <span>Terakreditasi A · Kurikulum Merdeka</span>
                       </div>
                       <h1 className="spmb-hero-title">
-                        Selamat Datang<br />
-                        <span className="highlight-text">Tahun Pelajaran 2026/2027</span>
+                        Selamat Datang di<br />
+                        <span className="highlight-text"> SMK NEGERI COMPRENG</span>
                       </h1>
                       <p className="spmb-hero-desc">
-                        Sistem Manajemen & Informasi Pendaftaran Siswa Baru SMK Negeri Compreng.
+                        Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.
                       </p>
                       
                       {/* Tombol Jelajah & Hubungi Kami yang Dikembalikan */}
@@ -323,15 +329,10 @@ const DashboardLayout = () => {
                   </div>
                 )}
 
-                {/* 3. SECTION PROFIL SEKOLAH (Hanya Admin) */}
-                {userRole === 'admin' && (
-                  <div id="section-profil" style={{ padding: '80px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                    <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>Profil Sekolah</h2>
-                    <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.6' }}>
-                      SMK Negeri Compreng berkomitmen mencetak lulusan yang unggul, profesional, berkarakter, serta siap bersaing di dunia industri maupun berwirausaha.
-                    </p>
-                  </div>
-                )}
+                {/* 3. SECTION PROFIL SEKOLAH (Admin & Editor) */}
+<div id="section-profil" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+  <ProfilSekolah userRole={userRole} />
+</div>
 
                 {/* 4. SECTION PENGATURAN WEBSITE (Hanya Admin) */}
                 {userRole === 'admin' && (
@@ -349,14 +350,13 @@ const DashboardLayout = () => {
                 <div id="section-jurusan" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
                   <ManageJurusanProgram />
                 </div>
-
+                
                 {/* 7. SECTION EKSTRAKURIKULER (Admin & Editor) */}
-                <div id="section-ekskul" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>Ekstrakurikuler</h2>
-                  <p style={{ color: '#64748b' }}>Daftar kegiatan ekstrakurikuler sekolah.</p>
-                </div>
+<div id="section-ekskul" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+  <Ekstrakurikuler />
+</div>
 
-                {/* 8. SECTION TENAGA PENGAJAR (Hanya Admin) */}
+                
                 {/* 8. SECTION TENAGA PENGAJAR (Hanya Admin) */}
                 {userRole === 'admin' && (
                   <div id="section-pengajar" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
@@ -372,8 +372,7 @@ const DashboardLayout = () => {
 
                 {/* 10. SECTION TESTIMONI (Admin & Editor) */}
                 <div id="section-testimoni" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-                  <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>Testimoni</h2>
-                  <p style={{ color: '#64748b' }}>Pendapat alumni dan orang tua siswa.</p>
+                  <TestimonialPage />
                 </div>
 
                 {/* 11. SECTION FAQ (Hanya Admin) */}

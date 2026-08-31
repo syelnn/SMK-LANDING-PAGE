@@ -4,24 +4,15 @@ const cors = require('cors');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// 1. Panggil library tambahan untuk koneksi database
+// Cukup panggil PrismaClient standar
 const { PrismaClient } = require('@prisma/client');
-const { Pool } = require('pg');
-const { PrismaPg } = require('@prisma/adapter-pg');
-
-// 2. Setup koneksi Pool PostgreSQL
-const connectionString = process.env.DATABASE_URL;
-const pool = new Pool({ connectionString });
-const adapter = new PrismaPg(pool);
-
-// 3. Masukkan adapter ke dalam PrismaClient
 const prisma = new PrismaClient();
+
 const app = express();
 const PORT = process.env.PORT || 5001;
 
 app.use(cors());
 app.use(express.json());
-
 // Route dasar pengecekan server
 app.get('/', (req, res) => {
   res.json({ status: 'success', message: 'Auth Service siap melayani!' });
@@ -42,7 +33,12 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(404).json({ message: 'Username tidak ditemukan!' });
     }
 
-    // 2. Cek kecocokan password (Bcrypt Node.js vs Bcrypt PHP)
+    // 2. CEK STATUS KEAKTIFAN AKUN (Tambah baris ini)
+    if (user.isActive === 0 || user.isActive === false) {
+      return res.status(403).json({ message: 'Akun Anda telah dinonaktifkan. Silakan hubungi Administrator.' });
+    }
+
+    // 3. Cek kecocokan password (Bcrypt Node.js vs Bcrypt PHP)
     const isPasswordValid = await bcrypt.compare(password, user.password);
     
     // Jika password salah
@@ -50,7 +46,7 @@ app.post('/api/auth/login', async (req, res) => {
       return res.status(401).json({ message: 'Password yang dimasukkan salah!' });
     }
 
-    // 3. Buat JWT Token (Berisi ID, Username, dan Role)
+    // 4. Buat JWT Token (Berisi ID, Username, dan Role)
     const token = jwt.sign(
       { 
         id: user.id, 
@@ -58,10 +54,10 @@ app.post('/api/auth/login', async (req, res) => {
         role: user.role 
       }, 
       process.env.JWT_SECRET,
-      { expiresIn: '1d' } // Token otomatis hangus dalam 1 hari
+      { expiresIn: '1d' }
     );
 
-    // 4. Kirim respons sukses beserta token ke Frontend
+    // 5. Kirim respons sukses beserta token ke Frontend
     res.json({
       status: 'success',
       message: 'Login berhasil!',
@@ -241,6 +237,10 @@ app.put('/api/users/:id/status', async (req, res) => {
     res.status(500).json({ success: false, message: 'Gagal mengubah status pengguna' });
   }
 });
+
+
+
+
 // Menyalakan server
 app.listen(PORT, () => {
   console.log(`🚀 Auth Service berjalan di http://localhost:${PORT}`);

@@ -190,6 +190,211 @@ app.delete('/api/teacher/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Gagal menghapus guru' });
   }
 });
+
+// Ambil semua data ekstrakurikuler (GET)
+app.get('/api/extracurriculars', async (req, res) => {
+  try {
+    const data = await prisma.extracurricular.findMany({
+      where: { show: 1 }, // Hanya ambil yang statusnya show = 1
+      orderBy: { sortOrder: 'asc' }
+    });
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Error Memuat Ekstrakurikuler:", error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data ekstrakurikuler' });
+  }
+});
+
+// Tambah ekstrakurikuler baru (POST)
+app.post('/api/extracurriculars', async (req, res) => {
+  try {
+    const { title, description, icon, iconColor, sort_order, show } = req.body;
+    const newData = await prisma.extracurricular.create({
+      data: { 
+        title, 
+        description, 
+        icon, 
+        iconColor, 
+        sortOrder: Number(sort_order || 0), 
+        show: Number(show !== undefined ? show : 1) 
+      }
+    });
+    res.json({ success: true, message: 'Ekstrakurikuler berhasil ditambah', data: newData });
+  } catch (error) {
+    console.error("Error Tambah Ekstrakurikuler:", error);
+    res.status(500).json({ success: false, message: 'Gagal menambah ekstrakurikuler' });
+  }
+});
+
+// Update ekstrakurikuler (PUT)
+app.put('/api/extracurriculars/:id', async (req, res) => {
+  try {
+    const { title, description, icon, iconColor, sort_order, show } = req.body;
+    const updated = await prisma.extracurricular.update({
+      where: { id: parseInt(req.params.id) },
+      data: { 
+        title, 
+        description, 
+        icon, 
+        iconColor, 
+        sortOrder: Number(sort_order), 
+        show: Number(show) 
+      }
+    });
+    res.json({ success: true, message: 'Ekstrakurikuler diupdate', data: updated });
+  } catch (error) {
+    console.error("Error Update Ekstrakurikuler:", error);
+    res.status(500).json({ success: false, message: 'Gagal update ekstrakurikuler' });
+  }
+});
+
+//  Hapus ekstrakurikuler (DELETE)
+app.delete('/api/extracurriculars/:id', async (req, res) => {
+  try {
+    await prisma.extracurricular.delete({ 
+      where: { id: parseInt(req.params.id) } 
+    });
+    res.json({ success: true, message: 'Ekstrakurikuler dihapus' });
+  } catch (error) {
+    console.error("Error Hapus Ekstrakurikuler:", error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus ekstrakurikuler' });
+  }
+});
+
+// khusus testimoni 
+// 1. KIRIM TESTIMONI (Khusus Viewer/User Login dengan batasan 1x kirim)
+app.post('/api/testimonials', async (req, res) => {
+  try {
+    const { userId, name, photo, role, quote } = req.body;
+
+    // Cek apakah user ini sudah pernah mengirim testimoni sebelumnya
+    const existingTestimonial = await prisma.testimonial.findUnique({
+      where: { userId: parseInt(userId) }
+    });
+
+    if (existingTestimonial) {
+      return res.status(400).json({ success: false, message: 'Anda hanya dapat mengirim 1 testimoni saja!' });
+    }
+
+    // Simpan testimoni dengan status show = 0 (Menunggu moderasi Admin)
+    const newTestimonial = await prisma.testimonial.create({
+      data: {
+        userId: parseInt(userId),
+        name,
+        photo: photo || '',
+        role,
+        quote,
+        show: 0 
+      }
+    });
+
+    res.json({ success: true, message: 'Testimoni berhasil dikirim dan menunggu persetujuan admin!', data: newTestimonial });
+  } catch (error) {
+    console.error('Error kirim testimoni:', error);
+    res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server.' });
+  }
+});
+
+// 2. AMBIL TESTIMONI UNTUK LANDING PAGE (Hanya yang show = 1)
+app.get('/api/testimonials/public', async (req, res) => {
+  try {
+    const testimonials = await prisma.testimonial.findMany({
+      where: { show: 1 },
+      orderBy: { sortOrder: 'asc' }
+    });
+    res.json({ success: true, data: testimonials });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal memuat testimoni' });
+  }
+});
+
+// 3. AMBIL SEMUA TESTIMONI UNTUK ADMIN/EDITOR (Manage Dashboard)
+app.get('/api/testimonials', async (req, res) => {
+  try {
+    const testimonials = await prisma.testimonial.findMany({
+      orderBy: { createdAt: 'desc' }
+    });
+    res.json({ success: true, data: testimonials });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal memuat data testimoni' });
+  }
+});
+
+// 4. TOGGLE STATUS SHOW (Admin/Editor menyetujui atau menyembunyikan testimoni)
+app.put('/api/testimonials/:id/toggle-show', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { show } = req.body; // Nilai 0 atau 1
+
+    const updated = await prisma.testimonial.update({
+      where: { id: parseInt(id) },
+      data: { show: parseInt(show) }
+    });
+
+    res.json({ success: true, message: 'Status tampil testimoni diperbarui', data: updated });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal mengubah status testimoni' });
+  }
+});
+
+// 5. HAPUS TESTIMONI
+app.delete('/api/testimonials/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.testimonial.delete({
+      where: { id: parseInt(id) }
+    });
+    res.json({ success: true, message: 'Testimoni berhasil dihapus' });
+  } catch (error) {
+    res.status(500).json({ success: false, message: 'Gagal menghapus testimoni' });
+  }
+});
+
+// TAMBAH TESTIMONI KHUSUS ADMIN
+app.post('/api/testimonials/admin', async (req, res) => {
+  try {
+    // PASTIKAN 'photo' ADA DI DALAM KURUNG KURAWAL INI
+    const { name, role, quote, show, photo } = req.body; 
+    
+    const newTestimonial = await prisma.testimonial.create({
+      data: { 
+        name, 
+        role, 
+        quote, 
+        show: parseInt(show),
+        photo: photo || '' // PASTIKAN BARIS INI ADA UNTUK MENYIMPAN FOTO
+      }
+    });
+    res.json({ success: true, message: 'Testimoni berhasil ditambahkan', data: newTestimonial });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Gagal menambah testimoni' });
+  }
+});
+
+// EDIT / UPDATE TESTIMONI (Full Update)
+app.put('/api/testimonials/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, role, quote, show, photo } = req.body; // <-- photo ditambahkan di sini
+    
+    const updated = await prisma.testimonial.update({
+      where: { id: parseInt(id) },
+      data: { 
+        name, 
+        role, 
+        quote, 
+        show: parseInt(show),
+        photo: photo || null // <-- simpan photo ke database
+      }
+    });
+    res.json({ success: true, message: 'Testimoni diperbarui', data: updated });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Gagal mengedit testimoni' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);
 });
