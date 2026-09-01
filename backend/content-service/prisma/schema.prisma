@@ -114,15 +114,14 @@ model AuditLog {
 }
 
 model Extracurricular {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(200)
-  description String?
-  icon        String?   @default("star") @db.VarChar(50)
-  iconColor   String?   @default("#14b8a6") @map("icon_color") @db.VarChar(7)
-  sortOrder   Int?      @default(0) @map("sort_order")
-  show        Int?      @default(1)
-  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?  @db.Text
+  icon        String?  @db.Text
+  show        Int      @default(1)
+  sortOrder   Int      @default(0) @map("sort_order")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("extracurriculars")
 }
@@ -195,7 +194,7 @@ model MenuItem {
 model Teacher {
   id        Int       @id @default(autoincrement())
   name      String    @db.VarChar(200)
-  photo     String?   @db.Text
+  photo     String?
   role      String?   @db.VarChar(200)
   sortOrder Int?      @default(0) @map("sort_order")
   show      Int?      @default(1)
@@ -207,17 +206,16 @@ model Teacher {
 
 model Testimonial {
   id        Int       @id @default(autoincrement())
-  userId    Int?      @unique @map("user_id") 
   name      String
   photo     String?
-  role      String 
+  role      String
   quote     String
   sortOrder Int?      @default(0) @map("sort_order")
-  show      Int?      @default(0) 
+  show      Int?      @default(0)
   createdAt DateTime? @default(now()) @map("created_at")
   updatedAt DateTime? @default(now()) @updatedAt @map("updated_at")
-
-  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+  userId    Int?      @unique @map("user_id")
+  user      User?     @relation(fields: [userId], references: [id])
 
   @@map("testimonials")
 }

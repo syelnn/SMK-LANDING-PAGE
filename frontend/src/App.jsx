@@ -20,6 +20,7 @@ import ManagePengajar from './pages/ManagePengajar';
 import ProfilSekolah from './pages/ProfilSekolah';
 import Ekstrakurikuler from './pages/Ekstrakurikuler';
 import TestimonialPage from './pages/TestimonialPage';
+import FaqPage from "./pages/FaqPage";
 
 
 
@@ -376,12 +377,11 @@ const DashboardLayout = () => {
                 </div>
 
                 {/* 11. SECTION FAQ (Hanya Admin) */}
-                {userRole === 'admin' && (
-                  <div id="section-faq" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                    <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>FAQ</h2>
-                    <p style={{ color: '#64748b' }}>Pertanyaan yang sering diajukan.</p>
-                  </div>
-                )}
+{userRole === 'admin' && (
+  <div id="section-faq" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+    <FaqPage />
+  </div>
+)}
 
                 {/* 12. SECTION GALERI (Admin & Editor) */}
                 <div id="section-galeri" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>

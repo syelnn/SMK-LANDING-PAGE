@@ -11,12 +11,26 @@ import {
   Plus,
   Edit,
   Trash2,
-  X
+  X,
+  Upload,
+  Link as LinkIcon,
+  Lock
 } from 'lucide-react';
 
-const renderIcon = (iconName) => {
+const renderIcon = (iconValue) => {
   const props = { className: "ekskul-icon" };
-  switch (iconName) {
+
+  if (iconValue && (iconValue.startsWith('data:image') || iconValue.startsWith('http') || iconValue.startsWith('/uploads'))) {
+    return (
+      <img 
+        src={iconValue} 
+        alt="Logo Ekskul" 
+        style={{ width: '40px', height: '40px', objectFit: 'contain' }} 
+      />
+    );
+  }
+
+  switch (iconValue) {
     case 'Shield': return <Shield {...props} className="ekskul-icon text-blue" />;
     case 'Compass': return <Compass {...props} className="ekskul-icon text-green" />;
     case 'Users': return <Users {...props} className="ekskul-icon text-yellow" />;
@@ -30,6 +44,13 @@ const renderIcon = (iconName) => {
 };
 
 export default function Ekstrakurikuler() {
+  // Ambil data user & role dari localStorage (default ke 'viewer' jika kosong)
+  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const userRole = (currentUser.role || 'viewer').toLowerCase();
+
+  // Izinkan CRUD hanya jika role 'admin' atau 'editor'
+  const canAccessCRUD = userRole === 'admin' || userRole === 'editor';
+
   const [listEkskul, setListEkskul] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -37,12 +58,14 @@ export default function Ekstrakurikuler() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
   
+  const [logoType, setLogoType] = useState('url');
+  const [selectedFile, setSelectedFile] = useState(null);
+
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    icon: 'Shield',
-    iconColor: '#14b8a6',
-    sort_order: 0,
+    icon: '',
+    sort_order: 1,
     show: 1
   });
 
@@ -64,24 +87,67 @@ export default function Ekstrakurikuler() {
     fetchEkskul();
   }, []);
 
+  // Proteksi Tampilan jika Role adalah Viewer
+  if (!canAccessCRUD) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        alignItems: 'center', 
+        justifyContent: 'center', 
+        minHeight: '60vh', 
+        textAlign: 'center',
+        padding: '20px'
+      }}>
+        <div style={{ 
+          backgroundColor: '#fef2f2', 
+          padding: '20px', 
+          borderRadius: '50%', 
+          marginBottom: '16px',
+          color: '#ef4444' 
+        }}>
+          <Lock size={48} />
+        </div>
+        <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#0f172a', margin: '0 0 8px 0' }}>
+          Akses Ditolak
+        </h2>
+        <p style={{ color: '#64748b', maxWidth: '400px', fontSize: '14px', margin: 0 }}>
+          Halaman kelola Ekstrakurikuler hanya dapat diakses dan diubah oleh akun dengan hak akses <strong>Admin</strong> atau <strong>Editor</strong>.
+        </p>
+      </div>
+    );
+  }
+
   const handleOpenAdd = () => {
     setIsEditing(false);
-    setFormData({ title: '', description: '', icon: 'Shield', iconColor: '#14b8a6', sort_order: 0, show: 1 });
+    setLogoType('url');
+    setSelectedFile(null);
+    setFormData({ title: '', description: '', icon: '', sort_order: listEkskul.length + 1, show: 1 });
     setShowModal(true);
   };
 
   const handleOpenEdit = (item) => {
     setIsEditing(true);
     setCurrentId(item.id);
+    setSelectedFile(null);
+    setLogoType('url');
     setFormData({
       title: item.title,
       description: item.description || '',
-      icon: item.icon || 'Shield',
-      iconColor: item.iconColor || '#14b8a6',
-      sort_order: item.sortOrder || 0,
+      icon: item.icon || '',
+      sort_order: item.sort_order || item.sortOrder || 1,
       show: item.show !== undefined ? item.show : 1
     });
     setShowModal(true);
+  };
+
+  const convertFileToBase64 = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -93,11 +159,27 @@ export default function Ekstrakurikuler() {
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
+      let iconValue = formData.icon;
+
+      if (logoType === 'file' && selectedFile) {
+        iconValue = await convertFileToBase64(selectedFile);
+      }
+
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        icon: iconValue,
+        sort_order: Number(formData.sort_order),
+        sortOrder: Number(formData.sort_order),
+        show: Number(formData.show)
+      };
+
       const response = await fetch(url, {
         method: method,
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(payload)
       });
+
       const result = await response.json();
 
       if (result.success) {
@@ -137,7 +219,6 @@ export default function Ekstrakurikuler() {
 
   return (
     <div className="ekskul-container">
-      {/* Judul, Deskripsi di Tengah, dan Tombol di Pojok Kanan dalam 1 Wrapper */}
       <div style={{ maxWidth: '1100px', margin: '0 auto 30px auto', padding: '0 15px' }}>
         <div style={{ textAlign: 'center' }}>
           <span className="ekskul-badge">Ekstrakurikuler</span>
@@ -149,25 +230,30 @@ export default function Ekstrakurikuler() {
           </p>
         </div>
         
-        <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
-          <button onClick={handleOpenAdd} className="ekskul-add-btn">
-            <Plus size={16} /> Tambah Ekskul
-          </button>
-        </div>
+        {/* Tombol Tambah HANYA Tampil untuk Admin & Editor */}
+        {canAccessCRUD && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+            <button onClick={handleOpenAdd} className="ekskul-add-btn">
+              <Plus size={16} /> Tambah Ekskul
+            </button>
+          </div>
+        )}
       </div>
 
       <div className="ekskul-grid">
         {listEkskul.map((item) => (
           <div key={item.id} className="ekskul-card" style={{ position: 'relative' }}>
-            {/* Tombol Aksi Edit & Hapus */}
-            <div className="ekskul-card-actions">
-              <button onClick={() => handleOpenEdit(item)} className="ekskul-action-btn edit" title="Edit">
-                <Edit size={14} />
-              </button>
-              <button onClick={() => handleDelete(item.id)} className="ekskul-action-btn delete" title="Hapus">
-                <Trash2 size={14} />
-              </button>
-            </div>
+            {/* Action Buttons HANYA Tampil untuk Admin & Editor */}
+            {canAccessCRUD && (
+              <div className="ekskul-card-actions">
+                <button onClick={() => handleOpenEdit(item)} className="ekskul-action-btn edit" title="Edit">
+                  <Edit size={14} />
+                </button>
+                <button onClick={() => handleDelete(item.id)} className="ekskul-action-btn delete" title="Hapus">
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            )}
 
             <div>
               <div className="ekskul-icon-box">
@@ -184,8 +270,8 @@ export default function Ekstrakurikuler() {
         ))}
       </div>
 
-      {/* MODAL FORM */}
-      {showModal && (
+      {/* MODAL FORM (HANYA UNTUK ADMIN & EDITOR) */}
+      {showModal && canAccessCRUD && (
         <div className="ekskul-modal-overlay">
           <div className="ekskul-modal-box">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -198,6 +284,7 @@ export default function Ekstrakurikuler() {
             </div>
 
             <form onSubmit={handleSubmit}>
+              {/* Nama Ekskul */}
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>Nama Ekskul</label>
                 <input 
@@ -210,6 +297,7 @@ export default function Ekstrakurikuler() {
                 />
               </div>
 
+              {/* Deskripsi */}
               <div style={{ marginBottom: '12px' }}>
                 <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>Deskripsi</label>
                 <textarea 
@@ -220,34 +308,92 @@ export default function Ekstrakurikuler() {
                 ></textarea>
               </div>
 
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>Pilih Icon</label>
-                <select 
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', backgroundColor: '#fff' }}
-                  value={formData.icon} 
-                  onChange={(e) => setFormData({...formData, icon: e.target.value})}
-                >
-                  <option value="Shield">Shield (Paskibra)</option>
-                  <option value="Compass">Compass (Pramuka)</option>
-                  <option value="Users">Users (Pasustar)</option>
-                  <option value="Music">Music (Marching Band)</option>
-                  <option value="Swords">Swords (Silat)</option>
-                  <option value="Activity">Activity (Futsal)</option>
-                  <option value="Palette">Palette (Seni Tari)</option>
-                  <option value="Cpu">Cpu (E-sport)</option>
-                </select>
+              {/* Urutan Tampilan (Sort Order) - Hanya muncul saat Mode EDIT */}
+              {isEditing && (
+                <div style={{ marginBottom: '12px' }}>
+                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>
+                    Urutan Tampilan (Sort Order)
+                  </label>
+                  <input 
+                    type="number" 
+                    min="1"
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    value={formData.sort_order} 
+                    onChange={(e) => setFormData({...formData, sort_order: e.target.value})} 
+                    required 
+                  />
+                  <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>
+                    *Angka lebih kecil (misal: 1) akan muncul paling awal.
+                  </span>
+                </div>
+              )}
+
+              {/* Opsi Logo / Gambar */}
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>Logo Ekstrakurikuler</label>
+                
+                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setLogoType('url')}
+                    style={{
+                      flex: 1,
+                      padding: '6px 10px',
+                      fontSize: '12px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      backgroundColor: logoType === 'url' ? '#e0f2fe' : '#ffffff',
+                      color: logoType === 'url' ? '#0369a1' : '#475569',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <LinkIcon size={14} /> URL Gambar
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLogoType('file')}
+                    style={{
+                      flex: 1,
+                      padding: '6px 10px',
+                      fontSize: '12px',
+                      borderRadius: '6px',
+                      border: '1px solid #cbd5e1',
+                      backgroundColor: logoType === 'file' ? '#e0f2fe' : '#ffffff',
+                      color: logoType === 'file' ? '#0369a1' : '#475569',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <Upload size={14} /> Upload File
+                  </button>
+                </div>
+
+                {logoType === 'url' ? (
+                  <input 
+                    type="text" 
+                    placeholder="Masukkan URL Gambar (https://...)"
+                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    value={formData.icon} 
+                    onChange={(e) => setFormData({...formData, icon: e.target.value})} 
+                  />
+                ) : (
+                  <input 
+                    type="file" 
+                    accept="image/*"
+                    style={{ width: '100%', padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    onChange={(e) => setSelectedFile(e.target.files[0])} 
+                  />
+                )}
               </div>
 
-              <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>Urutan (Sort Order)</label>
-                <input 
-                  type="number" 
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
-                  value={formData.sort_order} 
-                  onChange={(e) => setFormData({...formData, sort_order: parseInt(e.target.value) || 0})} 
-                />
-              </div>
-
+              {/* Button Action */}
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                 <button 
                   type="button" 

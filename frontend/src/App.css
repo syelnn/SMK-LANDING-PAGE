@@ -1278,10 +1278,11 @@ body, html, #root {
 }
 
 .ekskul-title {
-  font-size: 26px;
-  font-weight: bold;
-  margin-top: 10px;
-  margin-bottom: 6px;
+  font-size: 33px;
+  font-weight: 800; 
+  letter-spacing: -0.02em; /* Membuat teks lebih padat serasi seperti gambar kedua */
+  margin-top: 12px;
+  margin-bottom: 8px;
   color: #0f172a;
 }
 
@@ -1832,3 +1833,202 @@ body, html, #root {
 }
 .modern-modal-footer .modern-btn-primary { background-color: #2563eb; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2); }
 .modern-modal-footer .modern-btn-primary:hover { background-color: #1d4ed8; }
+
+/* ================= FAQ SECTION STYLES ================= */
+.faq-section {
+  background-color: #f8fafc;
+  padding: 60px 20px;
+  font-family: system-ui, -apple-system, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.faq-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.faq-badge {
+  background-color: #e2e8f0;
+  color: #0f172a;
+  padding: 5px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.faq-header h2 {
+  font-size: 30px;
+  color: #0f172a;
+  margin: 12px 0 8px 0;
+  font-weight: 800;
+}
+
+.faq-header p {
+  color: #64748b;
+  font-size: 14px;
+  margin-bottom: 20px;
+}
+
+.faq-add-btn {
+  background: #2563eb;
+  color: #ffffff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+.faq-add-btn:hover {
+  background: #1d4ed8;
+  transform: translateY(-2px);
+}
+
+/* CONTAINER & RESPONSIVE CARDS */
+.faq-container {
+  width: 100%;
+  max-width: 750px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* EFEK HOVER & PERGERAKAN CARD */
+.faq-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+}
+
+/* Pergerakan saat kursor mengarah ke pertanyaan */
+.faq-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+  border-color: #cbd5e1;
+}
+
+.faq-card.active {
+  border-color: #2563eb;
+}
+
+.faq-question-btn {
+  width: 100%;
+  padding: 18px 24px;
+  background: transparent;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 16px;
+  font-weight: 600;
+  color: #0f172a;
+  text-align: left;
+  cursor: pointer;
+}
+
+.faq-answer-body {
+  padding: 0 24px 20px 24px;
+  color: #334155;
+  font-size: 14px;
+  line-height: 1.6;
+  border-top: 1px solid #f1f5f9;
+  margin-top: 5px;
+  padding-top: 15px;
+}
+
+/* CRUD ACTION BUTTONS */
+.faq-crud-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+  justify-content: flex-end;
+}
+
+.btn-edit, .btn-delete {
+  border: none;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: opacity 0.2s;
+}
+
+.btn-edit { background: #eff6ff; color: #2563eb; }
+.btn-delete { background: #fef2f2; color: #dc2626; }
+.btn-edit:hover, .btn-delete:hover { opacity: 0.8; }
+
+/* MODAL STYLES */
+.faq-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+  padding: 15px;
+}
+
+.faq-modal-card {
+  background: #ffffff;
+  width: 100%;
+  max-width: 500px;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1);
+}
+
+.faq-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.faq-modal-header h3 { margin: 0; color: #0f172a; }
+.faq-modal-header button { background: none; border: none; cursor: pointer; color: #64748b; }
+
+.form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 15px; }
+.form-group label { font-size: 13px; font-weight: 600; color: #334155; }
+.form-group input, .form-group textarea, .form-group select {
+  padding: 10px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  font-size: 14px;
+}
+
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+
+.faq-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn-cancel { background: #e2e8f0; color: #334155; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; }
+.btn-submit { background: #2563eb; color: #ffffff; border: none; padding: 10px 16px; border-radius: 6px; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+/* RESPONSIVE DESIGN (MEDIA QUERIES) */
+@media (max-width: 640px) {
+  .faq-header h2 { font-size: 22px; }
+  .faq-question-btn { font-size: 14px; padding: 14px 16px; }
+  .faq-answer-body { padding: 12px 16px 16px; font-size: 13px; }
+  .form-row { grid-template-columns: 1fr; }
+}

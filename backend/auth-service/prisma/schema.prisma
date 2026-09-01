@@ -3,24 +3,26 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
-  id        Int        @id @default(autoincrement())
-  username  String     @unique @db.VarChar(100)
-  email     String     @unique @db.VarChar(200)
-  password  String     @db.VarChar(255)
-  fullName  String?    @map("full_name") @db.VarChar(200)
-  avatar    String?    @db.VarChar(255)
-  role      String?    @default("editor") @db.VarChar(50)
-  isActive  Int?       @default(1) @map("is_active")
-  lastLogin DateTime?  @map("last_login") @db.Timestamp(6)
-  createdAt DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  auditLogs AuditLog[]
-  news      News[]     @relation("NewsAuthor")
+  id           Int          @id @default(autoincrement())
+  username     String       @unique @db.VarChar(100)
+  email        String       @unique @db.VarChar(200)
+  password     String       @db.VarChar(255)
+  fullName     String?      @map("full_name") @db.VarChar(200)
+  avatar       String?      @db.VarChar(255)
+  role         String?      @default("editor") @db.VarChar(50)
+  isActive     Int?         @default(1) @map("is_active")
+  lastLogin    DateTime?    @map("last_login") @db.Timestamp(6)
+  createdAt    DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime?    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  auditLogs    AuditLog[]
+  news         News[]       @relation("NewsAuthor")
+  testimonials Testimonial?
 
   @@map("users")
 }
@@ -193,7 +195,7 @@ model MenuItem {
 model Teacher {
   id        Int       @id @default(autoincrement())
   name      String    @db.VarChar(200)
-  photo     String?   @db.VarChar(255)
+  photo     String?
   role      String?   @db.VarChar(200)
   sortOrder Int?      @default(0) @map("sort_order")
   show      Int?      @default(1)
@@ -205,14 +207,16 @@ model Teacher {
 
 model Testimonial {
   id        Int       @id @default(autoincrement())
-  name      String    @db.VarChar(200)
-  photo     String?   @db.VarChar(255)
-  role      String?   @db.VarChar(200)
+  name      String
+  photo     String?
+  role      String
   quote     String
   sortOrder Int?      @default(0) @map("sort_order")
-  show      Int?      @default(1)
-  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  show      Int?      @default(0)
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at")
+  user_id   Int?      @unique
+  users     User?     @relation(fields: [user_id], references: [id])
 
   @@map("testimonials")
 }

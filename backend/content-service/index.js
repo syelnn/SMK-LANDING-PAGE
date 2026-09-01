@@ -191,11 +191,11 @@ app.delete('/api/teacher/:id', async (req, res) => {
   }
 });
 
-// Ambil semua data ekstrakurikuler (GET)
+
+// 1. Ambil semua data ekstrakurikuler (GET)
 app.get('/api/extracurriculars', async (req, res) => {
   try {
     const data = await prisma.extracurricular.findMany({
-      where: { show: 1 }, // Hanya ambil yang statusnya show = 1
       orderBy: { sortOrder: 'asc' }
     });
     res.json({ success: true, data });
@@ -205,56 +205,127 @@ app.get('/api/extracurriculars', async (req, res) => {
   }
 });
 
-// Tambah ekstrakurikuler baru (POST)
+// 2. Tambah ekstrakurikuler baru (POST)
 app.post('/api/extracurriculars', async (req, res) => {
   try {
-    const { title, description, icon, iconColor, sort_order, show } = req.body;
-    const newData = await prisma.extracurricular.create({
-      data: { 
-        title, 
-        description, 
-        icon, 
-        iconColor, 
-        sortOrder: Number(sort_order || 0), 
-        show: Number(show !== undefined ? show : 1) 
+    const { title, description, icon, show } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ success: false, message: 'Judul ekstrakurikuler wajib diisi' });
+    }
+
+    const totalCount = await prisma.extracurricular.count();
+
+    const newEkskul = await prisma.extracurricular.create({
+      data: {
+        title: title,
+        description: description || '',
+        icon: icon || '',
+        show: show !== undefined ? Number(show) : 1,
+        sortOrder: totalCount + 1
       }
     });
-    res.json({ success: true, message: 'Ekstrakurikuler berhasil ditambah', data: newData });
+
+    return res.status(201).json({ success: true, data: newEkskul });
   } catch (error) {
-    console.error("Error Tambah Ekstrakurikuler:", error);
-    res.status(500).json({ success: false, message: 'Gagal menambah ekstrakurikuler' });
+    console.error("Error Tambah Ekstrakurikuler Detail:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Gagal menambah ekstrakurikuler',
+      error: error.message 
+    });
   }
 });
 
-// Update ekstrakurikuler (PUT)
+// 3. Update ekstrakurikuler (PUT) - Dengan Auto-Shift Reorder
 app.put('/api/extracurriculars/:id', async (req, res) => {
   try {
-    const { title, description, icon, iconColor, sort_order, show } = req.body;
+    const { id } = req.params;
+    const { title, description, icon, show, sortOrder, sort_order } = req.body;
+
+    const targetId = Number(id);
+    const targetOrder = Number(sortOrder ?? sort_order);
+
+    // Ambil data lama
+    const currentItem = await prisma.extracurricular.findUnique({
+      where: { id: targetId }
+    });
+
+    if (!currentItem) {
+      return res.status(404).json({ success: false, message: 'Data tidak ditemukan' });
+    }
+
+    // Jika sortOrder diubah, lakukan penggeseran (re-order) otomatis
+    if (targetOrder && targetOrder !== currentItem.sortOrder) {
+      const oldOrder = currentItem.sortOrder;
+      const newOrder = targetOrder;
+
+      if (oldOrder < newOrder) {
+        // Turun posisi (misal: 2 -> 4), data di antaranya (3, 4) geser naik (-1)
+        await prisma.extracurricular.updateMany({
+          where: {
+            sortOrder: { gt: oldOrder, lte: newOrder },
+            id: { not: targetId }
+          },
+          data: { sortOrder: { decrement: 1 } }
+        });
+      } else {
+        // Naik posisi (misal: 4 -> 2), data di antaranya (2, 3) geser turun (+1)
+        await prisma.extracurricular.updateMany({
+          where: {
+            sortOrder: { gte: newOrder, lt: oldOrder },
+            id: { not: targetId }
+          },
+          data: { sortOrder: { increment: 1 } }
+        });
+      }
+    }
+
     const updated = await prisma.extracurricular.update({
-      where: { id: parseInt(req.params.id) },
-      data: { 
-        title, 
-        description, 
-        icon, 
-        iconColor, 
-        sortOrder: Number(sort_order), 
-        show: Number(show) 
+      where: { id: targetId },
+      data: {
+        title: title ?? currentItem.title,
+        description: description ?? currentItem.description,
+        icon: icon ?? currentItem.icon,
+        show: show !== undefined ? Number(show) : currentItem.show,
+        sortOrder: targetOrder || currentItem.sortOrder
       }
     });
-    res.json({ success: true, message: 'Ekstrakurikuler diupdate', data: updated });
+
+    return res.json({ success: true, data: updated });
   } catch (error) {
     console.error("Error Update Ekstrakurikuler:", error);
-    res.status(500).json({ success: false, message: 'Gagal update ekstrakurikuler' });
+    return res.status(500).json({ success: false, message: error.message });
   }
 });
 
-//  Hapus ekstrakurikuler (DELETE)
+// 4. Hapus ekstrakurikuler (DELETE) - Auto-reorder setelah hapus
 app.delete('/api/extracurriculars/:id', async (req, res) => {
   try {
-    await prisma.extracurricular.delete({ 
-      where: { id: parseInt(req.params.id) } 
+    const targetId = Number(req.params.id);
+
+    const targetItem = await prisma.extracurricular.findUnique({
+      where: { id: targetId }
     });
-    res.json({ success: true, message: 'Ekstrakurikuler dihapus' });
+
+    if (!targetItem) {
+      return res.status(404).json({ success: false, message: 'Data tidak ditemukan' });
+    }
+
+    // Hapus data
+    await prisma.extracurricular.delete({ 
+      where: { id: targetId } 
+    });
+
+    // Geser urutan di atasnya agar tidak berlubang
+    await prisma.extracurricular.updateMany({
+      where: {
+        sortOrder: { gt: targetItem.sortOrder }
+      },
+      data: { sortOrder: { decrement: 1 } }
+    });
+
+    res.json({ success: true, message: 'Ekstrakurikuler dihapus dan urutan diperbarui' });
   } catch (error) {
     console.error("Error Hapus Ekstrakurikuler:", error);
     res.status(500).json({ success: false, message: 'Gagal menghapus ekstrakurikuler' });
@@ -392,6 +463,154 @@ app.put('/api/testimonials/:id', async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ success: false, message: 'Gagal mengedit testimoni' });
+  }
+});
+
+
+// API FAQ (PERTANYAAN)
+
+// GET ALL FAQ (Disesuaikan agar Admin dapat melihat semua data)
+app.get('/api/faqs', async (req, res) => {
+  try {
+    const isAdmin = req.query.admin === 'true';
+    
+    // Jika admin, tampilkan semua. Jika publik, hanya yang show: 1
+    const whereCondition = isAdmin ? {} : { show: 1 };
+
+    const data = await prisma.faq.findMany({
+      where: whereCondition,
+      orderBy: { sortOrder: 'asc' } 
+    });
+
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Error Memuat FAQ:", error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data FAQ' });
+  }
+});
+
+
+// 2. Tambah FAQ baru (POST)
+app.post('/api/faqs', async (req, res) => {
+  try {
+    const { question, answer, category, show } = req.body;
+
+    if (!question || !answer) {
+      return res.status(400).json({ success: false, message: 'Pertanyaan dan jawaban wajib diisi' });
+    }
+
+    // Ambil total data untuk menentukan urutan terakhir
+    const totalCount = await prisma.faq.count();
+
+    const newFaq = await prisma.faq.create({
+      data: {
+        question: String(question),
+        answer: String(answer),
+        category: category ? String(category) : 'Umum',
+        show: show !== undefined ? Number(show) : 1,
+        sortOrder: totalCount + 1
+      }
+    });
+
+    return res.status(201).json({ success: true, data: newFaq, message: 'FAQ berhasil ditambahkan' });
+  } catch (error) {
+    // Menampilkan detail error Prisma di terminal VS Code backend
+    console.error("Error Detail Tambah FAQ:", error);
+    
+    return res.status(500).json({ 
+      success: false, 
+      message: 'Gagal menambah FAQ', 
+      error: error.message 
+    });
+  }
+});
+// 3. Update FAQ (PUT) - Mengikuti pola re-order Ekstrakurikuler Anda
+app.put('/api/faqs/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { question, answer, category, show, sortOrder, sort_order } = req.body;
+
+    const targetId = Number(id);
+    const targetOrder = Number(sortOrder ?? sort_order);
+
+    const currentItem = await prisma.faq.findUnique({
+      where: { id: targetId }
+    });
+
+    if (!currentItem) {
+      return res.status(404).json({ success: false, message: 'FAQ tidak ditemukan' });
+    }
+
+    // Auto-shift reorder jika posisi diubah
+    if (targetOrder && targetOrder !== currentItem.sortOrder) {
+      const oldOrder = currentItem.sortOrder;
+      const newOrder = targetOrder;
+
+      if (oldOrder < newOrder) {
+        await prisma.faq.updateMany({
+          where: {
+            sortOrder: { gt: oldOrder, lte: newOrder },
+            id: { not: targetId }
+          },
+          data: { sortOrder: { decrement: 1 } }
+        });
+      } else {
+        await prisma.faq.updateMany({
+          where: {
+            sortOrder: { gte: newOrder, lt: oldOrder },
+            id: { not: targetId }
+          },
+          data: { sortOrder: { increment: 1 } }
+        });
+      }
+    }
+
+    const updated = await prisma.faq.update({
+      where: { id: targetId },
+      data: {
+        question: question ?? currentItem.question,
+        answer: answer ?? currentItem.answer,
+        category: category ?? currentItem.category,
+        show: show !== undefined ? Number(show) : currentItem.show,
+        sortOrder: targetOrder || currentItem.sortOrder
+      }
+    });
+
+    return res.json({ success: true, data: updated, message: 'FAQ berhasil diperbarui' });
+  } catch (error) {
+    console.error("Error Update FAQ:", error);
+    return res.status(500).json({ success: false, message: 'Gagal mengedit FAQ' });
+  }
+});
+
+// 4. Hapus FAQ (DELETE) - Auto-reorder setelah hapus
+app.delete('/api/faqs/:id', async (req, res) => {
+  try {
+    const targetId = Number(req.params.id);
+
+    const targetItem = await prisma.faq.findUnique({
+      where: { id: targetId }
+    });
+
+    if (!targetItem) {
+      return res.status(404).json({ success: false, message: 'FAQ tidak ditemukan' });
+    }
+
+    await prisma.faq.delete({
+      where: { id: targetId }
+    });
+
+    await prisma.faq.updateMany({
+      where: {
+        sortOrder: { gt: targetItem.sortOrder }
+      },
+      data: { sortOrder: { decrement: 1 } }
+    });
+
+    res.json({ success: true, message: 'FAQ dihapus dan urutan diperbarui' });
+  } catch (error) {
+    console.error("Error Hapus FAQ:", error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus FAQ' });
   }
 });
 
