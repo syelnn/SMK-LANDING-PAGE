@@ -20,6 +20,7 @@ import ManagePengajar from './pages/ManagePengajar';
 import ProfilSekolah from './pages/ProfilSekolah';
 import Ekstrakurikuler from './pages/Ekstrakurikuler';
 import TestimonialPage from './pages/TestimonialPage';
+import Galeri from './pages/Galeri';
 import FaqPage from "./pages/FaqPage";
 
 
@@ -384,9 +385,8 @@ const DashboardLayout = () => {
 )}
 
                 {/* 12. SECTION GALERI (Admin & Editor) */}
-                <div id="section-galeri" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-                  <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>Galeri</h2>
-                  <p style={{ color: '#64748b' }}>Dokumentasi foto kegiatan sekolah.</p>
+                <div id="section-galeri" style={{ padding: '20px 0', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+                  <Galeri />
                 </div>
 
                 {/* 13. SECTION KONTAK & ALAMAT (Hanya Admin) */}

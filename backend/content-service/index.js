@@ -613,6 +613,81 @@ app.delete('/api/faqs/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Gagal menghapus FAQ' });
   }
 });
+// ==========================================
+// CRUD GALERI SEKOLAH
+// ==========================================
+
+// 1. GET - Tampilkan Semua Galeri
+app.get('/api/galleries', async (req, res) => {
+  try {
+    const galleries = await prisma.gallery.findMany({ // <-- Pakai prisma.gallery
+      orderBy: { sortOrder: 'asc' } // <-- Pakai sortOrder
+    });
+    res.json({ success: true, data: galleries });
+  } catch (error) {
+    console.error('Error GET Galleries:', error);
+    res.status(500).json({ success: false, message: 'Gagal mengambil data galeri' });
+  }
+});
+
+// 2. POST - Tambah Foto Baru
+app.post('/api/galleries', async (req, res) => {
+  try {
+    const { category, image, caption, is_featured, sort_order, show } = req.body;
+    const newGallery = await prisma.gallery.create({
+      data: {
+        category,
+        image,
+        caption,
+        isFeatured: Number(is_featured), // <-- Disesuaikan dengan skema
+        sortOrder: Number(sort_order),   // <-- Disesuaikan dengan skema
+        show: Number(show)
+      }
+    });
+    res.json({ success: true, message: 'Foto berhasil ditambahkan', data: newGallery });
+  } catch (error) {
+    console.error('Error POST Galleries:', error);
+    res.status(500).json({ success: false, message: 'Gagal menambah foto' });
+  }
+});
+
+// 3. PUT - Edit Foto
+app.put('/api/galleries/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { category, image, caption, is_featured, sort_order, show } = req.body;
+    
+    const updatedGallery = await prisma.gallery.update({
+      where: { id: Number(id) },
+      data: { 
+        category, 
+        image, 
+        caption, 
+        isFeatured: Number(is_featured), 
+        sortOrder: Number(sort_order), 
+        show: Number(show) 
+      }
+    });
+    res.json({ success: true, message: 'Foto berhasil diperbarui', data: updatedGallery });
+  } catch (error) {
+    console.error('Error PUT Galleries:', error);
+    res.status(500).json({ success: false, message: 'Gagal memperbarui foto' });
+  }
+});
+
+// 4. DELETE - Hapus Foto
+app.delete('/api/galleries/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.gallery.delete({
+      where: { id: Number(id) }
+    });
+    res.json({ success: true, message: 'Foto berhasil dihapus' });
+  } catch (error) {
+    console.error('Error DELETE Galleries:', error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus foto' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);

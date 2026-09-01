@@ -142,7 +142,7 @@ model Faq {
 model Gallery {
   id         Int       @id @default(autoincrement())
   category   String?   @db.VarChar(100)
-  image      String    @db.VarChar(255)
+  image      String    @db.Text // <--- UBAH BAGIAN INI
   caption    String?   @db.VarChar(255)
   isFeatured Int?      @default(0) @map("is_featured")
   sortOrder  Int?      @default(0) @map("sort_order")
