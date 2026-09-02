@@ -11,6 +11,7 @@ import {
 
 import './App.css';
 import ManageNews from './pages/ManageNews';
+import DetailManageNews from './pages/DetailManageNews';
 import ManageSettings from './pages/ManageSettings';
 import ManageUsers from './pages/ManageUsers';
 import ForgotPassword from './pages/ForgotPassword'; 
@@ -22,6 +23,7 @@ import Ekstrakurikuler from './pages/Ekstrakurikuler';
 import TestimonialPage from './pages/TestimonialPage';
 import Galeri from './pages/Galeri';
 import FaqPage from "./pages/FaqPage";
+import Footer from './pages/Footer';
 
 
 
@@ -343,11 +345,13 @@ const DashboardLayout = () => {
                   </div>
                 )}
 
-                {/* 5. SECTION BERITA & ARTIKEL (Admin & Editor) */}
-                <div id="section-berita" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <ManageNews />
-                </div>
-
+               
+               {/* 5. SECTION BERITA & ARTIKEL (Admin & Editor) */}
+               <div id="section-berita" style={{ padding: '60px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+                <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
+                  <ManageNews/>
+  </div>
+</div>
                 {/* 6. SECTION JURUSAN & PROGRAM (Admin & Editor) */}
                 <div id="section-jurusan" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
                   <ManageJurusanProgram />
@@ -389,13 +393,11 @@ const DashboardLayout = () => {
                   <Galeri />
                 </div>
 
-                {/* 13. SECTION KONTAK & ALAMAT (Hanya Admin) */}
-                {userRole === 'admin' ? (
-                  <div id="section-kontak" style={{ padding: '80px 40px 100px 40px', background: '#f8fafc', position: 'relative' }}>
-                    <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>Kontak & Alamat</h2>
-                    <p style={{ color: '#64748b', fontSize: '16px', lineHeight: '1.6' }}>
-                      Hubungi kami melalui alamat resmi atau saluran komunikasi yang tersedia.
-                    </p>
+               {/* 13. SECTION KONTAK & ALAMAT (Hanya Admin) */}
+{userRole === 'admin' ? (
+  <div id="section-kontak" style={{ background: '#0f172a', position: 'relative' }}>
+    {/* Panggil komponen Footer yang mengambil data dari API backend */}
+    <Footer />
 
                     {/* Tombol Scroll ke Atas (ChevronUp) di pojok kanan bawah */}
                     <div 
@@ -447,6 +449,7 @@ const DashboardLayout = () => {
             } />
 
             <Route path="kurikulum/:slug" element={<DetailKurikulum />} />
+            <Route path="berita/:slug" element={<DetailManageNews />} />
 
             <Route path="*" element={
               <div style={{ padding: '30px', background: '#fff', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', margin: '40px' }}>
@@ -470,6 +473,7 @@ function App() {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/lupa-password" element={<ForgotPassword />} />
+      
 
       <Route 
         path="/dashboard/*" 

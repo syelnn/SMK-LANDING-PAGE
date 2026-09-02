@@ -43,9 +43,9 @@ model News {
   tags            Json?
   title           String        @db.VarChar(255)
   slug            String        @unique @db.VarChar(255)
-  excerpt         String?
-  content         String?
-  image           String?       @db.VarChar(255)
+  excerpt         String?       @db.Text
+  content         String?       @db.Text
+  image           String?       @db.Text
   author          String?       @default("Admin") @db.VarChar(100)
   publishedAt     DateTime?     @map("published_at") @db.Timestamp(6)
   status          String?       @default("draft") @db.VarChar(50)
@@ -57,31 +57,14 @@ model News {
   updatedAt       DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   authorId        Int?          @map("author_id")
   authorUser      User?         @relation("NewsAuthor", fields: [authorId], references: [id], onUpdate: NoAction, map: "fk_news_author")
-  comments        NewsComment[]
+  
 
   @@index([publishedAt], map: "idx_news_published")
   @@index([status], map: "idx_news_status")
   @@map("news")
 }
 
-model NewsComment {
-  id         Int           @id @default(autoincrement())
-  newsId     Int           @map("news_id")
-  parentId   Int?          @map("parent_id")
-  name       String        @db.VarChar(200)
-  email      String?       @db.VarChar(200)
-  avatar     String?       @db.VarChar(255)
-  comment    String
-  isApproved Int?          @default(0) @map("is_approved")
-  createdAt  DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt  DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  news       News          @relation(fields: [newsId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_news_fk")
-  parent     NewsComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_parent_fk")
-  replies    NewsComment[] @relation("CommentReplies")
 
-  @@index([isApproved], map: "idx_comments_approved")
-  @@map("news_comments")
-}
 
 model Program {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -295,4 +278,24 @@ model ProgramUnggulanCustom {
   updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("program_unggulan_custom")
+}
+
+model FooterSetting {
+  id           Int      @id @default(autoincrement())
+  schoolName   String   @map("school_name")   // Nama SMK
+  description  String   @db.Text              // Teks singkat deskripsi di bawah nama SMK
+  address      String   @db.Text              // Teks alamat lengkap
+  phone        String                         // Nomor Telepon / WA
+  email        String                         // Email resmi sekolah
+  facebookUrl  String?  @map("facebook_url")  // Link akun Facebook
+  instagramUrl String?  @map("instagram_url") // Link akun Instagram
+  tiktokUrl    String?  @map("tiktok_url")    // Link akun TikTok
+  youtubeUrl   String?  @map("youtube_url")   // Link akun YouTube
+  twitterUrl   String?  @map("twitter_url")   // Link akun Twitter / X
+  mapsEmbedUrl String?  @db.Text @map("maps_embed_url") // Link embed Google Maps
+
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@map("footer_setting")
 }

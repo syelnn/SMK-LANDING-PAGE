@@ -689,6 +689,242 @@ app.delete('/api/galleries/:id', async (req, res) => {
   }
 });
 
+
+// ==========================
+// API BERITA (NEWS)
+// ==========================
+
+// 1. Ambil semua berita (GET)
+app.get('/api/news', async (req, res) => {
+  try {
+    const data = await prisma.news.findMany({
+      orderBy: { createdAt: 'desc' },
+      include: {
+        authorUser: {
+          select: { id: true, username: true, email: true }
+        }
+        // DIHAPUS: _count: { select: { comments: true } }
+      }
+    });
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error('Error GET News:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat berita' });
+  }
+});
+
+// 2. Ambil detail berita berdasarkan slug ATAU id (GET)
+app.get('/api/news/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    
+    // Cek apakah 'slug' berisi angka ID (seperti "2") atau teks slug
+    const isNumber = !isNaN(slug);
+    
+    const news = await prisma.news.findUnique({
+      where: isNumber ? { id: Number(slug) } : { slug: slug }
+      // DIHAPUS: include: { comments: { ... } }
+    });
+
+    if (!news) {
+      return res.status(404).json({ success: false, message: 'Berita tidak ditemukan' });
+    }
+
+    // Tambah jumlah pembaca (viewCount)
+    await prisma.news.update({
+      where: { id: news.id },
+      data: { viewCount: { increment: 1 } }
+    });
+
+    res.json({ success: true, data: news });
+  } catch (error) {
+    console.error('Error GET Detail News:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat detail berita' });
+  }
+});
+
+// 3. Tambah berita baru (POST)
+app.post('/api/news', async (req, res) => {
+  try {
+    const { 
+      title, 
+      slug, 
+      category, 
+      tags, 
+      excerpt, 
+      content, 
+      image, 
+      author, 
+      status, 
+      isFeatured, 
+      is_featured, 
+      authorId, 
+      author_id 
+    } = req.body;
+
+    const generatedSlug = slug || title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    // Cegah nilai NaN pada authorId
+    const rawAuthorId = authorId || author_id;
+    const parsedAuthorId = rawAuthorId && !isNaN(rawAuthorId) ? Number(rawAuthorId) : null;
+
+    const newNews = await prisma.news.create({
+      data: {
+        title: title || 'Tanpa Judul',
+        slug: generatedSlug || `berita-${Date.now()}`,
+        category: category || 'Umum',
+        tags: tags || null,
+        excerpt: excerpt || '',
+        content: content || '',
+        image: image || '',
+        author: author || 'Admin',
+        status: status || 'draft',
+        isFeatured: Number(isFeatured ?? is_featured ?? 0),
+        publishedAt: status === 'published' ? new Date() : null,
+        authorId: parsedAuthorId
+      }
+    });
+
+    res.status(201).json({ success: true, message: 'Berita berhasil ditambahkan', data: newNews });
+  } catch (error) {
+    console.error('Error POST News:', error);
+    res.status(500).json({ success: false, message: 'Gagal menambah berita', error: error.message });
+  }
+});
+
+// 4. Update / Edit berita (PUT)
+app.put('/api/news/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { 
+      title, 
+      slug, 
+      category, 
+      tags, 
+      excerpt, 
+      content, 
+      image, 
+      author, 
+      status, 
+      isFeatured, 
+      is_featured, 
+      authorId, 
+      author_id 
+    } = req.body;
+
+    // Otomatis perbarui slug sesuai judul jika tidak di-pass manual
+    const generatedSlug = slug || title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    const updated = await prisma.news.update({
+      where: { id: Number(id) },
+      data: {
+        title,
+        slug: generatedSlug,
+        category,
+        tags: tags || null,
+        excerpt,
+        content,
+        image,
+        author,
+        status,
+        isFeatured: Number(isFeatured ?? is_featured ?? 0),
+        publishedAt: status === 'published' ? new Date() : undefined,
+        authorId: (authorId || author_id) ? Number(authorId || author_id) : undefined
+      }
+    });
+
+    res.json({ success: true, message: 'Berita berhasil diperbarui', data: updated });
+  } catch (error) {
+    console.error('Error PUT News:', error);
+    res.status(500).json({ success: false, message: 'Gagal memperbarui berita', error: error.message });
+  }
+});
+
+// 5. Hapus berita (DELETE)
+app.delete('/api/news/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.news.delete({
+      where: { id: Number(id) }
+    });
+    res.json({ success: true, message: 'Berita berhasil dihapus' });
+  } catch (error) {
+    console.error('Error DELETE News:', error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus berita' });
+  }
+});
+
+
+// ==========================
+// API FOOTER SETTING
+// ==========================
+
+// 1. Ambil data footer (GET)
+app.get('/api/footer', async (req, res) => {
+  try {
+    const footer = await prisma.footerSetting.findFirst();
+    res.json({ success: true, data: footer });
+  } catch (error) {
+    console.error('Error GET Footer:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data footer' });
+  }
+});
+
+// 2. Update data footer (PUT)
+app.put('/api/footer', async (req, res) => {
+  try {
+    const { 
+      schoolName, 
+      description, 
+      address, 
+      phone, 
+      email, 
+      facebookUrl, 
+      instagramUrl, 
+      mapsEmbedUrl 
+    } = req.body;
+
+    const existingFooter = await prisma.footerSetting.findFirst();
+
+    let updatedFooter;
+    if (existingFooter) {
+      // Jika data sudah ada, lakukan update
+      updatedFooter = await prisma.footerSetting.update({
+        where: { id: existingFooter.id },
+        data: {
+          schoolName,
+          description,
+          address,
+          phone,
+          email,
+          facebookUrl,
+          instagramUrl,
+          mapsEmbedUrl
+        }
+      });
+    } else {
+      // Jika belum ada data sama sekali, buat data baru
+      updatedFooter = await prisma.footerSetting.create({
+        data: {
+          schoolName,
+          description,
+          address,
+          phone,
+          email,
+          facebookUrl,
+          instagramUrl,
+          mapsEmbedUrl
+        }
+      });
+    }
+
+    res.json({ success: true, message: 'Footer berhasil diperbarui', data: updatedFooter });
+  } catch (error) {
+    console.error('Error PUT Footer:', error);
+    res.status(500).json({ success: false, message: 'Gagal memperbarui footer' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);
 });

@@ -87,36 +87,7 @@ export default function Ekstrakurikuler() {
     fetchEkskul();
   }, []);
 
-  // Proteksi Tampilan jika Role adalah Viewer
-  if (!canAccessCRUD) {
-    return (
-      <div style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
-        alignItems: 'center', 
-        justifyContent: 'center', 
-        minHeight: '60vh', 
-        textAlign: 'center',
-        padding: '20px'
-      }}>
-        <div style={{ 
-          backgroundColor: '#fef2f2', 
-          padding: '20px', 
-          borderRadius: '50%', 
-          marginBottom: '16px',
-          color: '#ef4444' 
-        }}>
-          <Lock size={48} />
-        </div>
-        <h2 style={{ fontSize: '22px', fontWeight: 'bold', color: '#0f172a', margin: '0 0 8px 0' }}>
-          Akses Ditolak
-        </h2>
-        <p style={{ color: '#64748b', maxWidth: '400px', fontSize: '14px', margin: 0 }}>
-          Halaman kelola Ekstrakurikuler hanya dapat diakses dan diubah oleh akun dengan hak akses <strong>Admin</strong> atau <strong>Editor</strong>.
-        </p>
-      </div>
-    );
-  }
+  
 
   const handleOpenAdd = () => {
     setIsEditing(false);
