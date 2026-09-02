@@ -1,9 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail } from 'lucide-react';
+import { SettingsContext } from '../context/SettingsContext';
 
 const WebsiteFavicon = ({ url, title }) => {
   if (!url) return null;
+  // Mengambil favicon otomatis dari domain URL
   const faviconUrl = `https://www.google.com/s2/favicons?domain=${url}&sz=64`;
 
   return (
@@ -36,18 +38,17 @@ const WebsiteFavicon = ({ url, title }) => {
 };
 
 const Footer = () => {
-  const [footerData, setFooterData] = useState(null);
+  const { settings } = useContext(SettingsContext);
 
-  useEffect(() => {
-    fetch('http://localhost:5002/api/footer')
-      .then((res) => res.json())
-      .then((resData) => {
-        if (resData.success) {
-          setFooterData(resData.data);
-        }
-      })
-      .catch((err) => console.error('Gagal memuat footer data:', err));
-  }, []);
+  // Data dinamis dengan fallback teks aslinya
+  const schoolName = settings?.school_name || 'SMK NEGERI COMPRENG';
+  const schoolDesc = settings?.school_history || 'Mewujudkan lulusan yang berkarakter, kompeten, dan siap kerja di dunia industri.';
+  
+  // Validasi URL Peta: Jika link dari database valid (mengandung kata 'embed'), gunakan itu.
+  // Jika tidak valid atau kosong, paksa gunakan peta asli SMK Compreng agar tidak blank/zoom-out.
+  const mapUrl = settings?.contact_map_embed_url?.includes('embed') 
+    ? settings.contact_map_embed_url 
+    : "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3964.551322194605!2d107.8184518147699!3d-6.451582995332217!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e693b4a22b7b3b3%3A0x6b6b6b6b6b6b6b6b!2sSMK%20Negeri%20Compreng!5e0!3m2!1sen!2sid!4v1622543210000!5m2!1sen!2sid";
 
   return (
     <footer className="footer-container">
@@ -56,28 +57,19 @@ const Footer = () => {
         {/* KOLOM 1: NAMA SEKOLAH & SOSIAL MEDIA */}
         <div className="footer-column">
           <h3 className="footer-title-main">
-            {footerData?.schoolName || footerData?.school_name || 'SMK NEGERI COMPRENG'}
+            {schoolName}
           </h3>
           <p className="footer-desc">
-            {footerData?.description || 'Membangun generasi cerdas, berkarakter, dan berprestasi unggul di bidang keahlian vokasi.'}
+            {schoolDesc}
           </p>
 
           <div className="footer-socials" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {(footerData?.facebookUrl || footerData?.facebook_url) && (
-              <WebsiteFavicon url={footerData?.facebookUrl || footerData?.facebook_url} title="Facebook" />
-            )}
-            {(footerData?.instagramUrl || footerData?.instagram_url) && (
-              <WebsiteFavicon url={footerData?.instagramUrl || footerData?.instagram_url} title="Instagram" />
-            )}
-            {(footerData?.tiktokUrl || footerData?.tiktok_url) && (
-              <WebsiteFavicon url={footerData?.tiktokUrl || footerData?.tiktok_url} title="TikTok" />
-            )}
-            {(footerData?.youtubeUrl || footerData?.youtube_url) && (
-              <WebsiteFavicon url={footerData?.youtubeUrl || footerData?.youtube_url} title="YouTube" />
-            )}
-            {(footerData?.twitterUrl || footerData?.twitter_url) && (
-              <WebsiteFavicon url={footerData?.twitterUrl || footerData?.twitter_url} title="Twitter / X" />
-            )}
+            {/* Memaksa kelima ikon tetap muncul dengan URL default jika database kosong */}
+            <WebsiteFavicon url={settings?.social_facebook || 'https://facebook.com'} title="Facebook" />
+            <WebsiteFavicon url={settings?.social_instagram || 'https://instagram.com'} title="Instagram" />
+            <WebsiteFavicon url={settings?.social_tiktok || 'https://tiktok.com'} title="TikTok" />
+            <WebsiteFavicon url={settings?.social_youtube || 'https://youtube.com'} title="YouTube" />
+            <WebsiteFavicon url={settings?.social_twitter || 'https://x.com'} title="X / Twitter" />
           </div>
         </div>
 
@@ -103,24 +95,24 @@ const Footer = () => {
             <li className="footer-contact-item">
               <MapPin size={18} className="footer-icon" style={{ marginTop: '2px' }} />
               <a 
-                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(footerData?.address || 'SMK Negeri Compreng')}`}
+                href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(settings?.contact_address || 'SMK Negeri Compreng')}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 style={{ color: 'inherit', textDecoration: 'none' }}
               >
-                <span>{footerData?.address || 'Jl. Raya Compreng, Kabupaten Subang, Jawa Barat'}</span>
+                <span>{settings?.contact_address || 'Jl. Raya Compreng, Kecamatan Compreng, Kabupaten Subang, Jawa Barat 41258'}</span>
               </a>
             </li>
             <li className="footer-contact-item">
               <Phone size={18} className="footer-icon" />
-              <a href={`tel:${footerData?.phone}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                <span>{footerData?.phone || '(0260) 123456'}</span>
+              <a href={`tel:${settings?.contact_phone || '02607547733'}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                <span>{settings?.contact_phone || '0260 7547733'}</span>
               </a>
             </li>
             <li className="footer-contact-item">
               <Mail size={18} className="footer-icon" />
-              <a href={`mailto:${footerData?.email}`} style={{ color: 'inherit', textDecoration: 'none' }}>
-                <span>{footerData?.email || 'info@smkncompreng.sch.id'}</span>
+              <a href={`mailto:${settings?.contact_email || 'info@smkncompreng.sch.id'}`} style={{ color: 'inherit', textDecoration: 'none' }}>
+                <span>{settings?.contact_email || 'info@smkncompreng.sch.id'}</span>
               </a>
             </li>
           </ul>
@@ -130,22 +122,16 @@ const Footer = () => {
         <div className="footer-column">
           <h4 className="footer-title">Lokasi</h4>
           <div className="footer-map-box">
-            {(footerData?.mapsEmbedUrl || footerData?.maps_embed_url) ? (
-              <iframe
-                title="Peta Lokasi Sekolah"
-                src={footerData?.mapsEmbedUrl || footerData?.maps_embed_url}
-                width="100%"
-                height="100%"
-                style={{ border: 0 }}
-                allowFullScreen=""
-                loading="lazy"
-                referrerPolicy="no-referrer-when-downgrade"
-              ></iframe>
-            ) : (
-              <div className="footer-map-empty">
-                Peta Lokasi Belum Diatur
-              </div>
-            )}
+            <iframe
+              title="Peta Lokasi Sekolah"
+              src={mapUrl}
+              width="100%"
+              height="100%"
+              style={{ border: 0 }}
+              allowFullScreen=""
+              loading="lazy"
+              referrerPolicy="no-referrer-when-downgrade"
+            ></iframe>
           </div>
         </div>
 
@@ -153,7 +139,7 @@ const Footer = () => {
 
       {/* COPYRIGHT BOTTOM */}
       <div className="footer-copyright">
-        © {new Date().getFullYear()} {footerData?.schoolName || footerData?.school_name || 'SMK NEGERI COMPRENG'}. Seluruh Hak Cipta Dilindungi.
+        © {new Date().getFullYear()} {schoolName}. Seluruh Hak Cipta Dilindungi.
       </div>
     </footer>
   );
