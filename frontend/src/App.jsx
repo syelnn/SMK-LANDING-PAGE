@@ -74,7 +74,10 @@ const findTargetElement = (targetStr, urlStr) => {
   const cTarget = clean(targetStr);
   const cUrl = clean(urlStr);
 
+
   const aliases = {
+    'beranda': 'section-hero', 
+  'hero': 'section-hero',
     'pengaturan': 'section-settings',
     'settings': 'section-settings',
     'admin/settings': 'section-settings',
@@ -82,7 +85,7 @@ const findTargetElement = (targetStr, urlStr) => {
     'jurusan': 'section-jurusan',
     'ekstrakurikuler': 'section-ekskul',
     'ekskul': 'section-ekskul',
-    // Tambahkan alias profil di bawah ini:
+    
     'profil': 'section-profil',
     'profile': 'section-profil',
     'profil-sekolah': 'section-profil',
@@ -226,10 +229,14 @@ const handleMenuClick = (menu) => {
       }
     };
 
+    
+
     contentElement.addEventListener('scroll', handleScroll);
     handleScroll(); 
     return () => contentElement.removeEventListener('scroll', handleScroll);
   }, []);
+
+  
 
   //(Dinamis dari Backend Prisma + Fallback Default Menu):
   const defaultMenuItems = [
@@ -276,6 +283,23 @@ return {
       setDynamicNavs([]);
     });
 }, []);
+
+useEffect(() => {
+  const hash = window.location.hash;
+  if (hash) {
+    const cleanHash = hash.replace('#', '');
+    setTimeout(() => {
+      const targetEl = findTargetElement(cleanHash, cleanHash);
+      const contentElement = document.querySelector('.dashboard-content');
+      if (targetEl && contentElement) {
+        contentElement.scrollTo({
+          top: targetEl.offsetTop - 70,
+          behavior: 'smooth'
+        });
+      }
+    }, 300);
+  }
+}, [dynamicNavs]);
 
 useEffect(() => {
     const hash = window.location.hash;

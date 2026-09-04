@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { MapPin, Phone, Mail } from 'lucide-react';
 
 const WebsiteFavicon = ({ url, title }) => {
@@ -49,6 +48,33 @@ const Footer = () => {
       .catch((err) => console.error('Gagal memuat footer data:', err));
   }, []);
 
+  // Fungsi scroll yang memaksa berpindah section & scroll ke atas
+  // Fungsi scroll khusus Footer (tanpa ubah App.jsx)
+  const handleNavigate = (e, sectionId) => {
+    e.preventDefault();
+    
+    // 1. Update Hash di URL
+    window.history.pushState(null, '', `/dashboard#${sectionId}`);
+
+    // 2. Cari elemen dengan prefix 'section-' atau ID langsung
+    const targetId = sectionId.startsWith('section-') ? sectionId : `section-${sectionId}`;
+    const targetElement = document.getElementById(targetId) || document.getElementById(sectionId);
+    
+    // 3. Ambil kontainer scroll dashboard
+    const contentElement = document.querySelector('.dashboard-content');
+
+    if (targetElement && contentElement) {
+      // Scroll kontainer dashboard ke posisi section
+      contentElement.scrollTo({
+        top: targetElement.offsetTop - 70,
+        behavior: 'smooth'
+      });
+    } else if (contentElement) {
+      // Jika section tidak ditemukan, scroll ke paling atas kontainer
+      contentElement.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
   return (
     <footer className="footer-container">
       <div className="footer-content">
@@ -82,20 +108,21 @@ const Footer = () => {
         </div>
 
         {/* KOLOM 2: TAUTAN CEPAT */}
-        <div className="footer-column">
-          <h4 className="footer-title">Tautan Cepat</h4>
-          <ul className="footer-links-list">
-            <li><Link to="/">Dashboard</Link></li>
-            <li><Link to="/profil-sekolah">Profil Sekolah</Link></li>
-            <li><Link to="/jurusan">Jurusan</Link></li>
-            <li><Link to="/ekstrakurikuler">Ekstrakurikuler</Link></li>
-            <li><Link to="/pengajar">Tenaga Pengajar</Link></li>
-            <li><Link to="/berita">Berita & Artikel</Link></li>
-             <li><Link to="/galeri">Galeri</Link></li>
-            <li><Link to="/faq">FAQ</Link></li>
-           
-          </ul>
-        </div>
+<div className="footer-column">
+  <h4 className="footer-title">Tautan Cepat</h4>
+  <ul className="footer-links-list">
+    {/* Ubah 'beranda' menjadi 'hero' */}
+    <li><a href="/dashboard#hero" onClick={(e) => handleNavigate(e, 'hero')}>Dashboard</a></li>
+    <li><a href="/dashboard#profil" onClick={(e) => handleNavigate(e, 'profil')}>Profil Sekolah</a></li>
+    <li><a href="/dashboard#jurusan" onClick={(e) => handleNavigate(e, 'jurusan')}>Jurusan</a></li>
+    {/* Ubah 'ekstrakurikuler' menjadi 'ekskul' */}
+    <li><a href="/dashboard#ekskul" onClick={(e) => handleNavigate(e, 'ekskul')}>Ekstrakurikuler</a></li>
+    <li><a href="/dashboard#pengajar" onClick={(e) => handleNavigate(e, 'pengajar')}>Tenaga Pengajar</a></li>
+    <li><a href="/dashboard#berita" onClick={(e) => handleNavigate(e, 'berita')}>Berita & Artikel</a></li>
+    <li><a href="/dashboard#galeri" onClick={(e) => handleNavigate(e, 'galeri')}>Galeri</a></li>
+    <li><a href="/dashboard#faq" onClick={(e) => handleNavigate(e, 'faq')}>FAQ</a></li>
+  </ul>
+</div>
 
         {/* KOLOM 3: HUBUNGI KAMI */}
         <div className="footer-column">
