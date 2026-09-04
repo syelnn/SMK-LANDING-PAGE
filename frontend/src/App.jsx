@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react'; 
+import { useState, useEffect, useContext } from 'react';
+import { SettingsContext, SettingsProvider } from './context/SettingsContext';
 import { Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom';
 import Login from './Login';
 import Register from './Register';
@@ -25,8 +26,6 @@ import Galeri from './pages/Galeri';
 import FaqPage from "./pages/FaqPage";
 import Footer from './pages/Footer';
 import AchievementSection from './pages/AchievementSection';
-
-
 
 // Assets
 import logoSekolah from './assets/logo1.png'; 
@@ -128,10 +127,13 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   return children;
 };
 
-// 3. Tata Letak Dashboard Admin CMS (Single Page / Landing Page Scroll Lengkap)
+// 3. Tata Letak Dashboard Admin CMS
 const DashboardLayout = () => {
   const navigate = useNavigate();
   const userRole = localStorage.getItem('role');
+  
+  // MENGAMBIL DATA SETTINGS DARI CONTEXT
+  const { settings } = useContext(SettingsContext); 
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false); 
@@ -143,9 +145,7 @@ const DashboardLayout = () => {
     navigate('/login');
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
-  };
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
@@ -220,7 +220,6 @@ const handleMenuClick = (menu) => {
         if (element) {
           const top = element.offsetTop;
           const height = element.offsetHeight;
-
           if (scrollPosition >= top && scrollPosition < top + height) {
             setActiveSection(id);
             break;
@@ -323,13 +322,10 @@ useEffect(() => {
 
   return (
     <div className="dashboard-container">
+      {isMobileMenuOpen && <div className="sidebar-overlay" onClick={toggleMobileMenu}></div>}
 
-      {isMobileMenuOpen && (
-        <div className="sidebar-overlay" onClick={toggleMobileMenu}></div>
-      )}
-
-      {/* SIDEBAR NAVIGATION KIRI */}
       <div className={`dashboard-sidebar ${isMobileMenuOpen ? 'open' : ''} ${!isSidebarVisible ? 'collapsed' : ''}`}>
+        {/* Typo CSS sudah diperbaiki di sini: justifyContent */}
         <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <img 
@@ -339,16 +335,13 @@ useEffect(() => {
               onError={(e) => { e.target.style.display = 'none'; }} 
             />
             <div>
-              <h2 style={{ fontSize: '14px', margin: 0, fontWeight: '700', color: '#0f172a' }}>SMKN COMPRENG</h2>
+              <h2 style={{ fontSize: '14px', margin: 0, fontWeight: '700', color: '#0f172a' }}>
+                {settings.school_name || 'SMKN COMPRENG'}
+              </h2>
               <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>Role: <b>{userRole}</b></p>
             </div>
           </div>
-
-          <button 
-            className="sidebar-toggle-btn" 
-            onClick={toggleSidebar}
-            title="Tutup Sidebar"
-          >
+          <button className="sidebar-toggle-btn" onClick={toggleSidebar} title="Tutup Sidebar">
             <X size={20} />
           </button>
         </div>
@@ -383,41 +376,30 @@ useEffect(() => {
         </div>
 
         <div className="sidebar-footer">
-          <button onClick={handleLogout} className="logout-btn">
-            <LogOut size={18} /> Logout
-          </button>
+          <button onClick={handleLogout} className="logout-btn"><LogOut size={18} /> Logout</button>
         </div>
       </div>
 
-      {/* AREA KONTEN UTAMA */}
       <div className="dashboard-content" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', display: 'flex', flexDirection: 'column' }}>
-        
-        {/* TOP HEADER NAVBAR LENGKAP (STICKY DI ATAS) */}
         <header className="spmb-navbar-clean" style={{ position: 'sticky', top: 0, zIndex: 100, background: '#0f172a', flexShrink: 0 }}>
           <div className="spmb-brand">
             {!isSidebarVisible && (
-              <button 
-                className="topbar-toggle-btn" 
-                onClick={toggleSidebar}
-                title="Buka Sidebar"
-              >
+              <button className="topbar-toggle-btn" onClick={toggleSidebar} title="Buka Sidebar">
                 <Menu size={24} />
               </button>
             )}
-
             <img 
               src={logoSekolah} 
-              alt="Logo SMKN Compreng" 
+              alt="Logo" 
               className="spmb-logo-img"
               onError={(e) => { e.target.style.display = 'none'; }} 
             />
             <div className="spmb-brand-text">
-              <h2>SMK NEGERI COMPRENG</h2>
-              <span>The School of SESCO Models</span>
+              <h2>{settings.school_name || 'SMK NEGERI COMPRENG'}</h2>
+              <span>{settings.school_tagline || 'The School of SESCO Models'}</span>
             </div>
           </div>
 
-          {/* NAVBAR ATAS */}
           <nav className="spmb-nav-links-clean" style={{ overflowX: 'auto', display: 'flex', gap: '6px', whiteSpace: 'nowrap', padding: '5px 0', scrollbarWidth: 'none' }}>
             {allowedMenus.map((menu, idx) => (
               <button 
@@ -431,106 +413,72 @@ useEffect(() => {
           </nav>
         </header>
 
-        {/* CONTAINER ROUTES / SECTION KONTEN HALAMAN */}
         <div style={{ flex: 1 }}>
           <Routes>
             <Route index element={
               <div className="spmb-hero-wrapper">
-
-                {/* 1. SECTION DASHBOARD / HERO */}
                 <div 
-                  id="section-hero"
-                  className="spmb-hero-card"
+                  id="section-hero" 
+                  className="spmb-hero-card" 
                   style={{ 
                     backgroundImage: `url(${heroBg})`, 
-                    minHeight: 'calc(100vh - 65px)', /* Memastikan tingginya pas selayar penuh dikurangi tinggi navbar */
-                    height: 'calc(100vh - 65px)',  /* Mengunci tinggi agar tidak cingkrang */
-                    margin: 0, 
-                    borderRadius: 0,
-                    paddingBottom: '20px',
-                    boxSizing: 'border-box'
+                    minHeight: 'calc(100vh - 65px)', 
+                    height: 'calc(100vh - 65px)', 
+                    margin: 0, borderRadius: 0, paddingBottom: '20px', boxSizing: 'border-box' 
                   }}
                 >
+                  {/* Efek gelap dikembalikan murni ke CSS bawaan spmb-hero-overlay */}
                   <div className="spmb-hero-overlay"></div>
+                  
                   <div className="spmb-hero-content">
                     <div className="spmb-left-col">
                       <div className="spmb-badge-pill">
                         <span className="dot-pulse"></span>
-                        <span>Terakreditasi A · Kurikulum Merdeka</span>
+                        <span>{settings.school_accreditation || 'Terakreditasi A · Kurikulum Merdeka'}</span>
                       </div>
                       <h1 className="spmb-hero-title">
                         Selamat Datang di<br />
-                        <span className="highlight-text"> SMK NEGERI COMPRENG</span>
+                        <span className="highlight-text"> {settings.school_name || 'SMK NEGERI COMPRENG'}</span>
                       </h1>
                       <p className="spmb-hero-desc">
-                        Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.
-                      </p>
-                      
-                      {/* Tombol Jelajah & Hubungi Kami yang Dikembalikan */}
+                      {settings.hero_description || 'Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.'}
+                    </p>
                       <div className="spmb-btn-group">
-                        <button onClick={() => scrollToSection(userRole === 'admin' ? 'section-profil' : 'section-profil')} className="spmb-btn-primary">
+                        <button onClick={() => scrollToSection('section-profil')} className="spmb-btn-primary">
                           Jelajah Sekolah <ArrowRight size={18} />
                         </button>
-                        {userRole === 'admin' ? (
-                          <button onClick={() => scrollToSection('section-kontak')} className="spmb-btn-secondary">
-                            <Info size={18} /> Hubungi Kami
-                          </button>
-                        ) : (
-                          <button onClick={() => scrollToSection('section-jurusan')} className="spmb-btn-secondary">
-                            <Info size={18} /> Hubungi Kami
-                          </button>
-                        )}
+                        <button onClick={() => scrollToSection(userRole === 'admin' ? 'section-kontak' : 'section-jurusan')} className="spmb-btn-secondary">
+                          <Info size={18} /> Hubungi Kami
+                        </button>
                       </div>
-
                     </div>
                     <div className="spmb-right-col">
                       <div className="spmb-student-wrapper">
                         <img 
                           src={studentImg} 
-                          alt="Siswa SMK Negeri Compreng" 
-                          className="spmb-student-img"
+                          alt="Siswa" 
+                          className="spmb-student-img" 
                           onError={(e) => { e.target.style.display = 'none'; }} 
                         />
                       </div>
                     </div>
                   </div>
-
-                  {/* Tombol Panah Bawah (ChevronDown) di bagian hero */}
                   <div className="spmb-scroll-down" onClick={() => scrollToSection(userRole === 'admin' ? 'section-pengguna' : 'section-berita')} style={{ cursor: 'pointer', bottom: '10px' }}>
                     <ChevronDown size={22} color="#94a3b8" />
                   </div>
                 </div>
 
-                {/* 2. SECTION KELOLA PENGGUNA (Hanya Admin) */}
-                {userRole === 'admin' && (
-                  <div id="section-pengguna" className="fullpage-section" style={{ padding: '40px', background: '#ffffff' }}>
-                    <ManageUsers />
-                  </div>
-                )}
-
-                {/* 3. SECTION PROFIL SEKOLAH (Admin & Editor) */}
-<div id="section-profil" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-  <ProfilSekolah userRole={userRole} />
-</div>
-
-                {/* 4. SECTION PENGATURAN WEBSITE (Hanya Admin) */}
-                {userRole === 'admin' && (
-                  <div id="section-settings" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-                    <ManageSettings />
-                  </div>
-                )}
-
-               
-               {/* 5. SECTION BERITA & ARTIKEL (Admin & Editor) */}
-               <div id="section-berita" style={{ padding: '60px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                <div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}>
-                  <ManageNews/>
-  </div>
-</div>
-                {/* 6. SECTION JURUSAN & PROGRAM (Admin & Editor) */}
-                <div id="section-jurusan" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-                  <ManageJurusanProgram />
-                </div>
+                {userRole === 'admin' && <div id="section-pengguna" className="fullpage-section" style={{ padding: '40px', background: '#ffffff' }}><ManageUsers /></div>}
+                <div id="section-profil" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><ProfilSekolah userRole={userRole} /></div>
+                {userRole === 'admin' && <div id="section-settings" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><ManageSettings /></div>}
+                <div id="section-berita" style={{ padding: '60px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}><ManageNews/></div></div>
+                <div id="section-jurusan" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><ManageJurusanProgram /></div>
+                <div id="section-ekskul" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><Ekstrakurikuler /></div>
+                {userRole === 'admin' && <div id="section-pengajar" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><ManagePengajar /></div>}
+                <div id="section-prestasi" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>Karya & Prestasi</h2><p style={{ color: '#64748b' }}>Pencapaian dan karya siswa.</p></div>
+                <div id="section-testimoni" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><TestimonialPage /></div>
+                {userRole === 'admin' && <div id="section-faq" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><FaqPage /></div>}
+                <div id="section-galeri" style={{ padding: '20px 0', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><Galeri /></div>
                 
                 {/* 7. SECTION EKSTRAKURIKULER (Admin & Editor) */}
 <div id="section-ekskul" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
@@ -599,31 +547,14 @@ useEffect(() => {
                     </div>
                   </div>
                 ) : (
-                  /* Tombol Scroll ke Atas khusus Editor di section terakhir yang diakses (Galeri) */
                   <div style={{ padding: '40px', background: '#f8fafc', textAlign: 'right', position: 'relative' }}>
-                    <div 
-                      onClick={() => scrollToSection('section-hero')} 
-                      style={{
-                        display: 'inline-flex',
-                        background: '#0f172a',
-                        color: '#ffffff',
-                        padding: '10px 12px',
-                        borderRadius: '50%',
-                        cursor: 'pointer',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                      }}
-                      title="Kembali ke Atas"
-                    >
+                    <div onClick={() => scrollToSection('section-hero')} style={{ display: 'inline-flex', background: '#0f172a', color: '#ffffff', padding: '10px 12px', borderRadius: '50%', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)' }}>
                       <ChevronUp size={22} />
                     </div>
                   </div>
                 )}
-
               </div>
             } />
-
             <Route path="kurikulum/:slug" element={<DetailKurikulum />} />
            <Route path="berita/:slug" element={<DetailManageNews />} />
 
@@ -635,32 +566,45 @@ useEffect(() => {
             } />
           </Routes>
         </div>
-
       </div>
     </div>
   );
 };
 
-// 4. ROUTING UTAMA APLIKASI
-function App() {
+// 4. ROUTING UTAMA & PEMBUNGKUS KONTEKS
+const MainApp = () => {
+  const { isMaintenance, isLoading } = useContext(SettingsContext);
+
+  if (isLoading) return <div style={{ padding: '50px', textAlign: 'center' }}>Memuat Sistem...</div>;
+
+  if (isMaintenance) {
+    return (
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white' }}>
+        <h1 style={{ fontSize: '32px' }}>⚙️ Memperbarui Sistem</h1>
+        <p>Website sedang dalam proses sinkronisasi pengaturan baru. Mohon tunggu beberapa saat...</p>
+      </div>
+    );
+  }
+
   return (
     <Routes>
       <Route path="/" element={<PublicLayout />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/lupa-password" element={<ForgotPassword />} />
-      
-
-      <Route 
-        path="/dashboard/*" 
-        element={
-          <ProtectedRoute allowedRoles={['admin', 'editor']}>
-            <DashboardLayout />
-          </ProtectedRoute>
-        } 
-      />
+      <Route path="/dashboard/*" element={
+        <ProtectedRoute allowedRoles={['admin', 'editor']}>
+          <DashboardLayout />
+        </ProtectedRoute>
+      } />
     </Routes>
   );
-}
+};
 
-export default App;
+export default function App() {
+  return (
+    <SettingsProvider>
+      <MainApp />
+    </SettingsProvider>
+  );
+}
