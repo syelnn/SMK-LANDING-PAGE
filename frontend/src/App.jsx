@@ -6,7 +6,7 @@ import {
   Users, School, Newspaper, BookOpen, Activity, 
   GraduationCap, Trophy, MessageSquare, HelpCircle, 
   Image as ImageIcon, MapPin, LogOut, LayoutDashboard, Settings,
-  Menu, X, ArrowRight, Info, ChevronDown, ChevronUp
+  Menu, X, ArrowRight, Info, ChevronDown, ChevronUp, Download 
 } from 'lucide-react';
 
 import './App.css';
@@ -24,13 +24,80 @@ import TestimonialPage from './pages/TestimonialPage';
 import Galeri from './pages/Galeri';
 import FaqPage from "./pages/FaqPage";
 import Footer from './pages/Footer';
+import AchievementSection from './pages/AchievementSection';
 
 
 
 // Assets
 import logoSekolah from './assets/logo1.png'; 
 import heroBg from './assets/latar.webp'; 
-import studentImg from './assets/hero.png'; 
+import studentImg from './assets/hero.png';
+
+const ICON_MAP = {
+  dashboard: <LayoutDashboard size={18} />,
+  users: <Users size={18} />,
+  school: <School size={18} />,
+  building: <School size={18} />, // Ditambahkan
+  settings: <Settings size={18} />,
+  news: <Newspaper size={18} />,
+  newspaper: <Newspaper size={18} />, // Ditambahkan
+  jurusan: <BookOpen size={18} />,
+  'book-open': <BookOpen size={18} />, // Ditambahkan
+  ekskul: <Activity size={18} />,
+  activity: <Activity size={18} />, // Ditambahkan
+  pengajar: <GraduationCap size={18} />,
+  prestasi: <Trophy size={18} />,
+  award: <Trophy size={18} />, // Ditambahkan
+  testimoni: <MessageSquare size={18} />,
+  'message-square': <MessageSquare size={18} />, // Ditambahkan
+  faq: <HelpCircle size={18} />,
+  'help-circle': <HelpCircle size={18} />, // Ditambahkan
+  galeri: <ImageIcon size={18} />,
+  image: <ImageIcon size={18} />, // Ditambahkan
+  kontak: <MapPin size={18} />,
+  'map-pin': <MapPin size={18} />, // Ditambahkan
+  download: <Download size={18} /> // Ditambahkan
+};
+
+const findTargetElement = (targetStr, urlStr) => {
+  if (!targetStr && !urlStr) return null;
+  
+  // Pembersih teks: buang path/URL berawalan /dashboard# atau #
+  const clean = (str) => {
+    if (!str) return '';
+    return str
+      .replace(/.*#/, '')        // mengambil teks setelah tanda #
+      .replace(/^section-/, '')  // membuang prefiks section- jika ada
+      .trim();
+  };
+
+  const cTarget = clean(targetStr);
+  const cUrl = clean(urlStr);
+
+  const aliases = {
+    'pengaturan': 'section-settings',
+    'settings': 'section-settings',
+    'admin/settings': 'section-settings',
+    'program': 'section-jurusan',
+    'jurusan': 'section-jurusan',
+    'ekstrakurikuler': 'section-ekskul',
+    'ekskul': 'section-ekskul',
+    // Tambahkan alias profil di bawah ini:
+    'profil': 'section-profil',
+    'profile': 'section-profil',
+    'profil-sekolah': 'section-profil',
+    'profil_sekolah': 'section-profil',
+  };
+
+  return (
+    document.getElementById(`section-${cTarget}`) ||
+    document.getElementById(cTarget) ||
+    document.getElementById(aliases[cTarget]) ||
+    document.getElementById(`section-${cUrl}`) ||
+    document.getElementById(cUrl) ||
+    document.getElementById(aliases[cUrl])
+  );
+};
 
 // 1. Tata Letak Publik
 const PublicLayout = () => (
@@ -66,7 +133,7 @@ const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false); 
   const [activeSection, setActiveSection] = useState('section-hero');
-
+  
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
@@ -79,23 +146,48 @@ const DashboardLayout = () => {
 
   const toggleSidebar = () => {
     setIsSidebarVisible(!isSidebarVisible);
+
   };
 
-  // Fungsi untuk Smooth Scroll ke section tertentu
-  const scrollToSection = (sectionId) => {
-    const contentElement = document.querySelector('.dashboard-content');
-    const element = document.getElementById(sectionId);
+  // Tambahkan fungsi ini di dalam DashboardLayout (di atas handleMenuClick)
+const scrollToSection = (targetStr) => {
+  const targetEl = findTargetElement(targetStr, targetStr);
+  const contentElement = document.querySelector('.dashboard-content');
+  if (targetEl && contentElement) {
+    contentElement.scrollTo({
+      top: targetEl.offsetTop - 70,
+      behavior: 'smooth'
+    });
+  }
+};
 
-    if (contentElement && element) {
-      const topPos = element.offsetTop;
-      contentElement.scrollTo({
-        top: topPos - 70, 
-        behavior: 'smooth'
-      });
-    }
-  };
+const handleMenuClick = (menu) => {
+  setIsMobileMenuOpen(false);
 
+  // 1. Prioritaskan cari elemen DOM di halaman saat ini dulu
+  const targetEl = findTargetElement(menu.target, menu.url);
+  const contentElement = document.querySelector('.dashboard-content');
+
+  if (targetEl && contentElement) {
+    contentElement.scrollTo({
+      top: targetEl.offsetTop - 70, 
+      behavior: 'smooth'
+    });
+
+    // Update URL di browser tanpa reload halaman
+    const cleanId = targetEl.id.replace(/^section-/, '');
+    window.history.pushState(null, '', `/dashboard#${cleanId}`);
+    setActiveSection(targetEl.id);
+    return; // Stop di sini jika elemen ditemukan & berhasil di-scroll
+  }
+
+  // 2. Jika elemen TIDAK ada di halaman ini (misal menu halaman lain), baru jalankan navigate
+  if (menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'))) {
+    navigate(menu.url);
+  }
+};
   // Mendeteksi posisi scroll
+ 
   useEffect(() => {
     const contentElement = document.querySelector('.dashboard-content');
     if (!contentElement) return;
@@ -104,11 +196,21 @@ const DashboardLayout = () => {
       'section-hero', 'section-pengguna', 'section-profil', 
       'section-settings', 'section-berita', 'section-jurusan', 
       'section-ekskul', 'section-pengajar', 'section-prestasi', 
-      'section-testimoni', 'section-faq', 'section-galeri', 'section-kontak'
+      'section-testimoni', 'section-galeri', 'section-faq', 'section-kontak', 'section-download'
     ];
 
     const handleScroll = () => {
-      const scrollPosition = contentElement.scrollTop + 200; 
+      // 1. Cek jika scroll sudah mencapai batas paling bawah (Kontak & Alamat)
+      const isAtBottom = 
+        contentElement.scrollTop + contentElement.clientHeight >= contentElement.scrollHeight - 50;
+
+      if (isAtBottom) {
+        setActiveSection('section-kontak');
+        return;
+      }
+
+      // 2. Perhitungan scroll normal untuk section lainnya
+      const scrollPosition = contentElement.scrollTop + 120; 
 
       for (const id of sectionIds) {
         const element = document.getElementById(id);
@@ -129,24 +231,71 @@ const DashboardLayout = () => {
     return () => contentElement.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // DAFTAR MENU DENGAN PEMBATASAN ROLE (ADMIN & EDITOR)
-  const menuItems = [
-    { title: 'Dashboard', icon: <LayoutDashboard size={18} />, target: 'section-hero', roles: ['admin', 'editor'] },
-    { title: 'Kelola Pengguna', icon: <Users size={18} />, target: 'section-pengguna', roles: ['admin'] },
-    { title: 'Profil Sekolah', icon: <School size={18} />, target: 'section-profil', roles: ['admin', 'editor'] },
-    { title: 'Pengaturan Website', icon: <Settings size={18} />, target: 'section-settings', roles: ['admin'] },
-    { title: 'Berita & Artikel', icon: <Newspaper size={18} />, target: 'section-berita', roles: ['admin', 'editor'] },
-    { title: 'Jurusan & Program', icon: <BookOpen size={18} />, target: 'section-jurusan', roles: ['admin', 'editor'] },
-    { title: 'Ekstrakurikuler', icon: <Activity size={18} />, target: 'section-ekskul', roles: ['admin', 'editor'] },
-    { title: 'Tenaga Pengajar', icon: <GraduationCap size={18} />, target: 'section-pengajar', roles: ['admin'] },
-    { title: 'Karya & Prestasi', icon: <Trophy size={18} />, target: 'section-prestasi', roles: ['admin', 'editor'] },
-    { title: 'Testimoni', icon: <MessageSquare size={18} />, target: 'section-testimoni', roles: ['admin', 'editor'] },
-    { title: 'FAQ', icon: <HelpCircle size={18} />, target: 'section-faq', roles: ['admin'] },
-    { title: 'Galeri', icon: <ImageIcon size={18} />, target: 'section-galeri', roles: ['admin', 'editor'] },
-    { title: 'Kontak & Alamat', icon: <MapPin size={18} />, target: 'section-kontak', roles: ['admin'] },
+  //(Dinamis dari Backend Prisma + Fallback Default Menu):
+  const defaultMenuItems = [
+    { title: 'Dashboard', iconKey: 'dashboard', target: 'section-hero', roles: ['admin', 'editor'] },
+    { title: 'Kelola Pengguna', iconKey: 'users', target: 'section-pengguna', roles: ['admin'] },
+    { title: 'Profil Sekolah', iconKey: 'school', target: 'section-profil', roles: ['admin', 'editor'] },
+    { title: 'Pengaturan Website', iconKey: 'settings', target: 'section-settings', roles: ['admin'] },
+    { title: 'Berita & Artikel', iconKey: 'news', target: 'section-berita', roles: ['admin', 'editor'] },
+    { title: 'Jurusan & Program', iconKey: 'jurusan', target: 'section-jurusan', roles: ['admin', 'editor'] },
+    { title: 'Ekstrakurikuler', iconKey: 'ekskul', target: 'section-ekskul', roles: ['admin', 'editor'] },
+    { title: 'Tenaga Pengajar', iconKey: 'pengajar', target: 'section-pengajar', roles: ['admin'] },
+    { title: 'Karya & Prestasi', iconKey: 'prestasi', target: 'section-prestasi', roles: ['admin', 'editor'] },
+    { title: 'Testimoni', iconKey: 'testimoni', target: 'section-testimoni', roles: ['admin', 'editor'] },
+    { title: 'Galeri', iconKey: 'galeri', target: 'section-galeri', roles: ['admin', 'editor'] },
+    { title: 'FAQ', iconKey: 'faq', target: 'section-faq', roles: ['admin'] },
+    
+    { title: 'Kontak & Alamat', iconKey: 'kontak', target: 'section-kontak', roles: ['admin'] },
   ];
 
-  const allowedMenus = menuItems.filter(item => item.roles.includes(userRole));
+  const [dynamicNavs, setDynamicNavs] = useState([]);
+
+  useEffect(() => {
+  fetch('http://localhost:5002/api/menu-items')
+    .then((res) => res.json())
+    .then((resData) => {
+      if (resData.success && resData.data && resData.data.length > 0) {
+        const mapped = resData.data.map(m => {
+          const rawTarget = m.path || m.url || m.sectionKey || m.target || 'section-hero';
+          const cleanTarget = rawTarget.replace(/.*#/, '').replace(/^section-/, '').trim();
+
+return {
+  title: m.title,
+  iconKey: m.icon || 'dashboard',
+  type: m.type, 
+  url: m.url,
+  target: cleanTarget ? `section-${cleanTarget}` : 'section-hero',
+  roles: ['admin', 'editor']
+};
+        });
+        setDynamicNavs(mapped);
+      }
+    })
+    .catch(() => {
+      setDynamicNavs([]);
+    });
+}, []);
+
+useEffect(() => {
+    const hash = window.location.hash;
+    if (hash) {
+      const cleanHash = hash.replace('#', '');
+      setTimeout(() => {
+        const targetEl = findTargetElement(cleanHash, cleanHash);
+        const contentElement = document.querySelector('.dashboard-content');
+        if (targetEl && contentElement) {
+          contentElement.scrollTo({
+            top: targetEl.offsetTop - 70,
+            behavior: 'smooth'
+          });
+        }
+      }, 300);
+    }
+  }, [dynamicNavs]);
+
+  const activeMenuList = dynamicNavs.length > 0 ? dynamicNavs : defaultMenuItems;
+  const allowedMenus = activeMenuList.filter(item => item.roles ? item.roles.includes(userRole) : true);
 
   return (
     <div className="dashboard-container">
@@ -187,7 +336,7 @@ const DashboardLayout = () => {
               return (
                 <li key={index}>
                   <button 
-                    onClick={() => { scrollToSection(menu.target); setIsMobileMenuOpen(false); }}
+                    onClick={() => handleMenuClick(menu)}
                     className={`sidebar-link ${isActive ? 'active' : ''}`}
                     style={{ 
                       background: isActive ? '#eff6ff' : 'transparent', 
@@ -198,7 +347,9 @@ const DashboardLayout = () => {
                       padding: '10px 15px', borderRadius: '8px', transition: 'all 0.2s'
                     }}
                   >
-                    <span style={{ color: isActive ? '#2563eb' : '#64748b' }}>{menu.icon}</span>
+                   <span style={{ color: isActive ? '#2563eb' : '#64748b' }}>
+  {ICON_MAP[menu.iconKey] || <LayoutDashboard size={18} />}
+</span>
                     <span style={{ fontSize: '14px' }}>{menu.title}</span>
                   </button>
                 </li>
@@ -247,7 +398,7 @@ const DashboardLayout = () => {
             {allowedMenus.map((menu, idx) => (
               <button 
                 key={idx}
-                onClick={() => scrollToSection(menu.target)} 
+                onClick={() => handleMenuClick(menu)} 
                 className={`nav-clean-item ${activeSection === menu.target ? 'active' : ''}`}
               >
                 {menu.title}
@@ -370,15 +521,21 @@ const DashboardLayout = () => {
                   </div>
                 )}
 
-                {/* 9. SECTION KARYA & PRESTASI (Admin & Editor) */}
-                <div id="section-prestasi" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-                  <h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>Karya & Prestasi</h2>
-                  <p style={{ color: '#64748b' }}>Pencapaian dan karya siswa.</p>
-                </div>
+               {/* 9. SECTION KARYA & PRESTASI (Admin & Editor) */}
+<div id="section-prestasi" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
+  <AchievementSection />
+</div>
 
                 {/* 10. SECTION TESTIMONI (Admin & Editor) */}
                 <div id="section-testimoni" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
                   <TestimonialPage />
+                </div>
+
+                
+
+                {/* 12. SECTION GALERI (Admin & Editor) */}
+                <div id="section-galeri" style={{ padding: '20px 0', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+                  <Galeri />
                 </div>
 
                 {/* 11. SECTION FAQ (Hanya Admin) */}
@@ -387,11 +544,6 @@ const DashboardLayout = () => {
     <FaqPage />
   </div>
 )}
-
-                {/* 12. SECTION GALERI (Admin & Editor) */}
-                <div id="section-galeri" style={{ padding: '20px 0', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
-                  <Galeri />
-                </div>
 
                {/* 13. SECTION KONTAK & ALAMAT (Hanya Admin) */}
 {userRole === 'admin' ? (
@@ -449,7 +601,7 @@ const DashboardLayout = () => {
             } />
 
             <Route path="kurikulum/:slug" element={<DetailKurikulum />} />
-            <Route path="berita/:slug" element={<DetailManageNews />} />
+           <Route path="berita/:slug" element={<DetailManageNews />} />
 
             <Route path="*" element={
               <div style={{ padding: '30px', background: '#fff', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', margin: '40px' }}>

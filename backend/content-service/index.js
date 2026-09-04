@@ -925,6 +925,295 @@ app.put('/api/footer', async (req, res) => {
   }
 });
 
+// ==========================================
+// API MENU ITEMS (Untuk Navigasi Dashboard)
+// ==========================================
+
+// 1. GET - Ambil Semua Menu Navigasi
+app.get('/api/menu-items', async (req, res) => {
+  try {
+    const menuItems = await prisma.menuItem.findMany({
+      orderBy: { sortOrder: 'asc' },
+      include: { page: true } // Mengambil relasi halaman jika ada (pageId)
+    });
+    res.json({ success: true, data: menuItems });
+  } catch (error) {
+    console.error('Error GET Menu Items:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat menu' });
+  }
+});
+
+// 2. POST - Tambah Menu Baru
+app.post('/api/menu-items', async (req, res) => {
+  try {
+    const { parent_id, parentId, title, url, target, icon, section_key, sectionKey, sort_order, sortOrder, status, type, page_id, pageId } = req.body;
+    
+    const newMenu = await prisma.menuItem.create({
+      data: {
+        parentId: parentId || parent_id ? Number(parentId || parent_id) : null,
+        title,
+        url: url || '#',
+        target: target || '_self',
+        icon: icon || null,
+        sectionKey: sectionKey || section_key || null,
+        sortOrder: sortOrder || sort_order ? Number(sortOrder || sort_order) : 0,
+        status: status || 'active',
+        type: type || 'custom',
+        pageId: pageId || page_id ? Number(pageId || page_id) : null
+      }
+    });
+    res.status(201).json({ success: true, message: 'Menu berhasil ditambahkan', data: newMenu });
+  } catch (error) {
+    console.error('Error POST Menu Item:', error);
+    res.status(500).json({ success: false, message: 'Gagal menambah menu' });
+  }
+});
+
+
+// ==========================================
+// API MENU ITEMS (Untuk Navigasi & Sidebar)
+// ==========================================
+
+// 1. GET - Ambil Semua Menu Item (Aktif & Terurut)
+app.get('/api/menu-items', async (req, res) => {
+  try {
+    const menuItems = await prisma.menuItem.findMany({
+      where: { status: 1 },
+      orderBy: { sortOrder: 'asc' },
+      include: { page: true }
+    });
+    res.json({ success: true, data: menuItems });
+  } catch (error) {
+    console.error('Error GET Menu Items:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat menu' });
+  }
+});
+
+// 2. POST - Tambah Menu Item Baru
+app.post('/api/menu-items', async (req, res) => {
+  try {
+    const { title, url, target, icon, sectionKey, sortOrder, status, type, pageId, parentId } = req.body;
+
+    const newMenuItem = await prisma.menuItem.create({
+      data: {
+        title,
+        url: url || null,
+        target: target || '_self',
+        icon: icon || 'dashboard',
+        sectionKey: sectionKey || null,
+        sortOrder: sortOrder ? Number(sortOrder) : 0,
+        status: status !== undefined ? Number(status) : 1,
+        type: type || 'section',
+        pageId: pageId ? Number(pageId) : null,
+        parentId: parentId ? Number(parentId) : null
+      }
+    });
+
+    res.status(201).json({ success: true, message: 'Menu berhasil ditambahkan', data: newMenuItem });
+  } catch (error) {
+    console.error('Error POST Menu Item:', error);
+    res.status(500).json({ success: false, message: 'Gagal menambah menu' });
+  }
+});
+
+// 3. PUT - Update Menu Item
+app.put('/api/menu-items/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, url, target, icon, sectionKey, sortOrder, status, type, pageId, parentId } = req.body;
+
+    const updatedMenuItem = await prisma.menuItem.update({
+      where: { id: Number(id) },
+      data: {
+        title,
+        url,
+        target,
+        icon,
+        sectionKey,
+        sortOrder: sortOrder !== undefined ? Number(sortOrder) : undefined,
+        status: status !== undefined ? Number(status) : undefined,
+        type,
+        pageId: pageId ? Number(pageId) : null,
+        parentId: parentId ? Number(parentId) : null
+      }
+    });
+
+    res.json({ success: true, message: 'Menu berhasil diupdate', data: updatedMenuItem });
+  } catch (error) {
+    console.error('Error PUT Menu Item:', error);
+    res.status(500).json({ success: false, message: 'Gagal mengedit menu' });
+  }
+});
+
+// 4. DELETE - Hapus Menu Item
+app.delete('/api/menu-items/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    await prisma.menuItem.delete({ where: { id: Number(id) } });
+    res.json({ success: true, message: 'Menu berhasil dihapus' });
+  } catch (error) {
+    console.error('Error DELETE Menu Item:', error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus menu' });
+  }
+});
+
+
+
+// API KARYA PRESTASI
+// GET: Ambil semua data achievements (Karya & Prestasi)
+app.get('/api/achievements', async (req, res) => {
+  try {
+    const data = await prisma.achievements.findMany({
+      where: {
+        show: 1,
+      },
+      orderBy: [
+        { sort_order: 'asc' },
+        { id: 'desc' },
+      ],
+    });
+
+    res.json({
+      success: true,
+      data: data,
+    });
+  } catch (error) {
+    console.error('Error fetching achievements:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal mengambil data karya dan prestasi',
+      error: error.message,
+    });
+  }
+});
+
+// Middleware agar Express bisa membaca JSON dari request body
+app.use(express.json());
+
+// POST: Tambah Prestasi Baru
+app.post('/api/achievements', async (req, res) => {
+  try {
+    const { student_name, class_name, achievement, level, year, photo, sort_order } = req.body;
+
+    const newAchievement = await prisma.achievements.create({
+      data: {
+        student_name: String(student_name),
+        class_name: String(class_name),
+        achievement: String(achievement),
+        level: String(level || 'Nasional'),
+        year: parseInt(year, 10) || new Date().getFullYear(),
+        photo: photo ? String(photo) : null, // <= TAMBAHKAN FIELD PHOTO DI SINI
+        show: 1,
+        sort_order: parseInt(sort_order, 10) || 0
+      },
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Berhasil menambahkan data prestasi',
+      data: newAchievement,
+    });
+  } catch (error) {
+    console.error('Error POST /api/achievements:', error);
+    return res.status(500).json({
+      success: false,
+      message: 'Gagal menambahkan data prestasi',
+      error: error.message,
+    });
+  }
+});
+
+// PUT: Update data achievement
+app.put('/api/achievements/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { student_name, class_name, achievement, level, year, sort_order, photo } = req.body;
+
+    const targetId = parseInt(id, 10);
+    const newOrder = parseInt(sort_order, 10) || 1;
+
+    const currentItem = await prisma.achievements.findUnique({
+      where: { id: targetId },
+    });
+
+    if (!currentItem) {
+      return res.status(404).json({ success: false, message: 'Data tidak ditemukan' });
+    }
+
+    const oldOrder = currentItem.sort_order || 1;
+
+    if (oldOrder !== newOrder) {
+      if (oldOrder < newOrder) {
+        await prisma.achievements.updateMany({
+          where: {
+            sort_order: { gt: oldOrder, lte: newOrder },
+            id: { not: targetId },
+          },
+          data: { sort_order: { decrement: 1 } },
+        });
+      } else {
+        await prisma.achievements.updateMany({
+          where: {
+            sort_order: { gte: newOrder, lt: oldOrder },
+            id: { not: targetId },
+          },
+          data: { sort_order: { increment: 1 } },
+        });
+      }
+    }
+
+    // Update data utama
+    const updatedAchievement = await prisma.achievements.update({
+      where: { id: targetId },
+      data: {
+        student_name: String(student_name),
+        class_name: String(class_name),
+        achievement: String(achievement),
+        level: String(level),
+        year: parseInt(year, 10),
+        photo: photo ? String(photo) : null, // <= TAMBAHKAN FIELD PHOTO DI SINI
+        sort_order: newOrder,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: 'Berhasil memperbarui data prestasi',
+      data: updatedAchievement,
+    });
+  } catch (error) {
+    console.error('Error PUT achievement:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal memperbarui data prestasi',
+      error: error.message,
+    });
+  }
+});
+
+// DELETE: Hapus data achievement berdasarkan ID
+app.delete('/api/achievements/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await prisma.achievements.delete({
+      where: { id: parseInt(id) },
+    });
+
+    res.json({
+      success: true,
+      message: 'Berhasil menghapus data prestasi',
+    });
+  } catch (error) {
+    console.error('Error deleting achievement:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Gagal menghapus data prestasi',
+      error: error.message,
+    });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);
 });

@@ -91,8 +91,9 @@ const Footer = () => {
             <li><Link to="/ekstrakurikuler">Ekstrakurikuler</Link></li>
             <li><Link to="/pengajar">Tenaga Pengajar</Link></li>
             <li><Link to="/berita">Berita & Artikel</Link></li>
+             <li><Link to="/galeri">Galeri</Link></li>
             <li><Link to="/faq">FAQ</Link></li>
-            <li><Link to="/galeri">Galeri</Link></li>
+           
           </ul>
         </div>
 

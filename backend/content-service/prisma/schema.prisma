@@ -140,14 +140,16 @@ model Page {
   id              Int        @id @default(autoincrement())
   title           String     @db.VarChar(255)
   slug            String     @unique @db.VarChar(255)
-  content         String?
-  excerpt         String?
+  content         String?    @db.Text
+  excerpt         String?    @db.Text
   image           String?    @db.VarChar(255)
   status          String?    @default("draft") @db.VarChar(50)
   metaTitle       String?    @map("meta_title") @db.VarChar(255)
   metaDescription String?    @map("meta_description") @db.VarChar(255)
-  createdAt       DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt       DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+
+  // Relasi ke MenuItem
   menuItems       MenuItem[]
 
   @@map("pages")
@@ -156,20 +158,24 @@ model Page {
 model MenuItem {
   id         Int        @id @default(autoincrement())
   parentId   Int?       @map("parent_id")
-  title      String     @db.VarChar(200)
-  url        String     @db.VarChar(255)
+  pageId     Int?       @map("page_id")
+  title      String     @db.VarChar(255)
+  url        String?    @db.VarChar(255)
   target     String?    @default("_self") @db.VarChar(50)
-  icon       String?    @db.VarChar(50)
-  sectionKey String?    @map("section_key") @db.VarChar(100)
+  icon       String?    @db.VarChar(255)
+  sectionKey String?    @map("section_key") @db.VarChar(255)
   sortOrder  Int?       @default(0) @map("sort_order")
   status     Int?       @default(1)
-  type       String?    @default("custom") @db.VarChar(20)
-  pageId     Int?       @map("page_id")
-  createdAt  DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt  DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  page       Page?      @relation(fields: [pageId], references: [id], onUpdate: NoAction, map: "menu_items_page_fk")
-  parent     MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "menu_items_parent_fk")
+  type       String?    @default("section") @db.VarChar(50)
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+
+  // Relasi Self-Referencing (Parent - Child Submenu)
+  parent     MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children   MenuItem[] @relation("MenuHierarchy")
+
+  // Relasi ke Page
+  page       Page?      @relation(fields: [pageId], references: [id], onDelete: SetNull)
 
   @@map("menu_items")
 }
@@ -242,7 +248,7 @@ model Download {
 model achievements {
   id           Int       @id @default(autoincrement())
   student_name String    @db.VarChar(200)
-  photo        String?   @db.VarChar(255)
+  photo        String?  @db.Text
   class_name   String?   @db.VarChar(100)
   achievement  String    @db.VarChar(255)
   level        String?   @default("Kota") @db.VarChar(50)

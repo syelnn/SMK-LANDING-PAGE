@@ -5,6 +5,17 @@ import { Plus, Edit3, Trash2, X, ArrowRight, Loader2, CheckCircle, AlertCircle }
 
 const API_URL = 'http://localhost:5002/api/news';
 
+// Helper untuk membuat slug
+const createSlug = (text) => {
+  if (!text) return 'detail';
+  return text
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/[\s_-]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+};
+
 export default function ManageNews() {
   const [newsList, setNewsList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -12,20 +23,19 @@ export default function ManageNews() {
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
 
-  // State Notifikasi Pop-up (Toast)
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
-
   const [imageMode, setImageMode] = useState('file');
+
   const [formData, setFormData] = useState({
     title: '',
     category: 'Kegiatan',
     excerpt: '',
     content: '',
     image: '',
-    author: 'Administrator',
+    author: 'Admin',
+    status: 'published',
   });
 
-  // Fungsi memicu Notifikasi Pop-up
   const showNotification = (message, type = 'success') => {
     setToast({ show: true, message, type });
     setTimeout(() => {
@@ -37,7 +47,7 @@ export default function ManageNews() {
     try {
       setLoading(true);
       const res = await axios.get(API_URL);
-      const dataArray = Array.isArray(res.data) ? res.data : res.data?.data || [];
+      const dataArray = res.data?.data || (Array.isArray(res.data) ? res.data : []);
       setNewsList(dataArray);
     } catch (err) {
       console.error('Error fetching news:', err);
@@ -65,6 +75,7 @@ export default function ManageNews() {
     }
   };
 
+  // KETIKA TOMBOL "TAMBAH BERITA" DIKLIK:
   const handleOpenAdd = () => {
     setEditId(null);
     setImageMode('file');
@@ -74,7 +85,8 @@ export default function ManageNews() {
       excerpt: '',
       content: '',
       image: '',
-      author: 'Administrator',
+      author: 'Admin',
+      status: 'published',
     });
     setShowModal(true);
   };
@@ -82,13 +94,15 @@ export default function ManageNews() {
   const handleOpenEdit = (item) => {
     setEditId(item.id);
     setImageMode(item.image?.startsWith('data:') || !item.image?.startsWith('http') ? 'file' : 'url');
+
     setFormData({
       title: item.title || '',
       category: item.category || 'Kegiatan',
       excerpt: item.excerpt || '',
       content: item.content || '',
       image: item.image || '',
-      author: item.author || 'Administrator',
+      author: 'Admin',
+      status: item.status || 'published',
     });
     setShowModal(true);
   };
@@ -96,12 +110,18 @@ export default function ManageNews() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitting(true);
+
+    const payload = {
+      ...formData,
+      author: 'Admin',
+    };
+
     try {
       if (editId) {
-        await axios.put(`${API_URL}/${editId}`, formData);
+        await axios.put(`${API_URL}/${editId}`, payload);
         showNotification('Berita berhasil diperbarui!', 'success');
       } else {
-        await axios.post(API_URL, formData);
+        await axios.post(API_URL, payload);
         showNotification('Berita berhasil ditambahkan!', 'success');
       }
       setShowModal(false);
@@ -129,7 +149,6 @@ export default function ManageNews() {
 
   return (
     <div className="admin-container" style={{ position: 'relative' }}>
-      {/* --- POP-UP NOTIFIKASI TOAST --- */}
       {toast.show && (
         <div className={`toast-notification ${toast.type}`}>
           {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
@@ -137,7 +156,6 @@ export default function ManageNews() {
         </div>
       )}
 
-      {/* Header Admin */}
       <div className="admin-news-header">
         <h1 className="admin-title">Berita & Kegiatan</h1>
         <p className="admin-subtitle">
@@ -150,7 +168,6 @@ export default function ManageNews() {
         </div>
       </div>
 
-      {/* Grid Card Preview */}
       <div className="news-grid" style={{ marginBottom: '40px' }}>
         {newsList.map((item) => (
           <div key={item.id} className="news-card">
@@ -169,7 +186,16 @@ export default function ManageNews() {
               <p className="news-excerpt">
                 {item.excerpt || item.content?.substring(0, 90) + '...'}
               </p>
-              <Link to={`/dashboard/berita/${item.slug}`} className="news-readmore">
+              
+              <Link 
+                to={`/dashboard/berita/${item.slug || createSlug(item.title) || item.id}`} 
+                className="news-readmore"
+                style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.scrollTo(0, 0);
+                }}
+              >
                 Baca Selengkapnya <ArrowRight size={16} />
               </Link>
             </div>
@@ -177,7 +203,6 @@ export default function ManageNews() {
         ))}
       </div>
 
-      {/* Table CRUD */}
       <div className="table-wrapper">
         <table className="custom-table">
           <thead>
@@ -222,7 +247,9 @@ export default function ManageNews() {
                   <td>
                     <span className="badge badge-category">{item.category || 'Berita'}</span>
                   </td>
-                  <td>{item.author || 'Admin'}</td>
+                  <td>
+                    Admin
+                  </td>
                   <td>
                     <div className="action-buttons">
                       <button
@@ -248,11 +275,9 @@ export default function ManageNews() {
         </table>
       </div>
 
-      {/* --- MODAL FORM --- */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content-wrapper">
-            {/* Modal Header */}
             <div className="modal-header-custom">
               <h2>{editId ? 'Edit Berita' : 'Tambah Berita Baru'}</h2>
               <button 
@@ -264,11 +289,8 @@ export default function ManageNews() {
               </button>
             </div>
 
-            {/* Modal Body */}
             <form onSubmit={handleSubmit} className="modal-form">
               <div className="modal-body-custom">
-                
-                {/* Judul */}
                 <div>
                   <label className="form-label">Judul Berita *</label>
                   <input
@@ -282,7 +304,6 @@ export default function ManageNews() {
                   />
                 </div>
 
-                {/* 2 Kolom: Kategori & Penulis */}
                 <div className="form-grid-2">
                   <div>
                     <label className="form-label">Kategori</label>
@@ -296,6 +317,7 @@ export default function ManageNews() {
                       <option value="Prestasi">Prestasi</option>
                       <option value="Pengumuman">Pengumuman</option>
                       <option value="Artikel">Artikel</option>
+                      <option value="Pendidikan">Pendidikan</option>
                     </select>
                   </div>
                   <div>
@@ -304,13 +326,13 @@ export default function ManageNews() {
                       type="text"
                       name="author"
                       className="form-input"
-                      value={formData.author}
-                      onChange={handleChange}
+                      value="Admin"
+                      readOnly
+                      style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed', color: '#374151', fontWeight: '500' }}
                     />
                   </div>
                 </div>
 
-                {/* Gambar Banner */}
                 <div>
                   <label className="form-label">Gambar Banner</label>
                   <div className="image-mode-wrapper">
@@ -349,7 +371,6 @@ export default function ManageNews() {
                   )}
                 </div>
 
-                {/* Excerpt */}
                 <div>
                   <label className="form-label">Ringkasan (Excerpt)</label>
                   <input
@@ -362,7 +383,6 @@ export default function ManageNews() {
                   />
                 </div>
 
-                {/* Content */}
                 <div>
                   <label className="form-label">Isi Berita Lengkap *</label>
                   <textarea
@@ -375,10 +395,8 @@ export default function ManageNews() {
                     onChange={handleChange}
                   ></textarea>
                 </div>
-
               </div>
 
-              {/* Modal Footer */}
               <div className="modal-footer-custom">
                 <button
                   type="button"
