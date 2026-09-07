@@ -1,4 +1,4 @@
-import { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { SettingsContext, SettingsProvider } from './context/SettingsContext';
 import { Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom';
 import Login from './Login';
@@ -27,7 +27,6 @@ import FaqPage from "./pages/FaqPage";
 import Footer from './pages/Footer';
 import AchievementSection from './pages/AchievementSection';
 
-// Assets
 import logoSekolah from './assets/logo1.png'; 
 import heroBg from './assets/latar.webp'; 
 import studentImg from './assets/hero.png';
@@ -36,47 +35,41 @@ const ICON_MAP = {
   dashboard: <LayoutDashboard size={18} />,
   users: <Users size={18} />,
   school: <School size={18} />,
-  building: <School size={18} />, // Ditambahkan
+  building: <School size={18} />,
   settings: <Settings size={18} />,
   news: <Newspaper size={18} />,
-  newspaper: <Newspaper size={18} />, // Ditambahkan
+  newspaper: <Newspaper size={18} />,
   jurusan: <BookOpen size={18} />,
-  'book-open': <BookOpen size={18} />, // Ditambahkan
+  'book-open': <BookOpen size={18} />,
   ekskul: <Activity size={18} />,
-  activity: <Activity size={18} />, // Ditambahkan
+  activity: <Activity size={18} />,
   pengajar: <GraduationCap size={18} />,
   prestasi: <Trophy size={18} />,
-  award: <Trophy size={18} />, // Ditambahkan
+  award: <Trophy size={18} />,
   testimoni: <MessageSquare size={18} />,
-  'message-square': <MessageSquare size={18} />, // Ditambahkan
+  'message-square': <MessageSquare size={18} />,
   faq: <HelpCircle size={18} />,
-  'help-circle': <HelpCircle size={18} />, // Ditambahkan
+  'help-circle': <HelpCircle size={18} />,
   galeri: <ImageIcon size={18} />,
-  image: <ImageIcon size={18} />, // Ditambahkan
+  image: <ImageIcon size={18} />,
   kontak: <MapPin size={18} />,
-  'map-pin': <MapPin size={18} />, // Ditambahkan
-  download: <Download size={18} /> // Ditambahkan
+  'map-pin': <MapPin size={18} />,
+  download: <Download size={18} />
 };
 
 const findTargetElement = (targetStr, urlStr) => {
   if (!targetStr && !urlStr) return null;
-  
-  // Pembersih teks: buang path/URL berawalan /dashboard# atau #
   const clean = (str) => {
     if (!str) return '';
-    return str
-      .replace(/.*#/, '')        // mengambil teks setelah tanda #
-      .replace(/^section-/, '')  // membuang prefiks section- jika ada
-      .trim();
+    return str.replace(/.*#/, '').replace(/^section-/, '').trim();
   };
 
   const cTarget = clean(targetStr);
   const cUrl = clean(urlStr);
 
-
   const aliases = {
     'beranda': 'section-hero', 
-  'hero': 'section-hero',
+    'hero': 'section-hero',
     'pengaturan': 'section-settings',
     'settings': 'section-settings',
     'admin/settings': 'section-settings',
@@ -84,7 +77,6 @@ const findTargetElement = (targetStr, urlStr) => {
     'jurusan': 'section-jurusan',
     'ekstrakurikuler': 'section-ekskul',
     'ekskul': 'section-ekskul',
-    
     'profil': 'section-profil',
     'profile': 'section-profil',
     'profil-sekolah': 'section-profil',
@@ -101,7 +93,6 @@ const findTargetElement = (targetStr, urlStr) => {
   );
 };
 
-// 1. Tata Letak Publik
 const PublicLayout = () => (
   <div style={{ padding: '50px', textAlign: 'center', fontFamily: 'sans-serif' }}>
     <h1>Landing Page SMKN COMPRENG</h1>
@@ -110,87 +101,118 @@ const PublicLayout = () => (
   </div>
 );
 
-// 2. Satpam Frontend (Pengecek Hak Akses Role)
+// Murni sinkronasi dari token JWT untuk Protected Route
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
-  const userRole = localStorage.getItem('role');
+  let userRole = (localStorage.getItem('role') || '').toUpperCase();
+  
+  if (token) {
+    try {
+      const payload = JSON.parse(window.atob(token.split('.')[1]));
+      if (payload.role) userRole = payload.role.toUpperCase();
+    } catch (e) {
+      console.error("Gagal membaca token");
+    }
+  }
 
   if (!token) return <Navigate to="/login" replace />;
-  if (allowedRoles && !allowedRoles.includes(userRole)) return (
+  
+  const safeAllowedRoles = allowedRoles ? allowedRoles.map(r => r.toUpperCase()) : null;
+
+  if (safeAllowedRoles && !safeAllowedRoles.includes(userRole)) return (
     <div style={{ padding: '50px', textAlign: 'center', color: 'red', fontFamily: 'sans-serif' }}>
       <h2>Akses Ditolak!</h2>
       <p>Role "{userRole}" tidak memiliki izin untuk melihat halaman ini.</p>
       <NavLink to="/login">Kembali ke Login</NavLink>
     </div>
   );
-
   return children;
 };
 
-// 3. Tata Letak Dashboard Admin CMS
 const DashboardLayout = () => {
   const navigate = useNavigate();
-  const userRole = localStorage.getItem('role');
-  
-  // MENGAMBIL DATA SETTINGS DARI CONTEXT
   const { settings } = useContext(SettingsContext); 
+
+  // ==========================================
+  // SINKRONISASI MUTLAK DARI JSON WEB TOKEN
+  // ==========================================
+  const getExactUser = () => {
+    const token = localStorage.getItem('token');
+    
+    let exactName = localStorage.getItem('username') || localStorage.getItem('name') || 'Unknown User';
+    let exactEmail = localStorage.getItem('email') || '-';
+    let exactRole = localStorage.getItem('role') || 'VIEWER';
+
+    if (token) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+        const decoded = JSON.parse(jsonPayload);
+
+        exactName = decoded.name || decoded.nama_lengkap || decoded.full_name || decoded.username || exactName;
+        exactEmail = decoded.email || exactEmail;
+        exactRole = decoded.role || exactRole;
+      } catch (e) {
+        console.error("Token JWT tidak valid atau rusak", e);
+      }
+    }
+
+    return {
+      name: exactName,
+      email: exactEmail,
+      role: exactRole.toUpperCase(),
+      initial: exactName.charAt(0).toUpperCase()
+    };
+  };
+
+  const userData = getExactUser();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false); 
   const [activeSection, setActiveSection] = useState('section-hero');
   
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('role');
+    localStorage.clear();
     navigate('/login');
   };
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
 
-  const toggleSidebar = () => {
-    setIsSidebarVisible(!isSidebarVisible);
-
+  const scrollToSection = (targetStr) => {
+    const targetEl = findTargetElement(targetStr, targetStr);
+    const contentElement = document.querySelector('.dashboard-content');
+    if (targetEl && contentElement) {
+      contentElement.scrollTo({
+        top: targetEl.offsetTop - 70,
+        behavior: 'smooth'
+      });
+    }
   };
 
-  // Tambahkan fungsi ini di dalam DashboardLayout (di atas handleMenuClick)
-const scrollToSection = (targetStr) => {
-  const targetEl = findTargetElement(targetStr, targetStr);
-  const contentElement = document.querySelector('.dashboard-content');
-  if (targetEl && contentElement) {
-    contentElement.scrollTo({
-      top: targetEl.offsetTop - 70,
-      behavior: 'smooth'
-    });
-  }
-};
+  const handleMenuClick = (menu) => {
+    setIsMobileMenuOpen(false);
 
-const handleMenuClick = (menu) => {
-  setIsMobileMenuOpen(false);
+    const targetEl = findTargetElement(menu.target, menu.url);
+    const contentElement = document.querySelector('.dashboard-content');
 
-  // 1. Prioritaskan cari elemen DOM di halaman saat ini dulu
-  const targetEl = findTargetElement(menu.target, menu.url);
-  const contentElement = document.querySelector('.dashboard-content');
+    if (targetEl && contentElement) {
+      contentElement.scrollTo({
+        top: targetEl.offsetTop - 70, 
+        behavior: 'smooth'
+      });
+      const cleanId = targetEl.id.replace(/^section-/, '');
+      window.history.pushState(null, '', `/dashboard#${cleanId}`);
+      setActiveSection(targetEl.id);
+      return; 
+    }
 
-  if (targetEl && contentElement) {
-    contentElement.scrollTo({
-      top: targetEl.offsetTop - 70, 
-      behavior: 'smooth'
-    });
-
-    // Update URL di browser tanpa reload halaman
-    const cleanId = targetEl.id.replace(/^section-/, '');
-    window.history.pushState(null, '', `/dashboard#${cleanId}`);
-    setActiveSection(targetEl.id);
-    return; // Stop di sini jika elemen ditemukan & berhasil di-scroll
-  }
-
-  // 2. Jika elemen TIDAK ada di halaman ini (misal menu halaman lain), baru jalankan navigate
-  if (menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'))) {
-    navigate(menu.url);
-  }
-};
-  // Mendeteksi posisi scroll
- 
+    if (menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'))) {
+      navigate(menu.url);
+    }
+  };
+  
   useEffect(() => {
     const contentElement = document.querySelector('.dashboard-content');
     if (!contentElement) return;
@@ -203,18 +225,12 @@ const handleMenuClick = (menu) => {
     ];
 
     const handleScroll = () => {
-      // 1. Cek jika scroll sudah mencapai batas paling bawah (Kontak & Alamat)
-      const isAtBottom = 
-        contentElement.scrollTop + contentElement.clientHeight >= contentElement.scrollHeight - 50;
-
+      const isAtBottom = contentElement.scrollTop + contentElement.clientHeight >= contentElement.scrollHeight - 50;
       if (isAtBottom) {
         setActiveSection('section-kontak');
         return;
       }
-
-      // 2. Perhitungan scroll normal untuk section lainnya
       const scrollPosition = contentElement.scrollTop + 120; 
-
       for (const id of sectionIds) {
         const element = document.getElementById(id);
         if (element) {
@@ -228,79 +244,53 @@ const handleMenuClick = (menu) => {
       }
     };
 
-    
-
     contentElement.addEventListener('scroll', handleScroll);
     handleScroll(); 
     return () => contentElement.removeEventListener('scroll', handleScroll);
   }, []);
 
-  
-
-  //(Dinamis dari Backend Prisma + Fallback Default Menu):
   const defaultMenuItems = [
-    { title: 'Dashboard', iconKey: 'dashboard', target: 'section-hero', roles: ['admin', 'editor'] },
-    { title: 'Kelola Pengguna', iconKey: 'users', target: 'section-pengguna', roles: ['admin'] },
-    { title: 'Profil Sekolah', iconKey: 'school', target: 'section-profil', roles: ['admin', 'editor'] },
-    { title: 'Pengaturan Website', iconKey: 'settings', target: 'section-settings', roles: ['admin'] },
-    { title: 'Berita & Artikel', iconKey: 'news', target: 'section-berita', roles: ['admin', 'editor'] },
-    { title: 'Jurusan & Program', iconKey: 'jurusan', target: 'section-jurusan', roles: ['admin', 'editor'] },
-    { title: 'Ekstrakurikuler', iconKey: 'ekskul', target: 'section-ekskul', roles: ['admin', 'editor'] },
-    { title: 'Tenaga Pengajar', iconKey: 'pengajar', target: 'section-pengajar', roles: ['admin'] },
-    { title: 'Karya & Prestasi', iconKey: 'prestasi', target: 'section-prestasi', roles: ['admin', 'editor'] },
-    { title: 'Testimoni', iconKey: 'testimoni', target: 'section-testimoni', roles: ['admin', 'editor'] },
-    { title: 'Galeri', iconKey: 'galeri', target: 'section-galeri', roles: ['admin', 'editor'] },
-    { title: 'FAQ', iconKey: 'faq', target: 'section-faq', roles: ['admin'] },
-    
-    { title: 'Kontak & Alamat', iconKey: 'kontak', target: 'section-kontak', roles: ['admin'] },
+    { title: 'Dashboard', iconKey: 'dashboard', target: 'section-hero', roles: ['ADMIN', 'EDITOR'] },
+    { title: 'Kelola Pengguna', iconKey: 'users', target: 'section-pengguna', roles: ['ADMIN'] },
+    { title: 'Profil Sekolah', iconKey: 'school', target: 'section-profil', roles: ['ADMIN', 'EDITOR'] },
+    { title: 'Pengaturan Website', iconKey: 'settings', target: 'section-settings', roles: ['ADMIN'] },
+    { title: 'Berita & Artikel', iconKey: 'news', target: 'section-berita', roles: ['ADMIN', 'EDITOR'] },
+    { title: 'Jurusan & Program', iconKey: 'jurusan', target: 'section-jurusan', roles: ['ADMIN', 'EDITOR'] },
+    { title: 'Ekstrakurikuler', iconKey: 'ekskul', target: 'section-ekskul', roles: ['ADMIN', 'EDITOR'] },
+    { title: 'Tenaga Pengajar', iconKey: 'pengajar', target: 'section-pengajar', roles: ['ADMIN'] },
+    { title: 'Karya & Prestasi', iconKey: 'prestasi', target: 'section-prestasi', roles: ['ADMIN', 'EDITOR'] },
+    { title: 'Testimoni', iconKey: 'testimoni', target: 'section-testimoni', roles: ['ADMIN', 'EDITOR'] },
+    { title: 'Galeri', iconKey: 'galeri', target: 'section-galeri', roles: ['ADMIN', 'EDITOR'] },
+    { title: 'FAQ', iconKey: 'faq', target: 'section-faq', roles: ['ADMIN'] },
+    { title: 'Kontak & Alamat', iconKey: 'kontak', target: 'section-kontak', roles: ['ADMIN'] },
   ];
 
   const [dynamicNavs, setDynamicNavs] = useState([]);
 
   useEffect(() => {
-  fetch('http://localhost:5002/api/menu-items')
-    .then((res) => res.json())
-    .then((resData) => {
-      if (resData.success && resData.data && resData.data.length > 0) {
-        const mapped = resData.data.map(m => {
-          const rawTarget = m.path || m.url || m.sectionKey || m.target || 'section-hero';
-          const cleanTarget = rawTarget.replace(/.*#/, '').replace(/^section-/, '').trim();
+    fetch('http://localhost:5002/api/menu-items')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && resData.data && resData.data.length > 0) {
+          const mapped = resData.data.map(m => {
+            const rawTarget = m.path || m.url || m.sectionKey || m.target || 'section-hero';
+            const cleanTarget = rawTarget.replace(/.*#/, '').replace(/^section-/, '').trim();
+            return {
+              title: m.title,
+              iconKey: m.icon || 'dashboard',
+              type: m.type, 
+              url: m.url,
+              target: cleanTarget ? `section-${cleanTarget}` : 'section-hero',
+              roles: ['ADMIN', 'EDITOR']
+            };
+          });
+          setDynamicNavs(mapped);
+        }
+      })
+      .catch(() => setDynamicNavs([]));
+  }, []);
 
-return {
-  title: m.title,
-  iconKey: m.icon || 'dashboard',
-  type: m.type, 
-  url: m.url,
-  target: cleanTarget ? `section-${cleanTarget}` : 'section-hero',
-  roles: ['admin', 'editor']
-};
-        });
-        setDynamicNavs(mapped);
-      }
-    })
-    .catch(() => {
-      setDynamicNavs([]);
-    });
-}, []);
-
-useEffect(() => {
-  const hash = window.location.hash;
-  if (hash) {
-    const cleanHash = hash.replace('#', '');
-    setTimeout(() => {
-      const targetEl = findTargetElement(cleanHash, cleanHash);
-      const contentElement = document.querySelector('.dashboard-content');
-      if (targetEl && contentElement) {
-        contentElement.scrollTo({
-          top: targetEl.offsetTop - 70,
-          behavior: 'smooth'
-        });
-      }
-    }, 300);
-  }
-}, [dynamicNavs]);
-
-useEffect(() => {
+  useEffect(() => {
     const hash = window.location.hash;
     if (hash) {
       const cleanHash = hash.replace('#', '');
@@ -308,45 +298,81 @@ useEffect(() => {
         const targetEl = findTargetElement(cleanHash, cleanHash);
         const contentElement = document.querySelector('.dashboard-content');
         if (targetEl && contentElement) {
-          contentElement.scrollTo({
-            top: targetEl.offsetTop - 70,
-            behavior: 'smooth'
-          });
+          contentElement.scrollTo({ top: targetEl.offsetTop - 70, behavior: 'smooth' });
         }
       }, 300);
     }
   }, [dynamicNavs]);
 
   const activeMenuList = dynamicNavs.length > 0 ? dynamicNavs : defaultMenuItems;
-  const allowedMenus = activeMenuList.filter(item => item.roles ? item.roles.includes(userRole) : true);
+  
+  const allowedMenus = activeMenuList.filter(item => 
+    item.roles ? item.roles.map(r => r.toUpperCase()).includes(userData.role) : true
+  );
 
   return (
     <div className="dashboard-container">
+
       {isMobileMenuOpen && <div className="sidebar-overlay" onClick={toggleMobileMenu}></div>}
 
       <div className={`dashboard-sidebar ${isMobileMenuOpen ? 'open' : ''} ${!isSidebarVisible ? 'collapsed' : ''}`}>
-        {/* Typo CSS sudah diperbaiki di sini: justifyContent */}
-        <div className="sidebar-header" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <img 
-              src={logoSekolah} 
-              alt="Logo SMK Negeri Compreng" 
-              style={{ width: '34px', height: '34px', objectFit: 'contain' }}
-              onError={(e) => { e.target.style.display = 'none'; }} 
-            />
-            <div>
-              <h2 style={{ fontSize: '14px', margin: 0, fontWeight: '700', color: '#0f172a' }}>
+        
+        <div className="sidebar-header" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <img 
+                src={settings.school_logo || logoSekolah} 
+                alt="Logo" 
+                style={{ width: '32px', height: '32px', objectFit: 'contain' }}
+                onError={(e) => { e.target.style.display = 'none'; }} 
+              />
+              <h2 style={{ fontSize: '15px', margin: 0, fontWeight: '800', color: 'var(--compreng-text)' }}>
                 {settings.school_name || 'SMKN COMPRENG'}
               </h2>
-              <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>Role: <b>{userRole}</b></p>
+            </div>
+            <button className="sidebar-toggle-btn" onClick={toggleSidebar} title="Tutup Sidebar" style={{ color: 'var(--compreng-text-secondary)', background: 'transparent', border: 'none', cursor: 'pointer' }}>
+              <X size={20} />
+            </button>
+          </div>
+
+          <div style={{ 
+            background: 'var(--compreng-surface-soft)', 
+            border: '1px solid var(--compreng-border)',
+            borderRadius: '12px', 
+            padding: '12px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '12px' 
+          }}>
+            <div style={{ 
+              width: '42px', height: '42px', borderRadius: '10px', flexShrink: 0,
+              background: 'var(--compreng-green)', color: '#ffffff', 
+              display: 'flex', alignItems: 'center', justifyContent: 'center', 
+              fontSize: '18px', fontWeight: '800'
+            }}>
+              {userData.initial}
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--compreng-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {userData.name}
+              </div>
+              <div style={{ fontSize: '11px', color: 'var(--compreng-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '6px' }}>
+                {userData.email}
+              </div>
+              <span style={{ 
+                fontSize: '9px', fontWeight: '800', 
+                background: '#e0e7ff', color: '#4338ca', 
+                padding: '3px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px'
+              }}>
+                {userData.role}
+              </span>
             </div>
           </div>
-          <button className="sidebar-toggle-btn" onClick={toggleSidebar} title="Tutup Sidebar">
-            <X size={20} />
-          </button>
+
         </div>
 
-        <div className="sidebar-menu">
+        <div className="sidebar-menu" style={{ background: 'var(--compreng-surface)' }}>
           <ul>
             {allowedMenus.map((menu, index) => {
               const isActive = activeSection === menu.target;
@@ -356,17 +382,17 @@ useEffect(() => {
                     onClick={() => handleMenuClick(menu)}
                     className={`sidebar-link ${isActive ? 'active' : ''}`}
                     style={{ 
-                      background: isActive ? '#eff6ff' : 'transparent', 
-                      color: isActive ? '#2563eb' : '#334155',    
-                      fontWeight: isActive ? '600' : '400',
                       border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', 
                       display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 15px', borderRadius: '8px', transition: 'all 0.2s'
+                      padding: '10px 15px', borderRadius: '8px', transition: 'all 0.2s',
+                      background: isActive ? 'var(--compreng-green-light)' : 'transparent',
+                      color: isActive ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)',
+                      fontWeight: isActive ? '700' : '500'
                     }}
                   >
-                   <span style={{ color: isActive ? '#2563eb' : '#64748b' }}>
-  {ICON_MAP[menu.iconKey] || <LayoutDashboard size={18} />}
-</span>
+                   <span style={{ color: isActive ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)' }}>
+                      {ICON_MAP[menu.iconKey] || <LayoutDashboard size={18} />}
+                   </span>
                     <span style={{ fontSize: '14px' }}>{menu.title}</span>
                   </button>
                 </li>
@@ -375,28 +401,29 @@ useEffect(() => {
           </ul>
         </div>
 
-        <div className="sidebar-footer">
+        <div className="sidebar-footer" style={{ background: 'var(--compreng-surface)', borderTop: '1px solid var(--compreng-border)' }}>
           <button onClick={handleLogout} className="logout-btn"><LogOut size={18} /> Logout</button>
         </div>
       </div>
 
       <div className="dashboard-content" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none', display: 'flex', flexDirection: 'column' }}>
-        <header className="spmb-navbar-clean" style={{ position: 'sticky', top: 0, zIndex: 100, background: '#0f172a', flexShrink: 0 }}>
+        
+        <header className="spmb-navbar-clean" style={{ position: 'sticky', top: 0, zIndex: 100, flexShrink: 0, borderBottom: 'none' }}>
           <div className="spmb-brand">
             {!isSidebarVisible && (
-              <button className="topbar-toggle-btn" onClick={toggleSidebar} title="Buka Sidebar">
-                <Menu size={24} />
+              <button className="topbar-toggle-btn" onClick={toggleSidebar} title="Buka Sidebar" style={{ color: '#ffffff', background: 'rgba(255,255,255,0.1)', border: 'none', padding: '6px', borderRadius: '6px', cursor: 'pointer', marginRight: '10px' }}>
+                <Menu size={20} />
               </button>
             )}
             <img 
-              src={logoSekolah} 
+              src={settings.school_logo || logoSekolah} 
               alt="Logo" 
               className="spmb-logo-img"
               onError={(e) => { e.target.style.display = 'none'; }} 
             />
             <div className="spmb-brand-text">
-              <h2>{settings.school_name || 'SMK NEGERI COMPRENG'}</h2>
-              <span>{settings.school_tagline || 'The School of SESCO Models'}</span>
+              <h2 style={{ color: '#ffffff', margin: 0, fontSize: '15px' }}>{settings.school_name || 'SMK NEGERI COMPRENG'}</h2>
+              <span style={{ color: '#94a3b8', fontSize: '10px' }}>{settings.school_tagline || 'The School of SESCO Models'}</span>
             </div>
           </div>
 
@@ -406,6 +433,7 @@ useEffect(() => {
                 key={idx}
                 onClick={() => handleMenuClick(menu)} 
                 className={`nav-clean-item ${activeSection === menu.target ? 'active' : ''}`}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 12px', fontWeight: '500' }}
               >
                 {menu.title}
               </button>
@@ -427,7 +455,6 @@ useEffect(() => {
                     margin: 0, borderRadius: 0, paddingBottom: '20px', boxSizing: 'border-box' 
                   }}
                 >
-                  {/* Efek gelap dikembalikan murni ke CSS bawaan spmb-hero-overlay */}
                   <div className="spmb-hero-overlay"></div>
                   
                   <div className="spmb-hero-content">
@@ -436,18 +463,18 @@ useEffect(() => {
                         <span className="dot-pulse"></span>
                         <span>{settings.school_accreditation || 'Terakreditasi A · Kurikulum Merdeka'}</span>
                       </div>
-                      <h1 className="spmb-hero-title">
+                      <h1 className="spmb-hero-title" style={{ color: '#ffffff' }}>
                         Selamat Datang di<br />
                         <span className="highlight-text"> {settings.school_name || 'SMK NEGERI COMPRENG'}</span>
                       </h1>
                       <p className="spmb-hero-desc">
-                      {settings.hero_description || 'Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.'}
-                    </p>
+                        {settings.hero_description || 'Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.'}
+                      </p>
                       <div className="spmb-btn-group">
                         <button onClick={() => scrollToSection('section-profil')} className="spmb-btn-primary">
                           Jelajah Sekolah <ArrowRight size={18} />
                         </button>
-                        <button onClick={() => scrollToSection(userRole === 'admin' ? 'section-kontak' : 'section-jurusan')} className="spmb-btn-secondary">
+                        <button onClick={() => scrollToSection(userData.role === 'ADMIN' ? 'section-kontak' : 'section-jurusan')} className="spmb-btn-secondary">
                           <Info size={18} /> Hubungi Kami
                         </button>
                       </div>
@@ -463,75 +490,58 @@ useEffect(() => {
                       </div>
                     </div>
                   </div>
-                  <div className="spmb-scroll-down" onClick={() => scrollToSection(userRole === 'admin' ? 'section-pengguna' : 'section-berita')} style={{ cursor: 'pointer', bottom: '10px' }}>
+                  <div className="spmb-scroll-down" onClick={() => scrollToSection(userData.role === 'ADMIN' ? 'section-pengguna' : 'section-berita')} style={{ cursor: 'pointer', bottom: '10px' }}>
                     <ChevronDown size={22} color="#94a3b8" />
                   </div>
                 </div>
 
-                {userRole === 'admin' && <div id="section-pengguna" className="fullpage-section" style={{ padding: '40px', background: '#ffffff' }}><ManageUsers /></div>}
-                <div id="section-profil" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><ProfilSekolah userRole={userRole} /></div>
-                {userRole === 'admin' && <div id="section-settings" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><ManageSettings /></div>}
-                <div id="section-berita" style={{ padding: '60px 20px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}><ManageNews/></div></div>
-                <div id="section-jurusan" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><ManageJurusanProgram /></div>
-                <div id="section-ekskul" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><Ekstrakurikuler /></div>
-                {userRole === 'admin' && <div id="section-pengajar" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><ManagePengajar /></div>}
-                <div id="section-prestasi" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><h2 style={{ fontSize: '28px', fontWeight: 'bold', color: '#0f172a', marginBottom: '15px' }}>Karya & Prestasi</h2><p style={{ color: '#64748b' }}>Pencapaian dan karya siswa.</p></div>
-                <div id="section-testimoni" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><TestimonialPage /></div>
-                {userRole === 'admin' && <div id="section-faq" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}><FaqPage /></div>}
-                <div id="section-galeri" style={{ padding: '20px 0', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}><Galeri /></div>
+                {userData.role === 'ADMIN' && <div id="section-pengguna" className="fullpage-section" style={{ padding: '40px' }}><ManageUsers /></div>}
                 
-                {/* 7. SECTION EKSTRAKURIKULER (Admin & Editor) */}
-<div id="section-ekskul" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-  <Ekstrakurikuler />
-</div>
-
+                <div id="section-profil" style={{ borderBottom: '1px solid var(--theme-border)' }}><ProfilSekolah userRole={userData.role} /></div>
                 
-                {/* 8. SECTION TENAGA PENGAJAR (Hanya Admin) */}
-                {userRole === 'admin' && (
-                  <div id="section-pengajar" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+                {userData.role === 'ADMIN' && <div id="section-settings" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}><ManageSettings /></div>}
+                
+                <div id="section-berita" style={{ padding: '60px 20px', borderBottom: '1px solid var(--theme-border)' }}><div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}><ManageNews/></div></div>
+                
+                <div id="section-jurusan" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}><ManageJurusanProgram /></div>
+                
+                <div id="section-ekskul" style={{ borderBottom: '1px solid var(--theme-border)' }}><Ekstrakurikuler /></div>
+                
+                {userData.role === 'ADMIN' && (
+                  <div id="section-pengajar" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}>
                     <ManagePengajar />
                   </div>
                 )}
 
-               {/* 9. SECTION KARYA & PRESTASI (Admin & Editor) */}
-<div id="section-prestasi" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-  <AchievementSection />
-</div>
+                <div id="section-prestasi" style={{ borderBottom: '1px solid var(--theme-border)' }}>
+                  <AchievementSection />
+                </div>
 
-                {/* 10. SECTION TESTIMONI (Admin & Editor) */}
-                <div id="section-testimoni" style={{ padding: '60px 40px', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+                <div id="section-testimoni" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}>
                   <TestimonialPage />
                 </div>
 
-                
+                {userData.role === 'ADMIN' && (
+                  <div id="section-faq" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}>
+                    <FaqPage />
+                  </div>
+                )}
 
-                {/* 12. SECTION GALERI (Admin & Editor) */}
-                <div id="section-galeri" style={{ padding: '20px 0', background: '#ffffff', borderBottom: '1px solid #e2e8f0' }}>
+                <div id="section-galeri" style={{ padding: '20px 0', borderBottom: '1px solid var(--theme-border)' }}>
                   <Galeri />
                 </div>
 
-                {/* 11. SECTION FAQ (Hanya Admin) */}
-{userRole === 'admin' && (
-  <div id="section-faq" style={{ padding: '60px 40px', background: '#f8fafc', borderBottom: '1px solid #e2e8f0' }}>
-    <FaqPage />
-  </div>
-)}
-
-               {/* 13. SECTION KONTAK & ALAMAT (Hanya Admin) */}
-{userRole === 'admin' ? (
-  <div id="section-kontak" style={{ background: '#0f172a', position: 'relative' }}>
-    {/* Panggil komponen Footer yang mengambil data dari API backend */}
-    <Footer />
-
-                    {/* Tombol Scroll ke Atas (ChevronUp) di pojok kanan bawah */}
+                {userData.role === 'ADMIN' ? (
+                  <div id="section-kontak" style={{ position: 'relative' }}>
+                    <Footer />
                     <div 
                       onClick={() => scrollToSection('section-hero')} 
                       style={{
                         position: 'absolute',
                         bottom: '20px',
                         right: '40px',
-                        background: '#0f172a',
-                        color: '#ffffff',
+                        background: 'var(--theme-accent)',
+                        color: 'var(--theme-accent-text)',
                         padding: '10px 12px',
                         borderRadius: '50%',
                         cursor: 'pointer',
@@ -547,8 +557,8 @@ useEffect(() => {
                     </div>
                   </div>
                 ) : (
-                  <div style={{ padding: '40px', background: '#f8fafc', textAlign: 'right', position: 'relative' }}>
-                    <div onClick={() => scrollToSection('section-hero')} style={{ display: 'inline-flex', background: '#0f172a', color: '#ffffff', padding: '10px 12px', borderRadius: '50%', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)' }}>
+                  <div style={{ padding: '40px', textAlign: 'right', position: 'relative' }}>
+                    <div onClick={() => scrollToSection('section-hero')} style={{ display: 'inline-flex', background: 'var(--theme-accent)', color: 'var(--theme-accent-text)', padding: '10px 12px', borderRadius: '50%', cursor: 'pointer', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)' }}>
                       <ChevronUp size={22} />
                     </div>
                   </div>
@@ -556,12 +566,12 @@ useEffect(() => {
               </div>
             } />
             <Route path="kurikulum/:slug" element={<DetailKurikulum />} />
-           <Route path="berita/:slug" element={<DetailManageNews />} />
+            <Route path="berita/:slug" element={<DetailManageNews />} />
 
             <Route path="*" element={
-              <div style={{ padding: '30px', background: '#fff', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', margin: '40px' }}>
+              <div style={{ padding: '30px', background: 'var(--theme-card)', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', margin: '40px' }}>
                 <h2>Halaman Sedang Dalam Pengembangan</h2>
-                <p style={{ color: '#64748b' }}>Fitur ini akan segera hadir.</p>
+                <p style={{ color: 'var(--theme-text-muted)' }}>Fitur ini akan segera hadir.</p>
               </div>
             } />
           </Routes>
@@ -571,7 +581,6 @@ useEffect(() => {
   );
 };
 
-// 4. ROUTING UTAMA & PEMBUNGKUS KONTEKS
 const MainApp = () => {
   const { isMaintenance, isLoading } = useContext(SettingsContext);
 
@@ -579,7 +588,7 @@ const MainApp = () => {
 
   if (isMaintenance) {
     return (
-      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#0f172a', color: 'white' }}>
+      <div style={{ height: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: 'var(--theme-bg)' }}>
         <h1 style={{ fontSize: '32px' }}>⚙️ Memperbarui Sistem</h1>
         <p>Website sedang dalam proses sinkronisasi pengaturan baru. Mohon tunggu beberapa saat...</p>
       </div>
@@ -593,7 +602,7 @@ const MainApp = () => {
       <Route path="/register" element={<Register />} />
       <Route path="/lupa-password" element={<ForgotPassword />} />
       <Route path="/dashboard/*" element={
-        <ProtectedRoute allowedRoles={['admin', 'editor']}>
+        <ProtectedRoute allowedRoles={['ADMIN', 'EDITOR']}>
           <DashboardLayout />
         </ProtectedRoute>
       } />

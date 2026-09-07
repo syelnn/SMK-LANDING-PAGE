@@ -3455,3 +3455,310 @@ body, html, #root {
   font-weight: 600;
   cursor: pointer;
 }
+
+/* =========================================
+   10. THEME: SOFT COMPRENG MODERN (SMART SYSTEM)
+   ========================================= */
+:root {
+  /* 🌿 PRIMARY — dikontrol oleh SettingsContext */
+  --compreng-green: #168A4A;
+  --compreng-green-dark: #10683A;
+  --compreng-green-light: color-mix(in srgb, var(--compreng-green) 15%, white);
+  --compreng-green-soft: color-mix(in srgb, var(--compreng-green) 25%, white);
+
+  /* 🌕 ACCENT */
+  --compreng-yellow: #F4C84A;
+  --compreng-yellow-light: color-mix(in srgb, var(--compreng-yellow) 20%, white);
+  --compreng-yellow-soft: color-mix(in srgb, var(--compreng-yellow) 35%, white);
+
+  /* 🌌 NAVY */
+  --compreng-navy: #172A3A;
+  --compreng-navy-light: color-mix(in srgb, var(--compreng-navy) 80%, white);
+  --compreng-navy-soft: color-mix(in srgb, var(--compreng-navy) 8%, white);
+
+  /* 🤍 BACKGROUND & SURFACE */
+  --compreng-bg: #F7F9F8;
+  --compreng-surface: #FFFFFF;
+  --compreng-surface-soft: #F1F6F3;
+
+  /* ✍️ TEXT */
+  --compreng-text: #1B2521;
+  --compreng-text-secondary: #607069;
+  --compreng-text-muted: #8A9791;
+
+  /* 🔲 BORDER & SHADOW */
+  --compreng-border: #E2EAE5;
+  --compreng-shadow: 0 8px 30px rgba(23, 42, 58, 0.08);
+}
+/* --- A. BACKGROUND & FONT UTAMA --- */
+body, html, #root, 
+.dashboard-content, .dashboard-container, 
+.galeri-container, .profil-container, .ekskul-container, 
+.faq-section, .news-public-container, .news-detail-container, 
+.admin-container, .auth-container, .spmb-hero-wrapper, .achievement-page-wrapper {
+  background-color: var(--compreng-bg) !important;
+  color: var(--compreng-text) !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+}
+
+/* --- B. KARTU, TABEL & MODAL (SURFACE) --- */
+.auth-card, .dashboard-sidebar, .modern-card, .program-card-minimal, 
+.ekskul-card, .teacher-card-light, .principal-card, .modern-testi-card, 
+.modern-viewer-form-container, .modern-photo-box, .modern-table-card, 
+.faq-card, .faq-modal-card, .modal-content, .modal-content-wrapper, 
+.modal-header-custom, .modal-footer-custom, .album-card, .photo-card, 
+.news-card, .visi-card, .misi-card, .table-wrapper, .dashboard-sidebar .sidebar-footer,
+.ekskul-modal-box, .achievement-card-clean, .crud-modal-content {
+  background-color: var(--compreng-surface) !important;
+  border-color: var(--compreng-border) !important;
+  box-shadow: var(--compreng-shadow) !important;
+}
+
+/* --- C. FORM INPUT & HEADER TABEL --- */
+.form-input, .input-modern, .form-select, .form-textarea, .modern-tabs, 
+.radio-tabs, .custom-table th, .modern-table th, .manage-users-header th,
+.ekskul-icon-box, .card-icon-box, .program-icon-box, .meta-icon-bg {
+  background-color: var(--compreng-surface-soft) !important;
+  color: var(--compreng-text) !important;
+  border: 1px solid var(--compreng-border) !important;
+}
+
+.custom-table td, .modern-table td, .manage-users-header td, tr {
+  background-color: var(--compreng-surface) !important;
+  color: var(--compreng-text-secondary) !important;
+  border-color: var(--compreng-border) !important;
+}
+
+/* --- D. TEKS JUDUL (HEADING) --- */
+h1, h2, h3, h4, h5, h6, 
+.spmb-hero-title, .section-title, .card-title, .program-title-minimal, 
+.ekskul-title, .ekskul-card-title, .teacher-name-light, .news-title, 
+.album-name, .admin-title, .news-table-title, .visi-text, .misi-section-title h2, 
+.dashboard-sidebar h2, .modern-testi-header h2, .faq-header h2, .auth-title, 
+.manage-users-title, .faq-question-btn, .user-name-cell, .profil-header h1,
+.achievement-main-title {
+  color: var(--compreng-text) !important;
+}
+
+/* --- E. TEKS DESKRIPSI (MUTED/SECONDARY) --- */
+p, span, .spmb-hero-desc, .section-desc, .card-text, .program-desc-minimal, 
+.ekskul-desc, .ekskul-card-text, .teacher-role-light, .news-excerpt, 
+.admin-subtitle, .form-label, .modern-testi-header p, .modern-testi-quote-text, 
+.faq-header p, .faq-answer-body, .auth-subtitle, .user-email-cell, 
+.profil-header p, .dashboard-sidebar p, .photo-caption, .achievement-sub-title,
+.student-class-sub {
+  color: var(--compreng-text-secondary) !important;
+}
+
+/* --- F. TOMBOL UTAMA (PRIMARY GREEN) --- */
+.spmb-btn-primary, .auth-button, .btn-primary, .btn-modern-primary, .btn-submit,
+.faq-add-btn, .ekskul-add-btn, .btn-add-achievement, .btn-success {
+  background-color: var(--compreng-green) !important;
+  color: #ffffff !important;
+  border-color: var(--compreng-green) !important;
+  transition: all 0.3s ease !important;
+}
+.spmb-btn-primary:hover, .auth-button:hover, .btn-primary:hover, .btn-modern-primary:hover, 
+.btn-submit:hover, .faq-add-btn:hover, .ekskul-add-btn:hover, .btn-add-achievement:hover {
+  background-color: var(--compreng-green-dark) !important;
+}
+
+/* --- G. BADGE / LENCANA (SOFT GREEN) --- */
+.section-tag, .badge-title, .modern-badge-title, .galeri-header-badge,
+.album-count, .photo-cover-badge, .news-badge, .badge-category, .achievement-pill,
+.badge-level {
+  background-color: var(--compreng-green-light) !important;
+  color: var(--compreng-green-dark) !important;
+  border: 1px solid var(--compreng-green-soft) !important;
+}
+
+/* Elemen & Ikon Berwarna Hijau Utama */
+.highlight-text, .section-title span, .ekskul-title span, .modern-testi-header h2 span, 
+.galeri-title span, .card-link-btn, .news-date, .news-link, .news-readmore, 
+.btn-link-sm, .sidebar-link.active span, .sidebar-link.active svg,
+.card-icon-box svg, .program-icon-box svg, .ekskul-icon-box svg, 
+.achievement-main-title .highlight-green {
+  color: var(--compreng-green) !important;
+}
+
+.misi-number, .visi-icon-wrapper, .avatar-circle {
+  background-color: var(--compreng-green-light) !important;
+  color: var(--compreng-green-dark) !important;
+}
+
+/* --- H. AKSEN KUNING EMAS (GOLDEN YELLOW) --- */
+.nav-clean-item.active::after, .nav-clean-item:hover::after {
+  background-color: var(--compreng-yellow) !important;
+}
+.card-list li { color: var(--compreng-text) !important; }
+.card-list li::before { color: var(--compreng-yellow) !important; }
+
+/* Tombol Aksi Tabel (Edit/Hapus) */
+.btn-action.edit, .btn-edit-icon { color: #ca8a04 !important; background-color: var(--compreng-yellow-light) !important; border-color: var(--compreng-yellow-soft) !important;}
+.btn-action.delete, .btn-delete-icon { color: #dc2626 !important; background-color: #fef2f2 !important; border-color: #fce8e8 !important; }
+
+/* --- I. NAVBAR & FOOTER (MODERN NAVY) --- */
+.spmb-navbar-clean, .dashboard-sidebar .sidebar-header,
+#section-kontak, .footer-container {
+  background-color: var(--compreng-navy) !important;
+  border-color: var(--compreng-navy) !important;
+}
+
+/* Judul Utama di Navbar/Footer */
+.spmb-navbar-clean h2, .footer-title-main, .footer-title {
+  color: #FFFFFF !important;
+}
+
+/* Teks Muted/Soft di Navbar/Footer */
+.spmb-navbar-clean .nav-clean-item, .spmb-brand-text span, 
+.footer-links-list a, .footer-desc, .footer-contact-item,
+.footer-contact-item span, .footer-copyright {
+  color: #C8D3D0 !important;
+}
+.footer-links-list a:hover {
+  color: var(--compreng-yellow) !important;
+}
+
+/* --- J. SIDEBAR CMS (ADMIN) --- */
+.sidebar-link { color: var(--compreng-text) !important; }
+.sidebar-link:hover { background-color: var(--compreng-navy-soft) !important; }
+.sidebar-link.active {
+  background-color: var(--compreng-green-light) !important;
+  color: var(--compreng-green-dark) !important;
+}
+
+/* --- K. PENGECUALIAN HERO SECTION (WAJIB TERANG) --- */
+/* Area ini menggunakan background foto gelap, jadi teks harus dipaksa putih */
+
+.spmb-hero-title {
+  color: #FFFFFF !important;
+}
+
+/* Mengubah highlight teks "SMK Negeri Compreng" di banner jadi Kuning Emas agar menyala */
+.spmb-hero-title .highlight-text {
+  color: var(--compreng-yellow) !important; 
+  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+}
+
+.spmb-hero-desc {
+  color: #E2EAE5 !important; /* Putih keabu-abuan agar lebih soft di mata */
+}
+
+/* Memperbaiki Lencana "Terakreditasi A" di Banner */
+.spmb-badge-pill {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #FFFFFF !important;
+}
+
+.spmb-badge-pill .dot-pulse {
+  background-color: var(--compreng-yellow) !important;
+  box-shadow: 0 0 0 0 rgba(244, 200, 74, 0.7) !important;
+}
+
+/* Memperbaiki Tombol "Hubungi Kami" di Banner */
+.spmb-btn-secondary {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: #FFFFFF !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
+}
+
+.spmb-btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.25) !important;
+}
+
+/* =========================================
+   11. PENYESUAIAN KHUSUS (VISI, HERO & GALERI)
+   ========================================= */
+
+/* --- 1. MEMPERBAIKI BADGE "TERAKREDITASI" DI HERO BANNER --- */
+/* Masalah: Teks "Selamat Datang" menumpuk ke atas badge di layar kecil */
+.spmb-badge-pill {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  color: #FFFFFF !important;
+  display: inline-flex !important;
+  align-items: center;
+  margin-bottom: 24px !important; /* Menambah jarak agar tidak bertabrakan dengan judul */
+  z-index: 10;
+  position: relative;
+}
+
+/* Memastikan teks "Terakreditasi" benar-benar terbaca */
+.spmb-badge-pill span {
+  color: #FFFFFF !important;
+  font-weight: 700;
+}
+
+/* --- 2. MEMPERBAIKI ICON KUTIP DI PROFIL SEKOLAH (VISI) --- */
+/* Masalah: Icon "Visi" berwarna terang sehingga tidak terlihat di latar putih */
+.visi-icon-wrapper {
+  background-color: var(--compreng-green) !important; /* Memaksa kotak ikon menjadi hijau kuat */
+  color: #FFFFFF !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(22, 138, 74, 0.4) !important;
+  z-index: 5;
+}
+
+.visi-icon-wrapper svg {
+  color: #FFFFFF !important; /* Ikon di dalam kotak dipaksa menjadi putih */
+  fill: #FFFFFF !important;
+}
+
+/* --- 3. MEMPERBAIKI JUDUL ALBUM DI GALERI --- */
+/* Masalah: Judul album di atas foto tidak terlihat karena background gradient tidak bekerja maksimal */
+.album-card {
+  position: relative;
+}
+
+/* Pertegas gradasi hitam dari bawah ke atas agar tulisan putih bisa terbaca */
+.album-overlay {
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.4) 60%, transparent 100%) !important;
+  z-index: 2;
+}
+
+.album-name {
+  color: #FFFFFF !important; /* Judul Album WAJIB putih */
+  text-shadow: 0 2px 4px rgba(0,0,0,0.8) !important; /* Beri bayangan agar makin jelas di atas foto terang */
+  z-index: 3;
+  position: relative;
+}
+
+.album-count {
+  background-color: var(--compreng-yellow) !important; /* Box "12 Foto" berwarna kuning */
+  color: #000000 !important;
+  z-index: 3;
+  position: relative;
+  font-weight: bold;
+}
+
+/* =========================================
+   12. PERBAIKAN TABEL KELOLA PENGGUNA
+   ========================================= */
+
+/* Mengubah Tombol Reset menjadi elegan */
+.btn-action-reset {
+  background-color: var(--compreng-surface-soft) !important;
+  color: var(--compreng-text-secondary) !important;
+  border: 1px solid var(--compreng-border) !important;
+  box-shadow: none !important;
+  transition: all 0.2s ease !important;
+}
+
+.btn-action-reset:hover {
+  background-color: var(--compreng-yellow-light) !important;
+  color: #b45309 !important; /* Warna teks orange gelap */
+  border-color: var(--compreng-yellow) !important;
+}
+
+/* Merapikan Badge Role Akun agar lebih estetik */
+.badge-admin { background-color: #fee2e2 !important; color: #dc2626 !important; border: 1px solid #fecaca !important; }
+.badge-editor { background-color: var(--compreng-yellow-light) !important; color: #b45309 !important; border: 1px solid var(--compreng-yellow-soft) !important; }
+.badge-viewer { background-color: #e0f2fe !important; color: #0284c7 !important; border: 1px solid #bae6fd !important; }
+
+/* Background pada select "Role" di tabel */
+.role-select-dropdown {
+  background-color: var(--compreng-surface) !important;
+  color: var(--compreng-text) !important;
+  border: 1px solid var(--compreng-border) !important;
+}

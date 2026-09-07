@@ -1214,6 +1214,44 @@ app.delete('/api/achievements/:id', async (req, res) => {
   }
 });
 
+// ==========================
+// API PENGATURAN WEBSITE (SETTINGS)
+// ==========================
+
+app.get('/api/settings', async (req, res) => {
+  try {
+    const data = await prisma.setting.findMany();
+    res.json({ success: true, data });
+  } catch (error) {
+    console.error("Error GET Settings:", error);
+    res.status(500).json({ success: false, message: 'Gagal memuat pengaturan' });
+  }
+});
+
+app.put('/api/settings/bulk-update', async (req, res) => {
+  try {
+    const updates = req.body; 
+    for (const [key, value] of Object.entries(updates)) {
+      const existing = await prisma.setting.findFirst({ where: { key: key } });
+      
+      if (existing) {
+        await prisma.setting.update({
+          where: { id: existing.id },
+          data: { value: String(value) }
+        });
+      } else {
+        await prisma.setting.create({
+          data: { key: key, value: String(value) }
+        });
+      }
+    }
+    res.json({ success: true, message: 'Pengaturan berhasil diperbarui' });
+  } catch (error) {
+    console.error("Error UPDATE Settings:", error);
+    res.status(500).json({ success: false, message: 'Gagal memperbarui pengaturan' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);
 });

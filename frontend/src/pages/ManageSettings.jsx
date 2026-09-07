@@ -1,20 +1,27 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { SettingsContext } from '../context/SettingsContext';
-import { Save, LayoutTemplate, MapPin, Share2, Palette } from 'lucide-react';
+import { THEME_GROUPS } from '../theme/themePalettes';
+import { Save, LayoutTemplate, MapPin, Share2, Palette, Upload, Link as LinkIcon, Check, ChevronDown, Monitor, Moon, Sun, Star, BookOpen, Flag, Layout } from 'lucide-react';
 
 export default function ManageSettings() {
-  const { settings, fetchSettings, setIsMaintenance } = useContext(SettingsContext);
+  const { settings, fetchSettings, setIsMaintenance, applyPreview, cancelPreview } = useContext(SettingsContext);
   const [isSaving, setIsSaving] = useState(false);
+
+  // State untuk memilih mode input: 'file' atau 'url' untuk masing-masing gambar
+  const [logoMode, setLogoMode] = useState('url');
+  const [profileMode, setProfileMode] = useState('url');
 
   const defaultData = {
     school_name: 'SMKN Compreng',
     school_accreditation: 'Terakreditasi A',
+    school_logo: '/src/assets/logo1.png',
+    school_profile_image: '/src/assets/visi.jpg',
     hero_description: 'Membangun Generasi Cerdas, Berkarakter, dan Berprestasi.',
     school_history: 'Sekolah ini berdedikasi mencetak lulusan siap kerja.',
     school_vision: 'Mewujudkan peserta didik yang berkarakter...',
     school_mission: '1. Meningkatkan kualitas pendidikan\n2. Menyiapkan lulusan siap kerja',
     
-    theme_mode: 'emerald_gold', // Default ke tema resmi hijau
+    theme_mode: 'compreng_default',
     font_family: 'Plus Jakarta Sans',
     custom_bg: '#f8fafc',
     custom_card: '#ffffff',
@@ -44,6 +51,8 @@ export default function ManageSettings() {
       setFormData({
         school_name: settings.school_name || defaultData.school_name,
         school_accreditation: settings.school_accreditation || defaultData.school_accreditation,
+        school_logo: settings.school_logo || defaultData.school_logo,
+        school_profile_image: settings.school_profile_image || defaultData.school_profile_image,
         hero_description: settings.hero_description || defaultData.hero_description,
         school_history: settings.school_history || defaultData.school_history,
         school_vision: settings.school_vision || defaultData.school_vision,
@@ -73,22 +82,55 @@ export default function ManageSettings() {
       });
     }
   }, [settings]);
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  const updated = { ...formData, [name]: value };
+  setFormData(updated);
 
-  const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+  // Preview instan begitu admin ganti tema di dropdown, sebelum tombol Simpan ditekan
+  if (name === 'theme_mode' || name.startsWith('custom_')) {
+    applyPreview(updated);
+  }
+};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!window.confirm("Simpan perubahan tema?")) return;
-    setIsSaving(true); setIsMaintenance(true);
-    try {
-      await fetch('http://localhost:5002/api/settings/bulk-update', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(formData) });
-      setTimeout(async () => { await fetchSettings(); setIsMaintenance(false); setIsSaving(false); }, 2500);
-    } catch (error) {
-      console.error(error); setIsMaintenance(false); setIsSaving(false); alert("Gagal menyimpan!");
+  // Fungsi khusus untuk mengubah file yang di-upload menjadi format Base64
+  const handleFileChange = (e, fieldName) => {
+    const file = e.target.files[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("Ukuran file terlalu besar! Maksimal 2MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, [fieldName]: reader.result }));
+      };
+      reader.readAsDataURL(file);
     }
   };
 
-  // GANTI VARIABEL STYLES INI DI MANAGESETTINGS.JSX
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  if (!window.confirm("Simpan perubahan pengaturan?")) return;
+
+  applyPreview(formData); // pastikan warna sudah sesuai yang terlihat sebelum submit
+  setIsSaving(true);
+  try {
+    await fetch('http://localhost:5002/api/settings/bulk-update', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(formData)
+    });
+    await fetchSettings(); // sinkronkan ulang dari server sebagai sumber kebenaran
+    setIsSaving(false);
+    alert("Pengaturan berhasil disimpan!");
+  } catch (error) {
+    console.error(error);
+    setIsSaving(false);
+    alert("Gagal menyimpan!");
+  }
+};
+
   const styles = {
     container: { maxWidth: '900px', margin: '0 auto', padding: '20px 0', paddingBottom: '80px' },
     section: { backgroundColor: 'var(--theme-card)', borderRadius: '16px', padding: '30px', marginBottom: '24px', border: '1px solid var(--theme-border)' },
@@ -97,20 +139,58 @@ export default function ManageSettings() {
     inputGroup: { display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' },
     label: { fontSize: '12px', fontWeight: '700', color: 'var(--theme-text-muted)', textTransform: 'uppercase' },
     input: { padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--theme-border)', width: '100%', boxSizing: 'border-box', backgroundColor: 'var(--theme-bg)', color: 'var(--theme-text-main)' },
-    colorBox: { display: 'flex', gap: '10px', alignItems: 'center', backgroundColor: 'var(--theme-bg)', border: '1px solid var(--theme-border)', borderRadius: '8px', padding: '4px 10px' },
+    toggleRow: { display: 'flex', gap: '10px', marginBottom: '6px' },
+    toggleBtn: (active) => ({ fontSize: '11px', padding: '4px 10px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold', background: active ? 'var(--theme-accent)' : '#e2e8f0', color: active ? 'var(--theme-accent-text)' : '#475569' }),
+    previewImg: { width: '45px', height: '45px', objectFit: 'contain', borderRadius: '6px', border: '1px solid var(--theme-border)', marginTop: '5px', backgroundColor: '#fff' },
     textarea: { padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--theme-border)', width: '100%', minHeight: '80px', resize: 'vertical', boxSizing: 'border-box', backgroundColor: 'var(--theme-bg)', color: 'var(--theme-text-main)' },
     button: { width: '100%', padding: '16px', backgroundColor: 'var(--theme-accent)', color: 'var(--theme-accent-text)', borderRadius: '12px', border: 'none', fontWeight: '700', cursor: 'pointer', fontSize: '16px' }
   };
+
   return (
     <div style={styles.container}>
       <form onSubmit={handleSubmit}>
         
         <div style={styles.section}>
-          <h3 style={styles.sectionTitle}><LayoutTemplate size={20} color="var(--theme-accent)" /> Identitas & Teks</h3>
+          <h3 style={styles.sectionTitle}><LayoutTemplate size={20} color="var(--theme-accent)" /> Identitas, Logo & Gambar</h3>
           <div style={styles.grid}>
             <div style={styles.inputGroup}><label style={styles.label}>Nama Sekolah</label><input type="text" name="school_name" value={formData.school_name} onChange={handleChange} style={styles.input} /></div>
             <div style={styles.inputGroup}><label style={styles.label}>Akreditasi / Tagline</label><input type="text" name="school_accreditation" value={formData.school_accreditation} onChange={handleChange} style={styles.input} /></div>
+            
+            {/* Input Logo Sekolah (Bisa Upload atau URL) */}
+            <div style={styles.inputGroup}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={styles.label}>Logo Sekolah (Icon)</label>
+                <div style={styles.toggleRow}>
+                  <button type="button" onClick={() => setLogoMode('url')} style={styles.toggleBtn(logoMode === 'url')}>URL</button>
+                  <button type="button" onClick={() => setLogoMode('file')} style={styles.toggleBtn(logoMode === 'file')}>Upload File</button>
+                </div>
+              </div>
+              {logoMode === 'url' ? (
+                <input type="text" name="school_logo" value={formData.school_logo} onChange={handleChange} style={styles.input} placeholder="https://..." />
+              ) : (
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'school_logo')} style={styles.input} />
+              )}
+              {formData.school_logo && <img src={formData.school_logo} alt="Preview Logo" style={styles.previewImg} />}
+            </div>
+
+            {/* Input Foto Profil Sekolah (Bisa Upload atau URL) */}
+            <div style={styles.inputGroup}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={styles.label}>Foto Profil / Visi Sekolah</label>
+                <div style={styles.toggleRow}>
+                  <button type="button" onClick={() => setProfileMode('url')} style={styles.toggleBtn(profileMode === 'url')}>URL</button>
+                  <button type="button" onClick={() => setProfileMode('file')} style={styles.toggleBtn(profileMode === 'file')}>Upload File</button>
+                </div>
+              </div>
+              {profileMode === 'url' ? (
+                <input type="text" name="school_profile_image" value={formData.school_profile_image} onChange={handleChange} style={styles.input} placeholder="https://..." />
+              ) : (
+                <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'school_profile_image')} style={styles.input} />
+              )}
+              {formData.school_profile_image && <img src={formData.school_profile_image} alt="Preview Profil" style={{...styles.previewImg, width: '80px', height: '50px'}} />}
+            </div>
           </div>
+
           <div style={styles.inputGroup}><label style={styles.label}>Deskripsi Dashboard (Hero Atas)</label><textarea name="hero_description" value={formData.hero_description} onChange={handleChange} style={styles.textarea} /></div>
           <div style={styles.inputGroup}><label style={styles.label}>Deskripsi Footer & Profil Sekolah</label><textarea name="school_history" value={formData.school_history} onChange={handleChange} style={styles.textarea} /></div>
           <div style={styles.grid}>
@@ -119,20 +199,70 @@ export default function ManageSettings() {
           </div>
         </div>
 
+        {/* Bagian Tema & Kontak tetap sama seperti sebelumnya */}
         <div style={styles.section}>
-          <h3 style={styles.sectionTitle}><Palette size={20} color="var(--theme-accent)" /> Tema & Palet Warna</h3>
+          
           <div style={styles.grid}>
             <div style={styles.inputGroup}>
-              <label style={styles.label}>Pilih Tema Warna Web</label>
-              <select name="theme_mode" value={formData.theme_mode} onChange={handleChange} style={styles.input}>
-                <option value="emerald_gold">Emerald Gold (Hijau Resmi)</option>
-                <option value="golden_nature">Golden Nature (Aksen Kuning)</option>
-                <option value="fresh_compreng">Fresh Compreng (Cerah)</option>
-                <option value="compreng_default">Navy Default (Klasik)</option>
-                <option value="dark_olive">Dark Mode (Gelap)</option>
-                <option value="custom">Kustomisasi Bebas</option>
-              </select>
+  {/* --- CUSTOM DROPDOWN TEMA BER-ICON --- */}
+<div style={{ position: 'relative', width: '100%' }}>
+  <label style={styles.label}>Pilih Tema Warna Web</label>
+  
+  <div 
+    onClick={() => document.getElementById('theme-menu').classList.toggle('show')}
+    style={{ ...styles.input, display: 'flex', justifyContent: 'space-between', alignItems: 'center', cursor: 'pointer' }}
+  >
+    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+      <Palette size={16} color="var(--theme-accent)"/>
+      <span style={{ fontWeight: 'bold' }}>
+        {THEME_GROUPS.flatMap(g => g.options).find(o => o.value === formData.theme_mode)?.label || 'Pilih Tema...'}
+      </span>
+    </div>
+    <ChevronDown size={16} color="var(--theme-text-muted)" />
+  </div>
+
+  <div id="theme-menu" style={{ 
+    display: 'none', position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 100, 
+    background: 'var(--theme-card)', border: '1px solid var(--theme-border)', borderRadius: '8px', 
+    boxShadow: '0 10px 25px rgba(0,0,0,0.1)', maxHeight: '300px', overflowY: 'auto', marginTop: '5px' 
+  }}>
+    {/* Gaya CSS kilat untuk toggle class .show */}
+    <style>{`#theme-menu.show { display: block !important; }`}</style>
+    
+    {THEME_GROUPS.map((group, gIdx) => (
+      <div key={gIdx}>
+        <div style={{ padding: '10px 15px', background: 'var(--theme-bg)', fontSize: '11px', fontWeight: 'bold', color: 'var(--theme-text-muted)', textTransform: 'uppercase' }}>
+          {group.label}
+        </div>
+        {group.options.map((opt) => (
+          <div 
+            key={opt.value} 
+            onClick={() => {
+              handleChange({ target: { name: 'theme_mode', value: opt.value } });
+              document.getElementById('theme-menu').classList.remove('show');
+            }}
+            style={{ 
+              padding: '12px 15px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+              cursor: 'pointer', borderBottom: '1px solid var(--theme-border)', transition: 'background 0.2s',
+              background: formData.theme_mode === opt.value ? 'var(--theme-bg)' : 'transparent'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = 'var(--theme-bg)'}
+            onMouseOut={(e) => e.currentTarget.style.background = formData.theme_mode === opt.value ? 'var(--theme-bg)' : 'transparent'}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              {group.label === 'Gelap & Modern' ? <Moon size={16} color="#64748b"/> : 
+               group.label.includes('Spesial') ? <Star size={16} color="#d97706"/> : 
+               opt.value === 'custom' ? <Layout size={16} color="#2563eb"/> : <Sun size={16} color="#16a34a"/>}
+              <span style={{ fontSize: '13px', color: 'var(--theme-text-main)' }}>{opt.label}</span>
             </div>
+            {formData.theme_mode === opt.value && <Check size={16} color="var(--theme-accent)" />}
+          </div>
+        ))}
+      </div>
+    ))}
+  </div>
+</div>
+</div>
             <div style={styles.inputGroup}>
               <label style={styles.label}>Gaya Font</label>
               <select name="font_family" value={formData.font_family} onChange={handleChange} style={styles.input}>
@@ -142,23 +272,6 @@ export default function ManageSettings() {
               </select>
             </div>
           </div>
-          
-          {formData.theme_mode === 'custom' && (
-            <div style={{ marginTop: '10px', backgroundColor: 'var(--theme-bg)', padding: '20px', borderRadius: '12px', border: '1px dashed var(--theme-border)' }}>
-              <p style={{fontSize: '14px', marginBottom: '20px', fontWeight: 'bold', color: 'var(--theme-text-main)'}}>Kustomisasi Warna Penuh</p>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '15px' }}>
-                <div style={styles.inputGroup}><label style={styles.label}>Latar Web (BG)</label><div style={styles.colorBox}><input type="color" name="custom_bg" value={formData.custom_bg} onChange={handleChange} style={{border:'none', width:'30px', background:'none'}} /><input type="text" name="custom_bg" value={formData.custom_bg} onChange={handleChange} style={{border:'none', outline:'none', background:'none', width:'100%', color:'var(--theme-text-main)'}} /></div></div>
-                <div style={styles.inputGroup}><label style={styles.label}>Latar Kotak (Card)</label><div style={styles.colorBox}><input type="color" name="custom_card" value={formData.custom_card} onChange={handleChange} style={{border:'none', width:'30px', background:'none'}} /><input type="text" name="custom_card" value={formData.custom_card} onChange={handleChange} style={{border:'none', outline:'none', background:'none', width:'100%', color:'var(--theme-text-main)'}} /></div></div>
-                <div style={styles.inputGroup}><label style={styles.label}>Teks Judul Utama</label><div style={styles.colorBox}><input type="color" name="custom_text_main" value={formData.custom_text_main} onChange={handleChange} style={{border:'none', width:'30px', background:'none'}} /><input type="text" name="custom_text_main" value={formData.custom_text_main} onChange={handleChange} style={{border:'none', outline:'none', background:'none', width:'100%', color:'var(--theme-text-main)'}} /></div></div>
-                <div style={styles.inputGroup}><label style={styles.label}>Teks Paragraf / Deskripsi</label><div style={styles.colorBox}><input type="color" name="custom_text_muted" value={formData.custom_text_muted} onChange={handleChange} style={{border:'none', width:'30px', background:'none'}} /><input type="text" name="custom_text_muted" value={formData.custom_text_muted} onChange={handleChange} style={{border:'none', outline:'none', background:'none', width:'100%', color:'var(--theme-text-main)'}} /></div></div>
-                <div style={styles.inputGroup}><label style={styles.label}>Aksen (Tombol & Lencana)</label><div style={styles.colorBox}><input type="color" name="custom_accent" value={formData.custom_accent} onChange={handleChange} style={{border:'none', width:'30px', background:'none'}} /><input type="text" name="custom_accent" value={formData.custom_accent} onChange={handleChange} style={{border:'none', outline:'none', background:'none', width:'100%', color:'var(--theme-text-main)'}} /></div></div>
-                <div style={styles.inputGroup}><label style={styles.label}>Teks di Dalam Tombol</label><div style={styles.colorBox}><input type="color" name="custom_accent_text" value={formData.custom_accent_text} onChange={handleChange} style={{border:'none', width:'30px', background:'none'}} /><input type="text" name="custom_accent_text" value={formData.custom_accent_text} onChange={handleChange} style={{border:'none', outline:'none', background:'none', width:'100%', color:'var(--theme-text-main)'}} /></div></div>
-                <div style={styles.inputGroup}><label style={styles.label}>Latar Navbar & Footer</label><div style={styles.colorBox}><input type="color" name="custom_nav_bg" value={formData.custom_nav_bg} onChange={handleChange} style={{border:'none', width:'30px', background:'none'}} /><input type="text" name="custom_nav_bg" value={formData.custom_nav_bg} onChange={handleChange} style={{border:'none', outline:'none', background:'none', width:'100%', color:'var(--theme-text-main)'}} /></div></div>
-                <div style={styles.inputGroup}><label style={styles.label}>Teks Navbar & Footer</label><div style={styles.colorBox}><input type="color" name="custom_nav_text" value={formData.custom_nav_text} onChange={handleChange} style={{border:'none', width:'30px', background:'none'}} /><input type="text" name="custom_nav_text" value={formData.custom_nav_text} onChange={handleChange} style={{border:'none', outline:'none', background:'none', width:'100%', color:'var(--theme-text-main)'}} /></div></div>
-                <div style={styles.inputGroup}><label style={styles.label}>Garis Tepi (Border)</label><div style={styles.colorBox}><input type="color" name="custom_border" value={formData.custom_border} onChange={handleChange} style={{border:'none', width:'30px', background:'none'}} /><input type="text" name="custom_border" value={formData.custom_border} onChange={handleChange} style={{border:'none', outline:'none', background:'none', width:'100%', color:'var(--theme-text-main)'}} /></div></div>
-              </div>
-            </div>
-          )}
         </div>
 
         <div style={styles.section}>
@@ -173,7 +286,7 @@ export default function ManageSettings() {
             <div style={styles.inputGroup}><label style={styles.label}>Twitter / X URL</label><input type="url" name="social_twitter" value={formData.social_twitter} onChange={handleChange} style={styles.input} /></div>
             <div style={styles.inputGroup}><label style={styles.label}>Embed Google Maps</label><input type="text" name="contact_map_embed_url" value={formData.contact_map_embed_url} onChange={handleChange} style={styles.input} placeholder="https://www.google.com/maps/embed?pb=..." /></div>
           </div>
-          <div style={styles.inputGroup}><label style={styles.label}>Alamat Lengkap</label><textarea name="contact_address" value={formData.contact_address} onChange={handleChange} style={{...styles.textarea, minHeight:'60px'}} /></div>
+          <div stylestyles={styles.inputGroup}><label style={styles.label}>Alamat Lengkap</label><textarea name="contact_address" value={formData.contact_address} onChange={handleChange} style={{...styles.textarea, minHeight:'60px'}} /></div>
         </div>
 
         <button type="submit" style={styles.button}>{isSaving ? 'Menyimpan...' : 'Simpan Perubahan & Restart UI'}</button>
