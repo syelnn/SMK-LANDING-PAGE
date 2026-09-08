@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { SettingsContext, SettingsProvider } from './context/SettingsContext';
-import { Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import Login from './Login';
 import Register from './Register';
 import DownloadPage from './pages/DownloadPage';
@@ -9,7 +9,7 @@ import {
   Users, School, Newspaper, BookOpen, Activity, 
   GraduationCap, Trophy, MessageSquare, HelpCircle, 
   Image as ImageIcon, MapPin, LogOut, LayoutDashboard, Settings,
-  Menu, X, ArrowRight, Info, ChevronDown, ChevronUp, Download 
+  Menu, X, ArrowRight, Info, ChevronDown, ChevronUp, Download, ChevronsUpDown
 } from 'lucide-react';
 
 import './App.css';
@@ -72,9 +72,6 @@ const findTargetElement = (targetStr, urlStr) => {
   const aliases = {
     'beranda': 'section-hero', 
     'hero': 'section-hero',
-    'pengaturan': 'section-settings',
-    'settings': 'section-settings',
-    'admin/settings': 'section-settings',
     'program': 'section-jurusan',
     'jurusan': 'section-jurusan',
     'ekstrakurikuler': 'section-ekskul',
@@ -103,7 +100,6 @@ const PublicLayout = () => (
   </div>
 );
 
-// Murni sinkronasi dari token JWT untuk Protected Route
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   let userRole = (localStorage.getItem('role') || '').toUpperCase();
@@ -136,11 +132,9 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
 
 const DashboardLayout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { settings } = useContext(SettingsContext); 
 
-  // ==========================================
-  // SINKRONISASI MUTLAK DARI JSON WEB TOKEN
-  // ==========================================
   const getExactUser = () => {
     const token = localStorage.getItem('token');
     
@@ -176,6 +170,9 @@ const DashboardLayout = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(false); 
   const [activeSection, setActiveSection] = useState('section-hero');
+
+  const [openDropdowns, setOpenDropdowns] = useState({ settings: true });
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   
   const handleLogout = () => {
     localStorage.clear();
@@ -184,160 +181,173 @@ const DashboardLayout = () => {
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
   const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
+  const toggleDropdown = (key) => setOpenDropdowns(prev => ({ ...prev, [key]: !prev[key] }));
+  const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
 
   const scrollToSection = (targetStr) => {
     const targetEl = findTargetElement(targetStr, targetStr);
     const contentElement = document.querySelector('.dashboard-content');
     if (targetEl && contentElement) {
-      contentElement.scrollTo({
-        top: targetEl.offsetTop - 70,
-        behavior: 'smooth'
-      });
+      contentElement.scrollTo({ top: targetEl.offsetTop - 70, behavior: 'smooth' });
     }
   };
 
   const handleMenuClick = (menu) => {
     setIsMobileMenuOpen(false);
 
-    // 1. UTAMAKAN CEK LINK: Jika menu adalah link ke halaman beda (seperti /dashboard/downloads)
     if (menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'))) {
       navigate(menu.url);
       return;
     }
 
-    // 2. CEK HALAMAN: Jika sedang di luar halaman utama (/dashboard/downloads) lalu klik menu scroll biasa
-    if (window.location.pathname !== '/dashboard') {
+    if (window.location.pathname !== '/admin') {
       const cleanSection = menu.target ? menu.target.replace(/^section-/, '') : '';
-      navigate(`/dashboard#${cleanSection}`);
+      navigate(`/admin#${cleanSection}`);
       return;
     }
 
-    // 3. JIKA DI HALAMAN UTAMA: Lakukan Scroll ke Section
     const targetEl = findTargetElement(menu.target, menu.url);
     const contentElement = document.querySelector('.dashboard-content');
 
     if (targetEl && contentElement) {
-      contentElement.scrollTo({
-        top: targetEl.offsetTop - 70, 
-        behavior: 'smooth'
-      });
+      contentElement.scrollTo({ top: targetEl.offsetTop - 70, behavior: 'smooth' });
       const cleanId = targetEl.id.replace(/^section-/, '');
-      window.history.pushState(null, '', `/dashboard#${cleanId}`);
+      window.history.pushState(null, '', `/admin#${cleanId}`);
       setActiveSection(targetEl.id);
     }
   };
   
   useEffect(() => {
-  const contentElement = document.querySelector('.dashboard-content');
-  if (!contentElement) return;
+    const contentElement = document.querySelector('.dashboard-content');
+    if (!contentElement) return;
 
-  const sectionIds = [
-    'section-hero', 'section-pengguna', 'section-profil', 
-    'section-settings', 'section-berita', 'section-jurusan', 
-    'section-ekskul', 'section-pengajar', 'section-prestasi', 
-    'section-testimoni', 'section-galeri', 'section-faq', 'section-kontak'
-  ];
+    // section-pengguna dan section-settings dihapus karena sudah jadi halaman mandiri
+    const sectionIds = [
+      'section-hero', 'section-profil', 'section-berita', 
+      'section-jurusan', 'section-ekskul', 'section-pengajar', 
+      'section-prestasi', 'section-testimoni', 'section-galeri', 
+      'section-faq', 'section-kontak'
+    ];
 
-  const handleScroll = () => {
-    // Jalankan kalkulasi scroll HANYA jika berada di halaman utama /dashboard
-    if (window.location.pathname !== '/dashboard' && window.location.pathname !== '/dashboard/') {
-      return;
-    }
+    const handleScroll = () => {
+      if (window.location.pathname !== '/admin' && window.location.pathname !== '/admin/') return;
 
-    const isAtBottom = contentElement.scrollTop + contentElement.clientHeight >= contentElement.scrollHeight - 50;
-    if (isAtBottom) {
-      setActiveSection('section-kontak');
-      return;
-    }
+      const isAtBottom = contentElement.scrollTop + contentElement.clientHeight >= contentElement.scrollHeight - 50;
+      if (isAtBottom) {
+        setActiveSection('section-kontak');
+        return;
+      }
 
-    const scrollPosition = contentElement.scrollTop + 120; 
-    for (const id of sectionIds) {
-      const element = document.getElementById(id);
-      if (element) {
-        const top = element.offsetTop;
-        const height = element.offsetHeight;
-        if (scrollPosition >= top && scrollPosition < top + height) {
-          setActiveSection(id);
-          break;
+      const scrollPosition = contentElement.scrollTop + 120; 
+      for (const id of sectionIds) {
+        const element = document.getElementById(id);
+        if (element) {
+          const top = element.offsetTop;
+          const height = element.offsetHeight;
+          if (scrollPosition >= top && scrollPosition < top + height) {
+            setActiveSection(id);
+            break;
+          }
         }
       }
-    }
-  };
+    };
 
-  contentElement.addEventListener('scroll', handleScroll);
-  handleScroll(); 
-  return () => contentElement.removeEventListener('scroll', handleScroll);
-}, []);
+    contentElement.addEventListener('scroll', handleScroll);
+    handleScroll(); 
+    return () => contentElement.removeEventListener('scroll', handleScroll);
+  }, [location.pathname]);
 
   const defaultMenuItems = [
-    { title: 'Dashboard', iconKey: 'dashboard', target: 'section-hero', roles: ['ADMIN', 'EDITOR'] },
-    { title: 'Kelola Pengguna', iconKey: 'users', target: 'section-pengguna', roles: ['ADMIN'] },
-    { title: 'Profil Sekolah', iconKey: 'school', target: 'section-profil', roles: ['ADMIN', 'EDITOR'] },
-    { title: 'Pengaturan Website', iconKey: 'settings', target: 'section-settings', roles: ['ADMIN'] },
-    { title: 'Berita & Artikel', iconKey: 'news', target: 'section-berita', roles: ['ADMIN', 'EDITOR'] },
-    { title: 'Jurusan & Program', iconKey: 'jurusan', target: 'section-jurusan', roles: ['ADMIN', 'EDITOR'] },
-    { title: 'Ekstrakurikuler', iconKey: 'ekskul', target: 'section-ekskul', roles: ['ADMIN', 'EDITOR'] },
-    { title: 'Tenaga Pengajar', iconKey: 'pengajar', target: 'section-pengajar', roles: ['ADMIN'] },
-    { title: 'Karya & Prestasi', iconKey: 'prestasi', target: 'section-prestasi', roles: ['ADMIN', 'EDITOR'] },
-    { title: 'Testimoni', iconKey: 'testimoni', target: 'section-testimoni', roles: ['ADMIN', 'EDITOR'] },
-    { title: 'Galeri', iconKey: 'galeri', target: 'section-galeri', roles: ['ADMIN', 'EDITOR'] },
-    { title: 'FAQ', iconKey: 'faq', target: 'section-faq', roles: ['ADMIN'] },
-    { title: 'Kontak & Alamat', iconKey: 'kontak', target: 'section-kontak', roles: ['ADMIN'] },
-    { title: 'Download', iconKey: 'download', type: 'link', url: '/dashboard/downloads', roles: ['ADMIN', 'EDITOR'] },
+    { title: 'Dashboard', iconKey: 'dashboard', target: 'section-hero', roles: ['ADMIN', 'EDITOR'], group: 'General' },
+    // Kelola Pengguna sekarang menjadi link ke halaman terpisah
+    { title: 'Kelola Pengguna', iconKey: 'users', type: 'link', url: '/admin/users', roles: ['ADMIN'], group: 'General' },
+    { title: 'Profil Sekolah', iconKey: 'school', target: 'section-profil', roles: ['ADMIN', 'EDITOR'], group: 'General' },
+    { title: 'Berita & Artikel', iconKey: 'news', target: 'section-berita', roles: ['ADMIN', 'EDITOR'], group: 'General' },
+    
+    { title: 'Jurusan & Program', iconKey: 'jurusan', target: 'section-jurusan', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
+    { title: 'Ekstrakurikuler', iconKey: 'ekskul', target: 'section-ekskul', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
+    { title: 'Tenaga Pengajar', iconKey: 'pengajar', target: 'section-pengajar', roles: ['ADMIN'], group: 'Pages' },
+    { title: 'Karya & Prestasi', iconKey: 'prestasi', target: 'section-prestasi', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
+    { title: 'Testimoni', iconKey: 'testimoni', target: 'section-testimoni', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
+    { title: 'Galeri', iconKey: 'galeri', target: 'section-galeri', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
+    
+    { title: 'FAQ', iconKey: 'faq', target: 'section-faq', roles: ['ADMIN'], group: 'Other' },
+    { title: 'Kontak & Alamat', iconKey: 'kontak', target: 'section-kontak', roles: ['ADMIN'], group: 'Other' },
+    { title: 'Download', iconKey: 'download', type: 'link', url: '/admin/downloads', roles: ['ADMIN', 'EDITOR'], group: 'Other' },
+    { 
+      title: 'Pengaturan Website', 
+      iconKey: 'settings', 
+      type: 'dropdown', 
+      url: '/admin/settings', 
+      roles: ['ADMIN'],
+      group: 'Other',
+      subItems: [
+        { title: 'Profile & Identitas', url: '/admin/settings/profile' },
+        { title: 'Tema & Tampilan', url: '/admin/settings/appearance' },
+        { title: 'Kontak & Maps', url: '/admin/settings/contact' }
+      ]
+    }
   ];
 
   const [dynamicNavs, setDynamicNavs] = useState([]);
-useEffect(() => {
-  fetch('http://localhost:5002/api/menu-items')
-    .then((res) => res.json())
-    .then((resData) => {
-      if (resData.success && resData.data && resData.data.length > 0) {
-        const mapped = resData.data.map(m => {
-          const rawTarget = m.path || m.url || m.sectionKey || m.target || 'section-hero';
-          const cleanTarget = rawTarget.replace(/.*#/, '').replace(/^section-/, '').trim();
-          
-          // Memastikan URL bertipe 'link' selalu diawali dengan /dashboard
-          let formattedUrl = m.url || '';
-          if (m.type === 'link' || formattedUrl.startsWith('/downloads')) {
-            if (!formattedUrl.startsWith('/dashboard')) {
-              formattedUrl = `/dashboard${formattedUrl.startsWith('/') ? formattedUrl : '/' + formattedUrl}`;
+
+  useEffect(() => {
+    fetch('http://localhost:5002/api/menu-items')
+      .then((res) => res.json())
+      .then((resData) => {
+        if (resData.success && resData.data && resData.data.length > 0) {
+          const mapped = resData.data.map(m => {
+            const rawTarget = m.path || m.url || m.sectionKey || m.target || 'section-hero';
+            const cleanTarget = rawTarget.replace(/.*#/, '').replace(/^section-/, '').trim();
+            
+            let formattedUrl = m.url || '';
+            let finalType = m.type;
+
+            let groupName = 'General';
+            const pageMenus = ['Jurusan & Program', 'Ekstrakurikuler', 'Tenaga Pengajar', 'Karya & Prestasi', 'Testimoni', 'Galeri'];
+            const otherMenus = ['Pengaturan Website', 'FAQ', 'Kontak & Alamat', 'Download'];
+            
+            if (pageMenus.includes(m.title)) groupName = 'Pages';
+            else if (otherMenus.includes(m.title) || m.iconKey === 'settings') groupName = 'Other';
+
+            // Paksa Pengaturan Website jadi Dropdown
+            if (m.title === 'Pengaturan Website' || m.iconKey === 'settings') {
+              return {
+                title: m.title, iconKey: m.icon || 'dashboard', type: 'dropdown', url: '/admin/settings',
+                target: cleanTarget ? `section-${cleanTarget}` : 'section-hero', roles: ['ADMIN', 'EDITOR'], group: groupName,
+                subItems: [
+                  { title: 'Profile & Identitas', url: '/admin/settings/profile' },
+                  { title: 'Tema & Tampilan', url: '/admin/settings/appearance' },
+                  { title: 'Kontak & Maps', url: '/admin/settings/contact' }
+                ]
+              };
+            } 
+            // Paksa Kelola Pengguna jadi Link Halaman Tersendiri
+            else if (m.title === 'Kelola Pengguna' || m.iconKey === 'users') {
+              return {
+                title: m.title, iconKey: m.icon || 'users', type: 'link', url: '/admin/users',
+                target: '', roles: ['ADMIN'], group: groupName
+              };
             }
-          }
+            else if (finalType === 'link' || formattedUrl.startsWith('/downloads')) {
+              if (!formattedUrl.startsWith('/admin')) {
+                formattedUrl = `/admin${formattedUrl.startsWith('/') ? formattedUrl : '/' + formattedUrl}`;
+              }
+            }
 
-          return {
-            title: m.title,
-            iconKey: m.icon || 'dashboard',
-            type: m.type, 
-            url: formattedUrl,
-            target: cleanTarget ? `section-${cleanTarget}` : 'section-hero',
-            roles: ['ADMIN', 'EDITOR']
-          };
-        });
-        setDynamicNavs(mapped);
-      }
-    })
-    .catch(() => setDynamicNavs([]));
-}, []);
+            return {
+              title: m.title, iconKey: m.icon || 'dashboard', type: finalType, url: formattedUrl,
+              target: cleanTarget ? `section-${cleanTarget}` : 'section-hero', roles: ['ADMIN', 'EDITOR'], group: groupName
+            };
+          });
+          setDynamicNavs(mapped);
+        }
+      })
+      .catch(() => setDynamicNavs([]));
+  }, []);
 
-useEffect(() => {
-  const hash = window.location.hash;
-  if (hash) {
-    const cleanHash = hash.replace('#', '');
-    setTimeout(() => {
-      const targetEl = findTargetElement(cleanHash, cleanHash);
-      const contentElement = document.querySelector('.dashboard-content');
-      if (targetEl && contentElement) {
-        contentElement.scrollTo({ top: targetEl.offsetTop - 70, behavior: 'smooth' });
-      }
-    }, 300);
-  }
-}, [dynamicNavs]);
-
-const activeMenuList = dynamicNavs.length > 0 ? dynamicNavs : defaultMenuItems;
-
-const allowedMenus = activeMenuList.filter(item => 
-  item.roles ? item.roles.map(r => r.toUpperCase()).includes(userData.role) : true
-);
+  const activeMenuList = dynamicNavs.length > 0 ? dynamicNavs : defaultMenuItems;
+  const allowedMenus = activeMenuList.filter(item => item.roles ? item.roles.map(r => r.toUpperCase()).includes(userData.role) : true);
 
   return (
     <div className="dashboard-container">
@@ -346,16 +356,10 @@ const allowedMenus = activeMenuList.filter(item =>
 
       <div className={`dashboard-sidebar ${isMobileMenuOpen ? 'open' : ''} ${!isSidebarVisible ? 'collapsed' : ''}`}>
         
-        <div className="sidebar-header" style={{ padding: '24px 20px', display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
+        <div className="sidebar-header" style={{ padding: '24px 20px', borderBottom: '1px solid var(--compreng-border)' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <img 
-                src={settings.school_logo || logoSekolah} 
-                alt="Logo" 
-                style={{ width: '32px', height: '32px', objectFit: 'contain' }}
-                onError={(e) => { e.target.style.display = 'none'; }} 
-              />
+              <img src={settings.school_logo || logoSekolah} alt="Logo" style={{ width: '30px', height: '30px', objectFit: 'contain' }} onError={(e) => { e.target.style.display = 'none'; }} />
               <h2 style={{ fontSize: '15px', margin: 0, fontWeight: '800', color: 'var(--compreng-text)' }}>
                 {settings.school_name || 'SMKN COMPRENG'}
               </h2>
@@ -364,81 +368,120 @@ const allowedMenus = activeMenuList.filter(item =>
               <X size={20} />
             </button>
           </div>
+        </div>
 
-          <div style={{ 
-            background: 'var(--compreng-surface-soft)', 
-            border: '1px solid var(--compreng-border)',
-            borderRadius: '12px', 
-            padding: '12px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '12px' 
-          }}>
-            <div style={{ 
-              width: '42px', height: '42px', borderRadius: '10px', flexShrink: 0,
-              background: 'var(--compreng-green)', color: '#ffffff', 
-              display: 'flex', alignItems: 'center', justifyContent: 'center', 
-              fontSize: '18px', fontWeight: '800'
-            }}>
+        <div className="sidebar-menu" style={{ background: 'var(--compreng-surface)', flex: 1, overflowY: 'auto', padding: '16px 12px' }}>
+          {['General', 'Pages', 'Other'].map(group => {
+            const groupItems = allowedMenus.filter(m => (m.group || 'General') === group);
+            if (groupItems.length === 0) return null;
+            return (
+               <div key={group} style={{ marginBottom: '16px' }}>
+                 <div style={{ padding: '0 15px', marginBottom: '8px', fontSize: '11px', fontWeight: '700', color: 'var(--compreng-text-muted)', textTransform: 'capitalize' }}>
+                   {group}
+                 </div>
+                 <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                    {groupItems.map((menu, index) => {
+                      const hasSubItems = menu.type === 'dropdown' && menu.subItems && menu.subItems.length > 0;
+                      const isDropdownOpen = openDropdowns[menu.iconKey];
+                      const isPageLink = menu.type === 'link' || menu.type === 'dropdown' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'));
+                      const isActive = isPageLink ? location.pathname.startsWith(menu.url) : (location.pathname === '/admin' && activeSection === menu.target);
+
+                      return (
+                        <li key={index} style={{ display: 'flex', flexDirection: 'column', marginBottom: '2px' }}>
+                          <button 
+                            onClick={() => hasSubItems ? toggleDropdown(menu.iconKey) : handleMenuClick(menu)}
+                            className={`sidebar-link ${isActive && !hasSubItems ? 'active' : ''}`}
+                            style={{ 
+                              border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                              padding: '10px 15px', borderRadius: '8px', transition: 'all 0.2s',
+                              background: isActive && !hasSubItems ? 'var(--compreng-green-light)' : 'transparent',
+                              color: isActive && !hasSubItems ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)',
+                              fontWeight: isActive ? '600' : '500'
+                            }}
+                          >
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{ color: isActive && !hasSubItems ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)' }}>
+                                {ICON_MAP[menu.iconKey] || <LayoutDashboard size={18} />}
+                              </span>
+                              <span style={{ fontSize: '13px' }}>{menu.title}</span>
+                            </div>
+                            {hasSubItems && <ChevronDown size={14} style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', color: 'var(--compreng-text-muted)' }} />}
+                          </button>
+
+                          {hasSubItems && isDropdownOpen && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '2px', marginLeft: '32px', borderLeft: '1px solid var(--compreng-border)', paddingLeft: '12px' }}>
+                              {menu.subItems.map((sub, sIdx) => {
+                                const isSubActive = location.pathname === sub.url || location.pathname.startsWith(sub.url);
+                                return (
+                                  <NavLink
+                                    key={sIdx}
+                                    to={sub.url}
+                                    style={{
+                                      padding: '8px 12px', fontSize: '12px', borderRadius: '6px', textDecoration: 'none', display: 'block', transition: 'all 0.2s',
+                                      color: isSubActive ? 'var(--compreng-text)' : 'var(--compreng-text-secondary)',
+                                      background: isSubActive ? 'var(--compreng-surface-soft)' : 'transparent',
+                                      fontWeight: isSubActive ? '600' : '500'
+                                    }}
+                                    onMouseOver={(e) => e.target.style.color = 'var(--compreng-text)'}
+                                    onMouseOut={(e) => e.target.style.color = isSubActive ? 'var(--compreng-text)' : 'var(--compreng-text-secondary)'}
+                                  >
+                                    {sub.title}
+                                  </NavLink>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
+                 </ul>
+               </div>
+            )
+          })}
+        </div>
+
+        <div className="sidebar-footer" style={{ background: 'var(--compreng-surface)', borderTop: '1px solid var(--compreng-border)', padding: '12px', position: 'relative' }}>
+          
+          {isUserMenuOpen && (
+            <div style={{ position: 'absolute', bottom: '12px', left: 'calc(100% + 10px)', width: '220px', background: 'var(--compreng-surface)', border: '1px solid var(--compreng-border)', borderRadius: '8px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', overflow: 'hidden', zIndex: 100 }}>
+              <div style={{ padding: '12px', borderBottom: '1px solid var(--compreng-border)' }}>
+                 <div style={{ fontSize: '13px', fontWeight: '700', color: 'var(--compreng-text)' }}>{userData.name}</div>
+                 <div style={{ fontSize: '11px', color: 'var(--compreng-text-muted)' }}>{userData.email}</div>
+              </div>
+              <div style={{ padding: '4px' }}>
+                <button onClick={() => { setIsUserMenuOpen(false); navigate('/admin/users'); }} style={{ width: '100%', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', color: 'var(--compreng-text-secondary)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px' }} onMouseOver={(e)=>e.currentTarget.style.background='var(--compreng-surface-soft)'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
+                   <Users size={14} /> Kelola Pengguna
+                </button>
+              </div>
+              <div style={{ padding: '4px', borderTop: '1px solid var(--compreng-border)' }}>
+                <button onClick={handleLogout} style={{ width: '100%', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', color: '#dc2626', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', fontWeight: '600' }} onMouseOver={(e)=>e.currentTarget.style.background='#fef2f2'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
+                   <LogOut size={14} /> Sign out
+                </button>
+              </div>
+            </div>
+          )}
+
+          <button 
+            onClick={toggleUserMenu}
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '8px', border: 'none', background: isUserMenuOpen ? 'var(--compreng-surface-soft)' : 'transparent', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s', textAlign: 'left' }}
+            onMouseOver={(e)=> { if(!isUserMenuOpen) e.currentTarget.style.background='var(--compreng-surface-soft)' }}
+            onMouseOut={(e)=> { if(!isUserMenuOpen) e.currentTarget.style.background='transparent' }}
+          >
+            <div style={{ width: '32px', height: '32px', borderRadius: '6px', background: 'var(--compreng-green)', color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '800', flexShrink: 0 }}>
               {userData.initial}
             </div>
             <div style={{ flex: 1, overflow: 'hidden' }}>
-              <div style={{ fontSize: '13px', fontWeight: '800', color: 'var(--compreng-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <div style={{ fontSize: '13px', fontWeight: '600', color: 'var(--compreng-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {userData.name}
               </div>
-              <div style={{ fontSize: '11px', color: 'var(--compreng-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginBottom: '6px' }}>
+              <div style={{ fontSize: '11px', color: 'var(--compreng-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {userData.email}
               </div>
-              <span style={{ 
-                fontSize: '9px', fontWeight: '800', 
-                background: '#e0e7ff', color: '#4338ca', 
-                padding: '3px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px'
-              }}>
-                {userData.role}
-              </span>
             </div>
-          </div>
-
-        </div>
-
-       <div className="sidebar-menu" style={{ background: 'var(--compreng-surface)' }}>
-  <ul>
-    {allowedMenus.map((menu, index) => {
-      // 1. Cek apakah menu bertipe link halaman terpisah
-      const isPageLink = menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'));
-
-      // 2. Tentukan status active secara presisi
-      const isActive = isPageLink 
-        ? window.location.pathname === menu.url 
-        : (window.location.pathname === '/dashboard' && activeSection === menu.target);
-
-      return (
-        <li key={index}>
-          <button 
-            onClick={() => handleMenuClick(menu)}
-            className={`sidebar-link ${isActive ? 'active' : ''}`}
-            style={{ 
-              border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', 
-              display: 'flex', alignItems: 'center', gap: '10px',
-              padding: '10px 15px', borderRadius: '8px', transition: 'all 0.2s',
-              background: isActive ? 'var(--compreng-green-light)' : 'transparent',
-              color: isActive ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)',
-              fontWeight: isActive ? '700' : '500'
-            }}
-          >
-            <span style={{ color: isActive ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)' }}>
-              {ICON_MAP[menu.iconKey] || <LayoutDashboard size={18} />}
-            </span>
-            <span style={{ fontSize: '14px' }}>{menu.title}</span>
+            <div style={{ color: 'var(--compreng-text-muted)' }}>
+               <ChevronsUpDown size={14} style={{ color: 'var(--compreng-text-muted)' }} />
+            </div>
           </button>
-        </li>
-      );
-    })}
-  </ul>
-</div>
-
-        <div className="sidebar-footer" style={{ background: 'var(--compreng-surface)', borderTop: '1px solid var(--compreng-border)' }}>
-          <button onClick={handleLogout} className="logout-btn"><LogOut size={18} /> Logout</button>
         </div>
       </div>
 
@@ -465,22 +508,15 @@ const allowedMenus = activeMenuList.filter(item =>
 
           <nav className="spmb-nav-links-clean" style={{ overflowX: 'auto', display: 'flex', gap: '6px', whiteSpace: 'nowrap', padding: '5px 0', scrollbarWidth: 'none' }}>
             {allowedMenus.map((menu, idx) => {
-  const isPageLink = menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'));
-  const isActive = isPageLink 
-    ? window.location.pathname === menu.url 
-    : (window.location.pathname === '/dashboard' && activeSection === menu.target);
+              const isPageLink = menu.type === 'link' || menu.type === 'dropdown' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'));
+              const isActive = isPageLink ? location.pathname.startsWith(menu.url) : (location.pathname === '/admin' && activeSection === menu.target);
 
-  return (
-    <button 
-      key={idx}
-      onClick={() => handleMenuClick(menu)} 
-      className={`nav-clean-item ${isActive ? 'active' : ''}`}
-      style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 12px', fontWeight: '500' }}
-    >
-      {menu.title}
-    </button>
-  );
-})}
+              return (
+                <button key={idx} onClick={() => handleMenuClick(menu)} className={`nav-clean-item ${isActive ? 'active' : ''}`} style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 12px', fontWeight: '500' }}>
+                  {menu.title}
+                </button>
+              );
+            })}
           </nav>
         </header>
 
@@ -488,18 +524,8 @@ const allowedMenus = activeMenuList.filter(item =>
           <Routes>
             <Route index element={
               <div className="spmb-hero-wrapper">
-                <div 
-                  id="section-hero" 
-                  className="spmb-hero-card" 
-                  style={{ 
-                    backgroundImage: `url(${heroBg})`, 
-                    minHeight: 'calc(100vh - 65px)', 
-                    height: 'calc(100vh - 65px)', 
-                    margin: 0, borderRadius: 0, paddingBottom: '20px', boxSizing: 'border-box' 
-                  }}
-                >
+                <div id="section-hero" className="spmb-hero-card" style={{ backgroundImage: `url(${heroBg})`, minHeight: 'calc(100vh - 65px)', height: 'calc(100vh - 65px)', margin: 0, borderRadius: 0, paddingBottom: '20px', boxSizing: 'border-box' }}>
                   <div className="spmb-hero-overlay"></div>
-                  
                   <div className="spmb-hero-content">
                     <div className="spmb-left-col">
                       <div className="spmb-badge-pill">
@@ -510,9 +536,7 @@ const allowedMenus = activeMenuList.filter(item =>
                         Selamat Datang di<br />
                         <span className="highlight-text"> {settings.school_name || 'SMK NEGERI COMPRENG'}</span>
                       </h1>
-                      <p className="spmb-hero-desc">
-                        {settings.hero_description || 'Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.'}
-                      </p>
+                      <p className="spmb-hero-desc">{settings.hero_description || 'Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.'}</p>
                       <div className="spmb-btn-group">
                         <button onClick={() => scrollToSection('section-profil')} className="spmb-btn-primary">
                           Jelajah Sekolah <ArrowRight size={18} />
@@ -524,78 +548,29 @@ const allowedMenus = activeMenuList.filter(item =>
                     </div>
                     <div className="spmb-right-col">
                       <div className="spmb-student-wrapper">
-                        <img 
-                          src={studentImg} 
-                          alt="Siswa" 
-                          className="spmb-student-img" 
-                          onError={(e) => { e.target.style.display = 'none'; }} 
-                        />
+                        <img src={studentImg} alt="Siswa" className="spmb-student-img" onError={(e) => { e.target.style.display = 'none'; }} />
                       </div>
                     </div>
                   </div>
-                  <div className="spmb-scroll-down" onClick={() => scrollToSection(userData.role === 'ADMIN' ? 'section-pengguna' : 'section-berita')} style={{ cursor: 'pointer', bottom: '10px' }}>
+                  <div className="spmb-scroll-down" onClick={() => scrollToSection('section-profil')} style={{ cursor: 'pointer', bottom: '10px' }}>
                     <ChevronDown size={22} color="#94a3b8" />
                   </div>
                 </div>
 
-                {userData.role === 'ADMIN' && <div id="section-pengguna" className="fullpage-section" style={{ padding: '40px' }}><ManageUsers /></div>}
-                
+                {/* ManageUsers telah dihapus dari halaman scroll ini */}
                 <div id="section-profil" style={{ borderBottom: '1px solid var(--theme-border)' }}><ProfilSekolah userRole={userData.role} /></div>
-                
-                {userData.role === 'ADMIN' && <div id="section-settings" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}><ManageSettings /></div>}
-                
                 <div id="section-berita" style={{ padding: '60px 20px', borderBottom: '1px solid var(--theme-border)' }}><div style={{ maxWidth: '1280px', margin: '0 auto', width: '100%' }}><ManageNews/></div></div>
-                
                 <div id="section-jurusan" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}><ManageJurusanProgram /></div>
-                
                 <div id="section-ekskul" style={{ borderBottom: '1px solid var(--theme-border)' }}><Ekstrakurikuler /></div>
-                
-                {userData.role === 'ADMIN' && (
-                  <div id="section-pengajar" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}>
-                    <ManagePengajar />
-                  </div>
-                )}
-
-                <div id="section-prestasi" style={{ borderBottom: '1px solid var(--theme-border)' }}>
-                  <AchievementSection />
-                </div>
-
-                <div id="section-testimoni" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}>
-                  <TestimonialPage />
-                </div>
-
-                {userData.role === 'ADMIN' && (
-                  <div id="section-faq" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}>
-                    <FaqPage />
-                  </div>
-                )}
-
-                <div id="section-galeri" style={{ padding: '20px 0', borderBottom: '1px solid var(--theme-border)' }}>
-                  <Galeri />
-                </div>
-
+                {userData.role === 'ADMIN' && <div id="section-pengajar" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}><ManagePengajar /></div>}
+                <div id="section-prestasi" style={{ borderBottom: '1px solid var(--theme-border)' }}><AchievementSection /></div>
+                <div id="section-testimoni" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}><TestimonialPage /></div>
+                {userData.role === 'ADMIN' && <div id="section-faq" style={{ padding: '60px 40px', borderBottom: '1px solid var(--theme-border)' }}><FaqPage /></div>}
+                <div id="section-galeri" style={{ padding: '20px 0', borderBottom: '1px solid var(--theme-border)' }}><Galeri /></div>
                 {userData.role === 'ADMIN' ? (
                   <div id="section-kontak" style={{ position: 'relative' }}>
                     <Footer />
-                    <div 
-                      onClick={() => scrollToSection('section-hero')} 
-                      style={{
-                        position: 'absolute',
-                        bottom: '20px',
-                        right: '40px',
-                        background: 'var(--theme-accent)',
-                        color: 'var(--theme-accent-text)',
-                        padding: '10px 12px',
-                        borderRadius: '50%',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        boxShadow: '0 4px 10px rgba(0,0,0,0.15)',
-                        transition: 'background 0.2s'
-                      }}
-                      title="Kembali ke Atas"
-                    >
+                    <div onClick={() => scrollToSection('section-hero')} style={{ position: 'absolute', bottom: '20px', right: '40px', background: 'var(--theme-accent)', color: 'var(--theme-accent-text)', padding: '10px 12px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 10px rgba(0,0,0,0.15)', transition: 'background 0.2s' }} title="Kembali ke Atas">
                       <ChevronUp size={22} />
                     </div>
                   </div>
@@ -608,15 +583,30 @@ const allowedMenus = activeMenuList.filter(item =>
                 )}
               </div>
             } />
+            
             <Route path="kurikulum/:slug" element={<DetailKurikulum />} />
             <Route path="berita/:slug" element={<DetailManageNews />} />
-
             <Route path="downloads" element={<DownloadPage />} />
+            
+            {/* ROUTE BARU UNTUK KELOLA PENGGUNA (Halaman Tersendiri) */}
+            {userData.role === 'ADMIN' && (
+              <Route path="users" element={
+                <div style={{ padding: '40px', background: 'var(--theme-bg)', minHeight: '100vh' }}>
+                  <ManageUsers />
+                </div>
+              } />
+            )}
+            
+            {userData.role === 'ADMIN' && (
+              <>
+                <Route path="settings/*" element={<ManageSettings />} />
+              </>
+            )}
 
             <Route path="*" element={
               <div style={{ padding: '30px', background: 'var(--theme-card)', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', margin: '40px' }}>
-                <h2>Halaman Sedang Dalam Pengembangan</h2>
-                <p style={{ color: 'var(--theme-text-muted)' }}>Fitur ini akan segera hadir.</p>
+                <h2 style={{ color: 'var(--theme-text-main)' }}>Halaman Tidak Ditemukan</h2>
+                <p style={{ color: 'var(--theme-text-muted)' }}>Fitur ini mungkin sedang dalam pengembangan atau URL tidak valid.</p>
               </div>
             } />
           </Routes>
@@ -646,7 +636,8 @@ const MainApp = () => {
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/lupa-password" element={<ForgotPassword />} />
-      <Route path="/dashboard/*" element={
+      <Route path="/dashboard/*" element={<Navigate to="/admin" replace />} />
+      <Route path="/admin/*" element={
         <ProtectedRoute allowedRoles={['ADMIN', 'EDITOR']}>
           <DashboardLayout />
         </ProtectedRoute>

@@ -44,7 +44,7 @@ export default function DetailKurikulum() {
       <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
         
         {/* Tombol Kembali */}
-        <Link to="/dashboard/jurusan" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: '#64748b', textDecoration: 'none', transition: '0.2s', marginBottom: '40px' }}>
+        <Link to="/admin/jurusan" style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '14px', fontWeight: '600', color: '#64748b', textDecoration: 'none', transition: '0.2s', marginBottom: '40px' }}>
           <ArrowLeft size={18} /> Kembali ke Daftar Jurusan
         </Link>
 

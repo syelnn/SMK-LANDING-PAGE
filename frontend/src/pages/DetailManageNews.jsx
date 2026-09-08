@@ -11,7 +11,7 @@ export default function DetailManageNews() {
 
   // Fungsi navigasi balik ke section berita di dashboard
   const handleBackToNews = () => {
-    navigate('/dashboard');
+    navigate('/admin');
 
     setTimeout(() => {
       const newsElement = document.getElementById('section-berita');

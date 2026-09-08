@@ -55,7 +55,7 @@ const Footer = () => {
     e.preventDefault();
     
     // 1. Update Hash di URL
-    window.history.pushState(null, '', `/dashboard#${sectionId}`);
+    window.history.pushState(null, '', `/admin/${sectionId}`);
 
     // 2. Cari elemen dengan prefix 'section-' atau ID langsung
     const targetId = sectionId.startsWith('section-') ? sectionId : `section-${sectionId}`;
@@ -104,15 +104,15 @@ const Footer = () => {
   <h4 className="footer-title">Tautan Cepat</h4>
   <ul className="footer-links-list">
     {/* Ubah 'beranda' menjadi 'hero' */}
-    <li><a href="/dashboard#hero" onClick={(e) => handleNavigate(e, 'hero')}>Dashboard</a></li>
-    <li><a href="/dashboard#profil" onClick={(e) => handleNavigate(e, 'profil')}>Profil Sekolah</a></li>
-    <li><a href="/dashboard#jurusan" onClick={(e) => handleNavigate(e, 'jurusan')}>Jurusan</a></li>
+    <li><a href="/admin#hero" onClick={(e) => handleNavigate(e, 'hero')}>Dashboard</a></li>
+    <li><a href="/admin/profil" onClick={(e) => handleNavigate(e, 'profil')}>Profil Sekolah</a></li>
+    <li><a href="/admin/jurusan" onClick={(e) => handleNavigate(e, 'jurusan')}>Jurusan</a></li>
     {/* Ubah 'ekstrakurikuler' menjadi 'ekskul' */}
-    <li><a href="/dashboard#ekskul" onClick={(e) => handleNavigate(e, 'ekskul')}>Ekstrakurikuler</a></li>
-    <li><a href="/dashboard#pengajar" onClick={(e) => handleNavigate(e, 'pengajar')}>Tenaga Pengajar</a></li>
-    <li><a href="/dashboard#berita" onClick={(e) => handleNavigate(e, 'berita')}>Berita & Artikel</a></li>
-    <li><a href="/dashboard#galeri" onClick={(e) => handleNavigate(e, 'galeri')}>Galeri</a></li>
-    <li><a href="/dashboard#faq" onClick={(e) => handleNavigate(e, 'faq')}>FAQ</a></li>
+    <li><a href="/admin/ekskul" onClick={(e) => handleNavigate(e, 'ekskul')}>Ekstrakurikuler</a></li>
+    <li><a href="/admin/pengajar" onClick={(e) => handleNavigate(e, 'pengajar')}>Tenaga Pengajar</a></li>
+    <li><a href="admin/berita" onClick={(e) => handleNavigate(e, 'berita')}>Berita & Artikel</a></li>
+    <li><a href="/admin/galeri" onClick={(e) => handleNavigate(e, 'galeri')}>Galeri</a></li>
+    <li><a href="/admin/faq" onClick={(e) => handleNavigate(e, 'faq')}>FAQ</a></li>
   </ul>
 </div>
 

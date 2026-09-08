@@ -38,33 +38,30 @@ model Setting {
 }
 
 model News {
-  id              Int           @id @default(autoincrement())
-  category        String?       @db.VarChar(100)
+  id              Int       @id @default(autoincrement())
+  category        String?   @db.VarChar(100)
   tags            Json?
-  title           String        @db.VarChar(255)
-  slug            String        @unique @db.VarChar(255)
-  excerpt         String?       @db.Text
-  content         String?       @db.Text
-  image           String?       @db.Text
-  author          String?       @default("Admin") @db.VarChar(100)
-  publishedAt     DateTime?     @map("published_at") @db.Timestamp(6)
-  status          String?       @default("draft") @db.VarChar(50)
-  isFeatured      Int?          @default(0) @map("is_featured")
-  metaTitle       String?       @map("meta_title") @db.VarChar(255)
-  metaDescription String?       @map("meta_description") @db.VarChar(255)
-  viewCount       Int?          @default(0) @map("view_count")
-  createdAt       DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt       DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  authorId        Int?          @map("author_id")
-  authorUser      User?         @relation("NewsAuthor", fields: [authorId], references: [id], onUpdate: NoAction, map: "fk_news_author")
-  
+  title           String    @db.VarChar(255)
+  slug            String    @unique @db.VarChar(255)
+  excerpt         String?
+  content         String?
+  image           String?
+  author          String?   @default("Admin") @db.VarChar(100)
+  publishedAt     DateTime? @map("published_at") @db.Timestamp(6)
+  status          String?   @default("draft") @db.VarChar(50)
+  isFeatured      Int?      @default(0) @map("is_featured")
+  metaTitle       String?   @map("meta_title") @db.VarChar(255)
+  metaDescription String?   @map("meta_description") @db.VarChar(255)
+  viewCount       Int?      @default(0) @map("view_count")
+  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt       DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  authorId        Int?      @map("author_id")
+  authorUser      User?     @relation("NewsAuthor", fields: [authorId], references: [id], onUpdate: NoAction, map: "fk_news_author")
 
   @@index([publishedAt], map: "idx_news_published")
   @@index([status], map: "idx_news_status")
   @@map("news")
 }
-
-
 
 model Program {
   id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
@@ -99,10 +96,10 @@ model AuditLog {
 model Extracurricular {
   id          Int      @id @default(autoincrement())
   title       String
-  description String?  @db.Text
-  icon        String?  @db.Text
-  show        Int      @default(1)
+  description String?
+  icon        String?
   sortOrder   Int      @default(0) @map("sort_order")
+  show        Int      @default(1)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
@@ -125,7 +122,7 @@ model Faq {
 model Gallery {
   id         Int       @id @default(autoincrement())
   category   String?   @db.VarChar(100)
-  image      String    @db.Text // <--- UBAH BAGIAN INI
+  image      String
   caption    String?   @db.VarChar(255)
   isFeatured Int?      @default(0) @map("is_featured")
   sortOrder  Int?      @default(0) @map("sort_order")
@@ -140,16 +137,14 @@ model Page {
   id              Int        @id @default(autoincrement())
   title           String     @db.VarChar(255)
   slug            String     @unique @db.VarChar(255)
-  content         String?    @db.Text
-  excerpt         String?    @db.Text
+  content         String?
+  excerpt         String?
   image           String?    @db.VarChar(255)
   status          String?    @default("draft") @db.VarChar(50)
   metaTitle       String?    @map("meta_title") @db.VarChar(255)
   metaDescription String?    @map("meta_description") @db.VarChar(255)
   createdAt       DateTime   @default(now()) @map("created_at")
   updatedAt       DateTime   @updatedAt @map("updated_at")
-
-  // Relasi ke MenuItem
   menuItems       MenuItem[]
 
   @@map("pages")
@@ -158,7 +153,6 @@ model Page {
 model MenuItem {
   id         Int        @id @default(autoincrement())
   parentId   Int?       @map("parent_id")
-  pageId     Int?       @map("page_id")
   title      String     @db.VarChar(255)
   url        String?    @db.VarChar(255)
   target     String?    @default("_self") @db.VarChar(50)
@@ -167,15 +161,12 @@ model MenuItem {
   sortOrder  Int?       @default(0) @map("sort_order")
   status     Int?       @default(1)
   type       String?    @default("section") @db.VarChar(50)
+  pageId     Int?       @map("page_id")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
-
-  // Relasi Self-Referencing (Parent - Child Submenu)
+  page       Page?      @relation(fields: [pageId], references: [id])
   parent     MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children   MenuItem[] @relation("MenuHierarchy")
-
-  // Relasi ke Page
-  page       Page?      @relation(fields: [pageId], references: [id], onDelete: SetNull)
 
   @@map("menu_items")
 }
@@ -248,7 +239,7 @@ model Download {
 model achievements {
   id           Int       @id @default(autoincrement())
   student_name String    @db.VarChar(200)
-  photo        String?  @db.Text
+  photo        String?
   class_name   String?   @db.VarChar(100)
   achievement  String    @db.VarChar(255)
   level        String?   @default("Kota") @db.VarChar(50)
@@ -288,20 +279,19 @@ model ProgramUnggulanCustom {
 
 model FooterSetting {
   id           Int      @id @default(autoincrement())
-  schoolName   String   @map("school_name")   // Nama SMK
-  description  String   @db.Text              // Teks singkat deskripsi di bawah nama SMK
-  address      String   @db.Text              // Teks alamat lengkap
-  phone        String                         // Nomor Telepon / WA
-  email        String                         // Email resmi sekolah
-  facebookUrl  String?  @map("facebook_url")  // Link akun Facebook
-  instagramUrl String?  @map("instagram_url") // Link akun Instagram
-  tiktokUrl    String?  @map("tiktok_url")    // Link akun TikTok
-  youtubeUrl   String?  @map("youtube_url")   // Link akun YouTube
-  twitterUrl   String?  @map("twitter_url")   // Link akun Twitter / X
-  mapsEmbedUrl String?  @db.Text @map("maps_embed_url") // Link embed Google Maps
-
+  schoolName   String   @map("school_name")
+  description  String
+  address      String
+  phone        String
+  email        String
+  facebookUrl  String?  @map("facebook_url")
+  instagramUrl String?  @map("instagram_url")
+  mapsEmbedUrl String?  @map("maps_embed_url")
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
+  tiktokUrl    String?  @map("tiktok_url")
+  twitterUrl   String?  @map("twitter_url")
+  youtubeUrl   String?  @map("youtube_url")
 
   @@map("footer_setting")
 }

@@ -188,7 +188,7 @@ export default function ManageNews() {
               </p>
               
               <Link 
-                to={`/dashboard/berita/${item.slug || createSlug(item.title) || item.id}`} 
+                to={`/admin/berita/${item.slug || createSlug(item.title) || item.id}`} 
                 className="news-readmore"
                 style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                 onClick={(e) => {

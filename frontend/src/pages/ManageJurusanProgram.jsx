@@ -171,7 +171,7 @@ export default function ManageJurusanProgram() {
                 </ul>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '15px' }}>
-                <Link to={`/dashboard/kurikulum/${item.slug}`} className="card-link-btn">
+                <Link to={`/admin/kurikulum/${item.slug}`} className="card-link-btn">
                   DETAIL KURIKULUM <ArrowRight size={16} />
                 </Link>
                 {(userRole === 'admin' || userRole === 'editor') && (

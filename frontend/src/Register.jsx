@@ -59,7 +59,7 @@ export default function Register() {
     if (isSuccess && countdown > 0) {
       interval = setInterval(() => setCountdown((prev) => prev - 1), 1000);
     } else if (isSuccess && countdown === 0) {
-      navigate('/dashboard');
+      navigate('/admin');
     }
     return () => clearInterval(interval);
   }, [isSuccess, countdown, navigate]);

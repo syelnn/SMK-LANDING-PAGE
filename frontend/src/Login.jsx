@@ -24,7 +24,7 @@ export default function Login() {
       const response = await axios.post('http://localhost:5001/api/auth/login', { username, password });
       localStorage.setItem('token', response.data.data.token);
       localStorage.setItem('role', response.data.data.user.role);
-      navigate('/dashboard');
+      navigate('/admin');
     } catch (error) {
       setErrorMsg(error.response?.data?.message || 'Gagal terhubung ke server.');
     }
