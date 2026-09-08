@@ -3,6 +3,8 @@ import { SettingsContext, SettingsProvider } from './context/SettingsContext';
 import { Routes, Route, Navigate, NavLink, useNavigate } from 'react-router-dom';
 import Login from './Login';
 import Register from './Register';
+import DownloadPage from './pages/DownloadPage';
+
 import { 
   Users, School, Newspaper, BookOpen, Activity, 
   GraduationCap, Trophy, MessageSquare, HelpCircle, 
@@ -106,12 +108,15 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   let userRole = (localStorage.getItem('role') || '').toUpperCase();
   
-  if (token) {
+  if (token && token.split('.').length === 3) {
     try {
-      const payload = JSON.parse(window.atob(token.split('.')[1]));
+      const base64Url = token.split('.')[1];
+      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+      const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
+      const payload = JSON.parse(jsonPayload);
       if (payload.role) userRole = payload.role.toUpperCase();
     } catch (e) {
-      console.error("Gagal membaca token");
+      console.error("Gagal membaca token di ProtectedRoute", e);
     }
   }
 
@@ -143,7 +148,7 @@ const DashboardLayout = () => {
     let exactEmail = localStorage.getItem('email') || '-';
     let exactRole = localStorage.getItem('role') || 'VIEWER';
 
-    if (token) {
+    if (token && token.split('.').length === 3) {
       try {
         const base64Url = token.split('.')[1];
         const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
@@ -161,11 +166,11 @@ const DashboardLayout = () => {
     return {
       name: exactName,
       email: exactEmail,
-      role: exactRole.toUpperCase(),
-      initial: exactName.charAt(0).toUpperCase()
+      role: (exactRole || 'VIEWER').toUpperCase(),
+      initial: exactName ? exactName.charAt(0).toUpperCase() : 'U'
     };
   };
-
+  
   const userData = getExactUser();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -194,6 +199,20 @@ const DashboardLayout = () => {
   const handleMenuClick = (menu) => {
     setIsMobileMenuOpen(false);
 
+    // 1. UTAMAKAN CEK LINK: Jika menu adalah link ke halaman beda (seperti /dashboard/downloads)
+    if (menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'))) {
+      navigate(menu.url);
+      return;
+    }
+
+    // 2. CEK HALAMAN: Jika sedang di luar halaman utama (/dashboard/downloads) lalu klik menu scroll biasa
+    if (window.location.pathname !== '/dashboard') {
+      const cleanSection = menu.target ? menu.target.replace(/^section-/, '') : '';
+      navigate(`/dashboard#${cleanSection}`);
+      return;
+    }
+
+    // 3. JIKA DI HALAMAN UTAMA: Lakukan Scroll ke Section
     const targetEl = findTargetElement(menu.target, menu.url);
     const contentElement = document.querySelector('.dashboard-content');
 
@@ -205,49 +224,50 @@ const DashboardLayout = () => {
       const cleanId = targetEl.id.replace(/^section-/, '');
       window.history.pushState(null, '', `/dashboard#${cleanId}`);
       setActiveSection(targetEl.id);
-      return; 
-    }
-
-    if (menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'))) {
-      navigate(menu.url);
     }
   };
   
   useEffect(() => {
-    const contentElement = document.querySelector('.dashboard-content');
-    if (!contentElement) return;
+  const contentElement = document.querySelector('.dashboard-content');
+  if (!contentElement) return;
 
-    const sectionIds = [
-      'section-hero', 'section-pengguna', 'section-profil', 
-      'section-settings', 'section-berita', 'section-jurusan', 
-      'section-ekskul', 'section-pengajar', 'section-prestasi', 
-      'section-testimoni', 'section-galeri', 'section-faq', 'section-kontak', 'section-download'
-    ];
+  const sectionIds = [
+    'section-hero', 'section-pengguna', 'section-profil', 
+    'section-settings', 'section-berita', 'section-jurusan', 
+    'section-ekskul', 'section-pengajar', 'section-prestasi', 
+    'section-testimoni', 'section-galeri', 'section-faq', 'section-kontak'
+  ];
 
-    const handleScroll = () => {
-      const isAtBottom = contentElement.scrollTop + contentElement.clientHeight >= contentElement.scrollHeight - 50;
-      if (isAtBottom) {
-        setActiveSection('section-kontak');
-        return;
-      }
-      const scrollPosition = contentElement.scrollTop + 120; 
-      for (const id of sectionIds) {
-        const element = document.getElementById(id);
-        if (element) {
-          const top = element.offsetTop;
-          const height = element.offsetHeight;
-          if (scrollPosition >= top && scrollPosition < top + height) {
-            setActiveSection(id);
-            break;
-          }
+  const handleScroll = () => {
+    // Jalankan kalkulasi scroll HANYA jika berada di halaman utama /dashboard
+    if (window.location.pathname !== '/dashboard' && window.location.pathname !== '/dashboard/') {
+      return;
+    }
+
+    const isAtBottom = contentElement.scrollTop + contentElement.clientHeight >= contentElement.scrollHeight - 50;
+    if (isAtBottom) {
+      setActiveSection('section-kontak');
+      return;
+    }
+
+    const scrollPosition = contentElement.scrollTop + 120; 
+    for (const id of sectionIds) {
+      const element = document.getElementById(id);
+      if (element) {
+        const top = element.offsetTop;
+        const height = element.offsetHeight;
+        if (scrollPosition >= top && scrollPosition < top + height) {
+          setActiveSection(id);
+          break;
         }
       }
-    };
+    }
+  };
 
-    contentElement.addEventListener('scroll', handleScroll);
-    handleScroll(); 
-    return () => contentElement.removeEventListener('scroll', handleScroll);
-  }, []);
+  contentElement.addEventListener('scroll', handleScroll);
+  handleScroll(); 
+  return () => contentElement.removeEventListener('scroll', handleScroll);
+}, []);
 
   const defaultMenuItems = [
     { title: 'Dashboard', iconKey: 'dashboard', target: 'section-hero', roles: ['ADMIN', 'EDITOR'] },
@@ -263,52 +283,61 @@ const DashboardLayout = () => {
     { title: 'Galeri', iconKey: 'galeri', target: 'section-galeri', roles: ['ADMIN', 'EDITOR'] },
     { title: 'FAQ', iconKey: 'faq', target: 'section-faq', roles: ['ADMIN'] },
     { title: 'Kontak & Alamat', iconKey: 'kontak', target: 'section-kontak', roles: ['ADMIN'] },
+    { title: 'Download', iconKey: 'download', type: 'link', url: '/dashboard/downloads', roles: ['ADMIN', 'EDITOR'] },
   ];
 
   const [dynamicNavs, setDynamicNavs] = useState([]);
+useEffect(() => {
+  fetch('http://localhost:5002/api/menu-items')
+    .then((res) => res.json())
+    .then((resData) => {
+      if (resData.success && resData.data && resData.data.length > 0) {
+        const mapped = resData.data.map(m => {
+          const rawTarget = m.path || m.url || m.sectionKey || m.target || 'section-hero';
+          const cleanTarget = rawTarget.replace(/.*#/, '').replace(/^section-/, '').trim();
+          
+          // Memastikan URL bertipe 'link' selalu diawali dengan /dashboard
+          let formattedUrl = m.url || '';
+          if (m.type === 'link' || formattedUrl.startsWith('/downloads')) {
+            if (!formattedUrl.startsWith('/dashboard')) {
+              formattedUrl = `/dashboard${formattedUrl.startsWith('/') ? formattedUrl : '/' + formattedUrl}`;
+            }
+          }
 
-  useEffect(() => {
-    fetch('http://localhost:5002/api/menu-items')
-      .then((res) => res.json())
-      .then((resData) => {
-        if (resData.success && resData.data && resData.data.length > 0) {
-          const mapped = resData.data.map(m => {
-            const rawTarget = m.path || m.url || m.sectionKey || m.target || 'section-hero';
-            const cleanTarget = rawTarget.replace(/.*#/, '').replace(/^section-/, '').trim();
-            return {
-              title: m.title,
-              iconKey: m.icon || 'dashboard',
-              type: m.type, 
-              url: m.url,
-              target: cleanTarget ? `section-${cleanTarget}` : 'section-hero',
-              roles: ['ADMIN', 'EDITOR']
-            };
-          });
-          setDynamicNavs(mapped);
-        }
-      })
-      .catch(() => setDynamicNavs([]));
-  }, []);
+          return {
+            title: m.title,
+            iconKey: m.icon || 'dashboard',
+            type: m.type, 
+            url: formattedUrl,
+            target: cleanTarget ? `section-${cleanTarget}` : 'section-hero',
+            roles: ['ADMIN', 'EDITOR']
+          };
+        });
+        setDynamicNavs(mapped);
+      }
+    })
+    .catch(() => setDynamicNavs([]));
+}, []);
 
-  useEffect(() => {
-    const hash = window.location.hash;
-    if (hash) {
-      const cleanHash = hash.replace('#', '');
-      setTimeout(() => {
-        const targetEl = findTargetElement(cleanHash, cleanHash);
-        const contentElement = document.querySelector('.dashboard-content');
-        if (targetEl && contentElement) {
-          contentElement.scrollTo({ top: targetEl.offsetTop - 70, behavior: 'smooth' });
-        }
-      }, 300);
-    }
-  }, [dynamicNavs]);
+useEffect(() => {
+  const hash = window.location.hash;
+  if (hash) {
+    const cleanHash = hash.replace('#', '');
+    setTimeout(() => {
+      const targetEl = findTargetElement(cleanHash, cleanHash);
+      const contentElement = document.querySelector('.dashboard-content');
+      if (targetEl && contentElement) {
+        contentElement.scrollTo({ top: targetEl.offsetTop - 70, behavior: 'smooth' });
+      }
+    }, 300);
+  }
+}, [dynamicNavs]);
 
-  const activeMenuList = dynamicNavs.length > 0 ? dynamicNavs : defaultMenuItems;
-  
-  const allowedMenus = activeMenuList.filter(item => 
-    item.roles ? item.roles.map(r => r.toUpperCase()).includes(userData.role) : true
-  );
+const activeMenuList = dynamicNavs.length > 0 ? dynamicNavs : defaultMenuItems;
+
+const allowedMenus = activeMenuList.filter(item => 
+  item.roles ? item.roles.map(r => r.toUpperCase()).includes(userData.role) : true
+);
 
   return (
     <div className="dashboard-container">
@@ -372,34 +401,41 @@ const DashboardLayout = () => {
 
         </div>
 
-        <div className="sidebar-menu" style={{ background: 'var(--compreng-surface)' }}>
-          <ul>
-            {allowedMenus.map((menu, index) => {
-              const isActive = activeSection === menu.target;
-              return (
-                <li key={index}>
-                  <button 
-                    onClick={() => handleMenuClick(menu)}
-                    className={`sidebar-link ${isActive ? 'active' : ''}`}
-                    style={{ 
-                      border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', 
-                      display: 'flex', alignItems: 'center', gap: '10px',
-                      padding: '10px 15px', borderRadius: '8px', transition: 'all 0.2s',
-                      background: isActive ? 'var(--compreng-green-light)' : 'transparent',
-                      color: isActive ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)',
-                      fontWeight: isActive ? '700' : '500'
-                    }}
-                  >
-                   <span style={{ color: isActive ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)' }}>
-                      {ICON_MAP[menu.iconKey] || <LayoutDashboard size={18} />}
-                   </span>
-                    <span style={{ fontSize: '14px' }}>{menu.title}</span>
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-        </div>
+       <div className="sidebar-menu" style={{ background: 'var(--compreng-surface)' }}>
+  <ul>
+    {allowedMenus.map((menu, index) => {
+      // 1. Cek apakah menu bertipe link halaman terpisah
+      const isPageLink = menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'));
+
+      // 2. Tentukan status active secara presisi
+      const isActive = isPageLink 
+        ? window.location.pathname === menu.url 
+        : (window.location.pathname === '/dashboard' && activeSection === menu.target);
+
+      return (
+        <li key={index}>
+          <button 
+            onClick={() => handleMenuClick(menu)}
+            className={`sidebar-link ${isActive ? 'active' : ''}`}
+            style={{ 
+              border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', 
+              display: 'flex', alignItems: 'center', gap: '10px',
+              padding: '10px 15px', borderRadius: '8px', transition: 'all 0.2s',
+              background: isActive ? 'var(--compreng-green-light)' : 'transparent',
+              color: isActive ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)',
+              fontWeight: isActive ? '700' : '500'
+            }}
+          >
+            <span style={{ color: isActive ? 'var(--compreng-green)' : 'var(--compreng-text-secondary)' }}>
+              {ICON_MAP[menu.iconKey] || <LayoutDashboard size={18} />}
+            </span>
+            <span style={{ fontSize: '14px' }}>{menu.title}</span>
+          </button>
+        </li>
+      );
+    })}
+  </ul>
+</div>
 
         <div className="sidebar-footer" style={{ background: 'var(--compreng-surface)', borderTop: '1px solid var(--compreng-border)' }}>
           <button onClick={handleLogout} className="logout-btn"><LogOut size={18} /> Logout</button>
@@ -428,16 +464,23 @@ const DashboardLayout = () => {
           </div>
 
           <nav className="spmb-nav-links-clean" style={{ overflowX: 'auto', display: 'flex', gap: '6px', whiteSpace: 'nowrap', padding: '5px 0', scrollbarWidth: 'none' }}>
-            {allowedMenus.map((menu, idx) => (
-              <button 
-                key={idx}
-                onClick={() => handleMenuClick(menu)} 
-                className={`nav-clean-item ${activeSection === menu.target ? 'active' : ''}`}
-                style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 12px', fontWeight: '500' }}
-              >
-                {menu.title}
-              </button>
-            ))}
+            {allowedMenus.map((menu, idx) => {
+  const isPageLink = menu.type === 'link' || (menu.url && menu.url.startsWith('/') && !menu.url.includes('#'));
+  const isActive = isPageLink 
+    ? window.location.pathname === menu.url 
+    : (window.location.pathname === '/dashboard' && activeSection === menu.target);
+
+  return (
+    <button 
+      key={idx}
+      onClick={() => handleMenuClick(menu)} 
+      className={`nav-clean-item ${isActive ? 'active' : ''}`}
+      style={{ background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px 12px', fontWeight: '500' }}
+    >
+      {menu.title}
+    </button>
+  );
+})}
           </nav>
         </header>
 
@@ -567,6 +610,8 @@ const DashboardLayout = () => {
             } />
             <Route path="kurikulum/:slug" element={<DetailKurikulum />} />
             <Route path="berita/:slug" element={<DetailManageNews />} />
+
+            <Route path="downloads" element={<DownloadPage />} />
 
             <Route path="*" element={
               <div style={{ padding: '30px', background: 'var(--theme-card)', borderRadius: '12px', boxShadow: '0 2px 10px rgba(0,0,0,0.05)', margin: '40px' }}>

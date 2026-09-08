@@ -1252,6 +1252,123 @@ app.put('/api/settings/bulk-update', async (req, res) => {
   }
 });
 
+
+// ==========================================
+// API DOWNLOADS (PRISMA ORM)
+// ==========================================
+
+// 1. GET ALL DOWNLOADS
+app.get('/api/downloads', async (req, res) => {
+  try {
+    const downloads = await prisma.download.findMany({
+      orderBy: [
+        { sortOrder: 'asc' }, // Menggunakan sortOrder (bukan sort_order)
+        { id: 'desc' }
+      ]
+    });
+
+    res.status(200).json({
+      success: true,
+      data: downloads
+    });
+  } catch (error) {
+    console.error("Error GET Downloads:", error.message);
+    res.status(500).json({ 
+      success: false, 
+      message: error.message 
+    });
+  }
+});
+
+// 2. POST DOWNLOAD (Tambah Data Baru)
+app.post('/api/downloads', async (req, res) => {
+  const { title, category, description, url, file_size, fileSize, sort_order, sortOrder, show } = req.body;
+
+  if (!title || !url) {
+    return res.status(400).json({ success: false, message: 'Judul dan URL wajib diisi!' });
+  }
+
+  try {
+    const newDownload = await prisma.download.create({
+      data: {
+        title,
+        category: category || 'Lainnya',
+        description: description || '',
+        url,
+        fileSize: fileSize || file_size || '', // Menangani fileSize / file_size
+        sortOrder: Number(sortOrder ?? sort_order ?? 1), // Menangani sortOrder / sort_order
+        show: Number(show ?? 1)
+      }
+    });
+
+    res.status(201).json({ 
+      success: true, 
+      message: 'Berkas berhasil ditambahkan', 
+      data: newDownload 
+    });
+  } catch (err) {
+    console.error('Error POST download:', err.message);
+    res.status(500).json({ success: false, message: 'Gagal menambah data: ' + err.message });
+  }
+});
+
+// 3. PUT DOWNLOAD (Edit Data)
+app.put('/api/downloads/:id', async (req, res) => {
+  const { id } = req.params;
+  const { title, category, description, url, file_size, fileSize, sort_order, sortOrder, show } = req.body;
+
+  try {
+    const updatedDownload = await prisma.download.update({
+      where: { 
+        id: Number(id)
+      },
+      data: {
+        title,
+        category,
+        description,
+        url,
+        fileSize: fileSize || file_size || '',
+        sortOrder: Number(sortOrder ?? sort_order ?? 1),
+        show: Number(show ?? 1)
+      }
+    });
+
+    res.json({ 
+      success: true, 
+      message: 'Berkas berhasil diperbarui', 
+      data: updatedDownload 
+    });
+  } catch (err) {
+    console.error('Error PUT download:', err.message);
+    if (err.code === 'P2025') {
+      return res.status(404).json({ success: false, message: 'Data tidak ditemukan' });
+    }
+    res.status(500).json({ success: false, message: 'Gagal memperbarui data: ' + err.message });
+  }
+});
+
+// 4. DELETE DOWNLOAD (Hapus Data)
+app.delete('/api/downloads/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await prisma.download.delete({
+      where: { 
+        id: Number(id)
+      }
+    });
+
+    res.json({ success: true, message: 'Berkas berhasil dihapus' });
+  } catch (err) {
+    console.error('Error DELETE download:', err.message);
+    if (err.code === 'P2025') {
+      return res.status(404).json({ success: false, message: 'Data tidak ditemukan' });
+    }
+    res.status(500).json({ success: false, message: 'Gagal menghapus data: ' + err.message });
+  }
+});
+
+
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);
 });
