@@ -14,13 +14,16 @@ import {
   X,
   Upload,
   Link as LinkIcon,
-  Lock
+  Loader2
 } from 'lucide-react';
 
 const renderIcon = (iconValue) => {
   const props = { className: "ekskul-icon" };
 
-  if (iconValue && (iconValue.startsWith('data:image') || iconValue.startsWith('http') || iconValue.startsWith('/uploads'))) {
+  if (!iconValue) return <Shield {...props} className="ekskul-icon text-blue" />;
+
+  // Jika berupa URL, path file, atau Base64 Image
+  if (iconValue.startsWith('data:image') || iconValue.startsWith('http') || iconValue.startsWith('/uploads')) {
     return (
       <img 
         src={iconValue} 
@@ -30,25 +33,47 @@ const renderIcon = (iconValue) => {
     );
   }
 
-  switch (iconValue) {
-    case 'Shield': return <Shield {...props} className="ekskul-icon text-blue" />;
-    case 'Compass': return <Compass {...props} className="ekskul-icon text-green" />;
-    case 'Users': return <Users {...props} className="ekskul-icon text-yellow" />;
-    case 'Music': return <Music {...props} className="ekskul-icon text-orange" />;
-    case 'Swords': return <Swords {...props} className="ekskul-icon text-red" />;
-    case 'Activity': return <Activity {...props} className="ekskul-icon text-emerald" />;
-    case 'Palette': return <Palette {...props} className="ekskul-icon text-pink" />;
-    case 'Cpu': return <Cpu {...props} className="ekskul-icon text-purple" />;
+  // Normalisasi string ke lowercase agar tidak bermasalah dengan case-sensitive
+  const key = iconValue.trim().toLowerCase();
+
+  switch (key) {
+    case 'shield': return <Shield {...props} className="ekskul-icon text-blue" />;
+    case 'compass': return <Compass {...props} className="ekskul-icon text-green" />;
+    case 'users': return <Users {...props} className="ekskul-icon text-yellow" />;
+    case 'music': return <Music {...props} className="ekskul-icon text-orange" />;
+    case 'swords': return <Swords {...props} className="ekskul-icon text-red" />;
+    case 'activity': return <Activity {...props} className="ekskul-icon text-emerald" />;
+    case 'palette': return <Palette {...props} className="ekskul-icon text-pink" />;
+    case 'cpu': return <Cpu {...props} className="ekskul-icon text-purple" />;
     default: return <Shield {...props} className="ekskul-icon text-blue" />;
   }
 };
 
 export default function Ekstrakurikuler() {
-  // Ambil data user & role dari localStorage (default ke 'viewer' jika kosong)
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const userRole = (currentUser.role || 'viewer').toLowerCase();
+  const getUserRole = () => {
+    const token = localStorage.getItem('token');
+    let role = (localStorage.getItem('role') || 'viewer').toLowerCase();
 
-  // Izinkan CRUD hanya jika role 'admin' atau 'editor'
+    if (token && token.split('.').length === 3) {
+      try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(
+          window.atob(base64)
+            .split('')
+            .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+            .join('')
+        );
+        const payload = JSON.parse(jsonPayload);
+        if (payload.role) role = payload.role.toLowerCase();
+      } catch (e) {
+        console.error('Gagal membaca token di Ekstrakurikuler:', e);
+      }
+    }
+    return role;
+  };
+
+  const userRole = getUserRole();
   const canAccessCRUD = userRole === 'admin' || userRole === 'editor';
 
   const [listEkskul, setListEkskul] = useState([]);
@@ -58,6 +83,8 @@ export default function Ekstrakurikuler() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
   
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [logoType, setLogoType] = useState('url');
   const [selectedFile, setSelectedFile] = useState(null);
 
@@ -87,13 +114,19 @@ export default function Ekstrakurikuler() {
     fetchEkskul();
   }, []);
 
-  
+
 
   const handleOpenAdd = () => {
     setIsEditing(false);
     setLogoType('url');
     setSelectedFile(null);
-    setFormData({ title: '', description: '', icon: '', sort_order: listEkskul.length + 1, show: 1 });
+    setFormData({ 
+      title: '', 
+      description: '', 
+      icon: '', 
+      sort_order: listEkskul.length + 1, 
+      show: 1 
+    });
     setShowModal(true);
   };
 
@@ -123,6 +156,8 @@ export default function Ekstrakurikuler() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
+
     const url = isEditing 
       ? `http://localhost:5002/api/extracurriculars/${currentId}` 
       : 'http://localhost:5002/api/extracurriculars';
@@ -162,6 +197,8 @@ export default function Ekstrakurikuler() {
     } catch (error) {
       console.error('Error saat menyimpan:', error);
       alert('Terjadi kesalahan pada server');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -190,20 +227,21 @@ export default function Ekstrakurikuler() {
 
   return (
     <div className="ekskul-container">
-      <div style={{ maxWidth: '1100px', margin: '0 auto 30px auto', padding: '0 15px' }}>
-        <div style={{ textAlign: 'center' }}>
+      <div className="ekskul-header-wrapper">
+        <div className="ekskul-header-text">
           <span className="ekskul-badge">Ekstrakurikuler</span>
-          <h2 className="ekskul-title" style={{ marginTop: '10px' }}>
+          <h2 className="ekskul-title">
             Ekstrakurikuler <span>SMK Negeri Compreng</span>
           </h2>
-          <p className="ekskul-desc" style={{ margin: '8px auto 0 auto' }}>
+          <p className="ekskul-desc">
             Wadah pengembangan minat, bakat, dan potensi siswa di luar kelas.
           </p>
         </div>
         
-        {/* Tombol Tambah HANYA Tampil untuk Admin & Editor */}
+
+        
         {canAccessCRUD && (
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '20px' }}>
+          <div className="ekskul-add-wrapper">
             <button onClick={handleOpenAdd} className="ekskul-add-btn">
               <Plus size={16} /> Tambah Ekskul
             </button>
@@ -213,8 +251,7 @@ export default function Ekstrakurikuler() {
 
       <div className="ekskul-grid">
         {listEkskul.map((item) => (
-          <div key={item.id} className="ekskul-card" style={{ position: 'relative' }}>
-            {/* Action Buttons HANYA Tampil untuk Admin & Editor */}
+          <div key={item.id} className="ekskul-card">
             {canAccessCRUD && (
               <div className="ekskul-card-actions">
                 <button onClick={() => handleOpenEdit(item)} className="ekskul-action-btn edit" title="Edit">
@@ -226,131 +263,109 @@ export default function Ekstrakurikuler() {
               </div>
             )}
 
-            <div>
+            <div className="ekskul-card-content">
               <div className="ekskul-icon-box">
                 {renderIcon(item.icon)}
               </div>
               <h3 className="ekskul-card-title">{item.title}</h3>
               <p className="ekskul-card-text">{item.description}</p>
             </div>
-            
-            <button onClick={() => {}} className="ekskul-btn">
-              Daftar Sekarang
-            </button>
+
+
           </div>
         ))}
       </div>
 
-      {/* MODAL FORM (HANYA UNTUK ADMIN & EDITOR) */}
+      {/* MODAL FORM RESPONSIVE */}
       {showModal && canAccessCRUD && (
         <div className="ekskul-modal-overlay">
           <div className="ekskul-modal-box">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '18px', fontWeight: 'bold', margin: 0, color: '#0f172a' }}>
-                {isEditing ? 'Edit Ekstrakurikuler' : 'Tambah Ekstrakurikuler'}
-              </h3>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748b' }}>
+            <div className="ekskul-modal-header">
+              <h3>{isEditing ? 'Edit Ekstrakurikuler' : 'Tambah Ekstrakurikuler Baru'}</h3>
+              <button 
+                type="button" 
+                onClick={() => !isSubmitting && setShowModal(false)}
+                className="ekskul-close-btn"
+              >
                 <X size={20} />
               </button>
             </div>
 
-            <form onSubmit={handleSubmit}>
-              {/* Nama Ekskul */}
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>Nama Ekskul</label>
+            <form onSubmit={handleSubmit} className="ekskul-modal-body">
+              <div className="ekskul-form-group">
+                <label className="ekskul-form-label">NAMA EKSTRAKURIKULER</label>
                 <input 
                   type="text" 
-                  className="form-control" 
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                  className="ekskul-form-input"
+                  placeholder="Contoh: Paskibra, Pramuka, Futsal"
                   value={formData.title} 
                   onChange={(e) => setFormData({...formData, title: e.target.value})} 
                   required 
                 />
               </div>
 
-              {/* Deskripsi */}
-              <div style={{ marginBottom: '12px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>Deskripsi</label>
+              <div className="ekskul-form-group">
+                <label className="ekskul-form-label">DESKRIPSI</label>
                 <textarea 
                   rows="3" 
-                  style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px', fontFamily: 'inherit' }}
+                  className="ekskul-form-textarea"
+                  placeholder="Penjelasan singkat mengenai ekstrakurikuler..."
                   value={formData.description} 
                   onChange={(e) => setFormData({...formData, description: e.target.value})}
                 ></textarea>
               </div>
 
-              {/* Urutan Tampilan (Sort Order) - Hanya muncul saat Mode EDIT */}
-              {isEditing && (
-                <div style={{ marginBottom: '12px' }}>
-                  <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>
-                    Urutan Tampilan (Sort Order)
-                  </label>
+              <div className="ekskul-form-row">
+                <div className="ekskul-form-group">
+                  <label className="ekskul-form-label">URUTAN (OTOMATIS)</label>
                   <input 
                     type="number" 
                     min="1"
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    className="ekskul-form-input"
                     value={formData.sort_order} 
                     onChange={(e) => setFormData({...formData, sort_order: e.target.value})} 
                     required 
                   />
-                  <span style={{ fontSize: '11px', color: '#64748b', marginTop: '4px', display: 'block' }}>
-                    *Angka lebih kecil (misal: 1) akan muncul paling awal.
-                  </span>
                 </div>
-              )}
 
-              {/* Opsi Logo / Gambar */}
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '500', marginBottom: '6px', color: '#334155' }}>Logo Ekstrakurikuler</label>
+                <div className="ekskul-form-group">
+                  <label className="ekskul-form-label">STATUS TAMPIL</label>
+                  <select
+                    className="ekskul-form-select"
+                    value={formData.show}
+                    onChange={(e) => setFormData({...formData, show: e.target.value})}
+                  >
+                    <option value={1}>Ditampilkan</option>
+                    <option value={0}>Sembunyi</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="ekskul-logo-box">
+                <label className="ekskul-form-label">LOGO / ICON EKSTRAKURIKULER</label>
                 
-                <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+                <div className="ekskul-tab-container">
                   <button
                     type="button"
                     onClick={() => setLogoType('url')}
-                    style={{
-                      flex: 1,
-                      padding: '6px 10px',
-                      fontSize: '12px',
-                      borderRadius: '6px',
-                      border: '1px solid #cbd5e1',
-                      backgroundColor: logoType === 'url' ? '#e0f2fe' : '#ffffff',
-                      color: logoType === 'url' ? '#0369a1' : '#475569',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px'
-                    }}
+                    className={`ekskul-tab-btn ${logoType === 'url' ? 'active' : ''}`}
                   >
-                    <LinkIcon size={14} /> URL Gambar
+                    <LinkIcon size={14} /> Link URL
                   </button>
                   <button
                     type="button"
                     onClick={() => setLogoType('file')}
-                    style={{
-                      flex: 1,
-                      padding: '6px 10px',
-                      fontSize: '12px',
-                      borderRadius: '6px',
-                      border: '1px solid #cbd5e1',
-                      backgroundColor: logoType === 'file' ? '#e0f2fe' : '#ffffff',
-                      color: logoType === 'file' ? '#0369a1' : '#475569',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '4px'
-                    }}
+                    className={`ekskul-tab-btn ${logoType === 'file' ? 'active' : ''}`}
                   >
-                    <Upload size={14} /> Upload File
+                    <Upload size={14} /> Upload Foto
                   </button>
                 </div>
 
                 {logoType === 'url' ? (
                   <input 
                     type="text" 
-                    placeholder="Masukkan URL Gambar (https://...)"
-                    style={{ width: '100%', padding: '8px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    placeholder="https://contoh.com/foto.jpg"
+                    className="ekskul-form-input white-bg"
                     value={formData.icon} 
                     onChange={(e) => setFormData({...formData, icon: e.target.value})} 
                   />
@@ -358,26 +373,34 @@ export default function Ekstrakurikuler() {
                   <input 
                     type="file" 
                     accept="image/*"
-                    style={{ width: '100%', padding: '6px 12px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '13px' }}
+                    className="ekskul-form-input white-bg"
                     onChange={(e) => setSelectedFile(e.target.files[0])} 
                   />
                 )}
               </div>
 
-              {/* Button Action */}
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+              <div className="ekskul-modal-actions">
                 <button 
                   type="button" 
+                  disabled={isSubmitting}
                   onClick={() => setShowModal(false)} 
-                  style={{ padding: '8px 14px', backgroundColor: '#f1f5f9', border: '1px solid #cbd5e1', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', color: '#334155' }}
+                  className="ekskul-btn-cancel"
                 >
                   Batal
                 </button>
                 <button 
                   type="submit" 
-                  style={{ padding: '8px 14px', backgroundColor: '#2563eb', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '13px', fontWeight: '500', color: '#ffffff' }}
+                  disabled={isSubmitting}
+                  className="ekskul-btn-submit"
                 >
-                  {isEditing ? 'Simpan Perubahan' : 'Tambah'}
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 size={16} className="ekskul-spinner" />
+                      Menyimpan...
+                    </>
+                  ) : (
+                    'Simpan Data'
+                  )}
                 </button>
               </div>
             </form>

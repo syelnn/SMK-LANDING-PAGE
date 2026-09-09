@@ -1230,124 +1230,442 @@ body, html, #root {
 
 
 /* =========================================
-   STYLE KHUSUS HALAMAN EKSTRAKURIKULER 
+   STYLE CONTAINER & LAYOUT EKSTRAKURIKULER
    ========================================= */
+
 .ekskul-container {
-  background-color: #ffffff; 
-  min-height: 100vh;
-  padding: 40px 20px;
-  color: #1e293b;
-  font-family: inherit;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 16px 40px 16px;
+  box-sizing: border-box;
 }
 
-.ekskul-header {
-  max-width: 1200px;
+.ekskul-header-wrapper {
+  max-width: 1100px;
   margin: 0 auto 30px auto;
+}
+
+.ekskul-header-text {
   text-align: center;
 }
 
-.ekskul-add-btn {
-  background-color: #2563eb;
-  color: #ffffff;
-  font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 13px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ekskul-add-btn:hover {
-  background-color: #1d4ed8;
-}
-
-.ekskul-badge {
-  background-color: #eff6ff;
-  color: #2563eb;
-  font-size: 11px;
-  font-weight: 600;
-  padding: 5px 12px;
-  border-radius: 50px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  border: 1px solid #bfdbfe;
-}
-
 .ekskul-title {
-  font-size: 33px;
-  font-weight: 800; 
-  letter-spacing: -0.02em; /* Membuat teks lebih padat serasi seperti gambar kedua */
-  margin-top: 12px;
-  margin-bottom: 8px;
+  margin-top: 10px;
+  font-size: 28px;
+  font-weight: 800;
   color: #0f172a;
 }
 
-.ekskul-title span {
-  color: #2563eb;
+.ekskul-desc {
+  margin: 8px auto 0 auto;
+  max-width: 600px;
+  color: #64748b;
+  font-size: 15px;
 }
 
-.ekskul-desc {
-  color: #64748b;
-  font-size: 14px;
-  max-width: 450px;
-  margin: 0 auto;
+.ekskul-add-wrapper {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
+
+.ekskul-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.ekskul-add-btn:hover {
+  background-color: #059669;
+}
+
+/* GRID EKSKUL RESPONSIVE */
 
 .ekskul-grid {
-  max-width: 1100px;
-  margin: 0 auto;
+  
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); 
-  gap: 16px;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
 }
 
 .ekskul-card {
-  background-color: #f8fafc;
+  position: relative;
+  background-color: #ffffff;
+  border-radius: 16px;
   border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 18px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  transition: all 0.2s ease;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ekskul-card:hover {
-  border-color: #2563eb;
-  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.08);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
 }
 
-.ekskul-icon-box {
-  width: 44px;
-  height: 44px;
-  background-color: #ffffff;
-  border-radius: 50%; /* Mengubah bentuk wadah menjadi bulat */
+.ekskul-card-actions {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  gap: 6px;
+  z-index: 2;
+}
+
+.ekskul-action-btn {
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 12px;
-  border: 1px solid #e2e8f0;
-  overflow: hidden; /* Memotong sudut gambar agar rapi membulat */
+  transition: opacity 0.2s ease;
 }
 
-/* Tambahan CSS agar gambar logo di dalamnya juga bulat & pas */
-.ekskul-icon-box img {
+.ekskul-action-btn.edit {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+.ekskul-action-btn.delete {
+  background-color: #ef4444;
+  color: #ffffff;
+}
+
+.ekskul-action-btn:hover {
+  opacity: 0.85;
+}
+
+/* =========================================
+   STYLE MODAL FORM EKSTRAKURIKULER (RESPONSIVE)
+   ========================================= */
+
+.ekskul-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+.ekskul-modal-box {
+  background-color: #ffffff;
+  border-radius: 16px;
   width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
+  max-width: 520px;
+  max-height: 90vh; /* Agar modal tidak overflow di layar kecil */
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  overflow: hidden;
+  animation: ekskulFadeIn 0.2s ease-out;
+}
+
+@keyframes ekskulFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.ekskul-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px 24px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.ekskul-modal-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: #0f172a;
+}
+
+.ekskul-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: color 0.15s ease;
+}
+
+.ekskul-close-btn:hover {
+  color: #475569;
+}
+
+.ekskul-modal-body {
+  padding: 20px 24px 24px 24px;
+  overflow-y: auto; /* Scroll otomatis jika konten modal panjang */
+}
+
+.ekskul-form-group {
+  margin-bottom: 16px;
+}
+
+.ekskul-form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  color: #64748b;
+}
+
+.ekskul-form-input,
+.ekskul-form-textarea,
+.ekskul-form-select {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid #e2e8f0;
+  background-color: #f8fafc;
+  font-size: 14px;
+  color: #334155;
+  outline: none;
+  box-sizing: border-box;
+  font-family: inherit;
+  transition: border-color 0.15s ease;
+}
+
+.ekskul-form-input:focus,
+.ekskul-form-textarea:focus,
+.ekskul-form-select:focus {
+  border-color: #10b981;
+  background-color: #ffffff;
+}
+
+.ekskul-form-input.white-bg {
+  background-color: #ffffff;
+  border-color: #cbd5e1;
+}
+
+.ekskul-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ekskul-logo-box {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f8fafc;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+}
+
+.ekskul-tab-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  background-color: #e2e8f0;
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.ekskul-tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  background-color: transparent;
+  color: #64748b;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.15s ease;
+}
+
+.ekskul-tab-btn.active {
+  background-color: #ffffff;
+  color: #0f172a;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+
+.ekskul-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ekskul-btn-cancel {
+  padding: 12px;
+  background-color: #f1f5f9;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #475569;
+  transition: background-color 0.15s ease;
+}
+
+.ekskul-btn-cancel:hover:not(:disabled) {
+  background-color: #e2e8f0;
+}
+
+.ekskul-btn-submit {
+  padding: 12px;
+  background-color: #10b981;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.ekskul-btn-submit:hover:not(:disabled) {
+  background-color: #059669;
+}
+
+.ekskul-btn-submit:disabled,
+.ekskul-btn-cancel:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ekskul-spinner {
+  animation: ekskulSpin 1s linear infinite;
+}
+
+@keyframes ekskulSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* =========================================
+   MEDIA QUERIES (HP & TABLET RESPONSIVE)
+   ========================================= */
+
+@media (max-width: 640px) {
+  .ekskul-container {
+    padding: 16px 12px 30px 12px;
+  }
+
+  .ekskul-title {
+    font-size: 22px;
+  }
+
+  .ekskul-desc {
+    font-size: 13px;
+  }
+
+  .ekskul-add-wrapper {
+    justify-content: center;
+  }
+
+  .ekskul-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ekskul-grid {
+    grid-template-columns: 1fr; /* 1 Kolom penuh di HP */
+    gap: 16px;
+  }
+
+  .ekskul-form-row {
+    grid-template-columns: 1fr; /* Form urutan & status ditumpuk vertikal di HP */
+    gap: 0;
+  }
+
+  .ekskul-modal-overlay {
+    padding: 12px;
+  }
+
+  .ekskul-modal-header {
+    padding: 16px 18px;
+  }
+
+  .ekskul-modal-body {
+    padding: 16px 18px 20px 18px;
+  }
+
+  .ekskul-modal-actions {
+    grid-template-columns: 1fr; /* Tombol Batal & Simpan ditumpuk di HP */
+    gap: 8px;
+  }
+}
+
+/* Badge Header */
+.ekskul-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: #e0e7ff;
+  color: #4338ca;
+  font-size: 12px;
+  font-weight: 700;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Container & Box Ikon Kartu */
+.ekskul-icon-box {
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  background-color: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
 }
 
 .ekskul-icon {
-  width: 22px;
-  height: 22px;
+  width: 28px;
+  height: 28px;
 }
 
+/* Warna Kelas Spesifik Ikon Lucide */
 .text-blue { color: #2563eb; }
 .text-green { color: #16a34a; }
 .text-yellow { color: #ca8a04; }
@@ -1357,112 +1675,21 @@ body, html, #root {
 .text-pink { color: #db2777; }
 .text-purple { color: #9333ea; }
 
+/* Teks & Kartu */
 .ekskul-card-title {
-  font-size: 17px;
-  font-weight: 600;
-  margin-bottom: 6px;
+  font-size: 18px;
+  font-weight: 700;
   color: #0f172a;
+  margin: 0 0 8px 0;
 }
 
 .ekskul-card-text {
+  font-size: 14px;
   color: #64748b;
-  font-size: 12.5px;
-  line-height: 1.5;
-  margin-bottom: 16px;
+  line-height: 1.6;
+  margin: 0;
 }
 
-.ekskul-btn {
-  width: 100%;
-  background-color: #eff6ff;
-  color: #2563eb;
-  font-weight: 500;
-  padding: 8px 12px;
-  border-radius: 8px;
-  border: 1px solid #bfdbfe;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 13px;
-}
-
-.ekskul-btn:hover {
-  background-color: #2563eb;
-  color: #ffffff;
-}
-
-/* Style Tambahan CRUD */
-.ekskul-card-actions {
-  position: absolute;
-  top: 12px;
-  right: 12px;
-  display: flex;
-  gap: 4px;
-}
-
-.ekskul-action-btn {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 6px;
-  padding: 4px 6px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.ekskul-action-btn.edit:hover {
-  background-color: #fef9c3;
-  border-color: #facc15;
-  color: #ca8a04;
-}
-
-.ekskul-action-btn.delete:hover {
-  background-color: #fee2e2;
-  border-color: #fca5a5;
-  color: #dc2626;
-}
-
-.ekskul-add-btn {
-  background-color: #2563eb;
-  color: #ffffff;
-  font-weight: 500;
-  padding: 8px 16px;
-  border-radius: 8px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.ekskul-add-btn:hover {
-  background-color: #1d4ed8;
-}
-
-.ekskul-modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(15, 23, 42, 0.6);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.ekskul-modal-box {
-  background-color: #ffffff;
-  border-radius: 12px;
-  padding: 24px;
-  width: 100%;
-  max-width: 420px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-}
 /* =========================================
    MODERN TESTIMONIAL STYLES (NO TAILWIND DEPENDENCY)
 ========================================= */
@@ -3137,7 +3364,7 @@ body, html, #root {
 .achievement-main-title {
   font-size: 2.125rem;
   font-weight: 800;
-  color: #0f172a; /* Warna gelap rapat */
+  color: #0f172a;
   line-height: 1.25;
   margin: 0 0 10px 0;
   letter-spacing: -0.02em;
@@ -3342,38 +3569,51 @@ body, html, #root {
   border-color: #cbd5e1;
 }
 
-/* Modal Popup Overlay */
+/* ==========================================
+   STYLING MODAL (DISESUAIKAN UNTUK JSX ANDA)
+   ========================================== */
+
+/* Overlay latar belakang */
 .crud-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  background-color: rgba(15, 23, 42, 0.5);
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(2px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  padding: 20px;
 }
 
+/* Box Modal Utama */
 .crud-modal-content {
   background-color: #ffffff;
   width: 100%;
-  max-width: 480px;
-  border-radius: 12px;
-  padding: 24px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  max-width: 520px;
+  max-height: 90vh;
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
+/* Header Modal (Fixed di Atas) */
 .crud-modal-header {
+  padding: 20px 28px 16px 28px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 20px;
+  border-bottom: 1px solid #f1f5f9;
+  flex-shrink: 0;
 }
 
 .crud-modal-header h2 {
-  font-size: 1.25rem;
+  font-size: 1.15rem;
   font-weight: 700;
   color: #0f172a;
   margin: 0;
@@ -3382,18 +3622,29 @@ body, html, #root {
 .btn-close-modal {
   background: none;
   border: none;
-  font-size: 1.5rem;
-  color: #64748b;
+  font-size: 1.25rem;
+  color: #94a3b8;
   cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  transition: color 0.2s ease;
 }
 
-/* Form Layout */
+.btn-close-modal:hover {
+  color: #0f172a;
+}
+
+/* Form Container & Scroll Body (Diatur langsung dari .crud-form) */
 .crud-form {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px 28px;
   gap: 16px;
 }
 
+/* Form Group & Input Styling */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -3402,25 +3653,31 @@ body, html, #root {
 }
 
 .form-group label {
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #334155;
+  font-size: 0.725rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #64748b;
 }
 
 .form-group input,
 .form-group select {
-  padding: 10px 12px;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
+  padding: 12px 14px;
+  background-color: #f8fafc; 
+  border: 1px solid #f1f5f9;
+  border-radius: 10px;
   font-size: 0.875rem;
+  color: #334155;
   font-family: inherit;
   outline: none;
+  transition: all 0.2s ease;
 }
 
 .form-group input:focus,
 .form-group select:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  background-color: #ffffff;
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
 }
 
 .form-row {
@@ -3429,32 +3686,49 @@ body, html, #root {
   gap: 12px;
 }
 
+/* Footer Modal (Integrasi dengan inline style JSX Anda) */
 .crud-modal-footer {
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-  margin-top: 8px;
+  position: sticky;
+  bottom: -20px;
+  background-color: #ffffff;
+  padding-top: 15px;
+  padding-bottom: 5px;
+  border-top: 1px solid #f1f5f9;
+  z-index: 10;
 }
 
 .btn-cancel {
   background-color: #f1f5f9;
   color: #475569;
   border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-cancel:hover {
+  background-color: #e2e8f0;
 }
 
 .btn-submit {
-  background-color: #2563eb;
+  background-color: #059669;
   color: #ffffff;
   border: none;
-  padding: 10px 16px;
-  border-radius: 6px;
+  padding: 12px;
+  border-radius: 10px;
+  font-size: 0.875rem;
   font-weight: 600;
   cursor: pointer;
+  transition: background-color 0.2s ease;
 }
+
+.btn-submit:hover {
+  background-color: #047857;
+}
+
 
 /* =========================================
    10. THEME: SOFT COMPRENG MODERN (SMART SYSTEM)
