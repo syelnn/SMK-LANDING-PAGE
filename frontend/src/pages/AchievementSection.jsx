@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { SquarePen, Trash2, Link as LinkIcon, Upload } from 'lucide-react';
+import { MoreHorizontal, SquarePen, Trash2, Link as LinkIcon, Upload, Plus, Search } from 'lucide-react';
 
 const AchievementSection = () => {
   const [achievements, setAchievements] = useState([]);
@@ -9,6 +9,10 @@ const AchievementSection = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [imageTab, setImageTab] = useState('url');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [activeMenuId, setActiveMenuId] = useState(null);
+
+  const menuRef = useRef(null);
 
   const [formData, setFormData] = useState({
     student_name: '',
@@ -17,7 +21,8 @@ const AchievementSection = () => {
     level: 'Nasional',
     year: new Date().getFullYear().toString(),
     sort_order: 1,
-    photo: ''
+    photo: '',
+    show: 1
   });
 
   const API_URL = 'http://localhost:5002/api/achievements';
@@ -39,6 +44,16 @@ const AchievementSection = () => {
     fetchAchievements();
   }, []);
 
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setActiveMenuId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const handleOpenAddModal = () => {
     setIsEditing(false);
     setSelectedId(null);
@@ -50,7 +65,8 @@ const AchievementSection = () => {
       level: 'Nasional',
       year: new Date().getFullYear().toString(),
       sort_order: achievements.length + 1,
-      photo: ''
+      photo: '',
+      show: 1
     });
     setIsModalOpen(true);
   };
@@ -66,9 +82,11 @@ const AchievementSection = () => {
       level: item.level || 'Nasional',
       year: item.year || new Date().getFullYear().toString(),
       sort_order: item.sort_order || 1,
-      photo: item.photo || ''
+      photo: item.photo || '',
+      show: item.show !== undefined ? item.show : 1
     });
     setIsModalOpen(true);
+    setActiveMenuId(null);
   };
 
   const handleCloseModal = () => {
@@ -76,7 +94,12 @@ const AchievementSection = () => {
   };
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    if (type === 'checkbox') {
+      setFormData({ ...formData, [name]: checked ? 1 : 0 });
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleFileUpload = (e) => {
@@ -96,7 +119,8 @@ const AchievementSection = () => {
     const payload = {
       ...formData,
       year: parseInt(formData.year, 10) || new Date().getFullYear(),
-      sort_order: parseInt(formData.sort_order, 10) || 1
+      sort_order: parseInt(formData.sort_order, 10) || 1,
+      show: parseInt(formData.show, 10)
     };
 
     try {
@@ -115,6 +139,7 @@ const AchievementSection = () => {
   };
 
   const handleDelete = async (id) => {
+    setActiveMenuId(null);
     if (window.confirm('Apakah Anda yakin ingin menghapus data prestasi ini?')) {
       try {
         await axios.delete(`${API_URL}/${id}`);
@@ -126,88 +151,130 @@ const AchievementSection = () => {
     }
   };
 
-  const getInitial = (name) => (name ? name.charAt(0).toUpperCase() : '?');
+  const filteredAchievements = achievements.filter((item) => {
+  const query = searchQuery.toLowerCase();
+  
+  return (
+    item.student_name?.toLowerCase().includes(query) ||
+    item.achievement?.toLowerCase().includes(query) ||
+    item.class_name?.toLowerCase().includes(query) ||
+    item.level?.toLowerCase().includes(query) ||          // <-- Ditambahkan untuk filter Tingkat
+    String(item.year || '').toLowerCase().includes(query) // <-- Ditambahkan untuk filter Tahun
+  );
+});
 
   if (loading) {
     return <div className="achievement-loading">Memuat data Prestasi Siswa...</div>;
   }
 
   return (
-    <div className="achievement-page-wrapper">
-      <div className="achievement-header-clean">
-        <span className="achievement-pill">PRESTASI SISWA</span>
-        <h1 className="achievement-main-title">
-          Karya & Prestasi <span className="highlight-green">SMK NEGERI COMPRENG</span>
-        </h1>
-        <p className="achievement-sub-title">
-          Capaian membanggakan yang telah diraih Taruna/i SMK NEGERI COMPRENG.
-        </p>
-
-        <div style={{ marginTop: '20px' }}>
-          <button className="btn-add-achievement" onClick={handleOpenAddModal}>
-            + Tambah Prestasi Baru
+    <div className="achievement-admin-wrapper">
+      {/* Kontainer Card Utama ala Foto 1 */}
+      <div className="admin-card-container">
+        
+        {/* Top Header di dalam Card */}
+        <div className="admin-page-header">
+          <div className="header-text-group">
+            <h1 className="admin-page-title">Kelola Karya & Prestasi</h1>
+            <p className="admin-page-subtitle">Kelola seluruh prestasi siswa SMK Negeri Compreng di sini.</p>
+          </div>
+          <button className="btn-add-primary" onClick={handleOpenAddModal}>
+            <Plus size={16} /> Tambah Prestasi
           </button>
+        </div>
+
+        {/* Filter / Search Bar */}
+        <div className="admin-table-controls">
+          <div className="search-input-wrapper">
+            <Search size={16} className="search-icon" />
+            <input
+              type="text"
+              placeholder="Cari prestasi..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Table Section */}
+        <div className="table-responsive-wrapper">
+          <table className="admin-table">
+            <thead>
+              <tr>
+                <th style={{ width: '70px' }}>Foto</th>
+                <th>Nama Siswa & Kelas</th>
+                <th>Judul Prestasi / Kejuaraan</th>
+                <th>Tingkat</th>
+                <th>Tahun</th>
+                <th>Status</th>
+                <th style={{ width: '80px', textAlign: 'center' }}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredAchievements.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="table-empty-state">
+                    Belum ada data prestasi yang ditemukan.
+                  </td>
+                </tr>
+              ) : (
+                filteredAchievements.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      {item.photo ? (
+                        <img src={item.photo} alt={item.student_name} className="table-avatar-img" />
+                      ) : (
+                        <div className="table-avatar-circle">
+                          {item.student_name ? item.student_name.charAt(0).toUpperCase() : '?'}
+                        </div>
+                      )}
+                    </td>
+                    <td>
+                      <div className="table-student-name">{item.student_name}</div>
+                      <div className="table-student-class">{item.class_name || '-'}</div>
+                    </td>
+                    <td>
+                      <span className="table-achievement-text">{item.achievement}</span>
+                    </td>
+                    <td>
+                      <span className={`table-badge-level ${item.level?.toLowerCase() || 'nasional'}`}>
+                        {item.level || 'Nasional'}
+                      </span>
+                    </td>
+                    <td>{item.year}</td>
+                    <td>
+                      <span className={`status-badge ${item.show === 1 ? 'status-tampil' : 'status-sembunyi'}`}>
+                        {item.show === 1 ? 'Tampil' : 'Sembunyi'}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'center', position: 'relative' }}>
+                      <button
+                        className="btn-action-more"
+                        onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
+                      >
+                        <MoreHorizontal size={18} />
+                      </button>
+
+                      {activeMenuId === item.id && (
+                        <div className="action-dropdown-menu" ref={menuRef}>
+                          <button onClick={() => handleOpenEditModal(item)} className="dropdown-item edit">
+                            <SquarePen size={14} /> Edit Data
+                          </button>
+                          <button onClick={() => handleDelete(item.id)} className="dropdown-item delete">
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      <div className="achievement-container">
-        {achievements.length === 0 ? (
-          <p className="achievement-empty">Belum ada data prestasi yang ditampilkan.</p>
-        ) : (
-          <div className="achievement-grid">
-            {achievements.map((item) => (
-              <div key={item.id} className="achievement-card-clean">
-                <div className="card-actions-top">
-                  <button 
-                    className="btn-action edit" 
-                    title="Edit Data" 
-                    onClick={() => handleOpenEditModal(item)}
-                  >
-                    <SquarePen size={16} />
-                  </button>
-                  <button 
-                    className="btn-action delete" 
-                    title="Hapus Data" 
-                    onClick={() => handleDelete(item.id)}
-                  >
-                    <Trash2 size={16} />
-                  </button>
-                </div>
-
-                {item.photo ? (
-                  <img 
-                    src={item.photo} 
-                    alt={item.student_name} 
-                    style={{ 
-                      width: '60px', 
-                      height: '60px', 
-                      borderRadius: '50%', 
-                      objectFit: 'cover', 
-                      margin: '0 auto 10px',
-                      display: 'block'
-                    }} 
-                  />
-                ) : (
-                  <div className="avatar-circle">{getInitial(item.student_name)}</div>
-                )}
-
-                <h3 className="student-name-title">{item.student_name}</h3>
-                <span className="student-class-sub">{item.class_name || 'Siswa'}</span>
-
-                <p className="achievement-detail-title">{item.achievement}</p>
-
-                <div className="badge-footer-group">
-                  <span className={`badge-level ${item.level?.toLowerCase() || 'nasional'}`}>
-                    {item.level || 'NASIONAL'}
-                  </span>
-                  {item.year && <span className="badge-year">{item.year}</span>}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
+      {/* Modal Form */}
       {isModalOpen && (
         <div className="crud-modal-overlay">
           <div className="crud-modal-content">
@@ -217,9 +284,7 @@ const AchievementSection = () => {
             </div>
             <form onSubmit={handleSubmit} className="crud-form">
               <div className="form-group">
-                <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
-                  NAMA SISWA
-                </label>
+                <label>NAMA SISWA</label>
                 <input
                   type="text"
                   name="student_name"
@@ -231,9 +296,7 @@ const AchievementSection = () => {
               </div>
 
               <div className="form-group">
-                <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
-                  KELAS
-                </label>
+                <label>KELAS</label>
                 <input
                   type="text"
                   name="class_name"
@@ -245,9 +308,7 @@ const AchievementSection = () => {
               </div>
 
               <div className="form-group">
-                <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
-                  JUDUL PRESTASI / KEJUARAAN
-                </label>
+                <label>JUDUL PRESTASI / KEJUARAAN</label>
                 <input
                   type="text"
                   name="achievement"
@@ -258,11 +319,9 @@ const AchievementSection = () => {
                 />
               </div>
 
-              <div className="form-row" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+              <div className="form-row">
                 <div className="form-group">
-                  <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
-                    TINGKAT
-                  </label>
+                  <label>TINGKAT</label>
                   <select name="level" value={formData.level} onChange={handleChange}>
                     <option value="Kota">Kota</option>
                     <option value="Provinsi">Provinsi</option>
@@ -272,9 +331,7 @@ const AchievementSection = () => {
                 </div>
 
                 <div className="form-group">
-                  <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
-                    TAHUN
-                  </label>
+                  <label>TAHUN</label>
                   <input
                     type="number"
                     name="year"
@@ -287,9 +344,7 @@ const AchievementSection = () => {
               </div>
 
               <div className="form-group">
-                <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
-                  URUTAN TAMPILAN
-                </label>
+                <label>URUTAN TAMPILAN</label>
                 <input
                   type="number"
                   name="sort_order"
@@ -302,52 +357,19 @@ const AchievementSection = () => {
               </div>
 
               <div className="form-group">
-                <label style={{ fontSize: '11px', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
-                  FOTO PROFIL
-                </label>
-                
-                <div style={{ display: 'flex', background: '#f1f5f9', padding: '4px', borderRadius: '8px', marginBottom: '10px' }}>
+                <label>FOTO PROFIL</label>
+                <div className="image-tab-group">
                   <button
                     type="button"
                     onClick={() => setImageTab('url')}
-                    style={{
-                      flex: 1,
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      background: imageTab === 'url' ? '#ffffff' : 'transparent',
-                      color: imageTab === 'url' ? '#000000' : '#64748b',
-                      boxShadow: imageTab === 'url' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                    }}
+                    className={`tab-btn ${imageTab === 'url' ? 'active' : ''}`}
                   >
                     <LinkIcon size={14} /> Link URL
                   </button>
                   <button
                     type="button"
                     onClick={() => setImageTab('upload')}
-                    style={{
-                      flex: 1,
-                      padding: '6px 12px',
-                      fontSize: '12px',
-                      fontWeight: '600',
-                      border: 'none',
-                      borderRadius: '6px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '6px',
-                      background: imageTab === 'upload' ? '#ffffff' : 'transparent',
-                      color: imageTab === 'upload' ? '#000000' : '#64748b',
-                      boxShadow: imageTab === 'upload' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none'
-                    }}
+                    className={`tab-btn ${imageTab === 'upload' ? 'active' : ''}`}
                   >
                     <Upload size={14} /> Upload Foto
                   </button>
@@ -370,7 +392,20 @@ const AchievementSection = () => {
                 )}
               </div>
 
-              <div className="crud-modal-footer" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginTop: '20px' }}>
+              <div className="form-group-checkbox">
+                <label className="checkbox-container">
+                  <input
+                    type="checkbox"
+                    name="show"
+                    checked={formData.show === 1}
+                    onChange={handleChange}
+                  />
+                  <span className="checkmark"></span>
+                  <span className="checkbox-label-text">TAMPILKAN BERKAS (PUBLIC)</span>
+                </label>
+              </div>
+
+              <div className="crud-modal-footer">
                 <button type="button" className="btn-cancel" onClick={handleCloseModal}>
                   Batal
                 </button>

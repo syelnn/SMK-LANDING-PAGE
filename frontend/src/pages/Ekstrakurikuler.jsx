@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   Shield, 
   Compass, 
@@ -14,36 +14,36 @@ import {
   X,
   Upload,
   Link as LinkIcon,
-  Loader2
+  Loader2,
+  Search,
+  MoreHorizontal
 } from 'lucide-react';
 
 const renderIcon = (iconValue) => {
   const props = { className: "ekskul-icon" };
 
-  if (!iconValue) return <Shield {...props} className="ekskul-icon text-blue" />;
+  if (!iconValue || iconValue === 'EMPTY') return <Shield {...props} className="ekskul-icon text-blue" />;
 
-  // Jika berupa URL, path file, atau Base64 Image
   if (iconValue.startsWith('data:image') || iconValue.startsWith('http') || iconValue.startsWith('/uploads')) {
     return (
       <img 
         src={iconValue} 
-        alt="Logo Ekskul" 
-        style={{ width: '40px', height: '40px', objectFit: 'contain' }} 
+        alt="Logo" 
+        style={{ width: '32px', height: '32px', objectFit: 'contain', borderRadius: '4px' }} 
       />
     );
   }
 
-  // Normalisasi string ke lowercase agar tidak bermasalah dengan case-sensitive
   const key = iconValue.trim().toLowerCase();
 
   switch (key) {
     case 'shield': return <Shield {...props} className="ekskul-icon text-blue" />;
     case 'compass': return <Compass {...props} className="ekskul-icon text-green" />;
     case 'users': return <Users {...props} className="ekskul-icon text-yellow" />;
-    case 'music': return <Music {...props} className="ekskul-icon text-orange" />;
+    case 'music': case 'fas fa-music': return <Music {...props} className="ekskul-icon text-orange" />;
     case 'swords': return <Swords {...props} className="ekskul-icon text-red" />;
     case 'activity': return <Activity {...props} className="ekskul-icon text-emerald" />;
-    case 'palette': return <Palette {...props} className="ekskul-icon text-pink" />;
+    case 'palette': case 'fas fa-paint-brush': return <Palette {...props} className="ekskul-icon text-pink" />;
     case 'cpu': return <Cpu {...props} className="ekskul-icon text-purple" />;
     default: return <Shield {...props} className="ekskul-icon text-blue" />;
   }
@@ -78,6 +78,7 @@ export default function Ekstrakurikuler() {
 
   const [listEkskul, setListEkskul] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -87,6 +88,10 @@ export default function Ekstrakurikuler() {
 
   const [logoType, setLogoType] = useState('url');
   const [selectedFile, setSelectedFile] = useState(null);
+
+  // State & Ref untuk mengontrol Dropdown Aksi (Titik Tiga)
+  const [activeDropdownId, setActiveDropdownId] = useState(null);
+  const dropdownRef = useRef(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -114,7 +119,18 @@ export default function Ekstrakurikuler() {
     fetchEkskul();
   }, []);
 
-
+  // Menutup dropdown secara otomatis saat mengklik luar area menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActiveDropdownId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   const handleOpenAdd = () => {
     setIsEditing(false);
@@ -140,9 +156,10 @@ export default function Ekstrakurikuler() {
       description: item.description || '',
       icon: item.icon || '',
       sort_order: item.sort_order || item.sortOrder || 1,
-      show: item.show !== undefined ? item.show : 1
+      show: item.show !== undefined ? Number(item.show) : 1
     });
     setShowModal(true);
+    setActiveDropdownId(null);
   };
 
   const convertFileToBase64 = (file) => {
@@ -203,6 +220,7 @@ export default function Ekstrakurikuler() {
   };
 
   const handleDelete = async (id) => {
+    setActiveDropdownId(null);
     if (!window.confirm('Apakah kamu yakin ingin menghapus ekstrakurikuler ini?')) return;
 
     try {
@@ -225,20 +243,30 @@ export default function Ekstrakurikuler() {
     return <div className="text-center py-5" style={{ color: '#64748b' }}>Memuat data ekstrakurikuler...</div>;
   }
 
+  // Filter Publik
+  const baseList = canAccessCRUD 
+    ? listEkskul 
+    : listEkskul.filter(item => Number(item.show) === 1);
+
+  // Filter Search berdasarkan Nama Ekstrakurikuler dan Deskripsi
+  const filteredList = baseList.filter((item) => {
+    const q = searchQuery.toLowerCase();
+    return (
+      item.title?.toLowerCase().includes(q) ||
+      item.description?.toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div className="ekskul-container">
+      {/* HEADER MODEL FOTO 2 */}
       <div className="ekskul-header-wrapper">
         <div className="ekskul-header-text">
-          <span className="ekskul-badge">Ekstrakurikuler</span>
-          <h2 className="ekskul-title">
-            Ekstrakurikuler <span>SMK Negeri Compreng</span>
-          </h2>
+          <h2 className="ekskul-title">Kelola Ekstrakurikuler</h2>
           <p className="ekskul-desc">
-            Wadah pengembangan minat, bakat, dan potensi siswa di luar kelas.
+            Kelola seluruh ekstrakurikuler SMK Negeri Compreng di sini.
           </p>
         </div>
-        
-
         
         {canAccessCRUD && (
           <div className="ekskul-add-wrapper">
@@ -249,31 +277,104 @@ export default function Ekstrakurikuler() {
         )}
       </div>
 
-      <div className="ekskul-grid">
-        {listEkskul.map((item) => (
-          <div key={item.id} className="ekskul-card">
-            {canAccessCRUD && (
-              <div className="ekskul-card-actions">
-                <button onClick={() => handleOpenEdit(item)} className="ekskul-action-btn edit" title="Edit">
-                  <Edit size={14} />
-                </button>
-                <button onClick={() => handleDelete(item.id)} className="ekskul-action-btn delete" title="Hapus">
-                  <Trash2 size={14} />
-                </button>
-              </div>
-            )}
-
-            <div className="ekskul-card-content">
-              <div className="ekskul-icon-box">
-                {renderIcon(item.icon)}
-              </div>
-              <h3 className="ekskul-card-title">{item.title}</h3>
-              <p className="ekskul-card-text">{item.description}</p>
-            </div>
-
-
+      {/* KARTU UTAMA DENGAN FILTER SEARCH & TABEL */}
+      <div className="ekskul-table-card">
+        {/* INPUT SEARCH */}
+        <div className="ekskul-search-wrapper">
+          <div className="ekskul-search-input-box">
+            <Search size={18} className="ekskul-search-icon" />
+            <input
+              type="text"
+              placeholder="Cari ekstrakurikuler..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="ekskul-search-input"
+            />
           </div>
-        ))}
+        </div>
+
+        {/* TABEL RESPONSIVE */}
+        <div className="ekskul-table-responsive">
+          <table className="ekskul-table">
+            <thead>
+              <tr>
+                <th style={{ width: '50px' }}>No</th>
+                <th style={{ width: '70px' }}>Logo</th>
+                <th>Nama Ekstrakurikuler</th>
+                <th>Deskripsi</th>
+                <th style={{ width: '80px', textAlign: 'center' }}>Urutan</th>
+                <th style={{ width: '100px', textAlign: 'center' }}>Status</th>
+                {canAccessCRUD && <th style={{ width: '80px', textAlign: 'center' }}>Aksi</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {filteredList.length === 0 ? (
+                <tr>
+                  <td colSpan={canAccessCRUD ? 7 : 6} className="text-center py-4" style={{ padding: '30px', color: '#64748b' }}>
+                    Belum ada data ekstrakurikuler yang ditemukan.
+                  </td>
+                </tr>
+              ) : (
+                filteredList.map((item, index) => (
+                  <tr key={item.id}>
+                    <td>{index + 1}</td>
+                    <td>
+                      <div className="ekskul-table-icon">
+                        {renderIcon(item.icon)}
+                      </div>
+                    </td>
+                    <td className="font-semibold text-dark">{item.title}</td>
+                    <td className="text-muted">{item.description || '-'}</td>
+                    <td className="text-center">{item.sort_order || item.sortOrder || 1}</td>
+                    <td className="text-center">
+                      {Number(item.show) === 1 ? (
+                        <span className="badge-status show">Tampil</span>
+                      ) : (
+                        <span className="badge-status hide">Sembunyi</span>
+                      )}
+                    </td>
+                    {canAccessCRUD && (
+                      <td className="text-center">
+                        <div 
+                          className="dropdown-action-wrapper" 
+                          ref={activeDropdownId === item.id ? dropdownRef : null}
+                        >
+                          <button 
+                            type="button"
+                            className="btn-more-action" 
+                            onClick={() => setActiveDropdownId(activeDropdownId === item.id ? null : item.id)}
+                            title="Opsi Aksi"
+                          >
+                            <MoreHorizontal size={18} />
+                          </button>
+
+                          {activeDropdownId === item.id && (
+                            <div className="dropdown-action-menu">
+                              <button 
+                                type="button" 
+                                onClick={() => handleOpenEdit(item)} 
+                                className="dropdown-item"
+                              >
+                                <Edit size={14} /> Edit Data
+                              </button>
+                              <button 
+                                type="button" 
+                                onClick={() => handleDelete(item.id)} 
+                                className="dropdown-item danger"
+                              >
+                                <Trash2 size={14} /> Delete
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* MODAL FORM RESPONSIVE */}
@@ -315,30 +416,16 @@ export default function Ekstrakurikuler() {
                 ></textarea>
               </div>
 
-              <div className="ekskul-form-row">
-                <div className="ekskul-form-group">
-                  <label className="ekskul-form-label">URUTAN (OTOMATIS)</label>
-                  <input 
-                    type="number" 
-                    min="1"
-                    className="ekskul-form-input"
-                    value={formData.sort_order} 
-                    onChange={(e) => setFormData({...formData, sort_order: e.target.value})} 
-                    required 
-                  />
-                </div>
-
-                <div className="ekskul-form-group">
-                  <label className="ekskul-form-label">STATUS TAMPIL</label>
-                  <select
-                    className="ekskul-form-select"
-                    value={formData.show}
-                    onChange={(e) => setFormData({...formData, show: e.target.value})}
-                  >
-                    <option value={1}>Ditampilkan</option>
-                    <option value={0}>Sembunyi</option>
-                  </select>
-                </div>
+              <div className="ekskul-form-group">
+                <label className="ekskul-form-label">URUTAN</label>
+                <input 
+                  type="number" 
+                  min="1"
+                  className="ekskul-form-input"
+                  value={formData.sort_order} 
+                  onChange={(e) => setFormData({...formData, sort_order: e.target.value})} 
+                  required 
+                />
               </div>
 
               <div className="ekskul-logo-box">
@@ -377,6 +464,17 @@ export default function Ekstrakurikuler() {
                     onChange={(e) => setSelectedFile(e.target.files[0])} 
                   />
                 )}
+              </div>
+
+              <div className="ekskul-checkbox-group">
+                <label className="ekskul-checkbox-label">
+                  <input 
+                    type="checkbox"
+                    checked={Number(formData.show) === 1}
+                    onChange={(e) => setFormData({ ...formData, show: e.target.checked ? 1 : 0 })}
+                  />
+                  <span>TAMPILKAN EKSTRAKURIKULER (PUBLIC)</span>
+                </label>
               </div>
 
               <div className="ekskul-modal-actions">

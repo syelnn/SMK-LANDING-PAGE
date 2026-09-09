@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+
 import axios from 'axios';
-import { Plus, Edit3, Trash2, X, ArrowRight, Loader2, CheckCircle, AlertCircle } from 'lucide-react';
+
+import { Plus, Edit3, Trash2, X, Loader2, CheckCircle, AlertCircle, Search, MoreHorizontal } from 'lucide-react';
 
 const API_URL = 'http://localhost:5002/api/news';
 
-// Helper untuk membuat slug
-const createSlug = (text) => {
-  if (!text) return 'detail';
-  return text
-    .toLowerCase()
-    .trim()
-    .replace(/[^\w\s-]/g, '')
-    .replace(/[\s_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-};
+
 
 export default function ManageNews() {
   const [newsList, setNewsList] = useState([]);
@@ -22,6 +14,10 @@ export default function ManageNews() {
   const [submitting, setSubmitting] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // State untuk mengontrol dropdown menu mana yang sedang terbuka
+  const [openMenuId, setOpenMenuId] = useState(null);
 
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [imageMode, setImageMode] = useState('file');
@@ -61,7 +57,15 @@ export default function ManageNews() {
   }, []);
 
   const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    if (type === 'checkbox') {
+      setFormData((prev) => ({
+        ...prev,
+        [name]: checked ? 'published' : 'draft',
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
   };
 
   const handleFileChange = (e) => {
@@ -75,7 +79,8 @@ export default function ManageNews() {
     }
   };
 
-  // KETIKA TOMBOL "TAMBAH BERITA" DIKLIK:
+
+
   const handleOpenAdd = () => {
     setEditId(null);
     setImageMode('file');
@@ -105,6 +110,7 @@ export default function ManageNews() {
       status: item.status || 'published',
     });
     setShowModal(true);
+    setOpenMenuId(null); // Tutup dropdown
   };
 
   const handleSubmit = async (e) => {
@@ -135,6 +141,7 @@ export default function ManageNews() {
   };
 
   const handleDelete = async (id) => {
+    setOpenMenuId(null); // Tutup dropdown
     if (window.confirm('Yakin ingin menghapus berita ini?')) {
       try {
         await axios.delete(`${API_URL}/${id}`);
@@ -147,8 +154,16 @@ export default function ManageNews() {
     }
   };
 
+  const filteredNews = newsList.filter((item) => {
+  const query = searchQuery.toLowerCase();
+  const matchTitle = item.title?.toLowerCase().includes(query);
+  const matchCategory = item.category?.toLowerCase().includes(query);
+  
+  return matchTitle || matchCategory;
+});
+
   return (
-    <div className="admin-container" style={{ position: 'relative' }}>
+    <div className="admin-container">
       {toast.show && (
         <div className={`toast-notification ${toast.type}`}>
           {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
@@ -156,53 +171,34 @@ export default function ManageNews() {
         </div>
       )}
 
-      <div className="admin-news-header">
-        <h1 className="admin-title">Berita & Kegiatan</h1>
-        <p className="admin-subtitle">
-          Kelola seluruh berita, pengumuman, dan artikel kegiatan sekolah di sini.
-        </p>
-        <div className="admin-news-actions">
-          <button className="btn-primary" onClick={handleOpenAdd}>
-            <Plus size={18} /> Tambah Berita
-          </button>
+      {/* Header */}
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-title">Kelola Berita & Kegiatan</h1>
+          <p className="admin-subtitle">
+            Kelola seluruh berita, pengumuman, dan artikel kegiatan sekolah di sini.
+          </p>
+        </div>
+        <button className="btn-primary" onClick={handleOpenAdd}>
+          <Plus size={18} /> Tambah Berita
+        </button>
+      </div>
+
+      {/* Toolbar Search */}
+      <div className="table-toolbar">
+        <div className="search-input-wrapper">
+          <Search size={18} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Cari berita..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
         </div>
       </div>
 
-      <div className="news-grid" style={{ marginBottom: '40px' }}>
-        {newsList.map((item) => (
-          <div key={item.id} className="news-card">
-            <div className="news-card-image">
-              <span className="news-badge">{item.category || 'Berita'}</span>
-              <img
-                src={item.image || 'https://picsum.photos/400/250'}
-                alt={item.title}
-                onError={(e) => {
-                  e.target.src = 'https://picsum.photos/400/250';
-                }}
-              />
-            </div>
-            <div className="news-card-content">
-              <h3 className="news-title">{item.title}</h3>
-              <p className="news-excerpt">
-                {item.excerpt || item.content?.substring(0, 90) + '...'}
-              </p>
-              
-              <Link 
-                to={`/admin/berita/${item.slug || createSlug(item.title) || item.id}`} 
-                className="news-readmore"
-                style={{ position: 'relative', zIndex: 2, display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  window.scrollTo(0, 0);
-                }}
-              >
-                Baca Selengkapnya <ArrowRight size={16} />
-              </Link>
-            </div>
-          </div>
-        ))}
-      </div>
-
+      {/* Tabel */}
       <div className="table-wrapper">
         <table className="custom-table">
           <thead>
@@ -210,37 +206,65 @@ export default function ManageNews() {
               <th>Gambar</th>
               <th>Judul Berita</th>
               <th>Kategori</th>
+              <th>Status</th>
               <th>Penulis</th>
-              <th>Aksi</th>
+              <th style={{ textAlign: 'center' }}>Aksi</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '24px' }}>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '24px' }}>
                   <Loader2 className="animate-spin" style={{ display: 'inline', marginRight: '8px' }} />
                   Memuat data...
                 </td>
               </tr>
-            ) : newsList.length === 0 ? (
+            ) : filteredNews.length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '24px' }}>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '24px' }}>
                   Tidak ada berita ditemukan.
                 </td>
               </tr>
             ) : (
-              newsList.map((item) => (
+              filteredNews.map((item) => (
                 <tr key={item.id}>
                   <td>
-                    <img
-                      src={item.image || 'https://picsum.photos/50'}
-                      alt=""
-                      className="table-thumb"
-                      onError={(e) => {
-                        e.target.src = 'https://picsum.photos/50';
-                      }}
-                    />
-                  </td>
+  {item.image ? (
+    <img
+  src={item.image}
+  alt={item.title}
+  className="table-thumb"
+  style={{
+    width: '60px',
+    height: '45px',
+    objectFit: 'cover',
+    borderRadius: '6px',
+    display: 'block'
+  }}
+  onError={(e) => {
+    // Sembunyikan gambar rusak atau ganti dengan tampilan kosong
+    e.target.style.display = 'none'; 
+  }}
+/>
+  ) : (
+    <div
+      style={{
+        width: '60px',
+        height: '45px',
+        backgroundColor: '#f3f4f6',
+        borderRadius: '6px',
+        border: '1px dashed #cbd5e1',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#94a3b8',
+        fontSize: '10px'
+      }}
+    >
+      No Image
+    </div>
+  )}
+</td>
                   <td>
                     <div className="news-table-title">{item.title}</div>
                   </td>
@@ -248,24 +272,44 @@ export default function ManageNews() {
                     <span className="badge badge-category">{item.category || 'Berita'}</span>
                   </td>
                   <td>
-                    Admin
+                    <span className={`badge ${item.status === 'published' ? 'badge-success' : 'badge-warning'}`}>
+                      {item.status === 'published' ? 'Tampil' : 'Sembunyi'}
+                    </span>
                   </td>
+                  <td>Admin</td>
                   <td>
-                    <div className="action-buttons">
+                    {/* MENU DROPDOWN AKSIS */}
+                    <div className="dropdown-action-wrapper">
                       <button
-                        className="btn-icon edit"
-                        onClick={() => handleOpenEdit(item)}
-                        title="Edit"
+                        className="btn-more-action"
+                        onClick={() => setOpenMenuId(openMenuId === item.id ? null : item.id)}
+                        title="Opsi"
                       >
-                        <Edit3 size={16} />
+                        <MoreHorizontal size={18} />
                       </button>
-                      <button
-                        className="btn-icon delete"
-                        onClick={() => handleDelete(item.id)}
-                        title="Hapus"
-                      >
-                        <Trash2 size={16} />
-                      </button>
+
+                      {openMenuId === item.id && (
+                        <>
+                          <div
+                            className="dropdown-overlay-backdrop"
+                            onClick={() => setOpenMenuId(null)}
+                          />
+                          <div className="action-dropdown-menu">
+                            <button
+                              className="dropdown-item"
+                              onClick={() => handleOpenEdit(item)}
+                            >
+                              <Edit3 size={14} /> Edit Data
+                            </button>
+                            <button
+                              className="dropdown-item delete"
+                              onClick={() => handleDelete(item.id)}
+                            >
+                              <Trash2 size={14} /> Delete
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </td>
                 </tr>
@@ -275,13 +319,14 @@ export default function ManageNews() {
         </table>
       </div>
 
+      {/* Modal Form Tambah/Edit */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content-wrapper">
             <div className="modal-header-custom">
               <h2>{editId ? 'Edit Berita' : 'Tambah Berita Baru'}</h2>
-              <button 
-                type="button" 
+              <button
+                type="button"
                 className="btn-icon-close"
                 onClick={() => !submitting && setShowModal(false)}
               >
@@ -307,10 +352,10 @@ export default function ManageNews() {
                 <div className="form-grid-2">
                   <div>
                     <label className="form-label">Kategori</label>
-                    <select 
-                      name="category" 
+                    <select
+                      name="category"
                       className="form-select"
-                      value={formData.category} 
+                      value={formData.category}
                       onChange={handleChange}
                     >
                       <option value="Kegiatan">Kegiatan</option>
@@ -395,6 +440,19 @@ export default function ManageNews() {
                     onChange={handleChange}
                   ></textarea>
                 </div>
+
+                <div className="checkbox-container">
+                  <label className="checkbox-label">
+                    <input
+                      type="checkbox"
+                      name="status"
+                      checked={formData.status === 'published'}
+                      onChange={handleChange}
+                      className="custom-checkbox"
+                    />
+                    <span>TAMPILKAN BERITA (PUBLIC)</span>
+                  </label>
+                </div>
               </div>
 
               <div className="modal-footer-custom">
@@ -408,7 +466,7 @@ export default function ManageNews() {
                 </button>
                 <button
                   type="submit"
-                  className="btn-primary"
+                  className="btn-primary-green"
                   disabled={submitting}
                 >
                   {submitting ? (
@@ -416,10 +474,9 @@ export default function ManageNews() {
                       <Loader2 size={16} className="animate-spin" />
                       Menyimpan...
                     </>
-                  ) : editId ? (
-                    'Simpan Perubahan'
+
                   ) : (
-                    'Tambah Berita'
+                    'Simpan Data'
                   )}
                 </button>
               </div>

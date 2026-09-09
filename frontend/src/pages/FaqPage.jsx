@@ -1,12 +1,16 @@
-import { useState, useEffect } from 'react';
-import { ChevronDown, ChevronUp, Plus, Edit, Trash2, X, CheckCircle, EyeOff } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Edit, Trash2, X, CheckCircle, Search, Eye, EyeOff, HelpCircle, MoreHorizontal } from 'lucide-react';
 
 const FaqPage = () => {
   const [faqs, setFaqs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openId, setOpenId] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState(null);
+  
+  // State untuk mengontrol dropdown aksi
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const dropdownRef = useRef(null);
 
   const [formData, setFormData] = useState({
     question: '',
@@ -18,11 +22,12 @@ const FaqPage = () => {
 
   // Fetch semua data untuk Admin
   const fetchFaqs = () => {
+    setLoading(true);
     fetch('http://localhost:5002/api/faqs?admin=true')
       .then((res) => res.json())
       .then((resData) => {
         if (resData.success) {
-          setFaqs(resData.data);
+          setFaqs(resData.data || []);
         }
         setLoading(false);
       })
@@ -36,28 +41,43 @@ const FaqPage = () => {
     fetchFaqs();
   }, []);
 
-  const toggleAccordion = (id) => {
-    setOpenId(openId === id ? null : id);
+  // Menutup dropdown jika klik di luar area menu
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const toggleDropdown = (id, e) => {
+    e.stopPropagation();
+    setActiveDropdown(activeDropdown === id ? null : id);
   };
 
   const handleOpenModal = (faq = null) => {
+    setActiveDropdown(null); // Tutup dropdown jika terbuka
     if (faq) {
       setEditingId(faq.id);
       setFormData({
-        question: faq.question,
-        answer: faq.answer,
+        question: faq.question || '',
+        answer: faq.answer || '',
         category: faq.category || 'Umum',
-        sortOrder: faq.sortOrder,
+        sortOrder: faq.sortOrder || 1,
         show: faq.show ?? 1
       });
     } else {
       setEditingId(null);
-      setFormData({ 
-        question: '', 
-        answer: '', 
-        category: 'Umum', 
-        sortOrder: faqs.length + 1, 
-        show: 1 
+      setFormData({
+        question: '',
+        answer: '',
+        category: 'Umum',
+        sortOrder: faqs.length + 1,
+        show: 1
       });
     }
     setIsModalOpen(true);
@@ -91,7 +111,6 @@ const FaqPage = () => {
         if (data.success) {
           fetchFaqs();
           setIsModalOpen(false);
-          // POPUP NOTIFIKASI BERHASIL
           alert(editingId ? 'FAQ berhasil diperbarui!' : 'FAQ baru berhasil ditambahkan!');
         } else {
           alert(data.message || 'Gagal menyimpan data');
@@ -104,6 +123,7 @@ const FaqPage = () => {
   };
 
   const handleDelete = (id) => {
+    setActiveDropdown(null); // Tutup dropdown
     if (window.confirm('Yakin ingin menghapus FAQ ini? Urutan FAQ lainnya akan otomatis disesuaikan.')) {
       fetch(`http://localhost:5002/api/faqs/${id}`, { method: 'DELETE' })
         .then((res) => res.json())
@@ -117,107 +137,175 @@ const FaqPage = () => {
     }
   };
 
-  if (loading) return <p className="faq-loading">Memuat FAQ...</p>;
+  // Filtering berdasarkan pencarian
+  const filteredFaqs = faqs.filter((faq) => {
+    const q = faq.question ? faq.question.toLowerCase() : '';
+    const a = faq.answer ? faq.answer.toLowerCase() : '';
+    const c = faq.category ? faq.category.toLowerCase() : '';
+    const search = searchTerm.toLowerCase();
+    return q.includes(search) || a.includes(search) || c.includes(search);
+  });
 
   return (
-    <div className="faq-section">
-      <div className="faq-header">
-        <span className="faq-badge">FAQ</span>
-        <h2>Pertanyaan yang Sering Diajukan</h2>
-        <p>Informasi seputar pendaftaran, program, dan layanan sekolah.</p>
-        
-        <button className="faq-add-btn" onClick={() => handleOpenModal()}>
+    <div className="faq-admin-container">
+      {/* HEADER PAGE */}
+      <div className="faq-page-header">
+        <div>
+          <h2>Kelola FAQ (Pertanyaan)</h2>
+          <p>Kelola seluruh daftar pertanyaan yang sering diajukan di sini.</p>
+        </div>
+      </div>
+
+      {/* FILTER & SEARCH BAR + BUTTON TAMBAH FAQ */}
+      <div className="faq-toolbar">
+        <div className="search-box">
+          <Search size={18} className="search-icon" />
+          <input 
+            type="text" 
+            placeholder="Cari FAQ..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <button className="btn-add-faq" onClick={() => handleOpenModal()}>
           <Plus size={18} /> Tambah FAQ
         </button>
       </div>
 
-      <div className="faq-container">
-        {faqs.map((faq) => {
-          const isOpen = openId === faq.id;
-          return (
-            <div key={faq.id} className={`faq-card ${isOpen ? 'active' : ''}`}>
-              <div className="faq-card-header">
-                <button className="faq-question-btn" onClick={() => toggleAccordion(faq.id)}>
-  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-    {faq.question}
-    {faq.show === 0 && (
-                      <span style={{ fontSize: '11px', color: '#dc2626', background: '#fef2f2', padding: '2px 8px', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        <EyeOff size={12} /> Disembunyikan
-                      </span>
-                    )}
-                  </span>
-                  {isOpen ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
-                </button>
-              </div>
+      {/* TABEL DATA FAQ */}
+      <div className="faq-table-card">
+        {loading ? (
+          <div className="faq-loading-state">Memuat data FAQ...</div>
+        ) : filteredFaqs.length === 0 ? (
+          <div className="faq-empty-state">
+            <HelpCircle size={40} />
+            <p>Tidak ada data FAQ yang ditemukan.</p>
+          </div>
+        ) : (
+          <div className="table-responsive">
+            <table className="faq-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '60px' }}>No</th>
+                  <th>Pertanyaan & Jawaban</th>
+                  <th style={{ width: '130px' }}>Kategori</th>
+                  <th style={{ width: '90px', textAlign: 'center' }}>Urutan</th>
+                  <th style={{ width: '120px', textAlign: 'center' }}>Status</th>
+                  <th style={{ width: '80px', textAlign: 'center' }}>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredFaqs.map((faq, index) => (
+                  <tr key={faq.id}>
+                    <td className="col-no">{index + 1}</td>
+                    <td className="col-qa">
+                      <div className="faq-question-title">{faq.question}</div>
+                      <div className="faq-answer-snippet">{faq.answer}</div>
+                    </td>
+                    <td>
+                      <span className="badge-category">{faq.category || 'Umum'}</span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      <span className="badge-sort">{faq.sortOrder || index + 1}</span>
+                    </td>
+                    <td style={{ textAlign: 'center' }}>
+                      {faq.show === 1 ? (
+                        <span className="badge-status status-active">
+                          <Eye size={12} /> Tampil
+                        </span>
+                      ) : (
+                        <span className="badge-status status-hidden">
+                          <EyeOff size={12} /> Sembunyi
+                        </span>
+                      )}
+                    </td>
+                    <td style={{ textAlign: 'center', position: 'relative' }}>
+                      <button 
+                        className="btn-action-more" 
+                        onClick={(e) => toggleDropdown(faq.id, e)}
+                        title="Opsi"
+                      >
+                        <MoreHorizontal size={18} />
+                      </button>
 
-              {isOpen && (
-                <div className="faq-answer-body">
-                  <p>{faq.answer}</p>
-                  <div className="faq-crud-actions">
-                    <button className="btn-edit" onClick={() => handleOpenModal(faq)}>
-                      <Edit size={14} /> Edit
-                    </button>
-                    <button className="btn-delete" onClick={() => handleDelete(faq.id)}>
-                      <Trash2 size={14} /> Hapus
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })}
+                      {/* DROPDOWN MENU */}
+                      {activeDropdown === faq.id && (
+                        <div className="action-dropdown-menu" ref={dropdownRef}>
+                          <button 
+                            className="dropdown-item edit" 
+                            onClick={() => handleOpenModal(faq)}
+                          >
+                            <Edit size={14} /> Edit Data
+                          </button>
+                          <button 
+                            className="dropdown-item delete" 
+                            onClick={() => handleDelete(faq.id)}
+                          >
+                            <Trash2 size={14} /> Delete
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
-      {/* MODAL FORM CRUD */}
+      {/* MODAL FORM TAMBAH / EDIT */}
       {isModalOpen && (
         <div className="faq-modal-overlay">
           <div className="faq-modal-card">
             <div className="faq-modal-header">
               <h3>{editingId ? 'Edit FAQ' : 'Tambah FAQ Baru'}</h3>
-              <button onClick={() => setIsModalOpen(false)}><X size={20} /></button>
+              <button className="btn-close-modal" onClick={() => setIsModalOpen(false)}>
+                <X size={20} />
+              </button>
             </div>
+
             <form onSubmit={handleSubmit} className="faq-form">
               <div className="form-group">
-                <label>Pertanyaan</label>
+                <label>PERTANYAAN</label>
                 <input 
                   type="text" 
                   required 
                   value={formData.question} 
                   onChange={(e) => setFormData({ ...formData, question: e.target.value })}
-                  placeholder="Masukkan pertanyaan..."
+                  placeholder="Tuliskan pertanyaan..."
                 />
               </div>
 
               <div className="form-group">
-                <label>Jawaban</label>
+                <label>JAWABAN</label>
                 <textarea 
                   rows="4" 
                   required 
                   value={formData.answer} 
                   onChange={(e) => setFormData({ ...formData, answer: e.target.value })}
-                  placeholder="Masukkan jawaban..."
+                  placeholder="Tuliskan jawaban singkat & jelas..."
                 ></textarea>
               </div>
 
-              {/* INPUT KATEGORI (DROPDOWN) */}
-              <div className="form-group">
-                <label>Kategori FAQ</label>
-                <select 
-                  value={formData.category} 
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                >
-                  <option value="Umum">Umum</option>
-                  <option value="SPMB">SPMB (Pendaftaran, Syarat, Jadwal)</option>
-                  <option value="Akademik">Akademik</option>
-                  <option value="Fasilitas">Fasilitas</option>
-                  <option value="Biaya">Biaya</option>
-                </select>
-              </div>
-              
               <div className="form-row">
+                <div className="form-group">
+                  <label>KATEGORI FAQ</label>
+                  <select 
+                    value={formData.category} 
+                    onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  >
+                    <option value="Umum">Umum</option>
+                    <option value="SPMB">SPMB (Pendaftaran)</option>
+                    <option value="Akademik">Akademik</option>
+                    <option value="Fasilitas">Fasilitas</option>
+                    <option value="Biaya">Biaya</option>
+                  </select>
+                </div>
+
                 {editingId && (
                   <div className="form-group">
-                    <label>Urutan Tampil (Posisi)</label>
+                    <label>URUTAN TAMPIL</label>
                     <input 
                       type="number" 
                       min="1"
@@ -227,22 +315,28 @@ const FaqPage = () => {
                     />
                   </div>
                 )}
+              </div>
 
-                <div className="form-group" style={{ gridColumn: editingId ? 'auto' : '1 / -1' }}>
-                  <label>Status Tampil</label>
-                  <select 
-                    value={formData.show} 
-                    onChange={(e) => setFormData({ ...formData, show: parseInt(e.target.value) })}
-                  >
-                    <option value={1}>Tampilkan</option>
-                    <option value={0}>Sembunyikan</option>
-                  </select>
-                </div>
+              {/* CHECKBOX TAMPILKAN FAQ (PUBLIC) - BOX CONTAINER SEPERTI FOTO 2 */}
+              <div className="form-checkbox-group">
+                <label className="checkbox-container">
+                  <input 
+                    type="checkbox" 
+                    checked={formData.show === 1}
+                    onChange={(e) => setFormData({ ...formData, show: e.target.checked ? 1 : 0 })}
+                  />
+                  <span className="checkmark"></span>
+                  <span className="checkbox-label">TAMPILKAN FAQ (PUBLIC)</span>
+                </label>
               </div>
 
               <div className="faq-modal-footer">
-                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>Batal</button>
-                <button type="submit" className="btn-submit"><CheckCircle size={16} /> Simpan</button>
+                <button type="button" className="btn-cancel" onClick={() => setIsModalOpen(false)}>
+                  Batal
+                </button>
+                <button type="submit" className="btn-submit">
+                  <CheckCircle size={16} /> Simpan Data
+                </button>
               </div>
             </form>
           </div>
