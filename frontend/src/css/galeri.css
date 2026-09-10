@@ -1,0 +1,183 @@
+/* src/css/galeri.css */
+
+/* =========================================
+   1. LAYOUT & HEADER
+   ========================================= */
+.galeri-wrapper { width: 100%; max-width: 1150px; margin: 0 auto; padding: 30px 24px; box-sizing: border-box; }
+.galeri-header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 15px; }
+.galeri-title { font-size: 22px; font-weight: 700; color: var(--compreng-text); margin: 0 0 4px 0; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+.galeri-subtitle { font-size: 13px; color: var(--compreng-text-secondary); margin: 0; }
+
+/* =========================================
+   2. TOOLBAR (SEARCH)
+   ========================================= */
+.galeri-toolbar { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 16px; }
+.galeri-search-wrapper { position: relative; width: 280px; max-width: 100%; }
+.galeri-search-input { width: 100%; padding: 8px 12px 8px 36px; border-radius: 6px; border: 1px solid var(--compreng-border); background: var(--compreng-surface); color: var(--compreng-text); font-size: 13px; outline: none; box-sizing: border-box; }
+.galeri-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--compreng-text-muted); }
+
+/* =========================================
+   3. TABLE STYLES & HIDE SCROLLBAR
+   ========================================= */
+.galeri-table-card { background-color: var(--compreng-surface); border-radius: 8px; border: 1px solid var(--compreng-border); overflow-x: auto; overflow-y: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 40px; width: 100%; min-height: 300px; scrollbar-width: none; -ms-overflow-style: none; }
+.galeri-table-card::-webkit-scrollbar { display: none; }
+.galeri-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 850px; }
+.galeri-th { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--compreng-text-secondary); border-bottom: 1px solid var(--compreng-border); white-space: nowrap; background: var(--compreng-surface-soft); }
+.galeri-td { padding: 14px 16px; border-bottom: 1px solid var(--compreng-border); vertical-align: middle; color: var(--compreng-text); font-size: 13px; }
+.galeri-tr { transition: background 0.2s; }
+.galeri-tr:hover { background: var(--compreng-surface-soft); }
+.galeri-truncate { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* =========================================
+   4. BADGES
+   ========================================= */
+.galeri-badge-cover { display: inline-flex; align-items: center; gap: 4px; background: rgba(234, 179, 8, 0.15); color: #ca8a04; border: 1px solid rgba(234, 179, 8, 0.3); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+.galeri-badge-normal { display: inline-flex; background: var(--compreng-surface-soft); color: var(--compreng-text-muted); border: 1px solid var(--compreng-border); padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+
+/* =========================================
+   5. DROPDOWN ACTIONS (SMART POSITIONING)
+   ========================================= */
+.galeri-action-btn { background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--compreng-text-secondary); display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.galeri-action-btn:hover { background: var(--compreng-surface-soft); color: var(--compreng-text); }
+.galeri-dropdown-menu { background: var(--compreng-surface); border: 1px solid var(--compreng-border); border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); width: 170px; padding: 6px; z-index: 9999; animation: dropdownFadeIn 0.2s ease; }
+@keyframes dropdownFadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.galeri-dropdown-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 12px; background: transparent; border: none; text-align: left; cursor: pointer; border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--compreng-text); text-decoration: none; transition: all 0.2s; }
+.galeri-dropdown-item:hover { background: var(--compreng-surface-soft); }
+.galeri-dropdown-item.danger { color: #dc2626; }
+.galeri-dropdown-item.danger:hover { background: #fef2f2; }
+
+/* =========================================
+   6. STANDARISASI TOMBOL MODERN
+   ========================================= */
+.btn-modern-primary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background-color: var(--compreng-text); color: var(--compreng-bg); padding: 12px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; border: none; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+.btn-modern-primary:hover { opacity: 0.85; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25); }
+.btn-modern-secondary { display: inline-flex; align-items: center; justify-content: center; gap: 8px; background-color: var(--compreng-surface-soft); color: var(--compreng-text-secondary); padding: 12px 24px; border-radius: 12px; font-weight: 700; font-size: 14px; border: 1px solid var(--compreng-border); cursor: pointer; transition: all 0.2s ease; }
+.btn-modern-secondary:hover { background-color: var(--compreng-border); color: var(--compreng-text); }
+
+/* =========================================
+   7. MODAL & FORM SHADCN STYLE (ANTI CROP)
+   ========================================= */
+.galeri-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: galeriFadeIn 0.2s ease-out;
+}
+
+@keyframes galeriFadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.galeri-modal-content {
+  background-color: var(--compreng-surface);
+  width: 100%;
+  max-width: 480px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  border: 1px solid var(--compreng-border);
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh; /* BATAS TINGGI AGAR TOMBOL BAWAH TIDAK HILANG */
+  overflow: hidden; /* Konten yang lebih dipotong dari luar container utama */
+  animation: galeriSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes galeriSlideUp { from { opacity: 0; transform: translateY(10px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+/* Header Tetap */
+.galeri-modal-header {
+  padding: 20px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--compreng-border);
+  background-color: var(--compreng-surface);
+  flex-shrink: 0; /* Header jangan mengecil */
+}
+
+.galeri-modal-header h3 { margin: 0; font-size: 18px; font-weight: 700; color: var(--compreng-text); letter-spacing: -0.01em; }
+
+.galeri-btn-close {
+  background: transparent;
+  border: none;
+  color: var(--compreng-text-muted);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.galeri-btn-close:hover { background-color: var(--compreng-surface-soft); color: var(--compreng-text); }
+
+/* Body Form (Area Scroll) */
+.galeri-modal-body {
+  padding: 24px;
+  flex: 1; /* Ambil sisa ruang */
+  overflow-y: auto; /* Munculkan scroll HANYA di bagian form jika kepanjangan */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  scrollbar-width: none;
+}
+.galeri-modal-body::-webkit-scrollbar { display: none; }
+
+/* Footer Tetap */
+.galeri-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--compreng-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background-color: var(--compreng-surface);
+  flex-shrink: 0; /* Footer jangan mengecil/terpotong */
+}
+
+/* Form Groups & Inputs */
+.galeri-form-group { display: flex; flex-direction: column; gap: 8px; }
+.galeri-form-group label { font-size: 13px; font-weight: 600; color: var(--compreng-text); }
+
+.galeri-input {
+  width: 100%;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border);
+  background-color: var(--compreng-bg);
+  color: var(--compreng-text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+}
+
+.galeri-input:focus { border-color: var(--compreng-text-muted); box-shadow: 0 0 0 3px var(--compreng-surface-soft); }
+.galeri-input::placeholder { color: var(--compreng-text-muted); opacity: 0.7; }
+.galeri-input[readonly] { background-color: var(--compreng-surface-soft); color: var(--compreng-text-muted); cursor: not-allowed; }
+textarea.galeri-input { resize: vertical; min-height: 100px; }
+
+/* Radio Tabs Button Style */
+.galeri-radio-tabs { display: flex; gap: 8px; }
+.galeri-radio-tab {
+  flex: 1;
+  padding: 10px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border);
+  background-color: var(--compreng-surface-soft);
+  color: var(--compreng-text-secondary);
+  cursor: pointer;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+.galeri-radio-tab:hover { background-color: var(--compreng-border); color: var(--compreng-text); }
+.galeri-radio-tab.active { background-color: var(--compreng-text); color: var(--compreng-bg); border-color: var(--compreng-text); }

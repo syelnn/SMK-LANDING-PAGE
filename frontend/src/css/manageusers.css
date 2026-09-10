@@ -1,0 +1,449 @@
+/* src/css/manageusers.css */
+
+/* =========================================
+   1. LAYOUT & HEADER
+   ========================================= */
+.mu-wrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mu-header {
+  margin-bottom: 24px;
+}
+
+.mu-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--compreng-text);
+  margin: 0 0 6px 0;
+}
+
+.mu-subtitle {
+  font-size: 14px;
+  color: var(--compreng-text-secondary);
+  margin: 0;
+}
+
+.mu-alert {
+  background-color: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+/* =========================================
+   2. TOOLBAR (SEARCH & FILTER)
+   ========================================= */
+.mu-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 16px;
+}
+
+.mu-toolbar-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.mu-search-wrapper {
+  position: relative;
+  width: 280px;
+}
+
+.mu-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  background: var(--compreng-surface);
+  color: var(--compreng-text);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.mu-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--compreng-text-muted);
+}
+
+.mu-filter-select {
+  padding: 8px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  border-style: dashed;
+  background: var(--compreng-surface);
+  color: var(--compreng-text);
+  font-size: 13px;
+  outline: none;
+  cursor: pointer;
+}
+
+/* =========================================
+   3. TABLE STYLES & HIDE SCROLLBAR
+   ========================================= */
+.mu-table-card {
+  background-color: var(--compreng-surface);
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border);
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  
+  /* Sembunyikan scrollbar bawaan tapi tetap bisa di-scroll */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+}
+.mu-table-card::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
+.mu-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 950px;
+}
+
+.mu-th {
+  padding: 12px 16px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--compreng-text-secondary);
+  border-bottom: 1px solid var(--compreng-border);
+  white-space: nowrap;
+  background: var(--compreng-surface-soft);
+}
+
+.mu-td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--compreng-border);
+  vertical-align: middle;
+  color: var(--compreng-text);
+  font-size: 13px;
+}
+
+.mu-tr {
+  transition: background 0.2s;
+}
+
+.mu-tr:hover {
+  background: var(--compreng-surface-soft);
+}
+
+/* =========================================
+   4. BADGES & ICONS
+   ========================================= */
+.mu-badge-active {
+  display: inline-flex;
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mu-badge-inactive {
+  display: inline-flex;
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mu-role-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  text-transform: capitalize;
+}
+
+/* =========================================
+   5. DROPDOWN ACTIONS (SHADCN STYLE)
+   ========================================= */
+.mu-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--compreng-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.mu-action-btn:hover {
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text);
+}
+
+.mu-dropdown-menu {
+  background: var(--compreng-surface);
+  border: 1px solid var(--compreng-border);
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 170px;
+  padding: 4px;
+  z-index: 9999;
+}
+
+.mu-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--compreng-text);
+  transition: background 0.2s;
+}
+
+.mu-dropdown-item:hover {
+  background: var(--compreng-surface-soft);
+}
+
+.mu-dropdown-item.danger {
+  color: #dc2626;
+}
+
+.mu-dropdown-item.danger:hover {
+  background: #fef2f2;
+}
+
+/* =========================================
+   6. PAGINATION
+   ========================================= */
+.mu-pagination-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 16px;
+  flex-wrap: wrap;
+  gap: 15px;
+  padding: 0 5px;
+}
+
+.mu-page-select-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--compreng-text-secondary);
+}
+
+.mu-page-select {
+  padding: 4px 8px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  background: var(--compreng-surface);
+  color: var(--compreng-text);
+  font-size: 13px;
+  cursor: pointer;
+  outline: none;
+}
+
+.mu-page-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  font-size: 13px;
+  color: var(--compreng-text);
+}
+
+.mu-page-btn-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.mu-page-btn {
+  padding: 6px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  background: var(--compreng-surface);
+  color: var(--compreng-text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.mu-page-btn:hover:not(:disabled) {
+  background: var(--compreng-surface-soft);
+}
+
+.mu-page-btn:disabled {
+  color: var(--compreng-text-muted);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* =========================================
+   7. MODAL EDIT
+   ========================================= */
+.mu-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.mu-modal-content {
+  background: var(--compreng-surface);
+  width: 100%;
+  max-width: 420px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  border: 1px solid var(--compreng-border);
+}
+
+.mu-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--compreng-border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mu-modal-title {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--compreng-text);
+}
+
+.mu-modal-subtitle {
+  margin: 4px 0 0 0;
+  font-size: 12px;
+  color: var(--compreng-text-muted);
+}
+
+.mu-modal-close {
+  background: transparent;
+  border: none;
+  color: var(--compreng-text-muted);
+  cursor: pointer;
+  padding: 4px;
+}
+
+.mu-form {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mu-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mu-form-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--compreng-text);
+}
+
+.mu-form-input, .mu-form-select {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  background: var(--compreng-bg);
+  color: var(--compreng-text);
+  font-size: 13px;
+  outline: none;
+}
+
+.mu-form-input:disabled {
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text-muted);
+  cursor: not-allowed;
+}
+
+.mu-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+/* =========================================
+   8. STANDARISASI TOMBOL MODERN (GLOBAL)
+   ========================================= */
+.btn-modern-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--compreng-text);
+  color: var(--compreng-bg);
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-modern-primary:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-modern-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--compreng-surface-soft);
+  color: var(--compreng-text-secondary);
+  padding: 10px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-modern-secondary:hover {
+  background-color: var(--compreng-border);
+  color: var(--compreng-text);
+}

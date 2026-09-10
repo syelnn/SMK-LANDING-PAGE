@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, Trash2, Edit, Image as ImageIcon, Link as LinkIcon, X, MoreHorizontal, ExternalLink } from 'lucide-react';
+import '../css/managejurusanprogram.css';
 import '../App.css';
 
 export default function ManageJurusanProgram() {
@@ -24,9 +25,9 @@ export default function ManageJurusanProgram() {
   const [imageTypeProgram, setImageTypeProgram] = useState('url');
   const [newProgram, setNewProgram] = useState({ title: '', desc: '', badge: '', imageIcon: '' });
 
-  // State Dropdown Action (Shadcn Style)
-  const [openDropdownJurusan, setOpenDropdownJurusan] = useState(null);
-  const [openDropdownProgram, setOpenDropdownProgram] = useState(null);
+  // --- STATE DROPDOWN SMART POSITIONING ---
+  // Mampu menangani tabel jurusan maupun program sekaligus
+  const [dropdownConfig, setDropdownConfig] = useState({ id: null, type: null, right: null, top: null, bottom: null });
 
   const fetchData = async () => {
     try {
@@ -43,6 +44,17 @@ export default function ManageJurusanProgram() {
 
   useEffect(() => { fetchData(); }, []);
 
+  // Tutup dropdown saat user melakukan scroll agar menu tidak melayang tertinggal
+  useEffect(() => {
+    const handleScroll = () => {
+      if (dropdownConfig.id !== null) {
+        setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
+      }
+    };
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [dropdownConfig.id]);
+
   const handleFileUpload = (e, setFormState, formState) => {
     const file = e.target.files[0];
     if (file) {
@@ -50,6 +62,30 @@ export default function ManageJurusanProgram() {
       reader.onloadend = () => { setFormState({ ...formState, imageIcon: reader.result }); };
       reader.readAsDataURL(file);
     }
+  };
+
+  // --- SMART DROPDOWN LOGIC ---
+  const handleDropdownClick = (e, itemId, itemType) => {
+    e.stopPropagation();
+    if (dropdownConfig.id === itemId && dropdownConfig.type === itemType) {
+      setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
+      return;
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const dropdownHeight = itemType === 'jurusan' ? 120 : 80; // Estimasi tinggi dropdown
+    
+    const spaceBelow = windowHeight - rect.bottom;
+    const openUpwards = spaceBelow < dropdownHeight;
+
+    setDropdownConfig({
+      id: itemId,
+      type: itemType,
+      right: window.innerWidth - rect.right,
+      top: openUpwards ? null : rect.bottom + 4,
+      bottom: openUpwards ? windowHeight - rect.top + 4 : null
+    });
   };
 
   // ================= ACTION JURUSAN =================
@@ -61,7 +97,7 @@ export default function ManageJurusanProgram() {
   };
 
   const openEditJurusan = (item) => {
-    setOpenDropdownJurusan(null);
+    setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
     setEditIdJurusan(item.id);
     setNewJurusan({ ...item });
     setImageTypeJurusan(item.imageIcon && item.imageIcon.length > 200 ? 'file' : 'url'); 
@@ -78,7 +114,7 @@ export default function ManageJurusanProgram() {
   };
 
   const handleDeleteJurusan = async (id) => {
-    setOpenDropdownJurusan(null);
+    setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
     if (!window.confirm('Yakin ingin menghapus jurusan ini?')) return;
     try { await axios.delete(`${API_URL}/jurusan/${id}`); fetchData(); } 
     catch (error) { alert('Gagal menghapus jurusan'); }
@@ -93,7 +129,7 @@ export default function ManageJurusanProgram() {
   };
 
   const openEditProgram = (item) => {
-    setOpenDropdownProgram(null);
+    setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
     setEditIdProgram(item.id);
     setNewProgram({ ...item });
     setImageTypeProgram(item.imageIcon && item.imageIcon.length > 200 ? 'file' : 'url');
@@ -110,67 +146,39 @@ export default function ManageJurusanProgram() {
   };
 
   const handleDeleteProgram = async (id) => {
-    setOpenDropdownProgram(null);
+    setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
     if (!window.confirm('Yakin ingin menghapus program ini?')) return;
     try { await axios.delete(`${API_URL}/program/${id}`); fetchData(); } 
     catch (error) { alert('Gagal menghapus program'); }
   };
 
-  // --- STYLES (RESPONSIVE SHADCN ADMIN LOOK) ---
-  const styles = {
-    // Tambahkan padding dan boxSizing agar tidak "zoom banget" / menyentuh ujung layar
-    wrapper: { width: '100%', maxWidth: '1150px', margin: '0 auto', padding: '30px 24px', boxSizing: 'border-box' },
-    headerBox: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '15px' },
-    title: { fontSize: '22px', fontWeight: '700', color: 'var(--compreng-text)', margin: '0 0 4px 0', letterSpacing: '-0.02em' },
-    subtitle: { fontSize: '13px', color: 'var(--compreng-text-secondary)', margin: 0 },
-    
-    // Buttons
-    btnPrimary: { display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'var(--compreng-text)', color: 'var(--compreng-bg)', borderRadius: '6px', border: 'none', fontWeight: '500', cursor: 'pointer', fontSize: '13px', transition: 'opacity 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', whiteSpace: 'nowrap' },
-    
-    // Table Styles
-    tableCard: { backgroundColor: 'var(--compreng-surface)', borderRadius: '8px', border: '1px solid var(--compreng-border)', overflowX: 'auto', overflowY: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', marginBottom: '40px', width: '100%' },
-    table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' },
-    th: { padding: '12px 16px', fontSize: '13px', fontWeight: '600', color: 'var(--compreng-text-secondary)', borderBottom: '1px solid var(--compreng-border)', whiteSpace: 'nowrap' },
-    td: { padding: '14px 16px', borderBottom: '1px solid var(--compreng-border)', verticalAlign: 'middle', color: 'var(--compreng-text)', fontSize: '13px' },
-    
-    // Helpers
-    badgeTag: { display: 'inline-block', background: 'var(--compreng-surface-soft)', color: 'var(--compreng-text)', border: '1px solid var(--compreng-border)', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '500', whiteSpace: 'nowrap' },
-    badgeBlue: { display: 'inline-block', background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' },
-    truncate: { maxWidth: '280px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
-    
-    // Dropdown Action
-    actionBtn: { background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', color: 'var(--compreng-text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    dropdownMenu: { position: 'absolute', right: '15px', top: '70%', background: 'var(--compreng-surface)', border: '1px solid var(--compreng-border)', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: '170px', padding: '4px', zIndex: 50 },
-    dropdownItem: { display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', fontSize: '12px', fontWeight: '500', color: 'var(--compreng-text)', textDecoration: 'none', transition: 'background 0.2s' },
-  };
-
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data program...</div>;
 
   return (
-    <div style={styles.wrapper}>
+    <div className="mjp-wrapper">
       
       {/* ================= BAGIAN 1: JURUSAN ================= */}
-      <div style={styles.headerBox}>
+      <div className="mjp-header-box">
         <div>
-          <h2 style={styles.title}>Jurusan (Kompetensi Keahlian)</h2>
-          <p style={styles.subtitle}>Kelola daftar jurusan dan mata pelajaran yang ditawarkan di sekolah.</p>
+          <h2 className="mjp-title">Jurusan (Kompetensi Keahlian)</h2>
+          <p className="mjp-subtitle">Kelola daftar jurusan dan mata pelajaran yang ditawarkan di sekolah.</p>
         </div>
         {(userRole === 'admin' || userRole === 'editor') && (
-          <button style={styles.btnPrimary} onClick={openAddJurusan}>
+          <button className="mjp-btn-primary" onClick={openAddJurusan}>
             <Plus size={16} /> Tambah Jurusan
           </button>
         )}
       </div>
 
-      <div style={styles.tableCard}>
-        <table style={styles.table}>
+      <div className="mjp-table-card">
+        <table className="mjp-table">
           <thead>
             <tr style={{ background: 'var(--compreng-surface-soft)' }}>
-              <th style={styles.th}>Jurusan</th>
-              <th style={styles.th}>Slug URL</th>
-              <th style={styles.th}>Deskripsi Singkat</th>
-              <th style={styles.th}>Mata Pelajaran</th>
-              <th style={{ ...styles.th, textAlign: 'center' }}></th>
+              <th className="mjp-th">Jurusan</th>
+              <th className="mjp-th">Slug URL</th>
+              <th className="mjp-th">Deskripsi Singkat</th>
+              <th className="mjp-th">Mata Pelajaran</th>
+              <th className="mjp-th" style={{ textAlign: 'center' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -180,54 +188,30 @@ export default function ManageJurusanProgram() {
               jurusanList.map((item) => {
                 const subjectArray = item.subjects ? item.subjects.split(',') : [];
                 return (
-                  <tr key={item.id} style={{ transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                    <td style={styles.td}>
+                  <tr key={item.id} className="mjp-tr">
+                    <td className="mjp-td">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                         <img src={item.imageIcon || 'https://via.placeholder.com/40'} alt="Icon" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'contain', background: 'var(--compreng-bg)', padding: '4px', border: '1px solid var(--compreng-border)' }} />
                         <span style={{ fontWeight: '600' }}>{item.title}</span>
                       </div>
                     </td>
-                    <td style={{ ...styles.td, color: 'var(--compreng-text-secondary)' }}>/{item.slug}</td>
-                    <td style={{ ...styles.td, ...styles.truncate }}>{item.desc}</td>
-                    <td style={styles.td}>
+                    <td className="mjp-td" style={{ color: 'var(--compreng-text-secondary)' }}>/{item.slug}</td>
+                    <td className="mjp-td mjp-truncate">{item.desc}</td>
+                    <td className="mjp-td">
                       <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', maxWidth: '240px' }}>
                         {subjectArray.slice(0, 2).map((sub, idx) => (
-                          <span key={idx} style={styles.badgeTag}>{sub.trim()}</span>
+                          <span key={idx} className="mjp-badge-tag">{sub.trim()}</span>
                         ))}
-                        {subjectArray.length > 2 && <span style={styles.badgeTag}>+{subjectArray.length - 2}</span>}
+                        {subjectArray.length > 2 && <span className="mjp-badge-tag">+{subjectArray.length - 2}</span>}
                       </div>
                     </td>
-                    <td style={{ ...styles.td, textAlign: 'center', position: 'relative' }}>
+                    <td className="mjp-td" style={{ textAlign: 'center', position: 'relative' }}>
                       <button 
-                        onClick={() => setOpenDropdownJurusan(openDropdownJurusan === item.id ? null : item.id)}
-                        style={styles.actionBtn}
-                        onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'}
-                        onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                        onClick={(e) => handleDropdownClick(e, item.id, 'jurusan')}
+                        className="mjp-action-btn"
                       >
                         <MoreHorizontal size={18} />
                       </button>
-
-                      {openDropdownJurusan === item.id && (
-                        <>
-                          <div onClick={() => setOpenDropdownJurusan(null)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
-                          <div style={styles.dropdownMenu}>
-                            <Link to={`/admin/kurikulum/${item.slug}`} style={styles.dropdownItem} onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                              <ExternalLink size={14} color="var(--compreng-text-secondary)" /> Detail Kurikulum
-                            </Link>
-                            {(userRole === 'admin' || userRole === 'editor') && (
-                              <>
-                                <button onClick={() => openEditJurusan(item)} style={styles.dropdownItem} onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                                  <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Data
-                                </button>
-                                <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
-                                <button onClick={() => handleDeleteJurusan(item.id)} style={{ ...styles.dropdownItem, color: '#dc2626' }} onMouseOver={(e) => e.currentTarget.style.background = '#fef2f2'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                                  <Trash2 size={14} color="#dc2626" /> Delete
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </>
-                      )}
                     </td>
                   </tr>
                 );
@@ -238,26 +222,26 @@ export default function ManageJurusanProgram() {
       </div>
 
       {/* ================= BAGIAN 2: PROGRAM UNGGULAN ================= */}
-      <div style={{ ...styles.headerBox, marginTop: '50px' }}>
+      <div className="mjp-header-box" style={{ marginTop: '50px' }}>
         <div>
-          <h2 style={styles.title}>Program Unggulan</h2>
-          <p style={styles.subtitle}>Pilihan jalur karier komprehensif (Akademik, Siap Kerja, dsb).</p>
+          <h2 className="mjp-title">Program Unggulan</h2>
+          <p className="mjp-subtitle">Pilihan jalur karier komprehensif (Akademik, Siap Kerja, dsb).</p>
         </div>
         {(userRole === 'admin' || userRole === 'editor') && (
-          <button style={styles.btnPrimary} onClick={openAddProgram}>
+          <button className="mjp-btn-primary" onClick={openAddProgram}>
             <Plus size={16} /> Tambah Program
           </button>
         )}
       </div>
 
-      <div style={styles.tableCard}>
-        <table style={styles.table}>
+      <div className="mjp-table-card">
+        <table className="mjp-table">
           <thead>
             <tr style={{ background: 'var(--compreng-surface-soft)' }}>
-              <th style={styles.th}>Nama Program</th>
-              <th style={styles.th}>Label Kategori</th>
-              <th style={styles.th}>Deskripsi Program</th>
-              <th style={{ ...styles.th, textAlign: 'center' }}></th>
+              <th className="mjp-th">Nama Program</th>
+              <th className="mjp-th">Label Kategori</th>
+              <th className="mjp-th">Deskripsi Program</th>
+              <th className="mjp-th" style={{ textAlign: 'center' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -265,45 +249,26 @@ export default function ManageJurusanProgram() {
               <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>Belum ada program unggulan.</td></tr>
             ) : (
               programList.map((prog) => (
-                <tr key={prog.id} style={{ transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                  <td style={styles.td}>
+                <tr key={prog.id} className="mjp-tr">
+                  <td className="mjp-td">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       <img src={prog.imageIcon || 'https://via.placeholder.com/40'} alt="Icon" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'contain', background: 'var(--compreng-bg)', padding: '4px', border: '1px solid var(--compreng-border)' }} />
                       <span style={{ fontWeight: '600' }}>{prog.title}</span>
                     </div>
                   </td>
-                  <td style={styles.td}>
-                    {prog.badge && <span style={styles.badgeBlue}>{prog.badge}</span>}
+                  <td className="mjp-td">
+                    {prog.badge && <span className="mjp-badge-blue">{prog.badge}</span>}
                   </td>
-                  <td style={{ ...styles.td, ...styles.truncate, maxWidth: '400px' }}>{prog.desc}</td>
-                  <td style={{ ...styles.td, textAlign: 'center', position: 'relative' }}>
+                  <td className="mjp-td mjp-truncate" style={{ maxWidth: '400px' }}>{prog.desc}</td>
+                  <td className="mjp-td" style={{ textAlign: 'center', position: 'relative' }}>
                     
                     {(userRole === 'admin' || userRole === 'editor') && (
-                      <>
-                        <button 
-                          onClick={() => setOpenDropdownProgram(openDropdownProgram === prog.id ? null : prog.id)}
-                          style={styles.actionBtn}
-                          onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'}
-                          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-                        >
-                          <MoreHorizontal size={18} />
-                        </button>
-
-                        {openDropdownProgram === prog.id && (
-                          <>
-                            <div onClick={() => setOpenDropdownProgram(null)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
-                            <div style={styles.dropdownMenu}>
-                              <button onClick={() => openEditProgram(prog)} style={styles.dropdownItem} onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                                <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Data
-                              </button>
-                              <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
-                              <button onClick={() => handleDeleteProgram(prog.id)} style={{ ...styles.dropdownItem, color: '#dc2626' }} onMouseOver={(e) => e.currentTarget.style.background = '#fef2f2'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                                <Trash2 size={14} color="#dc2626" /> Delete
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </>
+                      <button 
+                        onClick={(e) => handleDropdownClick(e, prog.id, 'program')}
+                        className="mjp-action-btn"
+                      >
+                        <MoreHorizontal size={18} />
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -313,7 +278,65 @@ export default function ManageJurusanProgram() {
         </table>
       </div>
 
-      {/* ================= MODAL FORM JURUSAN & PROGRAM ================= */}
+      {/* MENAMPILKAN DROPDOWN SECARA FIXED (Di Luar Flow Tabel) */}
+      {dropdownConfig.id && (
+        <>
+          <div 
+            onClick={() => setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null })} 
+            style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+          ></div>
+          
+          <div 
+            className="mjp-dropdown-menu" 
+            style={{ 
+              position: 'fixed', 
+              right: dropdownConfig.right, 
+              ...(dropdownConfig.top !== null ? { top: dropdownConfig.top } : {}),
+              ...(dropdownConfig.bottom !== null ? { bottom: dropdownConfig.bottom } : {}),
+              zIndex: 50 
+            }}
+          >
+            {dropdownConfig.type === 'jurusan' ? (() => {
+              const item = jurusanList.find(j => j.id === dropdownConfig.id);
+              if (!item) return null;
+              return (
+                <>
+                  <Link to={`/admin/kurikulum/${item.slug}`} className="mjp-dropdown-item">
+                    <ExternalLink size={14} color="var(--compreng-text-secondary)" /> Detail Kurikulum
+                  </Link>
+                  {(userRole === 'admin' || userRole === 'editor') && (
+                    <>
+                      <button onClick={() => openEditJurusan(item)} className="mjp-dropdown-item">
+                        <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Data
+                      </button>
+                      <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
+                      <button onClick={() => handleDeleteJurusan(item.id)} className="mjp-dropdown-item danger">
+                        <Trash2 size={14} color="currentColor" /> Delete
+                      </button>
+                    </>
+                  )}
+                </>
+              );
+            })() : (() => {
+              const item = programList.find(p => p.id === dropdownConfig.id);
+              if (!item) return null;
+              return (
+                <>
+                  <button onClick={() => openEditProgram(item)} className="mjp-dropdown-item">
+                    <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Data
+                  </button>
+                  <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
+                  <button onClick={() => handleDeleteProgram(item.id)} className="mjp-dropdown-item danger">
+                    <Trash2 size={14} color="currentColor" /> Delete
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </>
+      )}
+
+      {/* ================= MODAL FORM JURUSAN ================= */}
       {showModalJurusan && (
         <div className="modal-overlay">
           <div className="modal-content modern-modal">
@@ -363,6 +386,7 @@ export default function ManageJurusanProgram() {
         </div>
       )}
 
+      {/* ================= MODAL FORM PROGRAM ================= */}
       {showModalProgram && (
         <div className="modal-overlay">
           <div className="modal-content modern-modal">

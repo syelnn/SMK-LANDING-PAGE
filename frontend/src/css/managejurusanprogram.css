@@ -1,0 +1,217 @@
+/* src/css/managejurusanprogram.css */
+
+/* =========================================
+   LAYOUT & CONTAINER
+   ========================================= */
+.mjp-wrapper {
+  width: 100%;
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 30px 24px;
+  box-sizing: border-box;
+}
+
+.mjp-header-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.mjp-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--compreng-text);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+
+.mjp-subtitle {
+  font-size: 13px;
+  color: var(--compreng-text-secondary);
+  margin: 0;
+}
+
+/* =========================================
+   STANDARISASI TOMBOL MODERN
+   ========================================= */
+.mjp-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--compreng-text);
+  color: var(--compreng-bg);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  white-space: nowrap;
+}
+
+.mjp-btn-primary:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* =========================================
+   TABLE STYLES & HIDE SCROLLBAR
+   ========================================= */
+.mjp-table-card {
+  background-color: var(--compreng-surface);
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border);
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  margin-bottom: 40px;
+  width: 100%;
+  
+  /* Sembunyikan scrollbar bawaan tapi tetap bisa di-scroll */
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+.mjp-table-card::-webkit-scrollbar {
+  display: none; 
+}
+
+.mjp-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 800px;
+}
+
+.mjp-th {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--compreng-text-secondary);
+  border-bottom: 1px solid var(--compreng-border);
+  white-space: nowrap;
+}
+
+.mjp-td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--compreng-border);
+  vertical-align: middle;
+  color: var(--compreng-text);
+  font-size: 13px;
+}
+
+.mjp-tr {
+  transition: background 0.2s;
+}
+
+.mjp-tr:hover {
+  background: var(--compreng-surface-soft);
+}
+
+/* =========================================
+   BADGES & UTILITIES
+   ========================================= */
+.mjp-badge-tag {
+  display: inline-block;
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text);
+  border: 1px solid var(--compreng-border);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.mjp-badge-blue {
+  display: inline-block;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.mjp-truncate {
+  max-width: 280px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* =========================================
+   DROPDOWN & ACTIONS (SMART POSITIONING)
+   ========================================= */
+.mjp-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--compreng-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.mjp-action-btn:hover {
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text);
+}
+
+.mjp-dropdown-menu {
+  background: var(--compreng-surface);
+  border: 1px solid var(--compreng-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  width: 170px;
+  padding: 6px;
+  z-index: 9999;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mjp-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 12px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--compreng-text);
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.mjp-dropdown-item:hover {
+  background: var(--compreng-surface-soft);
+}
+
+.mjp-dropdown-item.danger {
+  color: #dc2626;
+}
+
+.mjp-dropdown-item.danger:hover {
+  background: #fef2f2;
+}

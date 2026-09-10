@@ -1,0 +1,278 @@
+/* src/css/managepengajar.css */
+
+/* =========================================
+   1. LAYOUT & HEADER
+   ========================================= */
+.mp-wrapper {
+  width: 100%;
+  max-width: 1150px;
+  margin: 0 auto;
+  padding: 30px 24px;
+  box-sizing: border-box;
+}
+
+.mp-header-box {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.mp-title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--compreng-text);
+  margin: 0 0 4px 0;
+  letter-spacing: -0.02em;
+}
+
+.mp-subtitle {
+  font-size: 13px;
+  color: var(--compreng-text-secondary);
+  margin: 0;
+}
+
+/* =========================================
+   2. TOOLBAR (SEARCH)
+   ========================================= */
+.mp-toolbar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.mp-search-wrapper {
+  position: relative;
+  width: 280px;
+  max-width: 100%;
+}
+
+.mp-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  background: var(--compreng-surface);
+  color: var(--compreng-text);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.mp-search-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--compreng-text-muted);
+}
+
+/* =========================================
+   3. TABLE STYLES & HIDE SCROLLBAR
+   ========================================= */
+.mp-table-card {
+  background-color: var(--compreng-surface);
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border);
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 40px;
+  width: 100%;
+  
+  /* Sembunyikan scrollbar bawaan tapi tetap bisa di-scroll */
+  scrollbar-width: none; 
+  -ms-overflow-style: none; 
+}
+.mp-table-card::-webkit-scrollbar {
+  display: none; 
+}
+
+.mp-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 800px;
+}
+
+.mp-th {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--compreng-text-secondary);
+  border-bottom: 1px solid var(--compreng-border);
+  white-space: nowrap;
+  background: var(--compreng-surface-soft);
+}
+
+.mp-td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--compreng-border);
+  vertical-align: middle;
+  color: var(--compreng-text);
+  font-size: 13px;
+}
+
+.mp-tr {
+  transition: background 0.2s;
+}
+
+.mp-tr:hover {
+  background: var(--compreng-surface-soft);
+}
+
+/* =========================================
+   4. BADGES
+   ========================================= */
+.mp-badge-active {
+  display: inline-flex;
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mp-badge-inactive {
+  display: inline-flex;
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text-muted);
+  border: 1px solid var(--compreng-border);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mp-badge-role {
+  display: inline-block;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+/* =========================================
+   5. DROPDOWN ACTIONS (SMART POSITIONING)
+   ========================================= */
+.mp-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--compreng-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.mp-action-btn:hover {
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text);
+}
+
+/* Menu akan menggunakan position: fixed dari React */
+.mp-dropdown-menu {
+  background: var(--compreng-surface);
+  border: 1px solid var(--compreng-border);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  width: 150px;
+  padding: 6px;
+  z-index: 9999;
+  animation: dropdownFadeIn 0.2s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mp-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--compreng-text);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.mp-dropdown-item:hover {
+  background: var(--compreng-surface-soft);
+}
+
+.mp-dropdown-item.danger {
+  color: #dc2626;
+}
+
+.mp-dropdown-item.danger:hover {
+  background: #fef2f2;
+}
+
+/* =========================================
+   6. STANDARISASI TOMBOL MODERN (SESUAI REQUEST)
+   ========================================= */
+.btn-modern-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--compreng-text); /* Tema Terang/Gelap adaptif */
+  color: var(--compreng-bg);
+  padding: 10px 20px; /* Sedikit disesuaikan agar tidak terlalu raksasa */
+  border-radius: 8px; /* Menggunakan 8px agar selaras dgn Shadcn, bukan 12px */
+  font-weight: 600;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.btn-modern-primary:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.btn-modern-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--compreng-surface-soft);
+  color: var(--compreng-text-secondary);
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  border: 1px solid var(--compreng-border);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-modern-secondary:hover {
+  background-color: var(--compreng-border);
+  color: var(--compreng-text);
+}

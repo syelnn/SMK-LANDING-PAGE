@@ -1,0 +1,383 @@
+/* src/css/managesetting.css */
+
+/* =========================================
+   1. LAYOUT UTAMA
+   ========================================= */
+.ms-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 40px 30px 80px 30px;
+  font-family: var(--theme-font, sans-serif);
+}
+
+.ms-page-header {
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--compreng-border);
+  padding-bottom: 24px;
+}
+
+.ms-page-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--compreng-text);
+  margin: 0 0 8px 0;
+  letter-spacing: -0.02em;
+}
+
+.ms-page-subtitle {
+  font-size: 14px;
+  color: var(--compreng-text-muted);
+  margin: 0;
+}
+
+.ms-layout-flex {
+  display: flex;
+  gap: 48px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+/* =========================================
+   2. SIDEBAR NAVIGASI
+   ========================================= */
+.ms-sidebar {
+  width: 220px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.ms-nav-link {
+  padding: 8px 16px;
+  border-radius: 6px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  color: var(--compreng-text-secondary);
+  background: transparent;
+}
+
+.ms-nav-link:hover {
+  background-color: var(--compreng-surface-soft);
+  color: var(--compreng-text);
+}
+
+.ms-nav-link.active {
+  background-color: var(--compreng-surface-soft);
+  color: var(--compreng-text);
+  font-weight: 600;
+}
+
+/* =========================================
+   3. KONTEN FORM
+   ========================================= */
+.ms-content-area {
+  flex: 1;
+  min-width: 300px;
+  max-width: 700px;
+}
+
+.ms-section-header {
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--compreng-border);
+}
+
+.ms-section-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--compreng-text);
+  margin: 0 0 6px 0;
+  letter-spacing: -0.01em;
+}
+
+.ms-section-desc {
+  font-size: 13px;
+  color: var(--compreng-text-muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* =========================================
+   4. FORM INPUTS & GRID
+   ========================================= */
+.ms-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.ms-input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 28px;
+}
+
+.ms-input-group.medium {
+  max-width: 400px;
+}
+
+.ms-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--compreng-text);
+}
+
+.ms-helper-text {
+  font-size: 12.5px;
+  color: var(--compreng-text-muted);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+.ms-input {
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--compreng-bg);
+  color: var(--compreng-text);
+  font-size: 13px;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.ms-input:focus {
+  border-color: var(--compreng-text-muted);
+  box-shadow: 0 0 0 3px var(--compreng-surface-soft);
+}
+
+.ms-textarea {
+  padding: 12px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  width: 100%;
+  min-height: 100px;
+  resize: vertical;
+  box-sizing: border-box;
+  background-color: var(--compreng-bg);
+  color: var(--compreng-text);
+  font-size: 13px;
+  outline: none;
+  transition: border 0.2s, box-shadow 0.2s;
+}
+
+.ms-textarea:focus {
+  border-color: var(--compreng-text-muted);
+  box-shadow: 0 0 0 3px var(--compreng-surface-soft);
+}
+
+.ms-textarea.tall { min-height: 120px; }
+.ms-textarea.short { min-height: 80px; }
+
+/* =========================================
+   5. TOGGLE Tombol URL / UPLOAD
+   ========================================= */
+.ms-toggle-row {
+  display: flex;
+  gap: 6px;
+}
+
+.ms-toggle-btn {
+  font-size: 11px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text-muted);
+  transition: all 0.2s;
+}
+
+.ms-toggle-btn:hover {
+  background: var(--compreng-border);
+  color: var(--compreng-text);
+}
+
+.ms-toggle-btn.active {
+  background: var(--compreng-text);
+  color: var(--compreng-bg);
+}
+
+.ms-preview-img {
+  width: 60px;
+  height: 60px;
+  object-fit: contain;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  margin-top: 10px;
+  background-color: var(--compreng-bg);
+  padding: 4px;
+}
+
+.ms-preview-img.hero {
+  width: 100px;
+  object-fit: cover;
+}
+
+/* =========================================
+   6. CUSTOM THEME COLORS BOX
+   ========================================= */
+.ms-custom-panel {
+  margin-top: 30px;
+  background-color: var(--compreng-bg);
+  padding: 24px;
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border);
+}
+
+.ms-custom-title {
+  font-size: 14px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  color: var(--compreng-text);
+}
+
+.ms-color-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.ms-color-box {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background-color: var(--compreng-bg);
+  border: 1px solid var(--compreng-border);
+  border-radius: 6px;
+  padding: 6px 10px;
+}
+
+.ms-color-picker {
+  border: none;
+  width: 30px;
+  background: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.ms-color-input {
+  border: none;
+  outline: none;
+  background: none;
+  width: 100%;
+  color: var(--compreng-text);
+  font-size: 13px;
+}
+
+/* =========================================
+   7. THEME DROPDOWN (SHADCN SELECT)
+   ========================================= */
+.ms-theme-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 400px;
+  margin-top: 4px;
+}
+
+.ms-theme-trigger {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.ms-theme-trigger-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ms-theme-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  background: var(--compreng-surface);
+  border: 1px solid var(--compreng-border);
+  border-radius: 6px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 5px;
+}
+
+.ms-theme-group-label {
+  padding: 8px 12px;
+  background: var(--compreng-bg);
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--compreng-text-muted);
+  text-transform: uppercase;
+}
+
+.ms-theme-item {
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  border-bottom: 1px solid var(--compreng-border);
+  background: transparent;
+  transition: background 0.2s;
+}
+
+.ms-theme-item:hover {
+  background: var(--compreng-surface-soft);
+}
+
+.ms-theme-item.active {
+  background: var(--compreng-bg);
+}
+
+.ms-theme-item-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ms-theme-item-text {
+  font-size: 13px;
+  color: var(--compreng-text);
+}
+
+/* =========================================
+   8. FOOTER / SUBMIT BUTTON
+   ========================================= */
+.ms-submit-area {
+  margin-top: 20px;
+  padding-top: 10px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+/* Standarisasi Tombol Modern (Di-copy dari file yang sudah disepakati) */
+.btn-modern-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--compreng-text);
+  color: var(--compreng-bg);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.btn-modern-primary:hover {
+  opacity: 0.85;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}

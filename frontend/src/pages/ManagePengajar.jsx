@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Plus, Trash2, Edit, Image as ImageIcon, Link as LinkIcon, X, MoreHorizontal, Search } from 'lucide-react';
-import '../App.css';
+import '../css/managepengajar.css'; // Import file CSS yang baru dibuat
+import '../App.css'; // Pertahankan untuk class modal overlay bawaan
 
 export default function ManagePengajar() {
   const [teachers, setTeachers] = useState([]);
@@ -18,14 +19,13 @@ export default function ManagePengajar() {
     name: '', role: '', photo: '', sort_order: 1, show: 1 
   });
 
-  // State Dropdown Action & Pencarian
-  const [openDropdownId, setOpenDropdownId] = useState(null);
+  // State Dropdown Action (SMART POSITIONING)
+  const [dropdownConfig, setDropdownConfig] = useState({ id: null, right: null, top: null, bottom: null });
   const [searchTerm, setSearchTerm] = useState('');
 
   const fetchData = async () => {
     try {
       const res = await axios.get(`${API_URL}/teacher`);
-      // Urutkan berdasarkan sort_order agar rapi dari atas ke bawah
       const sortedTeachers = (res.data.data || []).sort((a, b) => {
         const orderA = a.sort_order ?? a.sortOrder ?? 99;
         const orderB = b.sort_order ?? b.sortOrder ?? 99;
@@ -43,6 +43,17 @@ export default function ManagePengajar() {
     fetchData();
   }, []);
 
+  // Tutup dropdown saat user melakukan scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (dropdownConfig.id !== null) {
+        setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+      }
+    };
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [dropdownConfig.id]);
+
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
@@ -51,6 +62,29 @@ export default function ManagePengajar() {
       reader.onloadend = () => setFormData({ ...formData, photo: reader.result });
       reader.readAsDataURL(file);
     }
+  };
+
+  // --- SMART DROPDOWN LOGIC ---
+  const handleDropdownClick = (e, teacherId) => {
+    e.stopPropagation();
+    if (dropdownConfig.id === teacherId) {
+      setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+      return;
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const dropdownHeight = 90; // Estimasi tinggi menu (Edit + Delete)
+    
+    const spaceBelow = windowHeight - rect.bottom;
+    const openUpwards = spaceBelow < dropdownHeight;
+
+    setDropdownConfig({
+      id: teacherId,
+      right: window.innerWidth - rect.right,
+      top: openUpwards ? null : rect.bottom + 4,
+      bottom: openUpwards ? windowHeight - rect.top + 4 : null
+    });
   };
 
   const openAdd = () => {
@@ -62,7 +96,7 @@ export default function ManagePengajar() {
   };
 
   const openEdit = (item) => {
-    setOpenDropdownId(null);
+    setDropdownConfig({ id: null, right: null, top: null, bottom: null });
     setEditId(item.id);
     setFormData({ ...item, sort_order: item.sort_order ?? item.sortOrder ?? 0 });
     setImageType(item.photo && item.photo.length > 200 ? 'file' : 'url');
@@ -85,7 +119,7 @@ export default function ManagePengajar() {
   };
 
   const handleDelete = async (id, name) => {
-    setOpenDropdownId(null);
+    setDropdownConfig({ id: null, right: null, top: null, bottom: null });
     if (!window.confirm(`Yakin ingin menghapus data pengajar "${name}"?`)) return;
     try {
       await axios.delete(`${API_URL}/teacher/${id}`);
@@ -95,7 +129,6 @@ export default function ManagePengajar() {
     }
   };
 
-  // --- LOGIKA FILTER PENCARIAN ---
   const filteredTeachers = teachers.filter(teacher => {
     const term = searchTerm.toLowerCase();
     return (
@@ -104,79 +137,45 @@ export default function ManagePengajar() {
     );
   });
 
-  // --- STYLES (RESPONSIVE SHADCN ADMIN LOOK) ---
-  const styles = {
-    wrapper: { width: '100%', maxWidth: '1150px', margin: '0 auto', padding: '30px 24px', boxSizing: 'border-box' },
-    headerBox: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '15px' },
-    title: { fontSize: '22px', fontWeight: '700', color: 'var(--compreng-text)', margin: '0 0 4px 0', letterSpacing: '-0.02em' },
-    subtitle: { fontSize: '13px', color: 'var(--compreng-text-secondary)', margin: 0 },
-    
-    // Buttons
-    btnPrimary: { display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'var(--compreng-text)', color: 'var(--compreng-bg)', borderRadius: '6px', border: 'none', fontWeight: '500', cursor: 'pointer', fontSize: '13px', transition: 'opacity 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', whiteSpace: 'nowrap' },
-    
-    // Toolbar (Search)
-    toolbar: { display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginBottom: '16px' },
-    searchInputWrapper: { position: 'relative', width: '280px', maxWidth: '100%' },
-    searchInput: { width: '100%', padding: '8px 12px 8px 36px', borderRadius: '6px', border: '1px solid var(--compreng-border)', background: 'var(--compreng-surface)', color: 'var(--compreng-text)', fontSize: '13px', outline: 'none' },
-    searchIcon: { position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--compreng-text-muted)' },
-
-    // Table Styles
-    tableCard: { backgroundColor: 'var(--compreng-surface)', borderRadius: '8px', border: '1px solid var(--compreng-border)', overflowX: 'auto', overflowY: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', marginBottom: '40px', width: '100%' },
-    table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' },
-    th: { padding: '12px 16px', fontSize: '13px', fontWeight: '600', color: 'var(--compreng-text-secondary)', borderBottom: '1px solid var(--compreng-border)', whiteSpace: 'nowrap' },
-    td: { padding: '14px 16px', borderBottom: '1px solid var(--compreng-border)', verticalAlign: 'middle', color: 'var(--compreng-text)', fontSize: '13px' },
-    
-    // Helpers
-    badgeActive: { display: 'inline-flex', background: 'rgba(34, 197, 94, 0.15)', color: '#16a34a', border: '1px solid rgba(34, 197, 94, 0.3)', padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' },
-    badgeInactive: { display: 'inline-flex', background: 'var(--compreng-surface-soft)', color: 'var(--compreng-text-muted)', border: '1px solid var(--compreng-border)', padding: '2px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '600' },
-    badgeRole: { display: 'inline-block', background: '#eff6ff', color: '#2563eb', border: '1px solid #bfdbfe', padding: '4px 10px', borderRadius: '6px', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' },
-    
-    // Dropdown Action
-    actionBtn: { background: 'transparent', border: 'none', cursor: 'pointer', padding: '6px', borderRadius: '6px', color: 'var(--compreng-text-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-    dropdownMenu: { position: 'absolute', right: '15px', top: '70%', background: 'var(--compreng-surface)', border: '1px solid var(--compreng-border)', borderRadius: '6px', boxShadow: '0 4px 12px rgba(0,0,0,0.1)', width: '150px', padding: '4px', zIndex: 50 },
-    dropdownItem: { display: 'flex', alignItems: 'center', gap: '8px', width: '100%', padding: '8px 10px', background: 'transparent', border: 'none', textAlign: 'left', cursor: 'pointer', borderRadius: '4px', fontSize: '12px', fontWeight: '500', color: 'var(--compreng-text)', textDecoration: 'none', transition: 'background 0.2s' },
-  };
-
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data pengajar...</div>;
 
   return (
-    <div style={styles.wrapper}>
+    <div className="mp-wrapper">
       
-      <div style={styles.headerBox}>
+      <div className="mp-header-box">
         <div>
-          <h2 style={styles.title}>Tenaga Pengajar</h2>
-          <p style={styles.subtitle}>Kelola daftar guru, kepala sekolah, dan staf pengajar.</p>
+          <h2 className="mp-title">Tenaga Pengajar</h2>
+          <p className="mp-subtitle">Kelola daftar guru, kepala sekolah, dan staf pengajar.</p>
         </div>
         {(userRole === 'admin' || userRole === 'editor') && (
-          <button style={styles.btnPrimary} onClick={openAdd}>
+          <button className="btn-modern-primary" onClick={openAdd}>
             <Plus size={16} /> Tambah Pengajar
           </button>
         )}
       </div>
 
-      {/* TOOLBAR: SEARCH (SHADCN STYLE) */}
-      <div style={styles.toolbar}>
-        <div style={styles.searchInputWrapper}>
-          <Search size={16} style={styles.searchIcon} />
+      <div className="mp-toolbar">
+        <div className="mp-search-wrapper">
+          <Search size={16} className="mp-search-icon" />
           <input 
             type="text" 
             placeholder="Cari nama atau jabatan..." 
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            style={styles.searchInput}
+            className="mp-search-input"
           />
         </div>
       </div>
 
-      <div style={styles.tableCard}>
-        <table style={styles.table}>
+      <div className="mp-table-card">
+        <table className="mp-table">
           <thead>
-            <tr style={{ background: 'var(--compreng-surface-soft)' }}>
-              <th style={styles.th}>Nama & Gelar</th>
-              <th style={styles.th}>Jabatan</th>
-              <th style={{ ...styles.th, textAlign: 'center' }}>Urutan</th>
-              <th style={styles.th}>Status Tampil</th>
-              <th style={{ ...styles.th, textAlign: 'center' }}></th>
+            <tr>
+              <th className="mp-th">Nama & Gelar</th>
+              <th className="mp-th">Jabatan</th>
+              <th className="mp-th" style={{ textAlign: 'center' }}>Urutan</th>
+              <th className="mp-th">Status Tampil</th>
+              <th className="mp-th" style={{ textAlign: 'center' }}></th>
             </tr>
           </thead>
           <tbody>
@@ -188,8 +187,8 @@ export default function ManagePengajar() {
               </tr>
             ) : (
               filteredTeachers.map((item) => (
-                <tr key={item.id} style={{ transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                  <td style={styles.td}>
+                <tr key={item.id} className="mp-tr">
+                  <td className="mp-td">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       {item.photo ? (
                         <img src={item.photo} alt="Foto" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
@@ -202,51 +201,32 @@ export default function ManagePengajar() {
                     </div>
                   </td>
                   
-                  <td style={styles.td}>
+                  <td className="mp-td">
                     {item.role.toLowerCase().includes('kepala') ? (
-                      <span style={styles.badgeRole}>{item.role}</span>
+                      <span className="mp-badge-role">{item.role}</span>
                     ) : (
                       <span style={{ color: 'var(--compreng-text-secondary)' }}>{item.role}</span>
                     )}
                   </td>
                   
-                  <td style={{ ...styles.td, textAlign: 'center', fontWeight: '600', color: 'var(--compreng-text-secondary)' }}>
+                  <td className="mp-td" style={{ textAlign: 'center', fontWeight: '600', color: 'var(--compreng-text-secondary)' }}>
                     {item.sort_order ?? item.sortOrder}
                   </td>
                   
-                  <td style={styles.td}>
-                    <span style={item.show === 1 ? styles.badgeActive : styles.badgeInactive}>
+                  <td className="mp-td">
+                    <span className={item.show === 1 ? 'mp-badge-active' : 'mp-badge-inactive'}>
                       {item.show === 1 ? 'Ditampilkan' : 'Disembunyikan'}
                     </span>
                   </td>
                   
-                  <td style={{ ...styles.td, textAlign: 'center', position: 'relative' }}>
+                  <td className="mp-td" style={{ textAlign: 'center', position: 'relative' }}>
                     {(userRole === 'admin' || userRole === 'editor') && (
-                      <>
-                        <button 
-                          onClick={() => setOpenDropdownId(openDropdownId === item.id ? null : item.id)}
-                          style={styles.actionBtn}
-                          onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'}
-                          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
-                        >
-                          <MoreHorizontal size={18} />
-                        </button>
-
-                        {openDropdownId === item.id && (
-                          <>
-                            <div onClick={() => setOpenDropdownId(null)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
-                            <div style={styles.dropdownMenu}>
-                              <button onClick={() => openEdit(item)} style={styles.dropdownItem} onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                                <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Data
-                              </button>
-                              <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
-                              <button onClick={() => handleDelete(item.id, item.name)} style={{ ...styles.dropdownItem, color: '#dc2626' }} onMouseOver={(e) => e.currentTarget.style.background = '#fef2f2'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                                <Trash2 size={14} color="#dc2626" /> Delete
-                              </button>
-                            </div>
-                          </>
-                        )}
-                      </>
+                      <button 
+                        onClick={(e) => handleDropdownClick(e, item.id)}
+                        className="mp-action-btn"
+                      >
+                        <MoreHorizontal size={18} />
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -255,6 +235,45 @@ export default function ManagePengajar() {
           </tbody>
         </table>
       </div>
+
+      {/* =======================================================
+          DROPDOWN MENU BERADA DI LUAR TABEL (SMART POSITIONING)
+      ======================================================= */}
+      {dropdownConfig.id && (
+        <>
+          <div 
+            onClick={() => setDropdownConfig({ id: null, right: null, top: null, bottom: null })} 
+            style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+          ></div>
+          
+          <div 
+            className="mp-dropdown-menu" 
+            style={{ 
+              position: 'fixed', 
+              right: dropdownConfig.right, 
+              ...(dropdownConfig.top !== null ? { top: dropdownConfig.top } : {}),
+              ...(dropdownConfig.bottom !== null ? { bottom: dropdownConfig.bottom } : {}),
+              zIndex: 50 
+            }}
+          >
+            {(() => {
+              const targetItem = teachers.find(t => t.id === dropdownConfig.id);
+              if (!targetItem) return null;
+              return (
+                <>
+                  <button onClick={() => openEdit(targetItem)} className="mp-dropdown-item">
+                    <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Data
+                  </button>
+                  <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
+                  <button onClick={() => handleDelete(targetItem.id, targetItem.name)} className="mp-dropdown-item danger">
+                    <Trash2 size={14} color="currentColor" /> Delete
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </>
+      )}
 
       {/* ================= MODAL FORM SHADCN STYLE ================= */}
       {showModal && (
@@ -308,7 +327,7 @@ export default function ManagePengajar() {
                 )}
               </div>
 
-              <div className="modal-actions-modern">
+              <div className="modal-actions-modern" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
                 <button type="button" onClick={() => setShowModal(false)} className="btn-modern-secondary">Batal</button>
                 <button type="submit" className="btn-modern-primary">Simpan Data</button>
               </div>
