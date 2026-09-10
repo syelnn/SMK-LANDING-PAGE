@@ -22,20 +22,44 @@ export default function ManageSettings() {
   const [formData, setFormData] = useState(defaultData);
 
   useEffect(() => {
-    if (settings && Object.keys(settings).length > 0) {
-      setFormData(prev => ({ ...prev, ...settings }));
+  if (settings && Object.keys(settings).length > 0) {
+    setFormData(prev => ({ ...prev, ...settings }));
+    if (settings.font_family) {
+      loadGoogleFont(settings.font_family);
+      document.documentElement.style.setProperty('--theme-font', `'${settings.font_family}', sans-serif`);
+      document.body.style.fontFamily = `'${settings.font_family}', sans-serif`;
     }
-  }, [settings]);
+  }
+}, [settings]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    const updated = { ...formData, [name]: value };
-    setFormData(updated);
+  const loadGoogleFont = (fontName) => {
+  if (!fontName) return;
+  const linkId = 'dynamic-google-font';
+  let link = document.getElementById(linkId);
+  if (!link) {
+    link = document.createElement('link');
+    link.id = linkId;
+    link.rel = 'stylesheet';
+    document.head.appendChild(link);
+  }
+  const formattedFont = fontName.replace(/ /g, '+');
+  link.href = `https://fonts.googleapis.com/css2?family=${formattedFont}:wght@300;400;500;600;700&display=swap`;
+};
 
-    if (name === 'theme_mode' || name.startsWith('custom_')) {
-      applyPreview(updated);
-    }
-  };
+const handleChange = (e) => {
+  const { name, value } = e.target;
+  const updated = { ...formData, [name]: value };
+  setFormData(updated);
+
+  // Update CSS variable --theme-font secara realtime
+  if (name === 'font_family') {
+    document.documentElement.style.setProperty('--theme-font', `'${value}', sans-serif`);
+  }
+
+  if (name === 'theme_mode' || name === 'font_family' || name.startsWith('custom_')) {
+    applyPreview(updated);
+  }
+};
 
   const handleFileChange = (e, fieldName) => {
     const file = e.target.files[0];

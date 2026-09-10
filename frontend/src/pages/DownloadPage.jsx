@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
-import Footer from './Footer';
-
 import heroBg from '../assets/bgdownload.png';
 
 export default function DownloadPage() {
@@ -129,7 +127,6 @@ export default function DownloadPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    // Validasi URL manual untuk memastikan berkas/link sudah diisi
     if (!formData.url) {
       alert('Silakan masukkan Link URL atau upload file terlebih dahulu!');
       return;
@@ -185,25 +182,15 @@ export default function DownloadPage() {
   const categories = [...new Set(visibleDownloads.map((item) => item.category || 'Lainnya'))];
 
   return (
-    <div 
-      className="download-page"
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        minHeight: '100vh',
-        width: '100%'
-      }}
-    >
+    <div className="download-page">
 
-      {/* Header Page dengan Background Foto Melebar Penuh & Panjang */}
+      {/* Header Page dengan Background Foto Proporsional */}
       <div 
         className="header-box"
         style={{ backgroundImage: `url(${heroBg})` }}
       >
-        {/* Layer Overlay agar teks tetap terlihat jelas */}
         <div className="header-overlay"></div>
 
-        {/* Wrapper konten dalam header */}
         <div className="header-content">
           <span className="badge">Pusat Unduhan</span>
           <h1 className="main-title">Pusat Unduhan Sekolah</h1>
@@ -214,9 +201,9 @@ export default function DownloadPage() {
       </div>
 
       {/* Content List */}
-      <div className="content-wrapper" style={{ flex: 1 }}>
+      <div className="content-wrapper">
 
-        {/* Action Bar Atas: Tombol Tambah Berkas di Sebelah Kanan */}
+        {/* Action Bar Atas */}
         {isAdmin && (
           <div className="top-action-bar">
             <button className="add-btn" onClick={() => handleOpenModal()}>
@@ -319,17 +306,6 @@ export default function DownloadPage() {
           ))
         )}
 
-        {/* Tombol Kembali Ke Dashboard Dipindah ke Bawah Halaman */}
-        <div className="bottom-nav-bar">
-          <button className="back-dashboard-btn" onClick={() => navigate('/admin')}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12"></line>
-              <polyline points="12 19 5 12 12 5"></polyline>
-            </svg>
-            Kembali ke Dashboard
-          </button>
-        </div>
-
       </div>
 
       {/* MODAL POPUP FORM */}
@@ -337,7 +313,6 @@ export default function DownloadPage() {
         <div className="modal-overlay">
           <div className="modal-card">
             
-            {/* Header Modal */}
             <div className="modal-header">
               <h3 className="modal-title">{editId ? 'Edit Berkas' : 'Tambah Berkas Baru'}</h3>
               <button className="close-btn" onClick={() => setShowModal(false)}>✕</button>
@@ -345,7 +320,6 @@ export default function DownloadPage() {
 
             <form onSubmit={handleSubmit} className="modal-form">
               <div className="modal-body">
-                {/* Judul Berkas */}
                 <div className="form-group">
                   <label className="form-label">JUDUL BERKAS</label>
                   <input
@@ -359,7 +333,6 @@ export default function DownloadPage() {
                   />
                 </div>
 
-                {/* Kategori */}
                 <div className="form-group">
                   <label className="form-label">KATEGORI</label>
                   <select
@@ -375,7 +348,6 @@ export default function DownloadPage() {
                   </select>
                 </div>
 
-                {/* Deskripsi */}
                 <div className="form-group">
                   <label className="form-label">DESKRIPSI SINGKAT</label>
                   <textarea
@@ -388,7 +360,6 @@ export default function DownloadPage() {
                   />
                 </div>
 
-                {/* TAB SWITCHER SUMBER BERKAS */}
                 <div className="form-group">
                   <label className="form-label">SUMBER BERKAS / FILE</label>
                   <div className="tab-container">
@@ -408,7 +379,6 @@ export default function DownloadPage() {
                     </button>
                   </div>
 
-                  {/* Input Sesuai Tab Aktif */}
                   {activeTab === 'url' ? (
                     <input
                       type="url"
@@ -433,7 +403,6 @@ export default function DownloadPage() {
                   )}
                 </div>
 
-                {/* Ukuran Berkas */}
                 <div className="form-group">
                   <label className="form-label">UKURAN BERKAS (OPSIONAL)</label>
                   <input
@@ -446,7 +415,6 @@ export default function DownloadPage() {
                   />
                 </div>
 
-                {/* Checkbox Tampilkan */}
                 <div className="form-group checkbox-group">
                   <label className="checkbox-label">
                     <input
@@ -460,7 +428,6 @@ export default function DownloadPage() {
                 </div>
               </div>
 
-              {/* Action Buttons */}
               <div className="modal-footer">
                 <button
                   type="button"
@@ -478,11 +445,6 @@ export default function DownloadPage() {
           </div>
         </div>
       )}
-
-      {/* FOOTER WRAPPER */}
-      <div style={{ width: '100%', marginTop: '60px', position: 'relative', zIndex: 1 }}>
-        <Footer />
-      </div>
 
     </div>
   );

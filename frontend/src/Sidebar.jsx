@@ -115,7 +115,7 @@ export default function Sidebar({
             'Download': '/admin/downloads'
           };
 
-          // FILTER UNTUK MENYEMBUNYIKAN PROFIL SEKOLAH & KONTAK
+
           const filteredData = resData.data.filter(m => {
             const titleLower = m.title.toLowerCase();
             if (titleLower.includes('profil') || titleLower.includes('kontak')) {
@@ -166,72 +166,48 @@ export default function Sidebar({
   const activeMenuList = dynamicNavs.length > 0 ? dynamicNavs : defaultMenuItems;
   const allowedMenus = activeMenuList.filter(item => item.roles ? item.roles.map(r => r.toUpperCase()).includes(userData.role) : true);
 
-  return (
-    <div className={`dashboard-sidebar ${isMobileMenuOpen ? 'open' : ''} ${!isSidebarVisible ? 'collapsed' : ''}`} style={{ borderRight: '1px solid var(--compreng-border)', background: 'var(--compreng-surface)', display: 'flex', flexDirection: 'column' }}>
-      
-      {/* =========================================================
-          HEADER SIDEBAR (DESAIN MODERN SHADCN)
-          (Dibuat inline sepenuhnya agar tidak nabrak class CSS lama)
-      ========================================================= */}
-      <div style={{ 
-        padding: '0 20px', 
-        borderBottom: '1px solid var(--compreng-border)', 
-        display: 'flex', 
-        alignItems: 'center', 
-        justifyContent: 'space-between', 
-        height: '64px', 
-        boxSizing: 'border-box',
-        background: 'var(--compreng-surface)',
-        flexShrink: 0
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          {/* Kotak Logo Elegan */}
-          <div style={{ 
-            width: '32px', 
-            height: '32px', 
-            background: 'var(--compreng-surface-soft)', 
-            borderRadius: '8px', 
-            display: 'flex', 
-            alignItems: 'center', 
-            justifyContent: 'center', 
-            border: '1px solid var(--compreng-border)' 
-          }}>
+  // Ambil email dari prop userData, atau fallback ke localStorage jika nilainya '-' atau kosong
+
+const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+const rawName = userData?.name || savedUser?.name || savedUser?.username || 'user';
+const cleanedName = rawName.toLowerCase().replace(/\s+/g, '');
+
+const userEmail = (userData?.email && userData.email !== '-' && userData.email !== '')
+  ? userData.email
+  : (savedUser?.email || localStorage.getItem('email') || `${cleanedName}@gmail.com`);
+  
+
+return (
+  <div 
+    className={`dashboard-sidebar ${isMobileMenuOpen ? 'open' : ''} ${!isSidebarVisible ? 'collapsed' : ''}`}
+    style={{ fontFamily: 'var(--theme-font, sans-serif)' }}
+  >
+      {/* HEADER SIDEBAR (STYLE SHADCN UI MODERN) */}
+      <div className="sidebar-header">
+        <div className="sidebar-brand-wrapper">
+          <div className="sidebar-logo-box">
             <img 
               src={settings.school_logo || logoSekolah} 
               alt="Logo" 
-              style={{ width: '20px', height: '20px', objectFit: 'contain' }} 
+              className="sidebar-logo-img"
               onError={(e) => { e.target.style.display = 'none'; }} 
             />
           </div>
-          {/* Teks Identitas */}
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <h2 style={{ fontSize: '14px', margin: 0, fontWeight: '700', color: 'var(--compreng-text)', lineHeight: '1.2' }}>
-              {settings.school_name || 'Admin Panel'}
+          <div className="sidebar-brand-text">
+            <h2 className="sidebar-brand-title">
+              SMKN COMPRENG
             </h2>
-            <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '500' }}>
-              Dashboard Admin
+            <span className="sidebar-brand-subtitle">
+              The High School
             </span>
           </div>
         </div>
 
-        {/* Tombol Tutup Sidebar */}
+
         <button 
           onClick={toggleSidebar} 
           title="Tutup Sidebar" 
-          style={{ 
-            color: 'var(--compreng-text-secondary)', 
-            background: 'transparent', 
-            border: 'none', 
-            cursor: 'pointer',
-            padding: '4px',
-            borderRadius: '6px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            transition: 'background 0.2s'
-          }}
-          onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'}
-          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+          className="sidebar-close-btn"
         >
           <X size={16} />
         </button>
@@ -311,16 +287,15 @@ export default function Sidebar({
         })}
       </div>
 
-      {/* FOOTER SIDEBAR (PROFIL USER DI BAWAH) */}
+      {/* FOOTER SIDEBAR */}
       <div className="sidebar-footer" style={{ borderTop: '1px solid var(--compreng-border)', padding: '16px', position: 'relative' }}>
-        
         {isUserMenuOpen && (
           <>
             <div onClick={() => setIsUserMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
             <div style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '16px', right: '16px', background: 'var(--compreng-surface)', border: '1px solid var(--compreng-border)', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden', zIndex: 50 }}>
               <div style={{ padding: '12px', borderBottom: '1px solid var(--compreng-border)' }}>
                  <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--compreng-text)' }}>{userData?.name}</div>
-                 <div style={{ fontSize: '12px', color: 'var(--compreng-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userData?.email}</div>
+                 <div style={{ fontSize: '12px', color: 'var(--compreng-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userEmail}</div>
               </div>
               <div style={{ padding: '4px' }}>
                 <button onClick={() => { setIsUserMenuOpen(false); navigate('/admin/users'); }} style={{ width: '100%', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', color: 'var(--compreng-text-secondary)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.2s' }} onMouseOver={(e)=>e.currentTarget.style.background='var(--compreng-surface-soft)'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
@@ -349,9 +324,9 @@ export default function Sidebar({
             <div style={{ fontSize: '13.5px', fontWeight: '600', color: 'var(--compreng-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {userData?.name}
             </div>
-            <div style={{ fontSize: '11px', color: 'var(--compreng-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {userData?.email}
-            </div>
+           <div style={{ fontSize: '11px', color: 'var(--compreng-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+  {userEmail}
+</div>
           </div>
           <div style={{ color: 'var(--compreng-text-muted)' }}>
              <ChevronsUpDown size={16} />

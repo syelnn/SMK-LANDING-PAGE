@@ -3317,7 +3317,7 @@ body, html, #root {
 }
 
 /* ==========================================
-   STYLE HALAMAN DOWNLOAD (LIGHT THEME)
+   STYLE HALAMAN DOWNLOAD
    ========================================== */
 
 .download-page {
@@ -3333,16 +3333,20 @@ body, html, #root {
 }
 
 /* ==========================================
-   HERO HEADER FULL WIDTH & PANJANG
+   HERO HEADER PROPORSI LENGKAP & RAPI
    ========================================== */
 .header-box {
   position: relative;
   width: 100%;
+  min-height: 260px;
   padding: 60px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   overflow: hidden;
   background-size: cover;
-  background-position: center;
+  background-position: center center;
   background-repeat: no-repeat;
   box-sizing: border-box;
 }
@@ -3353,13 +3357,14 @@ body, html, #root {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.65);
+  background: rgba(15, 23, 42, 0.65);
+  backdrop-filter: blur(2px);
   z-index: 1;
 }
 
 .header-content {
   position: relative;
-  z-index: 10 !important;
+  z-index: 2;
   max-width: 800px;
   margin: 0 auto;
 }
@@ -3381,7 +3386,7 @@ body, html, #root {
   font-weight: 800;
   color: #ffffff !important;
   margin: 0 0 12px 0;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
 }
 
 .header-box .subtitle {
@@ -3389,7 +3394,7 @@ body, html, #root {
   color: #f8fafc !important;
   line-height: 1.6;
   margin: 0 auto;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
 }
 
 /* ==========================================
@@ -3401,7 +3406,7 @@ body, html, #root {
   width: 100%;
   max-width: 1150px;
   margin: 0 auto;
-  padding: 0 24px 40px 24px;
+  padding: 0 24px 60px 24px;
   box-sizing: border-box;
 }
 
@@ -3602,38 +3607,6 @@ body, html, #root {
 
 .delete-btn:hover {
   background-color: #fca5a5;
-}
-
-/* ==========================================
-   BOTTOM BAR - KEMBALI KE DASHBOARD
-   ========================================== */
-
-.bottom-nav-bar {
-  margin-top: 50px;
-  text-align: center;
-  padding-top: 24px;
-  border-top: 1px solid #e2e8f0;
-}
-
-.back-dashboard-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  background-color: #ffffff;
-  color: #334155;
-  border: 1px solid #cbd5e1;
-  padding: 10px 22px;
-  border-radius: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-}
-
-.back-dashboard-btn:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
 }
 
 .loading-text,
@@ -3876,11 +3849,12 @@ body, html, #root {
 
 @media (max-width: 768px) {
   .header-box {
-    padding: 60px 16px;
+    padding: 40px 16px;
+    min-height: 200px;
   }
 
   .header-box .main-title {
-    font-size: 26px;
+    font-size: 24px;
   }
 
   .header-box .subtitle {
@@ -3888,7 +3862,7 @@ body, html, #root {
   }
 
   .content-wrapper {
-    padding: 0 16px;
+    padding: 0 16px 40px 16px;
   }
 
   .top-action-bar {
@@ -3917,4 +3891,102 @@ body, html, #root {
     flex: 1;
     justify-content: center;
   }
+}
+
+/* ==========================================
+   SIDEBAR HEADER STYLES (SHADCN UI MATCH)
+   ========================================== */
+
+.dashboard-sidebar {
+  border-right: 1px solid var(--compreng-border);
+  background: #ffffff; /* Tetap putih */
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 0 16px;
+  border-bottom: 1px solid var(--compreng-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  box-sizing: border-box;
+  background: #ffffff;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+/* Container Logo Berbentuk Kotak (Diubah ke Latar Putih) */
+.sidebar-logo-box {
+  width: 32px;
+  height: 32px;
+  background: #ffffff; /* Latar belakang diubah menjadi putih */
+  border: 1px solid #e2e8f0; /* Border tipis agar terlihat rapi */
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-logo-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* Typo Branding Modern (Disamakan dengan Foto 2) */
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-brand-title {
+  font-size: 13.5px;
+  margin: 0;
+  font-weight: 500; 
+  color: #09090b;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.sidebar-brand-subtitle {
+  font-size: 11px;
+  color: #71717a;
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+/* Tombol X Tetap Ada */
+.sidebar-close-btn {
+  color: #64748b;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.sidebar-close-btn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
 }

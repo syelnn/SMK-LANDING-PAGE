@@ -72,7 +72,7 @@ const AdminDashboard = () => {
     fetchStats();
   }, []);
 
-  const cardStyle = { padding: '24px', borderRadius: '12px', border: '1px solid var(--compreng-border)', background: 'var(--compreng-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' };
+  const cardStyle = { padding: '20px', borderRadius: '12px', border: '1px solid var(--compreng-border)', background: 'var(--compreng-surface)', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', boxSizing: 'border-box' };
   const iconStyle = { color: 'var(--compreng-text-muted)' };
   const valueStyle = { fontSize: '28px', fontWeight: '800', color: 'var(--compreng-text)', margin: '0 0 4px 0', fontFamily: 'var(--theme-font)' };
   const titleStyle = { margin: 0, fontSize: '13px', color: 'var(--compreng-text-muted)', fontWeight: '600' };
@@ -87,7 +87,8 @@ const AdminDashboard = () => {
       </div>
 
       {/* STATS CARDS (8 Kotak) */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px', marginBottom: '20px' }}>
+    
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, minmax(0, 1fr))', gap: '20px', marginBottom: '20px' }}>
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}><p style={titleStyle}>Total Pengguna</p><UsersIcon size={18} style={iconStyle} /></div>
           <h3 style={valueStyle}>{loading ? '...' : stats.users}</h3>
@@ -240,10 +241,18 @@ const DashboardLayout = () => {
   const getExactUser = () => {
     const token = localStorage.getItem('token');
     
-    let exactName = localStorage.getItem('username') || localStorage.getItem('name') || 'Unknown User';
-    let exactEmail = localStorage.getItem('email') || '-';
-    let exactRole = localStorage.getItem('role') || 'VIEWER';
+    // Fallback dari LocalStorage jika token tidak valid
+    let storedUserRaw = localStorage.getItem('user');
+    let parsedUser = {};
+    try {
+      if (storedUserRaw) parsedUser = JSON.parse(storedUserRaw);
+    } catch (e) {}
 
+    let exactName = localStorage.getItem('username') || localStorage.getItem('name') || parsedUser.name || parsedUser.username || 'User';
+    let exactEmail = localStorage.getItem('email') || localStorage.getItem('userEmail') || parsedUser.email || '-';
+    let exactRole = localStorage.getItem('role') || parsedUser.role || 'VIEWER';
+
+    // Coba decode payload JWT
     if (token && token.split('.').length === 3) {
       try {
         const base64Url = token.split('.')[1];
@@ -252,7 +261,8 @@ const DashboardLayout = () => {
         const decoded = JSON.parse(jsonPayload);
 
         exactName = decoded.name || decoded.nama_lengkap || decoded.full_name || decoded.username || exactName;
-        exactEmail = decoded.email || exactEmail;
+        // Pengecekan multi-key untuk email
+        exactEmail = decoded.email || decoded.userEmail || decoded.mail || (decoded.username && decoded.username.includes('@') ? decoded.username : exactEmail);
         exactRole = decoded.role || exactRole;
       } catch (e) {
         console.error("Token JWT tidak valid atau rusak", e);
@@ -261,7 +271,7 @@ const DashboardLayout = () => {
 
     return {
       name: exactName,
-      email: exactEmail,
+      email: exactEmail !== '-' ? exactEmail : (exactName.includes('@') ? exactName : `${exactName.toLowerCase().replace(/\s+/g, '')}@gmail.com`),
       role: (exactRole || 'VIEWER').toUpperCase(),
       initial: exactName ? exactName.charAt(0).toUpperCase() : 'U'
     };
@@ -339,16 +349,16 @@ const DashboardLayout = () => {
       />
 
       {/* Konten Utama - Mengatur background dan tinggi layar */}
-      <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', height: '100vh', backgroundColor: 'var(--compreng-bg)', overflow: 'hidden' }}>
+      <div className="dashboard-content" style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0, height: '100vh', backgroundColor: 'var(--compreng-bg)', overflow: 'hidden' }}>
 
         {/* ==============================================
             TOP NAVBAR SHADCN STYLE
             ============================================== */}
         <header style={{ 
-          height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-          padding: '0 24px', borderBottom: '1px solid var(--compreng-border)', 
-          background: 'var(--compreng-surface)', zIndex: 40, flexShrink: 0
-        }}>
+  height: '64px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+  padding: '0 24px', borderBottom: '1px solid var(--compreng-border)', 
+  background: 'var(--compreng-surface)', zIndex: 40, flexShrink: 0, boxSizing: 'border-box', width: '100%'
+}}>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1 }}>
             {!isSidebarVisible && (
@@ -378,54 +388,92 @@ const DashboardLayout = () => {
             
             {/* Theme Toggle Dropdown */}
             <div style={{ position: 'relative' }}>
-              <button onClick={() => setIsThemeMenuOpen(!isThemeMenuOpen)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--compreng-text-secondary)', display: 'flex', alignItems: 'center' }}>
-                <Sun size={20} />
-              </button>
-              
-              {isThemeMenuOpen && (
-                <>
-                  <div onClick={() => setIsThemeMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
-                  <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 15px)', width: '150px', background: 'var(--compreng-surface)', border: '1px solid var(--compreng-border)', borderRadius: '8px', boxShadow: '0 4px 15px rgba(0,0,0,0.05)', padding: '6px', zIndex: 50 }}>
-                    <button onClick={() => setIsThemeMenuOpen(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'var(--compreng-surface-soft)', border: 'none', color: 'var(--compreng-text)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px' }}><Sun size={14} /> Light</button>
-                    <button onClick={() => setIsThemeMenuOpen(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'var(--compreng-text-secondary)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px' }}><Moon size={14} /> Dark</button>
-                    <button onClick={() => setIsThemeMenuOpen(false)} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px', background: 'transparent', border: 'none', color: 'var(--compreng-text-secondary)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px' }}><Monitor size={14} /> System</button>
-                  </div>
-                </>
-              )}
-            </div>
-            
-            {/* User Account Dropdown */}
-            <div style={{ position: 'relative' }}>
-              <button onClick={() => setIsTopUserMenuOpen(!isTopUserMenuOpen)} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '36px', height: '36px', borderRadius: '50%', background: 'var(--compreng-text)', color: 'var(--compreng-bg)', border: 'none', cursor: 'pointer', fontWeight: '600', fontSize: '14px' }}>
-                {userData.initial}
-              </button>
-              
-              {isTopUserMenuOpen && (
-                <>
-                  <div onClick={() => setIsTopUserMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
-                  <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 15px)', width: '220px', background: 'var(--compreng-surface)', border: '1px solid var(--compreng-border)', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', padding: '6px', zIndex: 50 }}>
-                    <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--compreng-border)', marginBottom: '6px' }}>
-                      <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--compreng-text)' }}>{userData.name}</p>
-                      <p style={{ margin: 0, fontSize: '12px', color: 'var(--compreng-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userData.email}</p>
-                    </div>
-                    
-                    <button onClick={() => { setIsTopUserMenuOpen(false); navigate('/admin/users'); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'transparent', border: 'none', color: 'var(--compreng-text)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.2s' }} onMouseOver={(e)=>e.currentTarget.style.background='var(--compreng-surface-soft)'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
-                      <UsersIcon size={16} /> Kelola Pengguna
-                    </button>
-                    
-                    <button onClick={() => { setIsTopUserMenuOpen(false); navigate('/admin/settings'); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'transparent', border: 'none', color: 'var(--compreng-text)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.2s' }} onMouseOver={(e)=>e.currentTarget.style.background='var(--compreng-surface-soft)'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
-                      <SettingsIcon size={16} /> Pengaturan
-                    </button>
+              <button 
+  onClick={() => setIsTopUserMenuOpen(!isTopUserMenuOpen)} 
+  style={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    gap: '10px', 
+    background: 'transparent', 
+    border: 'none', 
+    cursor: 'pointer',
+    padding: '4px 8px',
+    borderRadius: '8px',
+    transition: 'background 0.2s',
+    maxWidth: '220px'
+  }}
+  onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'}
+  onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+>
+  {/* Teks Nama & Email */}
+  <div style={{ textAlign: 'right', display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+    <span style={{ 
+      fontSize: '13px', 
+      fontWeight: '600', 
+      color: 'var(--compreng-text)', 
+      lineHeight: '1.2',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis'
+    }}>
+      {userData.name}
+    </span>
+    <span style={{ 
+      fontSize: '11px', 
+      color: 'var(--compreng-text-muted)', 
+      lineHeight: '1.2',
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis'
+    }}>
+      {userData.email}
+    </span>
+  </div>
 
-                    <div style={{ margin: '4px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
+  {/* Inisial Profil Lingkaran */}
+  <div style={{ 
+    display: 'flex', 
+    alignItems: 'center', 
+    justifyContent: 'center', 
+    width: '36px', 
+    height: '36px', 
+    borderRadius: '50%', 
+    background: 'var(--compreng-text)', 
+    color: 'var(--compreng-bg)', 
+    fontWeight: '600', 
+    fontSize: '14px',
+    flexShrink: 0
+  }}>
+    {userData.initial}
+  </div>
+</button>
+  
+  {isTopUserMenuOpen && (
+    <>
+      <div onClick={() => setIsTopUserMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
+      <div style={{ position: 'absolute', right: 0, top: 'calc(100% + 15px)', width: '220px', background: 'var(--compreng-surface)', border: '1px solid var(--compreng-border)', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', padding: '6px', zIndex: 50 }}>
+        <div style={{ padding: '10px 12px', borderBottom: '1px solid var(--compreng-border)', marginBottom: '6px' }}>
+          <p style={{ margin: 0, fontSize: '14px', fontWeight: '600', color: 'var(--compreng-text)' }}>{userData.name}</p>
+          <p style={{ margin: 0, fontSize: '12px', color: 'var(--compreng-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userData.email}</p>
+        </div>
+        
+        <button onClick={() => { setIsTopUserMenuOpen(false); navigate('/admin/users'); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'transparent', border: 'none', color: 'var(--compreng-text)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.2s' }} onMouseOver={(e)=>e.currentTarget.style.background='var(--compreng-surface-soft)'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
+          <UsersIcon size={16} /> Kelola Pengguna
+        </button>
+        
+        <button onClick={() => { setIsTopUserMenuOpen(false); navigate('/admin/settings'); }} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'transparent', border: 'none', color: 'var(--compreng-text)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.2s' }} onMouseOver={(e)=>e.currentTarget.style.background='var(--compreng-surface-soft)'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
+          <SettingsIcon size={16} /> Pengaturan
+        </button>
 
-                    <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'transparent', border: 'none', color: '#dc2626', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', fontWeight: '500', transition: 'background 0.2s' }} onMouseOver={(e)=>e.currentTarget.style.background='#fef2f2'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
-                      <LogOut size={16} /> Log out
-                    </button>
-                  </div>
-                </>
-              )}
-            </div>
+        <div style={{ margin: '4px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
+
+        <button onClick={handleLogout} style={{ width: '100%', display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px', background: 'transparent', border: 'none', color: '#dc2626', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', fontWeight: '500', transition: 'background 0.2s' }} onMouseOver={(e)=>e.currentTarget.style.background='#fef2f2'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
+          <LogOut size={16} /> Log out
+        </button>
+      </div>
+    </>
+  )}
+</div>
           </div>
         </header>
 
@@ -475,7 +523,7 @@ const DashboardLayout = () => {
             WADAH KONTEN UTAMA DENGAN PADDING GLOBAL (FIX ZOOM)
             ============================================== */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '32px 30px', boxSizing: 'border-box' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto', width: '100%' }}>
+          <div style={{ maxWidth: '100%', margin: '0 auto', width: '100%' }}>
             
             <Routes>
               <Route index element={<Navigate to="dashboard" replace />} />
