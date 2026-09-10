@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, ArrowLeft, Star } from 'lucide-react';
+import { Plus, Edit, Trash2, X, ArrowLeft, Image as ImageIcon, Link as LinkIcon, UploadCloud, Star, FolderOpen, Search } from 'lucide-react';
 
 export default function Galeri() {
   const storedUser = localStorage.getItem('userData') || localStorage.getItem('user') || '{}';
@@ -12,12 +12,16 @@ export default function Galeri() {
   const [viewMode, setViewMode] = useState('albums');
   const [selectedAlbum, setSelectedAlbum] = useState(null);
 
+  // Modal State
   const [showModal, setShowModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentId, setCurrentId] = useState(null);
   const [logoType, setLogoType] = useState('url');
   const [selectedFile, setSelectedFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Pencarian
+  const [searchTerm, setSearchTerm] = useState('');
 
   const [formData, setFormData] = useState({
     category: '', caption: '', image: '', is_featured: 0, sort_order: 1, show: 1
@@ -43,8 +47,17 @@ export default function Galeri() {
     return acc;
   }, {});
 
-  const openAlbum = (categoryName) => { setSelectedAlbum(categoryName); setViewMode('detail'); };
-  const backToAlbums = () => { setSelectedAlbum(null); setViewMode('albums'); };
+  const openAlbum = (categoryName) => { 
+    setSelectedAlbum(categoryName); 
+    setViewMode('detail'); 
+    setSearchTerm('');
+  };
+  
+  const backToAlbums = () => { 
+    setSelectedAlbum(null); 
+    setViewMode('albums'); 
+    setSearchTerm('');
+  };
 
   const handleOpenAddAlbum = () => {
     setIsEditing(false); setLogoType('url'); setSelectedFile(null);
@@ -59,7 +72,8 @@ export default function Galeri() {
   };
 
   const handleOpenEdit = (item) => {
-    setIsEditing(true); setCurrentId(item.id); setSelectedFile(null); setLogoType('url');
+    setIsEditing(true); setCurrentId(item.id); setSelectedFile(null); 
+    setLogoType(item.image && item.image.length > 200 ? 'file' : 'url');
     setFormData({ ...item, sort_order: item.sort_order || item.sortOrder || 1, is_featured: item.isFeatured || item.is_featured || 0 });
     setShowModal(true);
   };
@@ -102,7 +116,7 @@ export default function Galeri() {
   };
 
   const handleDelete = async (id, currentCategory) => {
-    if (!window.confirm('Yakin ingin menghapus foto ini?')) return;
+    if (!window.confirm('Yakin ingin menghapus foto ini secara permanen?')) return;
     try {
       const res = await fetch(`http://localhost:5002/api/galleries/${id}`, { method: 'DELETE' });
       if ((await res.json()).success) {
@@ -130,200 +144,354 @@ export default function Galeri() {
 
   const handleDeleteAlbum = async (categoryName, e) => {
     e.stopPropagation();
-    if (!window.confirm(`AWAS! Hapus album "${categoryName}" beserta semua foto di dalamnya?`)) return;
+    if (!window.confirm(`AWAS! Hapus album "${categoryName}" beserta SEMUA foto di dalamnya secara permanen?`)) return;
     try {
       await Promise.all(groupedGalleries[categoryName].map(photo => fetch(`http://localhost:5002/api/galleries/${photo.id}`, { method: 'DELETE' })));
       fetchGalleries();
     } catch (err) { console.error(err); }
   };
 
-  // FITUR JADIKAN UTAMA (Dengan Pembersihan Bug Multiple Cover)
   const handleSetCover = async (photo) => {
-    if (!window.confirm(`Yakin ingin jadikan foto ini sebagai cover utama album "${photo.category}"?`)) return;
+    if (!window.confirm(`Jadikan foto ini sebagai cover utama album "${photo.category}"?`)) return;
 
     setIsSubmitting(true);
-    
     try {
-      // 1. Sapu bersih: Cari SEMUA foto di album ini yang telanjur jadi cover
       const currentCovers = groupedGalleries[photo.category].filter(
         p => (p.isFeatured === 1 || p.is_featured === 1) && p.id !== photo.id
       );
       
-      // 2. Matikan status cover pada semua foto yang salah tersebut satu per satu
       for (const oldCover of currentCovers) {
-        const resetPayload = { 
-          ...oldCover, 
-          is_featured: 0, 
-          sort_order: oldCover.sortOrder || oldCover.sort_order || 1 
-        };
-        
+        const resetPayload = { ...oldCover, is_featured: 0, sort_order: oldCover.sortOrder || oldCover.sort_order || 1 };
         await fetch(`http://localhost:5002/api/galleries/${oldCover.id}`, {
-          method: 'PUT', 
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(resetPayload)
+          method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(resetPayload)
         });
       }
 
-      // 3. Pasang mahkota cover pada foto yang baru dipilih
-      const newCoverPayload = {
-        ...photo,
-        is_featured: 1,
-        sort_order: photo.sortOrder || photo.sort_order || 1
-      };
-
+      const newCoverPayload = { ...photo, is_featured: 1, sort_order: photo.sortOrder || photo.sort_order || 1 };
       await fetch(`http://localhost:5002/api/galleries/${photo.id}`, {
-        method: 'PUT', 
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newCoverPayload)
+        method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newCoverPayload)
       });
       
-      // 4. Tarik ulang data agar tampilan langsung rapi
       fetchGalleries();
     } catch (err) { 
       console.error(err); 
-      alert('Gagal memperbarui cover album. Cek koneksi server.');
+      alert('Gagal memperbarui cover album.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  if (loading) return <div className="text-center py-5">Memuat Galeri...</div>;
+  // --- FILTER PENCARIAN ---
+  const albumKeys = Object.keys(groupedGalleries).filter(key => key.toLowerCase().includes(searchTerm.toLowerCase()));
+  const currentAlbumPhotos = selectedAlbum ? (groupedGalleries[selectedAlbum] || []).filter(p => (p.caption || '').toLowerCase().includes(searchTerm.toLowerCase())) : [];
+
+  // --- STYLES (SHADCN ADMIN LOOK) ---
+  const styles = {
+    wrapper: { width: '100%', maxWidth: '1150px', margin: '0 auto', padding: '30px 24px', boxSizing: 'border-box' },
+    headerBox: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '15px' },
+    title: { fontSize: '22px', fontWeight: '700', color: 'var(--compreng-text)', margin: '0 0 4px 0', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '10px' },
+    subtitle: { fontSize: '13px', color: 'var(--compreng-text-secondary)', margin: 0 },
+    
+    btnPrimary: { display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', backgroundColor: 'var(--compreng-text)', color: 'var(--compreng-bg)', borderRadius: '6px', border: 'none', fontWeight: '500', cursor: 'pointer', fontSize: '13px', transition: 'opacity 0.2s', boxShadow: '0 2px 4px rgba(0,0,0,0.05)', whiteSpace: 'nowrap' },
+    
+    toolbar: { display: 'flex', justifyContent: 'flex-start', alignItems: 'center', marginBottom: '16px' },
+    searchInputWrapper: { position: 'relative', width: '280px', maxWidth: '100%' },
+    searchInput: { width: '100%', padding: '8px 12px 8px 36px', borderRadius: '6px', border: '1px solid var(--compreng-border)', background: 'var(--compreng-surface)', color: 'var(--compreng-text)', fontSize: '13px', outline: 'none' },
+    searchIcon: { position: 'absolute', left: '10px', top: '50%', transform: 'translateY(-50%)', color: 'var(--compreng-text-muted)' },
+
+    // Padding bottom yang menyebabkan ruang kosong sudah dihapus. minHeight memastikan tabel tidak mengkerut jelek.
+    tableCard: { backgroundColor: 'var(--compreng-surface)', borderRadius: '8px', border: '1px solid var(--compreng-border)', overflowX: 'auto', overflowY: 'hidden', boxShadow: '0 1px 3px rgba(0,0,0,0.05)', marginBottom: '40px', width: '100%', minHeight: '300px' },
+    table: { width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '850px' },
+    th: { padding: '12px 16px', fontSize: '13px', fontWeight: '600', color: 'var(--compreng-text-secondary)', borderBottom: '1px solid var(--compreng-border)', whiteSpace: 'nowrap' },
+    td: { padding: '14px 16px', borderBottom: '1px solid var(--compreng-border)', verticalAlign: 'middle', color: 'var(--compreng-text)', fontSize: '13px' },
+    
+    badgeCover: { display: 'inline-flex', alignItems: 'center', gap: '4px', background: 'rgba(234, 179, 8, 0.15)', color: '#ca8a04', border: '1px solid rgba(234, 179, 8, 0.3)', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap' },
+    badgeNormal: { display: 'inline-flex', background: 'var(--compreng-surface-soft)', color: 'var(--compreng-text-muted)', border: '1px solid var(--compreng-border)', padding: '4px 10px', borderRadius: '20px', fontSize: '11px', fontWeight: '600', whiteSpace: 'nowrap' },
+    truncate: { maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+    
+    iconBtn: { display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'transparent', border: 'none', cursor: 'pointer', padding: '8px', borderRadius: '6px', color: 'var(--compreng-text-secondary)', transition: 'all 0.2s ease' },
+  };
+
+  if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat Galeri...</div>;
 
   return (
-    <div className="galeri-container">
-      <div style={{ textAlign: 'center', marginBottom: '48px' }}>
-        {viewMode === 'albums' ? (
-          <>
-            <span className="galeri-header-badge">Manajemen Galeri</span>
-            <h2 className="galeri-title">
-              Daftar Album <span style={{ color: 'var(--smk-green)' }}>Kegiatan Sekolah</span>
-            </h2>
-            <p className="galeri-subtitle">
-              Dokumentasi aktivitas, prestasi, dan kegiatan siswa SMK Negeri Compreng.
-            </p>
-            {canAccessCRUD && (
-              <button onClick={handleOpenAddAlbum} className="btn-primary" style={{ marginTop: '8px' }}>
-                <Plus size={18} /> Buat Album Baru
+    <div style={styles.wrapper}>
+      
+      {/* HEADER SECTION */}
+      <div style={styles.headerBox}>
+        <div>
+          {viewMode === 'albums' ? (
+            <>
+              <h2 style={styles.title}>Manajemen Galeri</h2>
+              <p style={styles.subtitle}>Kelola album dokumentasi kegiatan, fasilitas, dan prestasi sekolah.</p>
+            </>
+          ) : (
+            <>
+              <h2 style={styles.title}>
+                <button onClick={backToAlbums} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--compreng-text-secondary)', display: 'flex', alignItems: 'center', padding: 0 }} title="Kembali">
+                  <ArrowLeft size={20} />
+                </button>
+                Album: {selectedAlbum}
+              </h2>
+              <p style={styles.subtitle}>Kelola foto-foto di dalam album ini.</p>
+            </>
+          )}
+        </div>
+
+        {canAccessCRUD && (
+          <div>
+            {viewMode === 'albums' ? (
+              <button style={styles.btnPrimary} onClick={handleOpenAddAlbum}>
+                <Plus size={16} /> Buat Album Baru
               </button>
-            )}
-          </>
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <button onClick={backToAlbums} className="btn-back">
-              <ArrowLeft size={16} /> Daftar Album
-            </button>
-            <h2 className="galeri-title" style={{ margin: 0, fontSize: '28px' }}>
-              Album: <span style={{ color: 'var(--smk-green)' }}>{selectedAlbum}</span>
-            </h2>
-            {canAccessCRUD ? (
-              <button onClick={handleOpenAddPhoto} className="btn-success">
+            ) : (
+              <button style={styles.btnPrimary} onClick={handleOpenAddPhoto}>
                 <Plus size={16} /> Tambah Foto
               </button>
-            ) : <div style={{ width: '150px' }}></div>}
+            )}
           </div>
         )}
       </div>
 
+      {/* SEARCH TOOLBAR */}
+      <div style={styles.toolbar}>
+        <div style={styles.searchInputWrapper}>
+          <Search size={16} style={styles.searchIcon} />
+          <input 
+            type="text" 
+            placeholder={viewMode === 'albums' ? "Cari nama album..." : "Cari deskripsi foto..."} 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={styles.searchInput}
+          />
+        </div>
+      </div>
+
+      {/* =========================================================
+          TABEL ALBUM (VIEW: ALBUMS)
+      ========================================================= */}
       {viewMode === 'albums' && (
-        <div className="album-grid">
-          {Object.keys(groupedGalleries).map((catName) => {
-            const items = groupedGalleries[catName];
-            // Pengecekan aman untuk kedua format penamaan dari backend
-            const coverImage = items.find(i => i.isFeatured === 1 || i.is_featured === 1)?.image || items[0].image;
+        <div style={styles.tableCard}>
+          <table style={styles.table}>
+            <thead>
+              <tr style={{ background: 'var(--compreng-surface-soft)' }}>
+                <th style={styles.th}>Nama Album</th>
+                <th style={styles.th}>Cover Preview</th>
+                <th style={styles.th}>Jumlah Foto</th>
+                <th style={{ ...styles.th, textAlign: 'center' }}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {albumKeys.length === 0 ? (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
+                    {searchTerm ? `Tidak ditemukan album "${searchTerm}"` : 'Belum ada album.'}
+                  </td>
+                </tr>
+              ) : (
+                albumKeys.map((catName) => {
+                  const items = groupedGalleries[catName];
+                  const coverImage = items.find(i => i.isFeatured === 1 || i.is_featured === 1)?.image || items[0].image;
 
-            return (
-              <div key={catName} onClick={() => openAlbum(catName)} className="album-card">
-                <img src={coverImage} alt={catName} className="album-img" loading="lazy" />
-                {canAccessCRUD && (
-                  <div className="album-actions">
-                    <button onClick={(e) => handleEditAlbum(catName, e)} className="btn-icon"><Edit size={16} /></button>
-                    <button onClick={(e) => handleDeleteAlbum(catName, e)} className="btn-icon danger"><Trash2 size={16} /></button>
-                  </div>
-                )}
-                <div className="album-overlay">
-                  <span className="album-count">{items.length} Foto</span>
-                  <h3 className="album-name">{catName}</h3>
-                </div>
-              </div>
-            );
-          })}
+                  return (
+                    <tr key={catName} style={{ transition: 'background 0.2s', cursor: 'pointer' }} onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'} onClick={() => openAlbum(catName)}>
+                      <td style={{ ...styles.td, fontWeight: '600' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <FolderOpen size={18} color="var(--compreng-text-muted)" />
+                          {catName}
+                        </div>
+                      </td>
+                      <td style={styles.td}>
+                        <img src={coverImage} alt="Cover" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
+                      </td>
+                      <td style={{ ...styles.td, color: 'var(--compreng-text-secondary)' }}>{items.length} Foto</td>
+                      <td style={{ ...styles.td, textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
+                        
+                        {/* INLINE ACTIONS (Tanpa Dropdown) */}
+                        {canAccessCRUD && (
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                            <button 
+                              onClick={() => openAlbum(catName)} 
+                              title="Buka Album"
+                              style={styles.iconBtn}
+                              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(37, 99, 235, 0.1)'; e.currentTarget.style.color = '#2563eb'; }}
+                              onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--compreng-text-secondary)'; }}
+                            >
+                              <FolderOpen size={16} />
+                            </button>
+                            <button 
+                              onClick={(e) => handleEditAlbum(catName, e)} 
+                              title="Ganti Nama Album"
+                              style={styles.iconBtn}
+                              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(37, 99, 235, 0.1)'; e.currentTarget.style.color = '#2563eb'; }}
+                              onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--compreng-text-secondary)'; }}
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button 
+                              onClick={(e) => handleDeleteAlbum(catName, e)} 
+                              title="Hapus Album"
+                              style={styles.iconBtn}
+                              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(220, 38, 38, 0.1)'; e.currentTarget.style.color = '#dc2626'; }}
+                              onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--compreng-text-secondary)'; }}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
+      {/* =========================================================
+          TABEL FOTO (VIEW: DETAIL / DALAM ALBUM)
+      ========================================================= */}
       {viewMode === 'detail' && selectedAlbum && (
-        <div className="photo-grid">
-          {/* Tambahkan .sort() sebelum .map() agar cover otomatis naik ke atas */}
-          {[...(groupedGalleries[selectedAlbum] || [])].sort((a, b) => {
-            const aIsCover = (a.isFeatured === 1 || a.is_featured === 1) ? 1 : 0;
-            const bIsCover = (b.isFeatured === 1 || b.is_featured === 1) ? 1 : 0;
-            return bIsCover - aIsCover; 
-          }).map((item) => (
-            <div key={item.id} className="photo-card">
-              <div className="photo-img-wrapper">
-                <img src={item.image} alt="foto" className="album-img" loading="lazy" />
-                {(item.isFeatured === 1 || item.is_featured === 1) && <span className="photo-cover-badge">★ Foto Utama</span>}
-              </div>
-              <div className="photo-info">
-                <p className="photo-caption">{item.caption || '(Tidak ada deskripsi)'}</p>
-                {canAccessCRUD && (
-                  <>
-                    {(item.isFeatured !== 1 && item.is_featured !== 1) && (
-                      <button onClick={() => handleSetCover(item)} className="btn-set-cover" disabled={isSubmitting}>
-                         {isSubmitting ? 'Memproses...' : 'Jadikan Cover Album'}
-                      </button>
-                    )}
-                    <div className="photo-actions">
-                      {/* Pastikan onClick di sini tidak terblokir */}
-                      <button onClick={() => handleOpenEdit(item)} className="btn-action-sm edit"><Edit size={14} /> Edit</button>
-                      <button onClick={() => handleDelete(item.id, item.category)} className="btn-action-sm delete"><Trash2 size={14} /> Hapus</button>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          ))}
+        <div style={styles.tableCard}>
+          <table style={styles.table}>
+            <thead>
+              <tr style={{ background: 'var(--compreng-surface-soft)' }}>
+                <th style={styles.th}>Pratinjau Foto</th>
+                <th style={styles.th}>Deskripsi / Caption</th>
+                <th style={styles.th}>Status Album</th>
+                <th style={{ ...styles.th, textAlign: 'center' }}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {currentAlbumPhotos.length === 0 ? (
+                <tr>
+                  <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
+                    {searchTerm ? `Tidak ditemukan deskripsi foto "${searchTerm}"` : 'Album ini belum memiliki foto.'}
+                  </td>
+                </tr>
+              ) : (
+                currentAlbumPhotos.sort((a, b) => {
+                  const aIsCover = (a.isFeatured === 1 || a.is_featured === 1) ? 1 : 0;
+                  const bIsCover = (b.isFeatured === 1 || b.is_featured === 1) ? 1 : 0;
+                  return bIsCover - aIsCover; 
+                }).map((item) => (
+                  <tr key={item.id} style={{ transition: 'background 0.2s' }} onMouseOver={(e) => e.currentTarget.style.background = 'var(--compreng-surface-soft)'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                    <td style={styles.td}>
+                      <img src={item.image} alt="foto" style={{ width: '80px', height: '50px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
+                    </td>
+                    <td style={{ ...styles.td, ...styles.truncate }}>{item.caption || <span style={{ color: 'var(--compreng-text-muted)', fontStyle: 'italic' }}>Tidak ada deskripsi</span>}</td>
+                    <td style={styles.td}>
+                      {(item.isFeatured === 1 || item.is_featured === 1) ? (
+                        <span style={styles.badgeCover}><Star size={12} fill="currentColor" /> Cover Utama</span>
+                      ) : (
+                        <span style={styles.badgeNormal}>Foto Biasa</span>
+                      )}
+                    </td>
+                    <td style={{ ...styles.td, textAlign: 'center' }}>
+                      
+                      {/* INLINE ACTIONS (Tanpa Dropdown) */}
+                      {canAccessCRUD && (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '4px' }}>
+                          {(item.isFeatured !== 1 && item.is_featured !== 1) && (
+                            <button 
+                              onClick={() => handleSetCover(item)} 
+                              disabled={isSubmitting}
+                              title="Jadikan Cover Utama"
+                              style={{ ...styles.iconBtn, opacity: isSubmitting ? 0.5 : 1 }}
+                              onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(234, 179, 8, 0.1)'; e.currentTarget.style.color = '#ca8a04'; }}
+                              onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--compreng-text-secondary)'; }}
+                            >
+                              <Star size={16} />
+                            </button>
+                          )}
+                          <button 
+                            onClick={() => handleOpenEdit(item)} 
+                            title="Edit Foto"
+                            style={styles.iconBtn}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(37, 99, 235, 0.1)'; e.currentTarget.style.color = '#2563eb'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--compreng-text-secondary)'; }}
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button 
+                            onClick={() => handleDelete(item.id, item.category)} 
+                            title="Hapus Foto"
+                            style={styles.iconBtn}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(220, 38, 38, 0.1)'; e.currentTarget.style.color = '#dc2626'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--compreng-text-secondary)'; }}
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      )}
+
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
+      {/* =========================================================
+          MODAL FORM (SHADCN STYLE)
+      ========================================================= */}
       {showModal && canAccessCRUD && (
-        <div className="modal-overlay">
-          <div className="modal-content">
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0, fontSize: '20px', color: 'var(--smk-navy)' }}>{isEditing ? 'Edit Foto' : (viewMode === 'detail' ? 'Tambah Foto' : 'Buat Album Baru')}</h3>
-              <button onClick={() => setShowModal(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}><X size={24} color="#64748b" /></button>
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(15, 23, 42, 0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '20px' }}>
+          <div style={{ background: 'var(--compreng-surface)', width: '100%', maxWidth: '450px', borderRadius: '12px', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', overflow: 'hidden', border: '1px solid var(--compreng-border)' }}>
+            
+            <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--compreng-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '700', color: 'var(--compreng-text)' }}>
+                  {isEditing ? 'Edit Foto' : (viewMode === 'detail' ? 'Tambah Foto Baru' : 'Buat Album Baru')}
+                </h3>
+              </div>
+              <button onClick={() => setShowModal(false)} style={{ background: 'transparent', border: 'none', color: 'var(--compreng-text-muted)', cursor: 'pointer', padding: '4px' }}><X size={18} /></button>
             </div>
             
-            <form onSubmit={handleSubmit}>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Kategori (Album)</label>
-                <input type="text" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} required readOnly={viewMode === 'detail' && !isEditing} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: (viewMode === 'detail' && !isEditing) ? '#f1f5f9' : '#fff' }} />
-              </div>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Deskripsi / Caption</label>
-                <textarea rows="2" value={formData.caption} onChange={(e) => setFormData({ ...formData, caption: e.target.value })} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
-              </div>
-              <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: '600', marginBottom: '6px' }}>Pilih Foto</label>
-                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
-                  <button type="button" onClick={() => setLogoType('url')} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: logoType === 'url' ? '#e0e7ff' : '#fff', fontWeight: '500' }}>URL Tautan</button>
-                  <button type="button" onClick={() => setLogoType('file')} style={{ flex: 1, padding: '8px', borderRadius: '8px', border: '1px solid #cbd5e1', backgroundColor: logoType === 'file' ? '#e0e7ff' : '#fff', fontWeight: '500' }}>Upload File</button>
+            <div style={{ padding: '24px' }}>
+              <form id="gallery-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--compreng-text)' }}>Kategori (Nama Album)</label>
+                  <input type="text" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} required readOnly={viewMode === 'detail' && !isEditing} style={{ padding: '10px 12px', borderRadius: '6px', border: '1px solid var(--compreng-border)', background: (viewMode === 'detail' && !isEditing) ? 'var(--compreng-surface-soft)' : 'var(--compreng-bg)', color: (viewMode === 'detail' && !isEditing) ? 'var(--compreng-text-muted)' : 'var(--compreng-text)', fontSize: '13px', outline: 'none' }} placeholder="Contoh: Lomba 17 Agustus" />
                 </div>
-                {logoType === 'url' ? (
-                  <input type="text" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
-                ) : (
-                  <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files[0])} style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #cbd5e1' }} />
-                )}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
-                <button type="button" onClick={() => setShowModal(false)} className="btn-back" disabled={isSubmitting}>Batal</button>
-                <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Menyimpan...' : 'Simpan Data'}
-                </button>
-              </div>
-            </form>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--compreng-text)' }}>Deskripsi / Caption (Opsional)</label>
+                  <textarea rows="2" value={formData.caption} onChange={(e) => setFormData({ ...formData, caption: e.target.value })} style={{ padding: '10px 12px', borderRadius: '6px', border: '1px solid var(--compreng-border)', background: 'var(--compreng-bg)', color: 'var(--compreng-text)', fontSize: '13px', outline: 'none', resize: 'vertical' }} placeholder="Tuliskan keterangan foto..." />
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  <label style={{ fontSize: '12px', fontWeight: '600', color: 'var(--compreng-text)' }}>Pilih Foto</label>
+                  <div style={{ display: 'flex', gap: '6px', marginBottom: '4px' }}>
+                    <button type="button" onClick={() => setLogoType('url')} style={{ padding: '4px 10px', fontSize: '11px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontWeight: '500', background: logoType === 'url' ? 'var(--compreng-text)' : 'var(--compreng-surface-soft)', color: logoType === 'url' ? 'var(--compreng-bg)' : 'var(--compreng-text-muted)' }}><LinkIcon size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }}/> Link URL</button>
+                    <button type="button" onClick={() => setLogoType('file')} style={{ padding: '4px 10px', fontSize: '11px', borderRadius: '4px', border: 'none', cursor: 'pointer', fontWeight: '500', background: logoType === 'file' ? 'var(--compreng-text)' : 'var(--compreng-surface-soft)', color: logoType === 'file' ? 'var(--compreng-bg)' : 'var(--compreng-text-muted)' }}><UploadCloud size={12} style={{ marginRight: '4px', verticalAlign: 'middle' }}/> Upload File</button>
+                  </div>
+                  
+                  {logoType === 'url' ? (
+                    <input type="text" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} style={{ padding: '10px 12px', borderRadius: '6px', border: '1px solid var(--compreng-border)', background: 'var(--compreng-bg)', color: 'var(--compreng-text)', fontSize: '13px', outline: 'none' }} placeholder="https://..." />
+                  ) : (
+                    <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files[0])} style={{ padding: '7px 12px', borderRadius: '6px', border: '1px solid var(--compreng-border)', background: 'var(--compreng-bg)', color: 'var(--compreng-text)', fontSize: '13px', outline: 'none' }} />
+                  )}
+                </div>
+
+              </form>
+            </div>
+
+            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--compreng-border)', background: 'var(--compreng-surface-soft)', display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+              <button type="button" onClick={() => setShowModal(false)} disabled={isSubmitting} style={{ padding: '8px 16px', borderRadius: '6px', border: '1px solid var(--compreng-border)', background: 'transparent', color: 'var(--compreng-text-secondary)', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>Batal</button>
+              <button type="submit" form="gallery-form" disabled={isSubmitting} style={{ padding: '8px 16px', borderRadius: '6px', border: 'none', background: 'var(--compreng-text)', color: 'var(--compreng-bg)', fontSize: '13px', fontWeight: '600', cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }}>
+                {isSubmitting ? 'Menyimpan...' : 'Simpan Data'}
+              </button>
+            </div>
+
           </div>
         </div>
       )}
+
     </div>
   );
 }
