@@ -1,20 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { supabase } from '../supabaseClient';
-import heroBg from '../assets/bgdownload.png';
+import { Plus, Trash2, Edit, Link as LinkIcon, MoreHorizontal, Search, FileText, Download, X } from 'lucide-react';
+import '../css/DownloadPage.css';
+import '../App.css';
 
 export default function DownloadPage() {
-  const navigate = useNavigate();
-
   const [downloads, setDownloads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isAdmin, setIsAdmin] = useState(true);
-  const [uploading, setUploading] = useState(false);
 
-  // Tab State: 'url' atau 'file'
-  const [activeTab, setActiveTab] = useState('url');
-
-  // State Form CRUD
+  // State Modal Form
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [formData, setFormData] = useState({
@@ -27,11 +21,26 @@ export default function DownloadPage() {
     show: 1
   });
 
+  // State Dropdown & Search
+  const [dropdownConfig, setDropdownConfig] = useState({ id: null, right: null, top: null, bottom: null });
+  const [searchTerm, setSearchTerm] = useState('');
+
   const API_URL = 'http://localhost:5002/api/downloads';
 
   useEffect(() => {
     fetchDownloads();
   }, []);
+
+  // Tutup dropdown saat scroll
+  useEffect(() => {
+    const handleScroll = () => {
+      if (dropdownConfig.id !== null) {
+        setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+      }
+    };
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [dropdownConfig.id]);
 
   const fetchDownloads = async () => {
     try {
@@ -39,7 +48,13 @@ export default function DownloadPage() {
       const res = await fetch(API_URL);
       const result = await res.json();
       if (result.success || Array.isArray(result)) {
-        setDownloads(result.data || result);
+        const rawData = result.data || result;
+        const sortedData = rawData.sort((a, b) => {
+          const orderA = a.sort_order ?? a.sortOrder ?? 99;
+          const orderB = b.sort_order ?? b.sortOrder ?? 99;
+          return orderA - orderB;
+        });
+        setDownloads(sortedData);
       }
     } catch (err) {
       console.error('Gagal mengambil data:', err.message);
@@ -56,43 +71,27 @@ export default function DownloadPage() {
     }));
   };
 
-  // Upload File ke Supabase Storage
-  const handleFileUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    try {
-      setUploading(true);
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(2)}.${fileExt}`;
-      const filePath = `files/${fileName}`;
-
-      const { error } = await supabase.storage
-        .from('downloads')
-        .upload(filePath, file);
-
-      if (error) throw error;
-
-      const { data: publicUrlData } = supabase.storage
-        .from('downloads')
-        .getPublicUrl(filePath);
-
-      const sizeInMB = (file.size / (1024 * 1024)).toFixed(2);
-      const sizeString = sizeInMB < 1 
-        ? `${(file.size / 1024).toFixed(0)} KB` 
-        : `${sizeInMB} MB`;
-
-      setFormData((prev) => ({
-        ...prev,
-        url: publicUrlData.publicUrl,
-        file_size: sizeString
-      }));
-
-    } catch (err) {
-      alert('Gagal mengunggah berkas: ' + err.message);
-    } finally {
-      setUploading(false);
+  // Smart Dropdown Logic
+  const handleDropdownClick = (e, downloadId) => {
+    e.stopPropagation();
+    if (dropdownConfig.id === downloadId) {
+      setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+      return;
     }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const dropdownHeight = 90;
+    
+    const spaceBelow = windowHeight - rect.bottom;
+    const openUpwards = spaceBelow < dropdownHeight;
+
+    setDropdownConfig({
+      id: downloadId,
+      right: window.innerWidth - rect.right,
+      top: openUpwards ? null : rect.bottom + 4,
+      bottom: openUpwards ? windowHeight - rect.top + 4 : null
+    });
   };
 
   const handleOpenModal = (item = null) => {
@@ -107,19 +106,18 @@ export default function DownloadPage() {
         sort_order: item.sort_order ?? item.sortOrder ?? 1,
         show: item.show ?? 1
       });
-      setActiveTab('url');
     } else {
       setEditId(null);
+      const maxSortOrder = downloads.length > 0 ? Math.max(...downloads.map(d => d.sort_order ?? d.sortOrder ?? 0)) : 0;
       setFormData({
         title: '',
         category: 'Kalender Akademik',
         description: '',
         url: '',
         file_size: '',
-        sort_order: 1,
+        sort_order: maxSortOrder + 1,
         show: 1
       });
-      setActiveTab('url');
     }
     setShowModal(true);
   };
@@ -128,7 +126,7 @@ export default function DownloadPage() {
     e.preventDefault();
     
     if (!formData.url) {
-      alert('Silakan masukkan Link URL atau upload file terlebih dahulu!');
+      alert('Silakan masukkan Link URL berkas terlebih dahulu!');
       return;
     }
 
@@ -163,8 +161,9 @@ export default function DownloadPage() {
     }
   };
 
-  const handleDelete = async (id) => {
-    if (window.confirm('Apakah Anda yakin ingin menghapus berkas ini?')) {
+  const handleDelete = async (id, title) => {
+    setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+    if (window.confirm(`Apakah Anda yakin ingin menghapus berkas "${title || 'ini'}"?`)) {
       try {
         const res = await fetch(`${API_URL}/${id}`, { method: 'DELETE' });
         if (res.ok) {
@@ -179,269 +178,291 @@ export default function DownloadPage() {
   };
 
   const visibleDownloads = isAdmin ? downloads : downloads.filter(d => d.show === 1);
-  const categories = [...new Set(visibleDownloads.map((item) => item.category || 'Lainnya'))];
+  
+  const filteredDownloads = visibleDownloads.filter(item => {
+    const term = searchTerm.toLowerCase();
+    return (
+      (item.title || '').toLowerCase().includes(term) ||
+      (item.category || '').toLowerCase().includes(term) ||
+      (item.description || '').toLowerCase().includes(term)
+    );
+  });
 
   return (
-    <div className="download-page">
+    <div className="download-page mp-wrapper">
 
-      {/* Header Page dengan Background Foto Proporsional */}
-      <div 
-        className="header-box"
-        style={{ backgroundImage: `url(${heroBg})` }}
-      >
-        <div className="header-overlay"></div>
-
-        <div className="header-content">
-          <span className="badge">Pusat Unduhan</span>
-          <h1 className="main-title">Pusat Unduhan Sekolah</h1>
-          <p className="subtitle">
-            Unduh berkas-berkas penting seputar akademik, kurikulum, dan administrasi sekolah secara resmi.
+      {/* Header Simpel */}
+      <div className="simple-page-header">
+        <div className="header-text-group">
+          <h1 className="simple-main-title">Pusat Unduhan Sekolah</h1>
+          <p className="simple-subtitle">
+            Kelola berkas-berkas penting seputar akademik, kurikulum, dan administrasi sekolah di sini.
           </p>
+        </div>
+        {isAdmin && (
+          <button className="btn-modern-primary" onClick={() => handleOpenModal()}>
+            <Plus size={16} /> Tambah Berkas Baru
+          </button>
+        )}
+      </div>
+
+      {/* Search Bar */}
+      <div className="simple-toolbar">
+        <div className="mp-search-wrapper" style={{ width: '100%', maxWidth: '360px' }}>
+          <Search size={16} className="mp-search-icon" />
+          <input 
+            type="text" 
+            placeholder="Cari judul, kategori, atau deskripsi..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="mp-search-input"
+          />
         </div>
       </div>
 
-      {/* Content List */}
-      <div className="content-wrapper">
-
-        {/* Action Bar Atas */}
-        {isAdmin && (
-          <div className="top-action-bar">
-            <button className="add-btn" onClick={() => handleOpenModal()}>
-              + Tambah Berkas Baru
-            </button>
-          </div>
-        )}
-
-        {loading ? (
-          <div className="loading-text">Memuat data berkas...</div>
-        ) : visibleDownloads.length === 0 ? (
-          <div className="empty-box">Belum ada berkas yang diunggah.</div>
-        ) : (
-          categories.map((cat, idx) => (
-            <div key={idx} className="category-block">
-              <div className="category-header">
-                <div className="category-title-group">
-                  <span className="category-accent-bar"></span>
-                  <h2 className="category-title">{cat}</h2>
-                </div>
-                <span className="count-badge">
-                  {visibleDownloads.filter((d) => (d.category || 'Lainnya') === cat).length} berkas
-                </span>
-              </div>
-
-              <div className="card-list">
-                {visibleDownloads
-                  .filter((item) => (item.category || 'Lainnya') === cat)
-                  .map((item) => (
-                    <div key={item.id} className={`card-item ${item.show === 0 ? 'hidden-item' : ''}`}>
-                      <div className="card-icon-box">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
-                          <polyline points="14 2 14 8 20 8"/>
-                          <line x1="16" y1="13" x2="8" y2="13"/>
-                          <line x1="16" y1="17" x2="8" y2="17"/>
-                          <line x1="10" y1="9" x2="8" y2="9"/>
-                        </svg>
+      {/* Table Berkas */}
+      <div className="mp-table-card">
+        <table className="mp-table">
+          <thead>
+            <tr>
+              <th className="mp-th">Judul & Deskripsi Berkas</th>
+              <th className="mp-th">Kategori</th>
+              <th className="mp-th" style={{ textAlign: 'center' }}>Ukuran</th>
+              <th className="mp-th" style={{ textAlign: 'center' }}>Urutan</th>
+              <th className="mp-th">Status Tampil</th>
+              <th className="mp-th" style={{ textAlign: 'center' }}>Aksi / Unduh</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              <tr>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '30px', color: 'var(--compreng-text-muted)' }}>
+                  Memuat data berkas...
+                </td>
+              </tr>
+            ) : filteredDownloads.length === 0 ? (
+              <tr>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
+                  {searchTerm ? `Tidak ditemukan berkas dengan kata kunci "${searchTerm}"` : 'Belum ada berkas yang diunggah.'}
+                </td>
+              </tr>
+            ) : (
+              filteredDownloads.map((item) => (
+                <tr key={item.id} className="mp-tr">
+                  <td className="mp-td">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <FileText size={20} />
                       </div>
-
-                      <div className="card-info">
-                        <h3 className="item-title">
-                          {item.title} 
-                          {item.show === 0 && <span className="hidden-tag">(Sembunyi)</span>}
-                        </h3>
-                        <p className="item-desc">{item.description || 'Tidak ada deskripsi berkas.'}</p>
-                      </div>
-
-                      <div className="card-actions">
-                        {(item.file_size || item.fileSize) && (
-                          <span className="file-size">{item.file_size || item.fileSize}</span>
-                        )}
-
-                        <a
-                          href={item.url}
-                          download
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="download-btn"
-                        >
-                          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                            <polyline points="7 10 12 15 17 10"/>
-                            <line x1="12" y1="15" x2="12" y2="3"/>
-                          </svg>
-                          Unduh
-                        </a>
-
-                        {isAdmin && (
-                          <div className="admin-action-group">
-                            <button
-                              className="edit-btn"
-                              onClick={() => handleOpenModal(item)}
-                              title="Edit Data"
-                            >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#d97706" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
-                              </svg>
-                            </button>
-                            <button
-                              className="delete-btn"
-                              onClick={() => handleDelete(item.id)}
-                              title="Hapus Data"
-                            >
-                              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <polyline points="3 6 5 6 21 6"></polyline>
-                                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                                <line x1="10" y1="11" x2="10" y2="17"></line>
-                                <line x1="14" y1="11" x2="14" y2="17"></line>
-                              </svg>
-                            </button>
-                          </div>
-                        )}
+                      <div>
+                        <div style={{ fontWeight: '600', color: 'var(--compreng-text-main)' }}>{item.title}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--compreng-text-muted)', marginTop: '2px' }}>
+                          {item.description || 'Tidak ada deskripsi.'}
+                        </div>
                       </div>
                     </div>
-                  ))}
-              </div>
-            </div>
-          ))
-        )}
+                  </td>
+                  
+                  <td className="mp-td">
+                    <span className="mp-badge-role" style={{ backgroundColor: '#f1f5f9', color: '#475569' }}>
+                      {item.category || 'Lainnya'}
+                    </span>
+                  </td>
 
-      </div>
+                  <td className="mp-td" style={{ textAlign: 'center', fontSize: '13px', color: 'var(--compreng-text-secondary)' }}>
+                    {item.file_size || item.fileSize || '-'}
+                  </td>
+                  
+                  <td className="mp-td" style={{ textAlign: 'center', fontWeight: '600', color: 'var(--compreng-text-secondary)' }}>
+                    {item.sort_order ?? item.sortOrder ?? '-'}
+                  </td>
+                  
+                  <td className="mp-td">
+                    <span className={item.show === 1 ? 'mp-badge-active' : 'mp-badge-inactive'}>
+                      {item.show === 1 ? 'Ditampilkan' : 'Disembunyikan'}
+                    </span>
+                  </td>
+                  
+                  <td className="mp-td" style={{ textAlign: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                      <a 
+                        href={item.url} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        download
+                        className="btn-modern-secondary" 
+                        style={{ padding: '6px 12px', fontSize: '12px', gap: '4px', textDecoration: 'none' }}
+                      >
+                        <Download size={14} /> Unduh
+                      </a>
 
-      {/* MODAL POPUP FORM */}
-      {showModal && (
-        <div className="modal-overlay">
-          <div className="modal-card">
-            
-            <div className="modal-header">
-              <h3 className="modal-title">{editId ? 'Edit Berkas' : 'Tambah Berkas Baru'}</h3>
-              <button className="close-btn" onClick={() => setShowModal(false)}>✕</button>
-            </div>
-
-            <form onSubmit={handleSubmit} className="modal-form">
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">JUDUL BERKAS</label>
-                  <input
-                    type="text"
-                    name="title"
-                    value={formData.title}
-                    onChange={handleChange}
-                    required
-                    className="form-input"
-                    placeholder="Contoh: Kalender Akademik 2026/2027"
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">KATEGORI</label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="form-input"
-                  >
-                    <option value="Kalender Akademik">Kalender Akademik</option>
-                    <option value="Kurikulum">Kurikulum</option>
-                    <option value="Formulir">Formulir</option>
-                    <option value="Jadwal Pelajaran">Jadwal Pelajaran</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">DESKRIPSI SINGKAT</label>
-                  <textarea
-                    name="description"
-                    value={formData.description}
-                    onChange={handleChange}
-                    rows="3"
-                    className="form-input textarea"
-                    placeholder="Tuliskan deskripsi singkat..."
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">SUMBER BERKAS / FILE</label>
-                  <div className="tab-container">
-                    <button
-                      type="button"
-                      className={`tab-btn ${activeTab === 'url' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('url')}
-                    >
-                      🔗 Link URL
-                    </button>
-                    <button
-                      type="button"
-                      className={`tab-btn ${activeTab === 'file' ? 'active' : ''}`}
-                      onClick={() => setActiveTab('file')}
-                    >
-                      Upload Berkas
-                    </button>
-                  </div>
-
-                  {activeTab === 'url' ? (
-                    <input
-                      type="url"
-                      name="url"
-                      value={formData.url}
-                      onChange={handleChange}
-                      className="form-input"
-                      placeholder="https://contoh.com/berkas.pdf"
-                    />
-                  ) : (
-                    <div className="file-upload-box">
-                      <input
-                        type="file"
-                        onChange={handleFileUpload}
-                        className="file-input"
-                      />
-                      {uploading && <span className="upload-status">Sedang mengunggah...</span>}
-                      {formData.url && !uploading && (
-                        <span className="upload-success">✓ Berkas berhasil diunggah</span>
+                      {isAdmin && (
+                        <button 
+                          onClick={(e) => handleDropdownClick(e, item.id)}
+                          className="mp-action-btn"
+                        >
+                          <MoreHorizontal size={18} />
+                        </button>
                       )}
                     </div>
-                  )}
-                </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
-                <div className="form-group">
-                  <label className="form-label">UKURAN BERKAS (OPSIONAL)</label>
-                  <input
-                    type="text"
-                    name="file_size"
-                    value={formData.file_size}
-                    onChange={handleChange}
-                    className="form-input"
-                    placeholder="Contoh: 1.2 MB"
+      {/* DROPDOWN MENU OUTSIDE TABLE */}
+      {dropdownConfig.id && (
+        <>
+          <div 
+            onClick={() => setDropdownConfig({ id: null, right: null, top: null, bottom: null })} 
+            style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+          ></div>
+          
+          <div 
+            className="mp-dropdown-menu" 
+            style={{ 
+              position: 'fixed', 
+              right: dropdownConfig.right, 
+              ...(dropdownConfig.top !== null ? { top: dropdownConfig.top } : {}),
+              ...(dropdownConfig.bottom !== null ? { bottom: dropdownConfig.bottom } : {}),
+              zIndex: 50 
+            }}
+          >
+            {(() => {
+              const targetItem = downloads.find(t => t.id === dropdownConfig.id);
+              if (!targetItem) return null;
+              return (
+                <>
+                  <button onClick={() => { setDropdownConfig({ id: null, right: null, top: null, bottom: null }); handleOpenModal(targetItem); }} className="mp-dropdown-item">
+                    <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Berkas
+                  </button>
+                  <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
+                  <button onClick={() => handleDelete(targetItem.id, targetItem.title)} className="mp-dropdown-item danger">
+                    <Trash2 size={14} color="currentColor" /> Delete
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </>
+      )}
+
+      {/* MODAL FORM SHADCN STYLE */}
+      {showModal && (
+        <div className="modal-overlay">
+          <div className="modal-content modern-modal">
+            <div className="modal-header-modern">
+              <h3>{editId ? 'Edit Berkas' : 'Tambah Berkas Baru'}</h3>
+              <button onClick={() => setShowModal(false)} className="btn-close-modal"><X size={20} /></button>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="form-modern-layout">
+              <div className="form-group-modern">
+                <label>Judul Berkas</label>
+                <input 
+                  type="text" 
+                  name="title"
+                  placeholder="Contoh: Kalender Akademik 2026/2027" 
+                  className="input-modern" 
+                  value={formData.title} 
+                  onChange={handleChange} 
+                  required 
+                />
+              </div>
+              
+              <div className="form-group-modern">
+                <label>Kategori</label>
+                <select 
+                  name="category"
+                  className="input-modern" 
+                  value={formData.category} 
+                  onChange={handleChange}
+                >
+                  <option value="Kalender Akademik">Kalender Akademik</option>
+                  <option value="Kurikulum">Kurikulum</option>
+                  <option value="Formulir">Formulir</option>
+                  <option value="Jadwal Pelajaran">Jadwal Pelajaran</option>
+                </select>
+              </div>
+
+              <div className="form-group-modern">
+                <label>Deskripsi Singkat</label>
+                <textarea 
+                  name="description"
+                  rows="3" 
+                  placeholder="Tuliskan deskripsi singkat..." 
+                  className="input-modern" 
+                  style={{ resize: 'vertical' }}
+                  value={formData.description} 
+                  onChange={handleChange} 
+                />
+              </div>
+              
+              <div className="form-row-modern">
+                <div className="form-group-modern" style={{ flex: 1 }}>
+                  <label>Urutan Tampil (Angka)</label>
+                  <input 
+                    type="number" 
+                    name="sort_order"
+                    className="input-modern" 
+                    value={formData.sort_order} 
+                    onChange={handleChange} 
+                    required 
                   />
                 </div>
-
-                <div className="form-group checkbox-group">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      name="show"
-                      checked={Number(formData.show) === 1}
-                      onChange={handleChange}
-                    />
-                    Tampilkan Berkas (Public)
-                  </label>
+                <div className="form-group-modern" style={{ flex: 1 }}>
+                  <label>Status Tampil</label>
+                  <select 
+                    name="show"
+                    className="input-modern" 
+                    value={formData.show} 
+                    onChange={handleChange}
+                  >
+                    <option value={1}>Ditampilkan</option>
+                    <option value={0}>Disembunyikan</option>
+                  </select>
                 </div>
               </div>
 
-              <div className="modal-footer">
-                <button
-                  type="button"
-                  className="btn-cancel"
-                  onClick={() => setShowModal(false)}
-                >
-                  Batal
-                </button>
-                <button type="submit" className="btn-submit" disabled={uploading}>
-                  {uploading ? 'Mengunggah...' : 'Simpan Data'}
+              {/* Link URL Berkas Input Direct */}
+              <div className="form-group-modern">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <LinkIcon size={15} color="#2563eb" /> Link URL Berkas
+                </label>
+                <input 
+                  type="url" 
+                  name="url"
+                  placeholder="https://drive.google.com/file/... atau https://contoh.com/berkas.pdf" 
+                  className="input-modern" 
+                  value={formData.url} 
+                  onChange={handleChange} 
+                  required
+                />
+              </div>
+
+              <div className="form-group-modern">
+                <label>Ukuran Berkas (Opsional)</label>
+                <input 
+                  type="text" 
+                  name="file_size"
+                  placeholder="Contoh: 1.2 MB" 
+                  className="input-modern" 
+                  value={formData.file_size} 
+                  onChange={handleChange} 
+                />
+              </div>
+
+              <div className="modal-actions-modern" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
+                <button type="button" onClick={() => setShowModal(false)} className="btn-modern-secondary">Batal</button>
+                <button type="submit" className="btn-modern-primary">
+                  Simpan Data
                 </button>
               </div>
             </form>
-
+            
           </div>
         </div>
       )}

@@ -12,7 +12,7 @@ import Login from './Login';
 import Register from './Register';
 import DownloadPage from './pages/DownloadPage';
 import Sidebar from './Sidebar'; 
-import './App.css';
+
 
 // Import Halaman Admin
 import ManageNews from './pages/ManageNews';

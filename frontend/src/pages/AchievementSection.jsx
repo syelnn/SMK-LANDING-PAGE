@@ -1,10 +1,23 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { MoreHorizontal, SquarePen, Trash2, Link as LinkIcon, Upload, Plus, Search } from 'lucide-react';
+import { 
+  MoreHorizontal, 
+  Edit3, 
+  Trash2, 
+  Link as LinkIcon, 
+  Image as ImageIcon, 
+  Plus, 
+  Search, 
+  X, 
+  Loader2 
+} from 'lucide-react';
+import '../css/AchievementSection.css';
+import '../App.css';
 
 const AchievementSection = () => {
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
@@ -29,6 +42,7 @@ const AchievementSection = () => {
 
   const fetchAchievements = async () => {
     try {
+      setLoading(true);
       const res = await axios.get(API_URL);
       if (res.data && res.data.data) {
         setAchievements(res.data.data);
@@ -74,7 +88,7 @@ const AchievementSection = () => {
   const handleOpenEditModal = (item) => {
     setIsEditing(true);
     setSelectedId(item.id);
-    setImageTab('url');
+    setImageTab(item.photo?.startsWith('data:') || !item.photo?.startsWith('http') ? 'upload' : 'url');
     setFormData({
       student_name: item.student_name || '',
       class_name: item.class_name || '',
@@ -90,7 +104,9 @@ const AchievementSection = () => {
   };
 
   const handleCloseModal = () => {
-    setIsModalOpen(false);
+    if (!submitting) {
+      setIsModalOpen(false);
+    }
   };
 
   const handleChange = (e) => {
@@ -115,6 +131,7 @@ const AchievementSection = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
 
     const payload = {
       ...formData,
@@ -135,6 +152,8 @@ const AchievementSection = () => {
       console.error('Error saving data:', err.response?.data || err.message);
       const errorMessage = err.response?.data?.error || err.response?.data?.message || err.message;
       alert(`Gagal menyimpan data!\nDetail Error: ${errorMessage}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -152,177 +171,223 @@ const AchievementSection = () => {
   };
 
   const filteredAchievements = achievements.filter((item) => {
-  const query = searchQuery.toLowerCase();
-  
-  return (
-    item.student_name?.toLowerCase().includes(query) ||
-    item.achievement?.toLowerCase().includes(query) ||
-    item.class_name?.toLowerCase().includes(query) ||
-    item.level?.toLowerCase().includes(query) ||          // <-- Ditambahkan untuk filter Tingkat
-    String(item.year || '').toLowerCase().includes(query) // <-- Ditambahkan untuk filter Tahun
-  );
-});
-
-  if (loading) {
-    return <div className="achievement-loading">Memuat data Prestasi Siswa...</div>;
-  }
+    const query = searchQuery.toLowerCase();
+    return (
+      item.student_name?.toLowerCase().includes(query) ||
+      item.achievement?.toLowerCase().includes(query) ||
+      item.class_name?.toLowerCase().includes(query) ||
+      item.level?.toLowerCase().includes(query) ||
+      String(item.year || '').toLowerCase().includes(query)
+    );
+  });
 
   return (
-    <div className="achievement-admin-wrapper">
-      {/* Kontainer Card Utama ala Foto 1 */}
-      <div className="admin-card-container">
-        
-        {/* Top Header di dalam Card */}
-        <div className="admin-page-header">
-          <div className="header-text-group">
-            <h1 className="admin-page-title">Kelola Karya & Prestasi</h1>
-            <p className="admin-page-subtitle">Kelola seluruh prestasi siswa SMK Negeri Compreng di sini.</p>
-          </div>
-          <button className="btn-add-primary" onClick={handleOpenAddModal}>
-            <Plus size={16} /> Tambah Prestasi
-          </button>
+    <div className="admin-container">
+      {/* Header */}
+      <div className="admin-page-header">
+        <div>
+          <h1 className="admin-title">Kelola Karya & Prestasi</h1>
+          <p className="admin-subtitle">
+            Kelola seluruh prestasi siswa SMK Negeri Compreng di sini.
+          </p>
         </div>
+        <button className="btn-primary" onClick={handleOpenAddModal}>
+          <Plus size={18} /> Tambah Prestasi
+        </button>
+      </div>
 
-        {/* Filter / Search Bar */}
-        <div className="admin-table-controls">
-          <div className="search-input-wrapper">
-            <Search size={16} className="search-icon" />
-            <input
-              type="text"
-              placeholder="Cari prestasi..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
+      {/* Toolbar Search */}
+      <div className="table-toolbar">
+        <div className="search-input-wrapper">
+          <Search size={18} className="search-icon" />
+          <input
+            type="text"
+            placeholder="Cari prestasi..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="search-input"
+          />
         </div>
+      </div>
 
-        {/* Table Section */}
-        <div className="table-responsive-wrapper">
-          <table className="admin-table">
-            <thead>
+      {/* Tabel */}
+      <div className="table-wrapper">
+        <table className="custom-table">
+          <thead>
+            <tr>
+              <th style={{ width: '90px' }}>Foto</th>
+              <th>Nama Siswa & Kelas</th>
+              <th>Judul Prestasi / Kejuaraan</th>
+              <th>Tingkat</th>
+              <th>Tahun</th>
+              <th>Status</th>
+              <th style={{ textAlign: 'center', width: '80px' }}>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
               <tr>
-                <th style={{ width: '70px' }}>Foto</th>
-                <th>Nama Siswa & Kelas</th>
-                <th>Judul Prestasi / Kejuaraan</th>
-                <th>Tingkat</th>
-                <th>Tahun</th>
-                <th>Status</th>
-                <th style={{ width: '80px', textAlign: 'center' }}>Aksi</th>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '32px' }}>
+                  <Loader2 className="animate-spin" style={{ display: 'inline', marginRight: '8px' }} />
+                  Memuat data...
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {filteredAchievements.length === 0 ? (
-                <tr>
-                  <td colSpan="7" className="table-empty-state">
-                    Belum ada data prestasi yang ditemukan.
+            ) : filteredAchievements.length === 0 ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '32px' }}>
+                  Belum ada data prestasi yang ditemukan.
+                </td>
+              </tr>
+            ) : (
+              filteredAchievements.map((item) => (
+                <tr key={item.id}>
+                  <td>
+                    {item.photo ? (
+                      <img
+                        src={item.photo}
+                        alt={item.student_name}
+                        className="table-thumb-rect"
+                        onError={(e) => {
+                          e.target.style.display = 'none';
+                        }}
+                      />
+                    ) : (
+                      <div className="table-thumb-fallback">
+                        {item.student_name ? item.student_name.charAt(0).toUpperCase() : '?'}
+                      </div>
+                    )}
                   </td>
-                </tr>
-              ) : (
-                filteredAchievements.map((item) => (
-                  <tr key={item.id}>
-                    <td>
-                      {item.photo ? (
-                        <img src={item.photo} alt={item.student_name} className="table-avatar-img" />
-                      ) : (
-                        <div className="table-avatar-circle">
-                          {item.student_name ? item.student_name.charAt(0).toUpperCase() : '?'}
-                        </div>
-                      )}
-                    </td>
-                    <td>
-                      <div className="table-student-name">{item.student_name}</div>
-                      <div className="table-student-class">{item.class_name || '-'}</div>
-                    </td>
-                    <td>
-                      <span className="table-achievement-text">{item.achievement}</span>
-                    </td>
-                    <td>
-                      <span className={`table-badge-level ${item.level?.toLowerCase() || 'nasional'}`}>
-                        {item.level || 'Nasional'}
-                      </span>
-                    </td>
-                    <td>{item.year}</td>
-                    <td>
-                      <span className={`status-badge ${item.show === 1 ? 'status-tampil' : 'status-sembunyi'}`}>
-                        {item.show === 1 ? 'Tampil' : 'Sembunyi'}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: 'center', position: 'relative' }}>
+                  <td>
+                    <div className="student-name-text">{item.student_name}</div>
+                    <div className="student-class-text">{item.class_name || '-'}</div>
+                  </td>
+                  <td>
+                    <span className="achievement-title-text">{item.achievement}</span>
+                  </td>
+                  <td>
+                    <span className="badge badge-category">{item.level || 'Nasional'}</span>
+                  </td>
+                  <td>
+                    <span className="year-text">{item.year}</span>
+                  </td>
+                  <td>
+                    <span className={`badge ${item.show === 1 ? 'badge-success' : 'badge-warning'}`}>
+                      {item.show === 1 ? 'Tampil' : 'Sembunyi'}
+                    </span>
+                  </td>
+                  <td>
+                    {/* MENU DROPDOWN AKSI */}
+                    <div className="dropdown-action-wrapper" ref={activeMenuId === item.id ? menuRef : null}>
                       <button
-                        className="btn-action-more"
-                        onClick={() => setActiveMenuId(activeMenuId === item.id ? null : item.id)}
+                        type="button"
+                        className="btn-more-action"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setActiveMenuId(activeMenuId === item.id ? null : item.id);
+                        }}
+                        title="Opsi"
                       >
                         <MoreHorizontal size={18} />
                       </button>
 
                       {activeMenuId === item.id && (
-                        <div className="action-dropdown-menu" ref={menuRef}>
-                          <button onClick={() => handleOpenEditModal(item)} className="dropdown-item edit">
-                            <SquarePen size={14} /> Edit Data
+                        <div className="action-dropdown-menu">
+                          <button
+                            type="button"
+                            className="dropdown-item"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleOpenEditModal(item);
+                            }}
+                          >
+                            <Edit3 size={14} /> Edit Data
                           </button>
-                          <button onClick={() => handleDelete(item.id)} className="dropdown-item delete">
+                          <button
+                            type="button"
+                            className="dropdown-item delete"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDelete(item.id);
+                            }}
+                          >
                             <Trash2 size={14} /> Delete
                           </button>
                         </div>
                       )}
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
 
-      {/* Modal Form */}
+      {/* Modal Form Tambah/Edit */}
       {isModalOpen && (
-        <div className="crud-modal-overlay">
-          <div className="crud-modal-content">
-            <div className="crud-modal-header">
-              <h2>{isEditing ? 'Edit Prestasi' : 'Tambah Prestasi Baru'}</h2>
-              <button className="btn-close-modal" onClick={handleCloseModal}>&times;</button>
+        <div className="modal-overlay">
+          <div className="modal-content modern-modal">
+            <div className="modal-header-modern">
+              <h3>{isEditing ? 'Edit Prestasi' : 'Tambah Prestasi Baru'}</h3>
+              <button
+                type="button"
+                onClick={handleCloseModal}
+                className="btn-close-modal"
+                disabled={submitting}
+              >
+                <X size={20} />
+              </button>
             </div>
-            <form onSubmit={handleSubmit} className="crud-form">
-              <div className="form-group">
-                <label>NAMA SISWA</label>
+
+            <form onSubmit={handleSubmit} className="form-modern-layout">
+              <div className="form-group-modern">
+                <label>Nama Siswa *</label>
                 <input
                   type="text"
                   name="student_name"
+                  className="input-modern"
+                  required
+                  placeholder="Contoh: Alya Putri"
                   value={formData.student_name}
                   onChange={handleChange}
-                  placeholder="Contoh: Alya Putri"
-                  required
                 />
               </div>
 
-              <div className="form-group">
-                <label>KELAS</label>
+              <div className="form-group-modern">
+                <label>Kelas *</label>
                 <input
                   type="text"
                   name="class_name"
+                  className="input-modern"
+                  required
+                  placeholder="Contoh: XII RPL 1"
                   value={formData.class_name}
                   onChange={handleChange}
-                  placeholder="Contoh: Kelas XII IPA"
-                  required
                 />
               </div>
 
-              <div className="form-group">
-                <label>JUDUL PRESTASI / KEJUARAAN</label>
+              <div className="form-group-modern">
+                <label>Judul Prestasi / Kejuaraan *</label>
                 <input
                   type="text"
                   name="achievement"
+                  className="input-modern"
+                  required
+                  placeholder="Contoh: Juara 1 LKS Web Technologies"
                   value={formData.achievement}
                   onChange={handleChange}
-                  placeholder="Contoh: Juara 1 Olimpiade Sains"
-                  required
                 />
               </div>
 
-              <div className="form-row">
-                <div className="form-group">
-                  <label>TINGKAT</label>
-                  <select name="level" value={formData.level} onChange={handleChange}>
+              <div className="form-row-modern" style={{ display: 'flex', gap: '12px' }}>
+                <div className="form-group-modern" style={{ flex: 1 }}>
+                  <label>Tingkat</label>
+                  <select
+                    name="level"
+                    className="input-modern"
+                    value={formData.level}
+                    onChange={handleChange}
+                  >
                     <option value="Kota">Kota</option>
                     <option value="Provinsi">Provinsi</option>
                     <option value="Nasional">Nasional</option>
@@ -330,87 +395,107 @@ const AchievementSection = () => {
                   </select>
                 </div>
 
-                <div className="form-group">
-                  <label>TAHUN</label>
+                <div className="form-group-modern" style={{ flex: 1 }}>
+                  <label>Tahun *</label>
                   <input
                     type="number"
                     name="year"
+                    className="input-modern"
+                    required
+                    placeholder="2026"
                     value={formData.year}
                     onChange={handleChange}
-                    placeholder="2026"
-                    required
                   />
                 </div>
               </div>
 
-              <div className="form-group">
-                <label>URUTAN TAMPILAN</label>
+              <div className="form-group-modern">
+                <label>Urutan Tampilan *</label>
                 <input
                   type="number"
                   name="sort_order"
                   min="1"
+                  className="input-modern"
+                  required
+                  placeholder="1"
                   value={formData.sort_order}
                   onChange={handleChange}
-                  placeholder="1"
-                  required
                 />
               </div>
 
-              <div className="form-group">
-                <label>FOTO PROFIL</label>
-                <div className="image-tab-group">
-                  <button
-                    type="button"
+              <div className="form-group-modern upload-section">
+                <label>Foto Profil / Siswa</label>
+                <div className="radio-tabs">
+                  <div
+                    className={`radio-tab ${imageTab === 'url' ? 'active' : ''}`}
                     onClick={() => setImageTab('url')}
-                    className={`tab-btn ${imageTab === 'url' ? 'active' : ''}`}
                   >
-                    <LinkIcon size={14} /> Link URL
-                  </button>
-                  <button
-                    type="button"
+                    <LinkIcon size={16} /> Link URL
+                  </div>
+                  <div
+                    className={`radio-tab ${imageTab === 'upload' ? 'active' : ''}`}
                     onClick={() => setImageTab('upload')}
-                    className={`tab-btn ${imageTab === 'upload' ? 'active' : ''}`}
                   >
-                    <Upload size={14} /> Upload Foto
-                  </button>
+                    <ImageIcon size={16} /> Upload Foto
+                  </div>
                 </div>
 
                 {imageTab === 'url' ? (
                   <input
                     type="text"
                     name="photo"
+                    className="input-modern"
+                    placeholder="https://..."
                     value={formData.photo}
                     onChange={handleChange}
-                    placeholder="https://contoh.com/foto.jpg"
                   />
                 ) : (
                   <input
                     type="file"
                     accept="image/*"
+                    className="input-modern file-style"
                     onChange={handleFileUpload}
                   />
                 )}
               </div>
 
-              <div className="form-group-checkbox">
-                <label className="checkbox-container">
-                  <input
-                    type="checkbox"
-                    name="show"
-                    checked={formData.show === 1}
-                    onChange={handleChange}
-                  />
-                  <span className="checkmark"></span>
-                  <span className="checkbox-label-text">TAMPILKAN BERKAS (PUBLIC)</span>
-                </label>
+              <div className="form-group-modern">
+                <label>Status Tampil</label>
+                <select
+                  name="show"
+                  className="input-modern"
+                  value={formData.show}
+                  onChange={handleChange}
+                >
+                  <option value={1}>Ditampilkan (Public)</option>
+                  <option value={0}>Disembunyikan</option>
+                </select>
               </div>
 
-              <div className="crud-modal-footer">
-                <button type="button" className="btn-cancel" onClick={handleCloseModal}>
+              <div className="modal-actions-modern" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
+                <button
+                  type="button"
+                  className="btn-modern-secondary"
+                  onClick={handleCloseModal}
+                  disabled={submitting}
+                >
                   Batal
                 </button>
-                <button type="submit" className="btn-submit">
-                  {isEditing ? 'Simpan Perubahan' : 'Simpan Data'}
+                <button
+                  type="submit"
+                  className="btn-modern-primary"
+                  disabled={submitting}
+                >
+                  {submitting ? (
+                    <>
+                      <Loader2 size={16} className="animate-spin" />
+                      &nbsp;Menyimpan...
+                    </>
+                  ) : isEditing ? (
+                    'Simpan Perubahan'
+                  ) : (
+                    'Simpan Data'
+                  )}
                 </button>
               </div>
             </form>

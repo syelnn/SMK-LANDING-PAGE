@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Shield, 
   Compass, 
@@ -12,12 +12,14 @@ import {
   Edit,
   Trash2,
   X,
-  Upload,
+  Image as ImageIcon,
   Link as LinkIcon,
-  Loader2,
+  
   Search,
   MoreHorizontal
 } from 'lucide-react';
+
+import '../css/ekstrakurikuler.css';
 
 const renderIcon = (iconValue) => {
   const props = { className: "ekskul-icon" };
@@ -89,9 +91,8 @@ export default function Ekstrakurikuler() {
   const [logoType, setLogoType] = useState('url');
   const [selectedFile, setSelectedFile] = useState(null);
 
-  // State & Ref untuk mengontrol Dropdown Aksi (Titik Tiga)
-  const [activeDropdownId, setActiveDropdownId] = useState(null);
-  const dropdownRef = useRef(null);
+  // State Dropdown Action (Smart Positioning)
+  const [dropdownConfig, setDropdownConfig] = useState({ id: null, right: null, top: null, bottom: null });
 
   const [formData, setFormData] = useState({
     title: '',
@@ -119,18 +120,38 @@ export default function Ekstrakurikuler() {
     fetchEkskul();
   }, []);
 
-  // Menutup dropdown secara otomatis saat mengklik luar area menu
+  // Tutup dropdown saat melakukan scroll
   useEffect(() => {
-    const handleClickOutside = (event) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setActiveDropdownId(null);
+    const handleScroll = () => {
+      if (dropdownConfig.id !== null) {
+        setDropdownConfig({ id: null, right: null, top: null, bottom: null });
       }
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, []);
+    window.addEventListener('scroll', handleScroll, true);
+    return () => window.removeEventListener('scroll', handleScroll, true);
+  }, [dropdownConfig.id]);
+
+  const handleDropdownClick = (e, itemId) => {
+    e.stopPropagation();
+    if (dropdownConfig.id === itemId) {
+      setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+      return;
+    }
+
+    const rect = e.currentTarget.getBoundingClientRect();
+    const windowHeight = window.innerHeight;
+    const dropdownHeight = 90;
+
+    const spaceBelow = windowHeight - rect.bottom;
+    const openUpwards = spaceBelow < dropdownHeight;
+
+    setDropdownConfig({
+      id: itemId,
+      right: window.innerWidth - rect.right,
+      top: openUpwards ? null : rect.bottom + 4,
+      bottom: openUpwards ? windowHeight - rect.top + 4 : null
+    });
+  };
 
   const handleOpenAdd = () => {
     setIsEditing(false);
@@ -147,6 +168,7 @@ export default function Ekstrakurikuler() {
   };
 
   const handleOpenEdit = (item) => {
+    setDropdownConfig({ id: null, right: null, top: null, bottom: null });
     setIsEditing(true);
     setCurrentId(item.id);
     setSelectedFile(null);
@@ -159,7 +181,7 @@ export default function Ekstrakurikuler() {
       show: item.show !== undefined ? Number(item.show) : 1
     });
     setShowModal(true);
-    setActiveDropdownId(null);
+
   };
 
   const convertFileToBase64 = (file) => {
@@ -220,7 +242,7 @@ export default function Ekstrakurikuler() {
   };
 
   const handleDelete = async (id) => {
-    setActiveDropdownId(null);
+    setDropdownConfig({ id: null, right: null, top: null, bottom: null });
     if (!window.confirm('Apakah kamu yakin ingin menghapus ekstrakurikuler ini?')) return;
 
     try {
@@ -240,7 +262,7 @@ export default function Ekstrakurikuler() {
   };
 
   if (loading) {
-    return <div className="text-center py-5" style={{ color: '#64748b' }}>Memuat data ekstrakurikuler...</div>;
+    return <div className="text-center text-muted" style={{ padding: '40px' }}>Memuat data ekstrakurikuler...</div>;
   }
 
   // Filter Publik
@@ -248,7 +270,7 @@ export default function Ekstrakurikuler() {
     ? listEkskul 
     : listEkskul.filter(item => Number(item.show) === 1);
 
-  // Filter Search berdasarkan Nama Ekstrakurikuler dan Deskripsi
+  // Filter Search
   const filteredList = baseList.filter((item) => {
     const q = searchQuery.toLowerCase();
     return (
@@ -259,33 +281,31 @@ export default function Ekstrakurikuler() {
 
   return (
     <div className="ekskul-container">
-      {/* HEADER MODEL FOTO 2 */}
+      {/* HEADER SECTION */}
       <div className="ekskul-header-wrapper">
         <div className="ekskul-header-text">
           <h2 className="ekskul-title">Kelola Ekstrakurikuler</h2>
-          <p className="ekskul-desc">
-            Kelola seluruh ekstrakurikuler SMK Negeri Compreng di sini.
-          </p>
+          <p className="ekskul-desc">Kelola seluruh ekstrakurikuler SMK Negeri Compreng di sini.</p>
         </div>
-        
+
         {canAccessCRUD && (
           <div className="ekskul-add-wrapper">
-            <button onClick={handleOpenAdd} className="ekskul-add-btn">
+            <button className="ekskul-add-btn" onClick={handleOpenAdd}>
               <Plus size={16} /> Tambah Ekskul
             </button>
           </div>
         )}
       </div>
 
-      {/* KARTU UTAMA DENGAN FILTER SEARCH & TABEL */}
+      {/* TABLE CARD */}
       <div className="ekskul-table-card">
-        {/* INPUT SEARCH */}
+        {/* SEARCH BAR */}
         <div className="ekskul-search-wrapper">
           <div className="ekskul-search-input-box">
-            <Search size={18} className="ekskul-search-icon" />
-            <input
-              type="text"
-              placeholder="Cari ekstrakurikuler..."
+            <Search size={16} className="ekskul-search-icon" />
+            <input 
+              type="text" 
+              placeholder="Cari nama atau deskripsi ekstrakurikuler..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="ekskul-search-input"
@@ -293,218 +313,222 @@ export default function Ekstrakurikuler() {
           </div>
         </div>
 
-        {/* TABEL RESPONSIVE */}
+        {/* TABLE CONTENT */}
         <div className="ekskul-table-responsive">
           <table className="ekskul-table">
-            <thead>
-              <tr>
-                <th style={{ width: '50px' }}>No</th>
-                <th style={{ width: '70px' }}>Logo</th>
-                <th>Nama Ekstrakurikuler</th>
-                <th>Deskripsi</th>
-                <th style={{ width: '80px', textAlign: 'center' }}>Urutan</th>
-                <th style={{ width: '100px', textAlign: 'center' }}>Status</th>
-                {canAccessCRUD && <th style={{ width: '80px', textAlign: 'center' }}>Aksi</th>}
-              </tr>
-            </thead>
-            <tbody>
-              {filteredList.length === 0 ? (
-                <tr>
-                  <td colSpan={canAccessCRUD ? 7 : 6} className="text-center py-4" style={{ padding: '30px', color: '#64748b' }}>
-                    Belum ada data ekstrakurikuler yang ditemukan.
-                  </td>
-                </tr>
-              ) : (
-                filteredList.map((item, index) => (
-                  <tr key={item.id}>
-                    <td>{index + 1}</td>
-                    <td>
-                      <div className="ekskul-table-icon">
-                        {renderIcon(item.icon)}
-                      </div>
-                    </td>
-                    <td className="font-semibold text-dark">{item.title}</td>
-                    <td className="text-muted">{item.description || '-'}</td>
-                    <td className="text-center">{item.sort_order || item.sortOrder || 1}</td>
-                    <td className="text-center">
-                      {Number(item.show) === 1 ? (
-                        <span className="badge-status show">Tampil</span>
-                      ) : (
-                        <span className="badge-status hide">Sembunyi</span>
-                      )}
-                    </td>
-                    {canAccessCRUD && (
-                      <td className="text-center">
-                        <div 
-                          className="dropdown-action-wrapper" 
-                          ref={activeDropdownId === item.id ? dropdownRef : null}
-                        >
-                          <button 
-                            type="button"
-                            className="btn-more-action" 
-                            onClick={() => setActiveDropdownId(activeDropdownId === item.id ? null : item.id)}
-                            title="Opsi Aksi"
-                          >
-                            <MoreHorizontal size={18} />
-                          </button>
+  <thead>
+    <tr>
+      <th style={{ width: '80px' }}>Logo</th>
+      <th>Nama Ekstrakurikuler</th>
+      <th>Deskripsi</th>
+      <th style={{ textAlign: 'center' }}>Urutan</th>
+      <th>Status</th>
+      <th style={{ textAlign: 'center', width: '50px' }}>Aksi</th>
+    </tr>
+  </thead>
+  <tbody>
+    {filteredList.length === 0 ? (
+      <tr>
+        <td colSpan="6" className="text-center text-muted" style={{ padding: '40px' }}>
+          {searchQuery ? `Tidak ditemukan ekstrakurikuler dengan kata kunci "${searchQuery}"` : 'Belum ada data ekstrakurikuler.'}
+        </td>
+      </tr>
+    ) : (
+      filteredList.map((item) => (
+        <tr key={item.id}>
+          <td>
+            <div className="ekskul-table-icon">
+              {renderIcon(item.icon)}
+            </div>
+          </td>
+          
+          <td>
+            <span className="font-semibold text-dark">{item.title}</span>
+          </td>
 
-                          {activeDropdownId === item.id && (
-                            <div className="dropdown-action-menu">
-                              <button 
-                                type="button" 
-                                onClick={() => handleOpenEdit(item)} 
-                                className="dropdown-item"
-                              >
-                                <Edit size={14} /> Edit Data
-                              </button>
-                              <button 
-                                type="button" 
-                                onClick={() => handleDelete(item.id)} 
-                                className="dropdown-item danger"
-                              >
-                                <Trash2 size={14} /> Delete
-                              </button>
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                    )}
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+          <td>
+            <span className="text-muted">
+              {item.description || '-'}
+            </span>
+          </td>
+
+          <td style={{ textAlign: 'center' }} className="font-semibold text-muted">
+            {item.sort_order || item.sortOrder || 1}
+          </td>
+
+          <td>
+            <span className={`badge-status ${Number(item.show) === 1 ? 'show' : 'hide'}`}>
+              {Number(item.show) === 1 ? 'Tampil' : 'Sembunyi'}
+            </span>
+          </td>
+
+          <td style={{ textAlign: 'center' }}>
+            {canAccessCRUD && (
+              <div className="dropdown-action-wrapper">
+                <button 
+                  onClick={(e) => handleDropdownClick(e, item.id)}
+                  className="btn-more-action"
+                >
+                  <MoreHorizontal size={18} />
+                </button>
+              </div>
+            )}
+          </td>
+        </tr>
+      ))
+    )}
+  </tbody>
+</table>
         </div>
       </div>
 
-      {/* MODAL FORM RESPONSIVE */}
+      {/* DROPDOWN MENU (PORTAL-STYLE POSITIONING) */}
+      {dropdownConfig.id && (
+        <>
+          <div 
+            onClick={() => setDropdownConfig({ id: null, right: null, top: null, bottom: null })} 
+            style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+          ></div>
+          
+          <div 
+            className="dropdown-action-menu" 
+            style={{ 
+              position: 'fixed', 
+              right: dropdownConfig.right, 
+              ...(dropdownConfig.top !== null ? { top: dropdownConfig.top } : {}),
+              ...(dropdownConfig.bottom !== null ? { bottom: dropdownConfig.bottom } : {}),
+              zIndex: 50 
+            }}
+          >
+            {(() => {
+              const targetItem = listEkskul.find(t => t.id === dropdownConfig.id);
+              if (!targetItem) return null;
+              return (
+                <>
+                  <button onClick={() => handleOpenEdit(targetItem)} className="dropdown-item">
+                    <Edit size={14} /> Edit Data
+                  </button>
+                  <button onClick={() => handleDelete(targetItem.id)} className="dropdown-item danger">
+                    <Trash2 size={14} /> Delete
+                  </button>
+                </>
+              );
+            })()}
+          </div>
+        </>
+      )}
+
+      {/* MODAL FORM */}
       {showModal && canAccessCRUD && (
         <div className="ekskul-modal-overlay">
           <div className="ekskul-modal-box">
             <div className="ekskul-modal-header">
               <h3>{isEditing ? 'Edit Ekstrakurikuler' : 'Tambah Ekstrakurikuler Baru'}</h3>
-              <button 
-                type="button" 
-                onClick={() => !isSubmitting && setShowModal(false)}
-                className="ekskul-close-btn"
-              >
+              <button onClick={() => !isSubmitting && setShowModal(false)} className="ekskul-close-btn">
                 <X size={20} />
               </button>
             </div>
-
+            
             <form onSubmit={handleSubmit} className="ekskul-modal-body">
               <div className="ekskul-form-group">
-                <label className="ekskul-form-label">NAMA EKSTRAKURIKULER</label>
+                <label className="ekskul-form-label">Nama Ekstrakurikuler</label>
                 <input 
                   type="text" 
-                  className="ekskul-form-input"
-                  placeholder="Contoh: Paskibra, Pramuka, Futsal"
+                  placeholder="Contoh: Paskibra, Pramuka, Futsal" 
+                  className="ekskul-form-input" 
                   value={formData.title} 
-                  onChange={(e) => setFormData({...formData, title: e.target.value})} 
+                  onChange={e => setFormData({...formData, title: e.target.value})} 
                   required 
                 />
               </div>
-
+              
               <div className="ekskul-form-group">
-                <label className="ekskul-form-label">DESKRIPSI</label>
+                <label className="ekskul-form-label">Deskripsi</label>
                 <textarea 
                   rows="3" 
-                  className="ekskul-form-textarea"
-                  placeholder="Penjelasan singkat mengenai ekstrakurikuler..."
+                  placeholder="Penjelasan singkat mengenai ekstrakurikuler..." 
+                  className="ekskul-form-textarea" 
+                  style={{ resize: 'vertical' }}
                   value={formData.description} 
-                  onChange={(e) => setFormData({...formData, description: e.target.value})}
-                ></textarea>
-              </div>
-
-              <div className="ekskul-form-group">
-                <label className="ekskul-form-label">URUTAN</label>
-                <input 
-                  type="number" 
-                  min="1"
-                  className="ekskul-form-input"
-                  value={formData.sort_order} 
-                  onChange={(e) => setFormData({...formData, sort_order: e.target.value})} 
-                  required 
+                  onChange={e => setFormData({...formData, description: e.target.value})} 
                 />
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div className="ekskul-form-group">
+                  <label className="ekskul-form-label">Urutan Tampil</label>
+                  <input 
+                    type="number" 
+                    min="1"
+                    className="ekskul-form-input" 
+                    value={formData.sort_order} 
+                    onChange={e => setFormData({...formData, sort_order: e.target.value})} 
+                    required 
+                  />
+                </div>
+                <div className="ekskul-form-group">
+                  <label className="ekskul-form-label">Status Tampil</label>
+                  <select 
+                    className="ekskul-form-input" 
+                    value={formData.show} 
+                    onChange={e => setFormData({...formData, show: Number(e.target.value)})}
+                  >
+                    <option value={1}>Ditampilkan</option>
+                    <option value={0}>Disembunyikan</option>
+                  </select>
+                </div>
               </div>
 
               <div className="ekskul-logo-box">
-                <label className="ekskul-form-label">LOGO / ICON EKSTRAKURIKULER</label>
-                
+                <label className="ekskul-form-label">Logo / Icon Ekstrakurikuler</label>
                 <div className="ekskul-tab-container">
-                  <button
-                    type="button"
+                  <button 
+                    type="button" 
+                    className={`ekskul-tab-btn ${logoType === 'url' ? 'active' : ''}`} 
                     onClick={() => setLogoType('url')}
-                    className={`ekskul-tab-btn ${logoType === 'url' ? 'active' : ''}`}
                   >
-                    <LinkIcon size={14} /> Link URL
+                    <LinkIcon size={14}/> Link URL
                   </button>
-                  <button
-                    type="button"
+                  <button 
+                    type="button" 
+                    className={`ekskul-tab-btn ${logoType === 'file' ? 'active' : ''}`} 
                     onClick={() => setLogoType('file')}
-                    className={`ekskul-tab-btn ${logoType === 'file' ? 'active' : ''}`}
                   >
-                    <Upload size={14} /> Upload Foto
+                    <ImageIcon size={14}/> Upload Foto
                   </button>
                 </div>
-
+                
                 {logoType === 'url' ? (
                   <input 
                     type="text" 
-                    placeholder="https://contoh.com/foto.jpg"
-                    className="ekskul-form-input white-bg"
+                    placeholder="https://contoh.com/foto.jpg" 
+                    className="ekskul-form-input" 
                     value={formData.icon} 
-                    onChange={(e) => setFormData({...formData, icon: e.target.value})} 
+                    onChange={e => setFormData({...formData, icon: e.target.value})} 
                   />
                 ) : (
                   <input 
                     type="file" 
-                    accept="image/*"
-                    className="ekskul-form-input white-bg"
-                    onChange={(e) => setSelectedFile(e.target.files[0])} 
+                    accept="image/*" 
+                    className="ekskul-form-input" 
+                    onChange={e => setSelectedFile(e.target.files[0])} 
                   />
                 )}
               </div>
 
-              <div className="ekskul-checkbox-group">
-                <label className="ekskul-checkbox-label">
-                  <input 
-                    type="checkbox"
-                    checked={Number(formData.show) === 1}
-                    onChange={(e) => setFormData({ ...formData, show: e.target.checked ? 1 : 0 })}
-                  />
-                  <span>TAMPILKAN EKSTRAKURIKULER (PUBLIC)</span>
-                </label>
-              </div>
-
               <div className="ekskul-modal-actions">
-                <button 
-                  type="button" 
-                  disabled={isSubmitting}
-                  onClick={() => setShowModal(false)} 
-                  className="ekskul-btn-cancel"
-                >
+                <button type="button" disabled={isSubmitting} onClick={() => setShowModal(false)} className="ekskul-btn-cancel">
                   Batal
                 </button>
-                <button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                  className="ekskul-btn-submit"
-                >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 size={16} className="ekskul-spinner" />
-                      Menyimpan...
-                    </>
-                  ) : (
-                    'Simpan Data'
-                  )}
+                <button type="submit" disabled={isSubmitting} className="ekskul-btn-submit">
+                  {isSubmitting ? 'Menyimpan...' : 'Simpan Data'}
                 </button>
               </div>
             </form>
           </div>
         </div>
       )}
+
     </div>
   );
 }
