@@ -7,11 +7,12 @@ import {
   TrendingUp, Activity, Newspaper, BookOpen, GraduationCap, Trophy, MessageSquare, 
   Image as ImageIcon, LayoutTemplate, PlusCircle, LayoutDashboard
 } from 'lucide-react';
+import LandingPage from './pages/viewer/LandingPage'; 
 
 import Login from './Login';
 import Register from './Register';
 import DownloadPage from './pages/DownloadPage';
-import Sidebar from './Sidebar'; 
+import Sidebar from './Sidebar';
 
 // Import Halaman Admin
 import ManageNews from './pages/ManageNews';
@@ -532,7 +533,8 @@ const MainApp = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<PublicLayout />} />
+      {/* Ganti PublicLayout dengan LandingPage di bawah ini */}
+      <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/lupa-password" element={<ForgotPassword />} />
