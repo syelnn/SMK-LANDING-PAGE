@@ -1,0 +1,508 @@
+/* src/css/dashboard.css */
+
+/* =========================================
+   1. LAYOUT UTAMA (DASHBOARD WRAPPER)
+   ========================================= */
+
+.dashboard-container {
+  display: flex;
+  width: 100vw;
+  max-width: 100%;
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--compreng-bg);
+}
+.layout-content-wrapper {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  height: 100vh;
+  background-color: var(--compreng-bg);
+  overflow: hidden;
+}
+
+.main-content-area {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 30px;
+  box-sizing: border-box;
+}
+
+.main-content-inner {
+  max-width: 100%;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* =========================================
+   2. TOP NAVIGASI (TOPBAR)
+   ========================================= */
+.topbar {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  border-bottom: 1px solid var(--compreng-border);
+  background: var(--compreng-surface);
+  z-index: 40;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+.topbar-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.btn-sidebar-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--compreng-text-secondary);
+  display: flex;
+  align-items: center;
+}
+
+/* Kotak Pencarian Topbar */
+.topbar-search-trigger {
+  position: relative;
+  width: 320px;
+  max-width: 100%;
+  cursor: pointer;
+}
+
+.topbar-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--compreng-text-muted);
+  pointer-events: none;
+}
+
+.topbar-search-box {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  background: var(--compreng-bg);
+  color: var(--compreng-text-muted);
+  font-size: 13px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.topbar-search-shortcut {
+  font-size: 10px;
+  color: var(--compreng-text-muted);
+  background: var(--compreng-surface);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid var(--compreng-border);
+}
+
+/* Tombol User Profil di Topbar */
+.topbar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 8px;
+  transition: background 0.2s;
+  max-width: 220px;
+}
+
+.topbar-user-btn:hover {
+  background: var(--compreng-surface-soft);
+}
+
+.topbar-user-info {
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.topbar-user-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--compreng-text);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-user-email {
+  font-size: 11px;
+  color: var(--compreng-text-muted);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.topbar-user-initial {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--compreng-text);
+  color: var(--compreng-bg);
+  font-weight: 600;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Dropdown Menu User Profil */
+.topbar-dropdown {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 15px);
+  width: 220px; /* Lebar pas seperti Shadcn */
+  background: var(--compreng-surface);
+  border: 1px solid var(--compreng-border);
+  border-radius: 8px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  padding: 4px; /* Padding luar dipertipis */
+  z-index: 50;
+}
+
+.topbar-dropdown-header {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--compreng-border);
+  margin-bottom: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* Jarak sangat rapat antara nama dan email */
+}
+
+.topbar-dropdown-name {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600; /* Teks nama lebih tebal */
+  color: var(--compreng-text);
+  line-height: 1.2;
+}
+
+.topbar-dropdown-email {
+  margin: 0;
+  font-size: 12px;
+  color: var(--compreng-text-muted); /* Teks email lebih kecil & redup */
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; /* Terpotong rapi jika email terlalu panjang */
+}
+
+.topbar-dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Jarak ikon dan teks */
+  padding: 8px 12px; /* Padding atas bawah dipertipis */
+  background: transparent;
+  border: none;
+  color: var(--compreng-text);
+  font-size: 13px; /* Font size diturunkan sedikit */
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.topbar-dropdown-item:hover {
+  background: var(--compreng-surface-soft);
+}
+
+.topbar-dropdown-item.danger {
+  color: #dc2626;
+}
+
+.topbar-dropdown-item.danger:hover {
+  background: #fef2f2;
+}
+
+/* =========================================
+   3. COMMAND PALETTE (PENCARIAN UNIVERSAL)
+   ========================================= */
+.cmd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(3px);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding-top: 12vh;
+}
+
+.cmd-modal {
+  background: var(--compreng-surface);
+  width: 100%;
+  max-width: 540px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+  overflow: hidden;
+  border: 1px solid var(--compreng-border);
+}
+
+.cmd-header {
+  display: flex;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid var(--compreng-border);
+}
+
+.cmd-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: 15px;
+  color: var(--compreng-text);
+}
+
+.cmd-esc {
+  font-size: 10px;
+  background: var(--compreng-bg);
+  padding: 4px 6px;
+  border-radius: 4px;
+  color: var(--compreng-text-muted);
+  border: 1px solid var(--compreng-border);
+  font-weight: bold;
+}
+
+.cmd-body {
+  max-height: 340px;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+.cmd-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--compreng-text);
+  font-size: 14px;
+  text-align: left;
+  transition: background 0.2s;
+  margin-bottom: 2px;
+}
+
+.cmd-item:hover {
+  background: var(--compreng-surface-soft);
+}
+
+.cmd-item-type {
+  font-size: 11px;
+  color: var(--compreng-text-muted);
+  text-transform: capitalize;
+}
+
+/* =========================================
+   4. HALAMAN DASHBOARD OVERVIEW
+   ========================================= */
+.dash-wrapper {
+  width: 100%;
+  animation: fadeIn 0.3s ease;
+}
+
+.dash-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dash-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--compreng-text);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.dash-btn-download {
+  padding: 8px 16px;
+  background: var(--compreng-text);
+  color: var(--compreng-bg);
+  border-radius: 6px;
+  font-weight: 500;
+  font-size: 13px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+/* GRID STATISTIK ATAS (8 KOTAK) */
+.dash-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.dash-stat-card {
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--compreng-border);
+  background: var(--compreng-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  box-sizing: border-box;
+}
+
+.dash-stat-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.dash-stat-title {
+  margin: 0;
+  font-size: 13px;
+  color: var(--compreng-text-muted);
+  font-weight: 600;
+}
+
+.dash-stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--compreng-text);
+  margin: 0 0 4px 0;
+  font-family: var(--theme-font);
+}
+
+.dash-stat-desc {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.dash-stat-desc.success { color: #16a34a; }
+.dash-stat-desc.muted { color: var(--compreng-text-secondary); }
+
+/* GRID KOMPOSISI (PROGRESS BAR) BAWAH */
+.dash-bottom-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+}
+
+.dash-chart-card {
+  padding: 24px;
+  border-radius: 12px;
+  border: 1px solid var(--compreng-border);
+  background: var(--compreng-surface);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.dash-chart-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--compreng-text);
+  margin: 0 0 4px 0;
+}
+
+.dash-chart-subtitle {
+  margin: 0;
+  font-size: 13px;
+  color: var(--compreng-text-muted);
+  margin-bottom: 24px;
+}
+
+.dash-progress-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dash-progress-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 13px;
+  color: var(--compreng-text);
+  font-weight: 500;
+  margin-bottom: 8px;
+}
+
+.dash-progress-track {
+  width: 100%;
+  height: 8px;
+  background: var(--compreng-surface-soft);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.dash-progress-fill {
+  height: 100%;
+  background: var(--compreng-text);
+  border-radius: 4px;
+}
+
+/* Opsional: Utilities untuk warna transparan bar */
+.dash-progress-fill.opacity-80 { opacity: 0.8; }
+.dash-progress-fill.opacity-60 { opacity: 0.6; }
+
+/* =========================================
+   5. MODE CETAK (PRINT TO PDF)
+   ========================================= */
+@media print {
+  /* 1. Sembunyikan elemen yang tidak perlu masuk laporan */
+  .topbar, 
+  .dash-btn-download, 
+  nav, /* Menyembunyikan sidebar (asumsi menggunakan tag nav) */
+  .sidebar-overlay {
+    display: none !important;
+  }
+
+  /* 2. Bersihkan warna background agar tinta / PDF bersih */
+  body, 
+  .layout-content-wrapper, 
+  .main-content-area {
+    background-color: white !important;
+    height: auto !important;
+    overflow: visible !important;
+    padding: 0 !important;
+  }
+
+  /* 3. Pastikan kotak statistik tidak terpotong di tengah halaman */
+  .dash-stat-card, 
+  .dash-chart-card {
+    page-break-inside: avoid;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: none !important;
+  }
+
+  /* 4. Ubah grid agar muat di kertas A4 secara proporsional */
+  .dash-stats-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 10px !important;
+  }
+}

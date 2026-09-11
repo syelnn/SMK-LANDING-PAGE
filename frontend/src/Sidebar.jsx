@@ -5,10 +5,9 @@ import {
   Users, School, Newspaper, BookOpen, Activity, 
   GraduationCap, Trophy, MessageSquare, HelpCircle, 
   Image as ImageIcon, MapPin, LayoutDashboard, Settings,
-  X, ChevronDown, Download, LogOut, ChevronsUpDown
-} from 'lucide-react';
-
+  X, ChevronDown, ChevronRight, Download, LogOut, ChevronsUpDown } from 'lucide-react';
 import logoSekolah from './assets/logo1.png';
+import './css/sidebar.css'; // MENGIMPOR CSS SIDEBAR BARU
 
 const ICON_MAP = {
   dashboard: <LayoutDashboard size={16} />,
@@ -50,6 +49,7 @@ export default function Sidebar({
   const [openDropdowns, setOpenDropdowns] = useState({ settings: true });
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
+  // Fungsi tutup menu (bukan lagi hilang, melainkan memicu .collapsed di CSS)
   const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
   const toggleDropdown = (key) => setOpenDropdowns(prev => ({ ...prev, [key]: !prev[key] }));
   const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
@@ -115,7 +115,6 @@ export default function Sidebar({
             'Download': '/admin/downloads'
           };
 
-
           const filteredData = resData.data.filter(m => {
             const titleLower = m.title.toLowerCase();
             if (titleLower.includes('profil') || titleLower.includes('kontak')) {
@@ -166,64 +165,47 @@ export default function Sidebar({
   const activeMenuList = dynamicNavs.length > 0 ? dynamicNavs : defaultMenuItems;
   const allowedMenus = activeMenuList.filter(item => item.roles ? item.roles.map(r => r.toUpperCase()).includes(userData.role) : true);
 
-  // Ambil email dari prop userData, atau fallback ke localStorage jika nilainya '-' atau kosong
+  const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
+  const rawName = userData?.name || savedUser?.name || savedUser?.username || 'user';
+  const cleanedName = rawName.toLowerCase().replace(/\s+/g, '');
 
-const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
-const rawName = userData?.name || savedUser?.name || savedUser?.username || 'user';
-const cleanedName = rawName.toLowerCase().replace(/\s+/g, '');
-
-const userEmail = (userData?.email && userData.email !== '-' && userData.email !== '')
-  ? userData.email
-  : (savedUser?.email || localStorage.getItem('email') || `${cleanedName}@gmail.com`);
-  
-
-return (
-  <div 
-    className={`dashboard-sidebar ${isMobileMenuOpen ? 'open' : ''} ${!isSidebarVisible ? 'collapsed' : ''}`}
-    style={{ fontFamily: 'var(--theme-font, sans-serif)' }}
-  >
-      {/* HEADER SIDEBAR (STYLE SHADCN UI MODERN) */}
+  const userEmail = (userData?.email && userData.email !== '-' && userData.email !== '')
+    ? userData.email
+    : (savedUser?.email || localStorage.getItem('email') || `${cleanedName}@gmail.com`);
+    
+  return (
+    <div className={`dashboard-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''} ${!isSidebarVisible ? 'sidebar-mini' : ''}`}>
+      
+      {/* HEADER SIDEBAR */}
       <div className="sidebar-header">
         <div className="sidebar-brand-wrapper">
-          <div className="sidebar-logo-box">
-            <img 
-              src={settings.school_logo || logoSekolah} 
-              alt="Logo" 
-              className="sidebar-logo-img"
-              onError={(e) => { e.target.style.display = 'none'; }} 
-            />
-          </div>
+          <img 
+            src={settings.school_logo || logoSekolah} 
+            alt="Logo" 
+            className="sidebar-logo-img"
+            onError={(e) => { e.target.style.display = 'none'; }} 
+          />
           <div className="sidebar-brand-text">
-            <h2 className="sidebar-brand-title">
-              SMKN COMPRENG
-            </h2>
-            <span className="sidebar-brand-subtitle">
-              The High School
-            </span>
+            <h2 className="sidebar-brand-title">SMKN COMPRENG</h2>
+            <span className="sidebar-brand-subtitle">The High School</span>
           </div>
         </div>
 
-
-        <button 
-          onClick={toggleSidebar} 
-          title="Tutup Sidebar" 
-          className="sidebar-close-btn"
-        >
+        {/* Hanya tampil jika versi Mobile */}
+        <button onClick={() => setIsMobileMenuOpen(false)} title="Tutup Sidebar" className="sidebar-mobile-close">
           <X size={16} />
         </button>
       </div>
 
       {/* MENU SIDEBAR */}
-      <div className="sidebar-menu" style={{ flex: 1, overflowY: 'auto', padding: '16px 12px', scrollbarWidth: 'none' }}>
+      <div className="sidebar-menu">
         {['General', 'Pages', 'Other'].map(group => {
           const groupItems = allowedMenus.filter(m => (m.group || 'General') === group);
           if (groupItems.length === 0) return null;
           return (
             <div key={group} style={{ marginBottom: '24px' }}>
-              <div style={{ padding: '0 12px', marginBottom: '8px', fontSize: '12px', fontWeight: '600', color: 'var(--compreng-text-muted)', textTransform: 'capitalize' }}>
-                {group}
-              </div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+              <div className="sidebar-group-label">{group}</div>
+              <ul className="sidebar-nav-list">
                 {groupItems.map((menu, index) => {
                   const hasSubItems = menu.type === 'dropdown' && menu.subItems && menu.subItems.length > 0;
                   const isDropdownOpen = openDropdowns[menu.iconKey];
@@ -240,38 +222,24 @@ return (
                       <button 
                         onClick={() => hasSubItems ? toggleDropdown(menu.iconKey) : handleMenuClick(menu)}
                         className={`sidebar-link ${isActive && !hasSubItems ? 'active' : ''}`}
-                        style={{ 
-                          border: 'none', width: '100%', textAlign: 'left', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                          padding: '10px 12px', borderRadius: '6px', transition: 'all 0.2s',
-                          background: isActive && !hasSubItems ? 'var(--compreng-surface-soft)' : 'transparent',
-                          color: isActive && !hasSubItems ? 'var(--compreng-text)' : 'var(--compreng-text-secondary)',
-                          fontWeight: isActive ? '600' : '500'
-                        }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <span style={{ color: isActive && !hasSubItems ? 'var(--compreng-text)' : 'var(--compreng-text-secondary)' }}>
-                            {ICON_MAP[menu.iconKey] || <LayoutDashboard size={16} />}
-                          </span>
-                          <span style={{ fontSize: '13.5px' }}>{menu.title}</span>
+                        <div className="sidebar-link-inner">
+                          <span className="sidebar-link-icon">{ICON_MAP[menu.iconKey] || <LayoutDashboard size={16} />}</span>
+                          <span className="sidebar-link-text">{menu.title}</span>
                         </div>
-                        {hasSubItems && <ChevronDown size={14} style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', color: 'var(--compreng-text-muted)' }} />}
+                        {hasSubItems && (
+                          isDropdownOpen 
+                            ? <ChevronDown size={16} className="sidebar-dropdown-icon" /> 
+                            : <ChevronRight size={16} className="sidebar-dropdown-icon" />
+                        )}
                       </button>
 
                       {hasSubItems && isDropdownOpen && (
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', marginTop: '4px', marginLeft: '26px', borderLeft: '1px solid var(--compreng-border)', paddingLeft: '12px' }}>
+                        <div className="sidebar-sub-menu">
                           {menu.subItems.map((sub, sIdx) => {
                             const isSubActive = location.pathname === sub.url || location.pathname.startsWith(sub.url);
                             return (
-                              <NavLink
-                                key={sIdx}
-                                to={sub.url}
-                                style={{
-                                  padding: '8px 12px', fontSize: '13px', borderRadius: '6px', textDecoration: 'none', display: 'block', transition: 'all 0.2s',
-                                  color: isSubActive ? 'var(--compreng-text)' : 'var(--compreng-text-muted)',
-                                  background: isSubActive ? 'var(--compreng-surface-soft)' : 'transparent',
-                                  fontWeight: isSubActive ? '600' : '500'
-                                }}
-                              >
+                              <NavLink key={sIdx} to={sub.url} className={`sidebar-sub-link ${isSubActive ? 'active' : ''}`}>
                                 {sub.title}
                               </NavLink>
                             );
@@ -287,50 +255,45 @@ return (
         })}
       </div>
 
-      {/* FOOTER SIDEBAR */}
-      <div className="sidebar-footer" style={{ borderTop: '1px solid var(--compreng-border)', padding: '16px', position: 'relative' }}>
+      {/* FOOTER SIDEBAR (PROFIL USER) */}
+      <div className="sidebar-footer">
+        
+        {/* POPUP LOGOUT */}
         {isUserMenuOpen && (
           <>
             <div onClick={() => setIsUserMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
-            <div style={{ position: 'absolute', bottom: 'calc(100% + 10px)', left: '16px', right: '16px', background: 'var(--compreng-surface)', border: '1px solid var(--compreng-border)', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.08)', overflow: 'hidden', zIndex: 50 }}>
-              <div style={{ padding: '12px', borderBottom: '1px solid var(--compreng-border)' }}>
-                 <div style={{ fontSize: '14px', fontWeight: '600', color: 'var(--compreng-text)' }}>{userData?.name}</div>
-                 <div style={{ fontSize: '12px', color: 'var(--compreng-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{userEmail}</div>
+            <div className="sidebar-user-popup">
+              <div className="sidebar-user-popup-header">
+                 <div className="sidebar-user-name">{userData?.name}</div>
+                 <div className="sidebar-user-email">{userEmail}</div>
               </div>
               <div style={{ padding: '4px' }}>
-                <button onClick={() => { setIsUserMenuOpen(false); navigate('/admin/users'); }} style={{ width: '100%', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', color: 'var(--compreng-text-secondary)', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', transition: 'background 0.2s' }} onMouseOver={(e)=>e.currentTarget.style.background='var(--compreng-surface-soft)'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
+                <button onClick={() => { setIsUserMenuOpen(false); navigate('/admin/users'); }} className="sidebar-popup-action">
                    <Users size={14} /> Kelola Pengguna
                 </button>
               </div>
               <div style={{ padding: '4px', borderTop: '1px solid var(--compreng-border)' }}>
-                <button onClick={handleLogout} style={{ width: '100%', padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', color: '#dc2626', fontSize: '13px', cursor: 'pointer', borderRadius: '4px', fontWeight: '500', transition: 'background 0.2s' }} onMouseOver={(e)=>e.currentTarget.style.background='#fef2f2'} onMouseOut={(e)=>e.currentTarget.style.background='transparent'}>
-                   <LogOut size={14} /> Sign out
+                <button onClick={handleLogout} className="sidebar-popup-action danger">
+                   <LogOut size={14} /> Log out
                 </button>
               </div>
             </div>
           </>
         )}
 
+        {/* TOMBOL USER DI BAWAH SIDEBAR */}
         <button 
           onClick={toggleUserMenu}
-          style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '8px', border: 'none', background: isUserMenuOpen ? 'var(--compreng-surface-soft)' : 'transparent', borderRadius: '8px', cursor: 'pointer', transition: 'background 0.2s', textAlign: 'left' }}
-          onMouseOver={(e)=> { if(!isUserMenuOpen) e.currentTarget.style.background='var(--compreng-surface-soft)' }}
-          onMouseOut={(e)=> { if(!isUserMenuOpen) e.currentTarget.style.background='transparent' }}
+          className={`sidebar-user-btn ${isUserMenuOpen ? 'active' : ''}`}
         >
-          <div style={{ width: '36px', height: '36px', borderRadius: '6px', background: 'var(--compreng-text)', color: 'var(--compreng-bg)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '700', flexShrink: 0 }}>
+          <div className="sidebar-user-avatar">
             {userData?.initial}
           </div>
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <div style={{ fontSize: '13.5px', fontWeight: '600', color: 'var(--compreng-text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {userData?.name}
-            </div>
-           <div style={{ fontSize: '11px', color: 'var(--compreng-text-secondary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-  {userEmail}
-</div>
+          <div className="sidebar-user-text">
+            <div className="sidebar-user-name">{userData?.name}</div>
+            <div className="sidebar-user-email">{userEmail}</div>
           </div>
-          <div style={{ color: 'var(--compreng-text-muted)' }}>
-             <ChevronsUpDown size={16} />
-          </div>
+          <ChevronsUpDown size={16} className="sidebar-user-chevron" />
         </button>
       </div>
 

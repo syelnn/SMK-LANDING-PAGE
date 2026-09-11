@@ -417,12 +417,12 @@ body, html, #root {
 }
 
 .form-modern-layout {
-  padding: 25px;
+  padding: 0px 24px 24px 24px; /* Atas 8px, Kanan 24px, Bawah 24px, Kiri 24px */
   display: flex;
   flex-direction: column;
-  gap: 16px;
-  overflow-y: auto; /* Memunculkan scroll otomatis di dalam form jika layar kecil */
-  scrollbar-width: thin; /* Ukuran scrollbar rapi */
+  gap: 20px;
+  overflow-y: auto;
+  /* ... kode lainnya tetap biarkan saja ... */
 }
 
 .form-group-modern {

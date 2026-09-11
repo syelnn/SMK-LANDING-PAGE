@@ -37,323 +37,59 @@
 /* =========================================
    2. PUBLIC TESTIMONIAL CARDS (VIEWER)
    ========================================= */
-.modern-testi-public {
-  margin-bottom: 50px;
-}
+.modern-testi-public { margin-bottom: 50px; }
+.modern-testi-header { text-align: center; margin-bottom: 30px; }
+.modern-testi-header-badge { background-color: var(--compreng-surface-soft); color: var(--compreng-green); padding: 6px 16px; border-radius: 20px; font-weight: bold; font-size: 12px; }
+.modern-testi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+.testi-card-public { background-color: var(--compreng-surface); border: 1px solid var(--compreng-border); padding: 24px; border-radius: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.02); display: flex; flex-direction: column; }
+.testi-card-quote-icon { font-size: 40px; color: var(--compreng-text-muted); line-height: 1; margin-bottom: 10px; font-family: serif; }
+.testi-card-text { color: var(--compreng-text); font-style: italic; flex-grow: 1; margin-bottom: 20px; }
+.testi-card-author { display: flex; align-items: center; gap: 15px; }
+.testi-card-author-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--compreng-border); }
+.testi-card-author-initial { width: 45px; height: 45px; border-radius: 50%; background-color: var(--compreng-green); color: #fff; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 18px; }
 
-.modern-testi-header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-
-.modern-testi-header-badge {
-  background-color: var(--compreng-surface-soft);
-  color: var(--compreng-green);
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-weight: bold;
-  font-size: 12px;
-}
-
-.modern-testi-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
-}
-
-.testi-card-public {
-  background-color: var(--compreng-surface);
-  border: 1px solid var(--compreng-border);
-  padding: 24px;
-  border-radius: 16px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
-  display: flex;
-  flex-direction: column;
-}
-
-.testi-card-quote-icon {
-  font-size: 40px;
-  color: var(--compreng-text-muted);
-  line-height: 1;
-  margin-bottom: 10px;
-  font-family: serif;
-}
-
-.testi-card-text {
-  color: var(--compreng-text);
-  font-style: italic;
-  flex-grow: 1;
-  margin-bottom: 20px;
-}
-
-.testi-card-author {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.testi-card-author-img {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--compreng-border);
-}
-
-.testi-card-author-initial {
-  width: 45px;
-  height: 45px;
-  border-radius: 50%;
-  background-color: var(--compreng-green);
-  color: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: bold;
-  font-size: 18px;
-}
+/* VIEWER FORM SECTION */
+.testi-viewer-form-container { max-width: 600px; margin: 0 auto; background-color: var(--compreng-surface); padding: 30px; border-radius: 16px; border: 1px solid var(--compreng-border); }
+.testi-viewer-alert { padding: 15px; background-color: rgba(34, 197, 94, 0.1); color: #16a34a; text-align: center; border-radius: 8px; border: 1px solid rgba(34, 197, 94, 0.2); }
+.testi-form-label { font-size: 12px; font-weight: bold; color: var(--compreng-text-muted); display: block; margin-bottom: 6px; }
+.testi-form-input { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--compreng-border); background-color: var(--compreng-bg); color: var(--compreng-text); outline: none; box-sizing: border-box; }
+.testi-form-textarea { width: 100%; padding: 10px 14px; border-radius: 8px; border: 1px solid var(--compreng-border); background-color: var(--compreng-bg); color: var(--compreng-text); outline: none; box-sizing: border-box; resize: vertical; }
 
 /* =========================================
-   3. VIEWER FORM SECTION
+   3. TABLE STYLES & HIDE SCROLLBAR
    ========================================= */
-.testi-viewer-form-container {
-  max-width: 600px;
-  margin: 0 auto;
-  background-color: var(--compreng-surface);
-  padding: 30px;
-  border-radius: 16px;
-  border: 1px solid var(--compreng-border);
-}
+.testi-toolbar { display: flex; justify-content: flex-start; align-items: center; margin-bottom: 16px; }
+.testi-search-wrapper { position: relative; width: 280px; max-width: 100%; }
+.testi-search-input { width: 100%; padding: 8px 12px 8px 36px; border-radius: 6px; border: 1px solid var(--compreng-border); background: var(--compreng-surface); color: var(--compreng-text); font-size: 13px; outline: none; box-sizing: border-box; }
+.testi-search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--compreng-text-muted); }
 
-.testi-viewer-alert {
-  padding: 15px;
-  background-color: rgba(34, 197, 94, 0.1);
-  color: #16a34a;
-  text-align: center;
-  border-radius: 8px;
-  border: 1px solid rgba(34, 197, 94, 0.2);
-}
+.testi-table-card { background-color: var(--compreng-surface); border-radius: 8px; border: 1px solid var(--compreng-border); overflow-x: auto; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 40px; width: 100%; scrollbar-width: none; -ms-overflow-style: none; }
+.testi-table-card::-webkit-scrollbar { display: none; }
+.testi-table { width: 100%; border-collapse: collapse; text-align: left; min-width: 850px; }
+.testi-th { padding: 12px 16px; font-size: 13px; font-weight: 600; color: var(--compreng-text-secondary); border-bottom: 1px solid var(--compreng-border); white-space: nowrap; background: var(--compreng-surface-soft); }
+.testi-td { padding: 14px 16px; border-bottom: 1px solid var(--compreng-border); vertical-align: middle; color: var(--compreng-text); font-size: 13px; }
+.testi-tr { transition: background 0.2s; }
+.testi-tr:hover { background: var(--compreng-surface-soft); }
+.testi-truncate { max-width: 300px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.testi-form-label {
-  font-size: 12px;
-  font-weight: bold;
-  color: var(--compreng-text-muted);
-  display: block;
-  margin-bottom: 6px;
-}
-
-.testi-form-input {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--compreng-border);
-  background-color: var(--compreng-bg);
-  color: var(--compreng-text);
-  outline: none;
-  box-sizing: border-box;
-}
-
-.testi-form-textarea {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--compreng-border);
-  background-color: var(--compreng-bg);
-  color: var(--compreng-text);
-  outline: none;
-  box-sizing: border-box;
-  resize: vertical;
-}
+/* BADGES */
+.testi-badge-active { display: inline-flex; background: rgba(34, 197, 94, 0.15); color: #16a34a; border: 1px solid rgba(34, 197, 94, 0.3); padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
+.testi-badge-pending { display: inline-flex; background: rgba(234, 179, 8, 0.15); color: #ca8a04; border: 1px solid rgba(234, 179, 8, 0.3); padding: 2px 10px; border-radius: 20px; font-size: 11px; font-weight: 600; }
 
 /* =========================================
-   4. TOOLBAR & SEARCH (ADMIN)
+   4. DROPDOWN ACTIONS (SMART POSITIONING)
    ========================================= */
-.testi-toolbar {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 16px;
-}
-
-.testi-search-wrapper {
-  position: relative;
-  width: 280px;
-  max-width: 100%;
-}
-
-.testi-search-input {
-  width: 100%;
-  padding: 8px 12px 8px 36px;
-  border-radius: 6px;
-  border: 1px solid var(--compreng-border);
-  background: var(--compreng-surface);
-  color: var(--compreng-text);
-  font-size: 13px;
-  outline: none;
-  box-sizing: border-box;
-}
-
-.testi-search-icon {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--compreng-text-muted);
-}
+.testi-action-btn { background: transparent; border: none; cursor: pointer; padding: 6px; border-radius: 6px; color: var(--compreng-text-secondary); display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+.testi-action-btn:hover { background: var(--compreng-surface-soft); color: var(--compreng-text); }
+.testi-dropdown-menu { background: var(--compreng-surface); border: 1px solid var(--compreng-border); border-radius: 8px; box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1); width: 170px; padding: 6px; z-index: 9999; animation: dropdownFadeIn 0.2s ease; }
+@keyframes dropdownFadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.testi-dropdown-item { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 12px; background: transparent; border: none; text-align: left; cursor: pointer; border-radius: 6px; font-size: 12.5px; font-weight: 500; color: var(--compreng-text); text-decoration: none; transition: all 0.2s; }
+.testi-dropdown-item:hover { background: var(--compreng-surface-soft); }
+.testi-dropdown-item.danger { color: #dc2626; }
+.testi-dropdown-item.danger:hover { background: #fef2f2; }
 
 /* =========================================
-   5. TABLE STYLES & HIDE SCROLLBAR
-   ========================================= */
-.testi-table-card {
-  background-color: var(--compreng-surface);
-  border-radius: 8px;
-  border: 1px solid var(--compreng-border);
-  overflow-x: auto;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-  margin-bottom: 40px;
-  width: 100%;
-  scrollbar-width: none; 
-  -ms-overflow-style: none; 
-}
-
-.testi-table-card::-webkit-scrollbar {
-  display: none; 
-}
-
-.testi-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  min-width: 850px;
-}
-
-.testi-th {
-  padding: 12px 16px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--compreng-text-secondary);
-  border-bottom: 1px solid var(--compreng-border);
-  white-space: nowrap;
-  background: var(--compreng-surface-soft);
-}
-
-.testi-td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--compreng-border);
-  vertical-align: middle;
-  color: var(--compreng-text);
-  font-size: 13px;
-}
-
-.testi-tr {
-  transition: background 0.2s;
-}
-
-.testi-tr:hover {
-  background: var(--compreng-surface-soft);
-}
-
-.testi-truncate {
-  max-width: 300px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* =========================================
-   6. BADGES
-   ========================================= */
-.testi-badge-active {
-  display: inline-flex;
-  background: rgba(34, 197, 94, 0.15);
-  color: #16a34a;
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.testi-badge-pending {
-  display: inline-flex;
-  background: rgba(234, 179, 8, 0.15);
-  color: #ca8a04;
-  border: 1px solid rgba(234, 179, 8, 0.3);
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-/* =========================================
-   7. DROPDOWN ACTIONS (SMART POSITIONING)
-   ========================================= */
-.testi-action-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  color: var(--compreng-text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s;
-}
-
-.testi-action-btn:hover {
-  background: var(--compreng-surface-soft);
-  color: var(--compreng-text);
-}
-
-.testi-dropdown-menu {
-  background: var(--compreng-surface);
-  border: 1px solid var(--compreng-border);
-  border-radius: 8px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  width: 170px;
-  padding: 6px;
-  z-index: 9999;
-  animation: dropdownFadeIn 0.2s ease;
-}
-
-@keyframes dropdownFadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-.testi-dropdown-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 8px 10px;
-  background: transparent;
-  border: none;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 6px;
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--compreng-text);
-  text-decoration: none;
-  transition: background 0.2s;
-}
-
-.testi-dropdown-item:hover {
-  background: var(--compreng-surface-soft);
-}
-
-.testi-dropdown-item.danger {
-  color: #dc2626;
-}
-
-.testi-dropdown-item.danger:hover {
-  background: #fef2f2;
-}
-
-/* =========================================
-   8. STANDARISASI TOMBOL MODERN
+   5. STANDARISASI TOMBOL MODERN
    ========================================= */
 .btn-modern-primary {
   display: inline-flex;
@@ -410,173 +146,35 @@
   margin-top: 10px;
   transition: opacity 0.2s ease;
 }
-.btn-viewer-submit:hover {
-  opacity: 0.9;
-}
+.btn-viewer-submit:hover { opacity: 0.9; }
 
 /* =========================================
-   9. MODAL & FORM SHADCN STYLE (ISOLASI)
+   6. RADIO TABS UPLOAD (DARI CODE KAMU)
    ========================================= */
-.testi-modal-overlay {
-  position: fixed;
-  inset: 0;
-  background-color: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10000;
-  padding: 20px;
-  animation: testiFadeIn 0.2s ease-out;
-}
-
-@keyframes testiFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-.testi-modal-content {
-  background-color: var(--compreng-surface);
-  width: 100%;
-  max-width: 480px;
-  border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 1px solid var(--compreng-border);
-  animation: testiSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-  display: flex;
-  flex-direction: column;
-}
-
-@keyframes testiSlideUp {
-  from { opacity: 0; transform: translateY(10px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.testi-modal-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--compreng-border);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: var(--compreng-surface);
-}
-
-.testi-modal-header h3 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  color: var(--compreng-text);
-  letter-spacing: -0.01em;
-}
-
-.testi-btn-close {
-  background: transparent;
-  border: none;
-  color: var(--compreng-text-muted);
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s ease;
-}
-
-.testi-btn-close:hover {
-  background-color: var(--compreng-surface-soft);
-  color: var(--compreng-text);
-}
-
-.testi-form-layout {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  overflow-y: auto;
-  max-height: calc(100vh - 200px);
-}
-
-.testi-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.testi-form-group label {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--compreng-text);
-}
-
-.testi-input {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid var(--compreng-border);
-  background-color: var(--compreng-bg);
-  color: var(--compreng-text);
-  font-size: 14px;
-  outline: none;
-  transition: border-color 0.2s, box-shadow 0.2s;
-  box-sizing: border-box;
-}
-
-.testi-input:focus {
-  border-color: var(--compreng-text-muted);
-  box-shadow: 0 0 0 3px var(--compreng-surface-soft);
-}
-
-.testi-input::placeholder {
-  color: var(--compreng-text-muted);
-  opacity: 0.7;
-}
-
-textarea.testi-input {
-  resize: vertical;
-  min-height: 80px;
-}
-
-.testi-radio-tabs {
+.upload-section .radio-tabs {
   display: flex;
   gap: 8px;
-  background-color: var(--compreng-surface-soft);
-  padding: 4px;
-  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
-.testi-radio-tab {
+.radio-tab {
   flex: 1;
-  padding: 8px 12px;
-  font-size: 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
+  padding: 8px;
+  font-size: 0.8rem;
   font-weight: 600;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #64748b;
+  border-radius: 6px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  transition: all 0.2s ease;
-  color: var(--compreng-text-secondary);
 }
 
-.testi-radio-tab:hover {
-  color: var(--compreng-text);
-}
-
-.testi-radio-tab.active {
-  background-color: var(--compreng-surface);
-  color: var(--compreng-text);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-}
-
-.testi-modal-actions {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 12px;
-  margin-top: 10px;
-  padding-top: 24px;
-  border-top: 1px solid var(--compreng-border);
+.radio-tab.active {
+  background: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
 }

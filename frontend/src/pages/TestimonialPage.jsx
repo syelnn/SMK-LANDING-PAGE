@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Pencil, Trash2, Eye, EyeOff, Plus, X, Link as LinkIcon, UploadCloud, Search, MoreHorizontal } from 'lucide-react';
-import '../css/testimonialpage.css'; // Hanya mengimpor CSS khusus testimoni, tanpa App.css
+import { Pencil, Trash2, Eye, EyeOff, Plus, X, Link as LinkIcon, Image as ImageIcon, Search, MoreHorizontal } from 'lucide-react';
+import '../css/testimonialpage.css';
+import '../App.css'; // Wajib di-import agar class .modal-overlay, .modern-modal dll berfungsi persis seperti Jurusan
 
 const TestimonialPage = () => {
   const [testimonials, setTestimonials] = useState([]);
@@ -29,7 +30,6 @@ const TestimonialPage = () => {
     fetchData();
   }, [userRole]);
 
-  // Sembunyikan dropdown saat scroll halaman
   useEffect(() => {
     const handleScroll = () => {
       if (dropdownConfig.id !== null) {
@@ -76,7 +76,6 @@ const TestimonialPage = () => {
     reader.onerror = () => alert("Gagal memproses gambar!");
   };
 
-  // --- SMART DROPDOWN LOGIC ---
   const handleDropdownClick = (e, testiId) => {
     e.stopPropagation();
     if (dropdownConfig.id === testiId) {
@@ -86,8 +85,6 @@ const TestimonialPage = () => {
 
     const rect = e.currentTarget.getBoundingClientRect();
     const windowHeight = window.innerHeight;
-    
-    // Perbesar area deteksi untuk dropdown 3 aksi
     const dropdownHeight = 160; 
     
     const spaceBelow = windowHeight - rect.bottom;
@@ -180,7 +177,7 @@ const TestimonialPage = () => {
     <div className="testi-wrapper">
       
       {/* =========================================================
-          VIEW UNTUK PENGUNJUNG (Hanya tampil jika role = viewer)
+          VIEW UNTUK PENGUNJUNG
       ========================================================= */}
       {userRole === 'viewer' ? (
         <>
@@ -232,9 +229,21 @@ const TestimonialPage = () => {
                 
                 <div>
                   <label className="testi-form-label">Foto Profil (Opsional)</label>
-                  <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-                    <button type="button" onClick={() => setViewerPhotoMode('url')} style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold', background: viewerPhotoMode === 'url' ? 'var(--compreng-text)' : 'var(--compreng-surface-soft)', color: viewerPhotoMode === 'url' ? 'var(--compreng-bg)' : 'var(--compreng-text-muted)' }}><LinkIcon size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }}/> Link URL</button>
-                    <button type="button" onClick={() => setViewerPhotoMode('upload')} style={{ padding: '6px 12px', fontSize: '11px', borderRadius: '6px', border: 'none', cursor: 'pointer', fontWeight: 'bold', background: viewerPhotoMode === 'upload' ? 'var(--compreng-text)' : 'var(--compreng-surface-soft)', color: viewerPhotoMode === 'upload' ? 'var(--compreng-bg)' : 'var(--compreng-text-muted)' }}><UploadCloud size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }}/> Upload Foto</button>
+                  <div className="upload-section" style={{ marginBottom: '10px' }}>
+                    <div className="radio-tabs">
+                      <div 
+                        className={`radio-tab ${viewerPhotoMode === 'url' ? 'active' : ''}`} 
+                        onClick={() => setViewerPhotoMode('url')}
+                      >
+                        <LinkIcon size={16} /> Link URL
+                      </div>
+                      <div 
+                        className={`radio-tab ${viewerPhotoMode === 'upload' ? 'active' : ''}`} 
+                        onClick={() => setViewerPhotoMode('upload')}
+                      >
+                        <ImageIcon size={16} /> Upload Foto
+                      </div>
+                    </div>
                   </div>
                   {viewerPhotoMode === 'url' ? (
                     <input type="text" placeholder="https://..." value={viewerFormData.photo} onChange={e => setViewerFormData(prev => ({...prev, photo: e.target.value}))} className="testi-form-input" />
@@ -247,7 +256,7 @@ const TestimonialPage = () => {
                   <label className="testi-form-label">Kutipan Pengalaman</label>
                   <textarea required value={viewerFormData.quote} onChange={e => setViewerFormData({...viewerFormData, quote: e.target.value})} rows={4} className="testi-form-textarea"></textarea>
                 </div>
-                <button type="submit" className="btn-viewer-submit">Kirim Testimoni</button>
+                <button type="submit" className="btn-modern-primary" style={{ marginTop: '10px' }}>Kirim Testimoni</button>
               </form>
             )}
           </div>
@@ -285,7 +294,7 @@ const TestimonialPage = () => {
           <div className="testi-table-card">
             <table className="testi-table">
               <thead>
-                <tr>
+                <tr style={{ background: 'var(--compreng-surface-soft)' }}>
                   <th className="testi-th">Nama & Foto</th>
                   <th className="testi-th">Role / Status</th>
                   <th className="testi-th">Kutipan</th>
@@ -337,14 +346,13 @@ const TestimonialPage = () => {
             </table>
           </div>
 
-          {/* MENAMPILKAN DROPDOWN SECARA FIXED (Di Luar Flow Tabel) */}
+          {/* DROPDOWN MENU */}
           {dropdownConfig.id && (
             <>
               <div 
                 onClick={() => setDropdownConfig({ id: null, right: null, top: null, bottom: null })} 
                 style={{ position: 'fixed', inset: 0, zIndex: 40 }}
               ></div>
-              
               <div 
                 className="testi-dropdown-menu" 
                 style={{ 
@@ -382,59 +390,65 @@ const TestimonialPage = () => {
       )}
 
       {/* =========================================================
-          MODAL CRUD ADMIN TERISOLASI
+          MODAL CRUD ADMIN IDENTIK JURUSAN
       ========================================================= */}
       {isModalOpen && (userRole === 'admin' || userRole === 'editor') && (
-        <div className="testi-modal-overlay">
-          <div className="testi-modal-content">
-            <div className="testi-modal-header">
+        <div className="modal-overlay">
+          <div className="modal-content modern-modal">
+            <div className="modal-header-modern">
               <h3>{modalMode === 'add' ? 'Tambah Data Testimoni' : 'Edit Data Testimoni'}</h3>
-              <button onClick={() => setIsModalOpen(false)} className="testi-btn-close" type="button"><X size={20} /></button>
+              <button onClick={() => setIsModalOpen(false)} className="btn-close-modal" type="button"><X size={20} /></button>
             </div>
-
-            <form id="admin-testi-form" onSubmit={handleAdminSubmit} className="testi-form-layout">
-              <div className="testi-form-group">
+            <form onSubmit={handleAdminSubmit} className="form-modern-layout">
+              <div className="form-group-modern">
                 <label>Nama Lengkap</label>
-                <input type="text" placeholder="Contoh: Raka Firmansyah" className="testi-input" value={adminFormData.name} onChange={e => setAdminFormData({...adminFormData, name: e.target.value})} required />
+                <input type="text" placeholder="Contoh: Raka Firmansyah" className="input-modern" value={adminFormData.name} onChange={e => setAdminFormData({...adminFormData, name: e.target.value})} required />
               </div>
 
-              <div className="testi-form-group">
+              <div className="form-group-modern">
                 <label>Jabatan / Status</label>
-                <input type="text" placeholder="Contoh: Alumni - Universitas Indonesia" className="testi-input" value={adminFormData.role} onChange={e => setAdminFormData({...adminFormData, role: e.target.value})} required />
+                <input type="text" placeholder="Contoh: Alumni - Universitas Indonesia" className="input-modern" value={adminFormData.role} onChange={e => setAdminFormData({...adminFormData, role: e.target.value})} required />
               </div>
               
-              <div className="testi-form-group">
+              <div className="form-group-modern">
                 <label>Status Tampil</label>
-                <select className="testi-input" value={adminFormData.show} onChange={e => setAdminFormData({...adminFormData, show: Number(e.target.value)})}>
+                <select className="input-modern" value={adminFormData.show} onChange={e => setAdminFormData({...adminFormData, show: Number(e.target.value)})}>
                   <option value={1}>Ditampilkan</option>
                   <option value={0}>Sembunyikan (Pending)</option>
                 </select>
               </div>
 
-              <div className="testi-form-group">
+              {/* UPLOAD SECTION IDENTIK JURUSAN */}
+              <div className="form-group-modern upload-section">
                 <label>Foto Profil (Opsional)</label>
-                <div className="testi-radio-tabs">
-                  <div className={`testi-radio-tab ${adminPhotoMode === 'url' ? 'active' : ''}`} onClick={() => setAdminPhotoMode('url')}>
+                <div className="radio-tabs">
+                  <div 
+                    className={`radio-tab ${adminPhotoMode === 'url' ? 'active' : ''}`} 
+                    onClick={() => setAdminPhotoMode('url')}
+                  >
                     <LinkIcon size={16}/> Link URL
                   </div>
-                  <div className={`testi-radio-tab ${adminPhotoMode === 'upload' ? 'active' : ''}`} onClick={() => setAdminPhotoMode('upload')}>
-                    <UploadCloud size={16}/> Upload Foto
+                  <div 
+                    className={`radio-tab ${adminPhotoMode === 'upload' ? 'active' : ''}`} 
+                    onClick={() => setAdminPhotoMode('upload')}
+                  >
+                    <ImageIcon size={16}/> Upload Foto
                   </div>
                 </div>
                 
                 {adminPhotoMode === 'url' ? (
-                  <input type="text" placeholder="https://..." className="testi-input" value={adminFormData.photo || ''} onChange={e => setAdminFormData(prev => ({...prev, photo: e.target.value}))} />
+                  <input type="text" placeholder="https://..." className="input-modern" value={adminFormData.photo || ''} onChange={e => setAdminFormData(prev => ({...prev, photo: e.target.value}))} />
                 ) : (
-                  <input type="file" accept="image/*" className="testi-input" style={{ padding: '7px 12px' }} onChange={(e) => handleFileUpload(e, 'admin')} />
+                  <input type="file" accept="image/*" className="input-modern file-style" onChange={(e) => handleFileUpload(e, 'admin')} />
                 )}
               </div>
 
-              <div className="testi-form-group">
+              <div className="form-group-modern">
                 <label>Kutipan</label>
-                <textarea className="testi-input" placeholder="Tulis kutipan testimoni..." value={adminFormData.quote} onChange={e => setAdminFormData({...adminFormData, quote: e.target.value})} required rows={4}></textarea>
+                <textarea className="input-modern" placeholder="Tulis kutipan testimoni..." value={adminFormData.quote} onChange={e => setAdminFormData({...adminFormData, quote: e.target.value})} required rows={3}></textarea>
               </div>
 
-              <div className="testi-modal-actions">
+              <div className="modal-actions-modern">
                 <button type="button" onClick={() => setIsModalOpen(false)} className="btn-modern-secondary">Batal</button>
                 <button type="submit" className="btn-modern-primary">Simpan Data</button>
               </div>

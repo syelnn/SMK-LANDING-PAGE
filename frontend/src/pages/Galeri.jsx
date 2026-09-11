@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, ArrowLeft, Image as ImageIcon, Link as LinkIcon, UploadCloud, MoreHorizontal, Star, FolderOpen, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, X, ArrowLeft, Image as ImageIcon, Link as LinkIcon, MoreHorizontal, Star, FolderOpen, Search } from 'lucide-react';
 import '../css/galeri.css'; 
+import '../App.css'; // Wajib panggil CSS global
 
 export default function Galeri() {
   const storedUser = localStorage.getItem('userData') || localStorage.getItem('user') || '{}';
@@ -43,7 +44,6 @@ export default function Galeri() {
 
   useEffect(() => { fetchGalleries(); }, []);
 
-  // Tutup dropdown saat user melakukan scroll
   useEffect(() => {
     const handleScroll = () => {
       if (dropdownConfig.id !== null) {
@@ -390,7 +390,7 @@ export default function Galeri() {
         </div>
       )}
 
-      {/* DROPDOWN MENU BERADA DI LUAR TABEL */}
+      {/* DROPDOWN MENU */}
       {dropdownConfig.id && (
         <>
           <div 
@@ -445,60 +445,56 @@ export default function Galeri() {
         </>
       )}
 
-      {/* MODAL FORM ANTI-CROP */}
+      {/* =========================================================
+          MODAL FORM MENGGUNAKAN KELAS APP.CSS
+      ========================================================= */}
       {showModal && canAccessCRUD && (
-        <div className="galeri-modal-overlay">
-          <div className="galeri-modal-content">
+        <div className="modal-overlay">
+          <div className="modal-content modern-modal">
             
-            {/* HEADER */}
-            <div className="galeri-modal-header">
+            <div className="modal-header-modern">
               <h3>{isEditing ? 'Edit Foto' : (viewMode === 'detail' ? 'Tambah Foto Baru' : 'Buat Album Baru')}</h3>
-              <button onClick={() => setShowModal(false)} className="galeri-btn-close"><X size={18} /></button>
+              <button type="button" onClick={() => setShowModal(false)} className="btn-close-modal"><X size={20} /></button>
             </div>
             
-            {/* BODY (SCROLLABLE) */}
-            <div className="galeri-modal-body">
-              <form id="gallery-form" onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                
-                <div className="galeri-form-group">
-                  <label>Kategori (Nama Album)</label>
-                  <input type="text" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} required readOnly={viewMode === 'detail' && !isEditing} className="galeri-input" placeholder="Contoh: Lomba 17 Agustus" />
-                </div>
-                
-                <div className="galeri-form-group">
-                  <label>Deskripsi / Caption (Opsional)</label>
-                  <textarea rows="2" value={formData.caption} onChange={(e) => setFormData({ ...formData, caption: e.target.value })} className="galeri-input" placeholder="Tuliskan keterangan foto..." />
-                </div>
+            <form id="gallery-form" onSubmit={handleSubmit} className="form-modern-layout">
+              
+              <div className="form-group-modern">
+                <label>KATEGORI (NAMA ALBUM)</label>
+                <input type="text" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} required readOnly={viewMode === 'detail' && !isEditing} className="input-modern" placeholder="Contoh: Lomba 17 Agustus" />
+              </div>
+              
+              <div className="form-group-modern">
+                <label>DESKRIPSI / CAPTION (OPSIONAL)</label>
+                <textarea value={formData.caption} onChange={(e) => setFormData({ ...formData, caption: e.target.value })} className="input-modern" placeholder="Tuliskan keterangan foto..." style={{ minHeight: '80px', resize: 'vertical' }} />
+              </div>
 
-                <div className="galeri-form-group">
-                  <label>Pilih Foto</label>
-                  <div className="galeri-radio-tabs">
-                    <button type="button" onClick={() => setLogoType('url')} className={`galeri-radio-tab ${logoType === 'url' ? 'active' : ''}`}>
-                      <LinkIcon size={14}/> Link URL
-                    </button>
-                    <button type="button" onClick={() => setLogoType('file')} className={`galeri-radio-tab ${logoType === 'file' ? 'active' : ''}`}>
-                      <UploadCloud size={14}/> Upload File
-                    </button>
+              <div className="form-group-modern upload-section">
+                <label>PILIH FOTO</label>
+                <div className="radio-tabs">
+                  <div className={`radio-tab ${logoType === 'url' ? 'active' : ''}`} onClick={() => setLogoType('url')}>
+                    <LinkIcon size={16} style={{ marginRight: '6px' }} /> Link URL
                   </div>
-                  
-                  {logoType === 'url' ? (
-                    <input type="text" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} className="galeri-input" placeholder="https://..." />
-                  ) : (
-                    <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files[0])} className="galeri-input" style={{ padding: '7px 12px' }} />
-                  )}
+                  <div className={`radio-tab ${logoType === 'file' ? 'active' : ''}`} onClick={() => setLogoType('file')}>
+                    <ImageIcon size={16} style={{ marginRight: '6px' }} /> Upload Foto
+                  </div>
                 </div>
+                
+                {logoType === 'url' ? (
+                  <input type="text" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} className="input-modern" placeholder="https://..." />
+                ) : (
+                  <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files[0])} className="input-modern file-style" />
+                )}
+              </div>
 
-              </form>
-            </div>
+              <div className="modal-actions-modern">
+                <button type="button" onClick={() => setShowModal(false)} disabled={isSubmitting} className="btn-modern-secondary">Batal</button>
+                <button type="submit" disabled={isSubmitting} className="btn-modern-primary" style={{ cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }}>
+                  {isSubmitting ? 'Menyimpan...' : 'Simpan Data'}
+                </button>
+              </div>
 
-            {/* FOOTER (FIXED) */}
-            <div className="galeri-modal-footer">
-              <button type="button" onClick={() => setShowModal(false)} disabled={isSubmitting} className="btn-modern-secondary">Batal</button>
-              <button type="submit" form="gallery-form" disabled={isSubmitting} className="btn-modern-primary" style={{ cursor: isSubmitting ? 'not-allowed' : 'pointer', opacity: isSubmitting ? 0.7 : 1 }}>
-                {isSubmitting ? 'Menyimpan...' : 'Simpan Data'}
-              </button>
-            </div>
-
+            </form>
           </div>
         </div>
       )}
