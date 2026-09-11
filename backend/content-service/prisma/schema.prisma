@@ -161,6 +161,7 @@ model MenuItem {
   sortOrder  Int?       @default(0) @map("sort_order")
   status     Int?       @default(1)
   type       String?    @default("section") @db.VarChar(50)
+  isPublic   Boolean    @default(true) @map("is_public")
   pageId     Int?       @map("page_id")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")

@@ -5,7 +5,8 @@ import {
   Users, School, Newspaper, BookOpen, Activity, 
   GraduationCap, Trophy, MessageSquare, HelpCircle, 
   Image as ImageIcon, MapPin, LayoutDashboard, Settings,
-  X, ChevronDown, ChevronRight, Download, LogOut, ChevronsUpDown } from 'lucide-react';
+  X, ChevronDown, ChevronRight, Download, LogOut, ChevronsUpDown 
+} from 'lucide-react';
 import logoSekolah from './assets/logo1.png';
 import './css/sidebar.css'; // MENGIMPOR CSS SIDEBAR BARU
 
@@ -35,6 +36,23 @@ const ICON_MAP = {
   download: <Download size={16} />
 };
 
+// Pengaturan hak akses per nama menu
+const MENU_ROLES = {
+  'Beranda': ['ADMIN', 'EDITOR', 'VIEWER'],
+  'Dashboard': ['ADMIN', 'EDITOR', 'VIEWER'],
+  'Kelola Pengguna': ['ADMIN'],
+  'Berita & Artikel': ['ADMIN', 'EDITOR'],
+  'Jurusan & Program': ['ADMIN', 'EDITOR'],
+  'Ekstrakurikuler': ['ADMIN', 'EDITOR'],
+  'Tenaga Pengajar': ['ADMIN'],
+  'Karya & Prestasi': ['ADMIN', 'EDITOR'],
+  'Testimoni': ['ADMIN', 'EDITOR'],
+  'Galeri': ['ADMIN', 'EDITOR'],
+  'FAQ': ['ADMIN'],
+  'Download': ['ADMIN', 'EDITOR'],
+  'Pengaturan Website': ['ADMIN']
+};
+
 export default function Sidebar({ 
   isMobileMenuOpen, 
   setIsMobileMenuOpen, 
@@ -49,7 +67,6 @@ export default function Sidebar({
   const [openDropdowns, setOpenDropdowns] = useState({ settings: true });
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
-  // Fungsi tutup menu (bukan lagi hilang, melainkan memicu .collapsed di CSS)
   const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
   const toggleDropdown = (key) => setOpenDropdowns(prev => ({ ...prev, [key]: !prev[key] }));
   const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
@@ -67,7 +84,7 @@ export default function Sidebar({
   };
 
   const defaultMenuItems = [
-    { title: 'Beranda', iconKey: 'dashboard', type: 'link', url: '/admin/dashboard', roles: ['ADMIN', 'EDITOR'], group: 'General' },
+    { title: 'Beranda', iconKey: 'dashboard', type: 'link', url: '/admin/dashboard', roles: ['ADMIN', 'EDITOR', 'VIEWER'], group: 'General' },
     { title: 'Kelola Pengguna', iconKey: 'users', type: 'link', url: '/admin/users', roles: ['ADMIN'], group: 'General' },
     { title: 'Berita & Artikel', iconKey: 'news', type: 'link', url: '/admin/berita', roles: ['ADMIN', 'EDITOR'], group: 'General' },
     { title: 'Jurusan & Program', iconKey: 'jurusan', type: 'link', url: '/admin/jurusan', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
@@ -136,12 +153,15 @@ export default function Sidebar({
             if (pageMenus.includes(m.title)) groupName = 'Pages';
             else if (otherMenus.includes(m.title) || m.icon === 'settings') groupName = 'Other';
 
+            // Menentukan hak akses secara dinamis berdasarkan objek MENU_ROLES atau m.roles dari backend
+            const itemRoles = m.roles || MENU_ROLES[m.title] || ['ADMIN'];
+
             return {
               title: m.title, 
               iconKey: m.icon || 'dashboard', 
               type: m.title === 'Pengaturan Website' ? 'dropdown' : 'link', 
               url: formattedUrl,
-              roles: ['ADMIN', 'EDITOR', 'VIEWER'], 
+              roles: itemRoles, 
               group: groupName,
               subItems: m.title === 'Pengaturan Website' ? [
                 { title: 'Profile & Identitas', url: '/admin/settings/profile' },
@@ -153,17 +173,18 @@ export default function Sidebar({
           
           const hasBeranda = mapped.find(m => m.url === '/admin/dashboard');
           if (!hasBeranda) {
-            mapped.unshift({ title: 'Beranda', iconKey: 'dashboard', type: 'link', url: '/admin/dashboard', roles: ['ADMIN', 'EDITOR'], group: 'General' });
+            mapped.unshift({ title: 'Beranda', iconKey: 'dashboard', type: 'link', url: '/admin/dashboard', roles: ['ADMIN', 'EDITOR', 'VIEWER'], group: 'General' });
           }
 
           setDynamicNavs(mapped);
         }
       })
       .catch(() => setDynamicNavs([]));
-  }, [userData.role]);
+  }, [userData?.role]);
 
   const activeMenuList = dynamicNavs.length > 0 ? dynamicNavs : defaultMenuItems;
-  const allowedMenus = activeMenuList.filter(item => item.roles ? item.roles.map(r => r.toUpperCase()).includes(userData.role) : true);
+  const userRole = (userData?.role || 'VIEWER').toUpperCase();
+  const allowedMenus = activeMenuList.filter(item => item.roles ? item.roles.map(r => r.toUpperCase()).includes(userRole) : true);
 
   const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
   const rawName = userData?.name || savedUser?.name || savedUser?.username || 'user';
@@ -267,11 +288,13 @@ export default function Sidebar({
                  <div className="sidebar-user-name">{userData?.name}</div>
                  <div className="sidebar-user-email">{userEmail}</div>
               </div>
-              <div style={{ padding: '4px' }}>
-                <button onClick={() => { setIsUserMenuOpen(false); navigate('/admin/users'); }} className="sidebar-popup-action">
-                   <Users size={14} /> Kelola Pengguna
-                </button>
-              </div>
+              {userRole === 'ADMIN' && (
+                <div style={{ padding: '4px' }}>
+                  <button onClick={() => { setIsUserMenuOpen(false); navigate('/admin/users'); }} className="sidebar-popup-action">
+                     <Users size={14} /> Kelola Pengguna
+                  </button>
+                </div>
+              )}
               <div style={{ padding: '4px', borderTop: '1px solid var(--compreng-border)' }}>
                 <button onClick={handleLogout} className="sidebar-popup-action danger">
                    <LogOut size={14} /> Log out
