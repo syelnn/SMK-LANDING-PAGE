@@ -457,6 +457,29 @@ const AchievementSection = () => {
                     onChange={handleFileUpload}
                   />
                 )}
+
+                {/* =======================================
+                    TAMBAHAN PREVIEW GAMBAR PRESTASI
+                    ======================================= */}
+                {formData.photo && (
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU FOTO:</span>
+                    <img 
+                      src={formData.photo} 
+                      alt="Preview Prestasi" 
+                      style={{ 
+                        width: '100px', 
+                        height: '100px', 
+                        objectFit: 'cover', 
+                        borderRadius: '8px', /* Menggunakan sudut tumpul agar pas untuk foto dokumentasi */
+                        border: '2px solid var(--compreng-surface)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }} 
+                      onError={(e) => { e.target.style.display = 'none'; }} 
+                      onLoad={(e) => { e.target.style.display = 'block'; }} 
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="form-group-modern">

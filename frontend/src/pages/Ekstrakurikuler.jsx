@@ -14,7 +14,6 @@ import {
   X,
   Image as ImageIcon,
   Link as LinkIcon,
-  
   Search,
   MoreHorizontal
 } from 'lucide-react';
@@ -153,6 +152,19 @@ export default function Ekstrakurikuler() {
     });
   };
 
+  // Fungsi membaca file gambar langsung untuk keperluan Preview Real-Time
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, icon: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleOpenAdd = () => {
     setIsEditing(false);
     setLogoType('url');
@@ -172,7 +184,7 @@ export default function Ekstrakurikuler() {
     setIsEditing(true);
     setCurrentId(item.id);
     setSelectedFile(null);
-    setLogoType('url');
+    setLogoType(item.icon && (item.icon.length > 200 || item.icon.startsWith('data:')) ? 'file' : 'url');
     setFormData({
       title: item.title,
       description: item.description || '',
@@ -181,7 +193,6 @@ export default function Ekstrakurikuler() {
       show: item.show !== undefined ? Number(item.show) : 1
     });
     setShowModal(true);
-
   };
 
   const convertFileToBase64 = (file) => {
@@ -316,69 +327,69 @@ export default function Ekstrakurikuler() {
         {/* TABLE CONTENT */}
         <div className="ekskul-table-responsive">
           <table className="ekskul-table">
-  <thead>
-    <tr>
-      <th style={{ width: '80px' }}>Logo</th>
-      <th>Nama Ekstrakurikuler</th>
-      <th>Deskripsi</th>
-      <th style={{ textAlign: 'center' }}>Urutan</th>
-      <th>Status</th>
-      <th style={{ textAlign: 'center', width: '50px' }}>Aksi</th>
-    </tr>
-  </thead>
-  <tbody>
-    {filteredList.length === 0 ? (
-      <tr>
-        <td colSpan="6" className="text-center text-muted" style={{ padding: '40px' }}>
-          {searchQuery ? `Tidak ditemukan ekstrakurikuler dengan kata kunci "${searchQuery}"` : 'Belum ada data ekstrakurikuler.'}
-        </td>
-      </tr>
-    ) : (
-      filteredList.map((item) => (
-        <tr key={item.id}>
-          <td>
-            <div className="ekskul-table-icon">
-              {renderIcon(item.icon)}
-            </div>
-          </td>
-          
-          <td>
-            <span className="font-semibold text-dark">{item.title}</span>
-          </td>
+            <thead>
+              <tr>
+                <th style={{ width: '80px' }}>Logo</th>
+                <th>Nama Ekstrakurikuler</th>
+                <th>Deskripsi</th>
+                <th style={{ textAlign: 'center' }}>Urutan</th>
+                <th>Status</th>
+                <th style={{ textAlign: 'center', width: '50px' }}>Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredList.length === 0 ? (
+                <tr>
+                  <td colSpan="6" className="text-center text-muted" style={{ padding: '40px' }}>
+                    {searchQuery ? `Tidak ditemukan ekstrakurikuler dengan kata kunci "${searchQuery}"` : 'Belum ada data ekstrakurikuler.'}
+                  </td>
+                </tr>
+              ) : (
+                filteredList.map((item) => (
+                  <tr key={item.id}>
+                    <td>
+                      <div className="ekskul-table-icon">
+                        {renderIcon(item.icon)}
+                      </div>
+                    </td>
+                    
+                    <td>
+                      <span className="font-semibold text-dark">{item.title}</span>
+                    </td>
 
-          <td>
-            <span className="text-muted">
-              {item.description || '-'}
-            </span>
-          </td>
+                    <td>
+                      <span className="text-muted">
+                        {item.description || '-'}
+                      </span>
+                    </td>
 
-          <td style={{ textAlign: 'center' }} className="font-semibold text-muted">
-            {item.sort_order || item.sortOrder || 1}
-          </td>
+                    <td style={{ textAlign: 'center' }} className="font-semibold text-muted">
+                      {item.sort_order || item.sortOrder || 1}
+                    </td>
 
-          <td>
-            <span className={`badge-status ${Number(item.show) === 1 ? 'show' : 'hide'}`}>
-              {Number(item.show) === 1 ? 'Tampil' : 'Sembunyi'}
-            </span>
-          </td>
+                    <td>
+                      <span className={`badge-status ${Number(item.show) === 1 ? 'show' : 'hide'}`}>
+                        {Number(item.show) === 1 ? 'Tampil' : 'Sembunyi'}
+                      </span>
+                    </td>
 
-          <td style={{ textAlign: 'center' }}>
-            {canAccessCRUD && (
-              <div className="dropdown-action-wrapper">
-                <button 
-                  onClick={(e) => handleDropdownClick(e, item.id)}
-                  className="btn-more-action"
-                >
-                  <MoreHorizontal size={18} />
-                </button>
-              </div>
-            )}
-          </td>
-        </tr>
-      ))
-    )}
-  </tbody>
-</table>
+                    <td style={{ textAlign: 'center' }}>
+                      {canAccessCRUD && (
+                        <div className="dropdown-action-wrapper">
+                          <button 
+                            onClick={(e) => handleDropdownClick(e, item.id)}
+                            className="btn-more-action"
+                          >
+                            <MoreHorizontal size={18} />
+                          </button>
+                        </div>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
 
@@ -501,7 +512,7 @@ export default function Ekstrakurikuler() {
                 {logoType === 'url' ? (
                   <input 
                     type="text" 
-                    placeholder="https://contoh.com/foto.jpg" 
+                    placeholder="https://contoh.com/foto.jpg (Atau ketik: shield, music, dsb)" 
                     className="ekskul-form-input" 
                     value={formData.icon} 
                     onChange={e => setFormData({...formData, icon: e.target.value})} 
@@ -511,8 +522,45 @@ export default function Ekstrakurikuler() {
                     type="file" 
                     accept="image/*" 
                     className="ekskul-form-input" 
-                    onChange={e => setSelectedFile(e.target.files[0])} 
+                    onChange={handleFileChange} 
                   />
+                )}
+
+                {/* =======================================
+                    TAMBAHAN PREVIEW GAMBAR EKSKUL
+                    ======================================= */}
+                {formData.icon && (
+                  <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600', letterSpacing: '0.05em' }}>PRATINJAU LOGO / IKON:</span>
+                    
+                    {formData.icon.startsWith('http') || formData.icon.startsWith('data:image') || formData.icon.startsWith('/uploads') ? (
+                      <img 
+                        src={formData.icon} 
+                        alt="Preview Ekskul" 
+                        style={{ 
+                          width: '80px', 
+                          height: '80px', 
+                          objectFit: 'contain', 
+                          borderRadius: '8px', 
+                          border: '1px solid var(--compreng-border)',
+                          background: 'var(--compreng-bg)',
+                          padding: '8px',
+                          boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                        }} 
+                        onError={(e) => { e.target.style.display = 'none'; }} 
+                        onLoad={(e) => { e.target.style.display = 'block'; }} 
+                      />
+                    ) : (
+                      <div style={{ 
+                        width: '80px', height: '80px', borderRadius: '8px', 
+                        border: '1px solid var(--compreng-border)', background: 'var(--compreng-bg)', 
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)' 
+                      }}>
+                        {renderIcon(formData.icon)}
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
 

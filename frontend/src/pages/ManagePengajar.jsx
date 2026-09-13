@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Trash2, Edit, Image as ImageIcon, Link as LinkIcon, X, MoreHorizontal, Search } from 'lucide-react';
-import '../css/managepengajar.css'; // Import file CSS yang baru dibuat
-import '../App.css'; // Pertahankan untuk class modal overlay bawaan
+import { Plus, Trash2, Edit, Image as ImageIcon, Link as LinkIcon, X, MoreHorizontal, Search, Filter } from 'lucide-react';
+import '../css/managepengajar.css'; 
+import '../App.css'; 
 
 export default function ManagePengajar() {
   const [teachers, setTeachers] = useState([]);
@@ -18,10 +18,12 @@ export default function ManagePengajar() {
   const [formData, setFormData] = useState({ 
     name: '', role: '', photo: '', sort_order: 1, show: 1 
   });
+  const [isCustomRole, setIsCustomRole] = useState(false); // <-- Tambahkan state ini
 
-  // State Dropdown Action (SMART POSITIONING)
+  // State Dropdown Action & Filter
   const [dropdownConfig, setDropdownConfig] = useState({ id: null, right: null, top: null, bottom: null });
   const [searchTerm, setSearchTerm] = useState('');
+  const [filterRole, setFilterRole] = useState(''); // State baru untuk filter dropdown
 
   const fetchData = async () => {
     try {
@@ -43,7 +45,6 @@ export default function ManagePengajar() {
     fetchData();
   }, []);
 
-  // Tutup dropdown saat user melakukan scroll
   useEffect(() => {
     const handleScroll = () => {
       if (dropdownConfig.id !== null) {
@@ -64,7 +65,6 @@ export default function ManagePengajar() {
     }
   };
 
-  // --- SMART DROPDOWN LOGIC ---
   const handleDropdownClick = (e, teacherId) => {
     e.stopPropagation();
     if (dropdownConfig.id === teacherId) {
@@ -74,7 +74,7 @@ export default function ManagePengajar() {
 
     const rect = e.currentTarget.getBoundingClientRect();
     const windowHeight = window.innerHeight;
-    const dropdownHeight = 90; // Estimasi tinggi menu (Edit + Delete)
+    const dropdownHeight = 90; 
     
     const spaceBelow = windowHeight - rect.bottom;
     const openUpwards = spaceBelow < dropdownHeight;
@@ -92,6 +92,7 @@ export default function ManagePengajar() {
     const maxSortOrder = teachers.length > 0 ? Math.max(...teachers.map(t => t.sort_order ?? t.sortOrder ?? 0)) : 0;
     setFormData({ name: '', role: '', photo: '', sort_order: maxSortOrder + 1, show: 1 });
     setImageType('url');
+    setIsCustomRole(false); // <--- TAMBAHKAN INI
     setShowModal(true);
   };
 
@@ -100,6 +101,7 @@ export default function ManagePengajar() {
     setEditId(item.id);
     setFormData({ ...item, sort_order: item.sort_order ?? item.sortOrder ?? 0 });
     setImageType(item.photo && item.photo.length > 200 ? 'file' : 'url');
+    setIsCustomRole(false); // <--- TAMBAHKAN INI
     setShowModal(true);
   };
 
@@ -129,12 +131,20 @@ export default function ManagePengajar() {
     }
   };
 
+// 1. Ekstrak daftar mapel/jabatan unik (Anti-Duplikat & Bersihkan Spasi Nyasar)
+  const rawRoles = teachers.map(t => (t.role || '').trim()).filter(Boolean);
+  const uniqueRoles = [...new Map(rawRoles.map(role => [role.toLowerCase(), role])).values()].sort();
+
+  // 2. Modifikasi logika filter agar mencocokkan data yang sudah dibersihkan
   const filteredTeachers = teachers.filter(teacher => {
     const term = searchTerm.toLowerCase();
-    return (
-      (teacher.name || '').toLowerCase().includes(term) ||
-      (teacher.role || '').toLowerCase().includes(term)
-    );
+    const teacherRole = (teacher.role || '').trim();
+    
+    const matchesSearch = (teacher.name || '').toLowerCase().includes(term) || teacherRole.toLowerCase().includes(term);
+    // Pencocokan filter mengabaikan huruf besar/kecil
+    const matchesRole = filterRole === '' || teacherRole.toLowerCase() === filterRole.toLowerCase();
+    
+    return matchesSearch && matchesRole;
   });
 
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data pengajar...</div>;
@@ -165,6 +175,21 @@ export default function ManagePengajar() {
             className="mp-search-input"
           />
         </div>
+        
+        {/* Tambahan Filter Dropdown Mapel */}
+        <div className="mp-filter-wrapper">
+          <Filter size={16} className="mp-filter-icon" />
+          <select 
+            className="mp-filter-select"
+            value={filterRole}
+            onChange={(e) => setFilterRole(e.target.value)}
+          >
+            <option value="">Semua Mata Pelajaran</option>
+            {uniqueRoles.map((role, idx) => (
+              <option key={idx} value={role}>{role}</option>
+            ))}
+          </select>
+        </div>
       </div>
 
       <div className="mp-table-card">
@@ -172,7 +197,7 @@ export default function ManagePengajar() {
           <thead>
             <tr>
               <th className="mp-th">Nama & Gelar</th>
-              <th className="mp-th">Jabatan</th>
+              <th className="mp-th">Jabatan / Mapel</th>
               <th className="mp-th" style={{ textAlign: 'center' }}>Urutan</th>
               <th className="mp-th">Status Tampil</th>
               <th className="mp-th" style={{ textAlign: 'center' }}></th>
@@ -182,7 +207,7 @@ export default function ManagePengajar() {
             {filteredTeachers.length === 0 ? (
               <tr>
                 <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
-                  {searchTerm ? `Tidak ditemukan pengajar dengan kata kunci "${searchTerm}"` : 'Belum ada data pengajar.'}
+                  {searchTerm || filterRole ? `Tidak ditemukan data yang sesuai kriteria pencarian.` : 'Belum ada data pengajar.'}
                 </td>
               </tr>
             ) : (
@@ -224,6 +249,7 @@ export default function ManagePengajar() {
                       <button 
                         onClick={(e) => handleDropdownClick(e, item.id)}
                         className="mp-action-btn"
+                        style={{ margin: '0 auto' }}
                       >
                         <MoreHorizontal size={18} />
                       </button>
@@ -236,9 +262,6 @@ export default function ManagePengajar() {
         </table>
       </div>
 
-      {/* =======================================================
-          DROPDOWN MENU BERADA DI LUAR TABEL (SMART POSITIONING)
-      ======================================================= */}
       {dropdownConfig.id && (
         <>
           <div 
@@ -275,7 +298,6 @@ export default function ManagePengajar() {
         </>
       )}
 
-      {/* ================= MODAL FORM SHADCN STYLE ================= */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content modern-modal">
@@ -286,22 +308,82 @@ export default function ManagePengajar() {
             
             <form onSubmit={handleSubmit} className="form-modern-layout">
               <div className="form-group-modern">
-                <label>Nama Lengkap & Gelar</label>
+                <label>NAMA LENGKAP & GELAR</label>
                 <input type="text" placeholder="Contoh: Budi Santoso, S.Pd." className="input-modern" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
               </div>
-              
               <div className="form-group-modern">
-                <label>Jabatan / Posisi</label>
-                <input type="text" placeholder="Contoh: Kepala Sekolah / Guru Kejuruan" className="input-modern" value={formData.role} onChange={e => setFormData({...formData, role: e.target.value})} required />
-              </div>
+                  <label>JABATAN / POSISI / MAPEL</label>
+                  
+                  {!isCustomRole ? (
+                    /* TAMPILAN 1: BENTUK DROPDOWN + TOMBOL EDIT */
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <select 
+                        className="input-modern" 
+                        style={{ flex: 1 }}
+                        value={formData.role} 
+                        onChange={(e) => {
+                          if (e.target.value === 'LAINNYA') {
+                            setIsCustomRole(true);
+                            setFormData({ ...formData, role: '' }); 
+                          } else {
+                            setFormData({ ...formData, role: e.target.value });
+                          }
+                        }} 
+                        required
+                      >
+                        <option value="" disabled>-- Pilih Jabatan / Mapel --</option>
+                        {uniqueRoles.map((roleItem, idx) => (
+                          <option key={idx} value={roleItem}>{roleItem}</option>
+                        ))}
+                        <option value="LAINNYA" style={{ fontWeight: 'bold', color: '#16a34a' }}>
+                          + Tambah Jabatan Baru...
+                        </option>
+                      </select>
+
+                      {/* Tombol Pintasan untuk Mengedit Teks Manual */}
+                      <button 
+                        type="button" 
+                        onClick={() => setIsCustomRole(true)}
+                        className="btn-modern-secondary"
+                        style={{ padding: '0 12px' }}
+                        title="Ketik / Edit Manual"
+                      >
+                        <Edit size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    /* TAMPILAN 2: BENTUK INPUT TEKS (KETIK MANUAL) */
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input 
+                        type="text" 
+                        placeholder="Ketik jabatan/mapel baru..." 
+                        className="input-modern" 
+                        style={{ flex: 1 }}
+                        value={formData.role} 
+                        onChange={e => setFormData({...formData, role: e.target.value})} 
+                        required 
+                        autoFocus
+                      />
+                      <button 
+                        type="button" 
+                        onClick={() => setIsCustomRole(false)}
+                        className="btn-modern-secondary"
+                        style={{ padding: '0 12px' }}
+                        title="Kembali ke pilihan dropdown"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  )}
+                </div>
               
-              <div className="form-row-modern">
+              <div className="form-row-modern" style={{ display: 'flex', gap: '16px' }}>
                 <div className="form-group-modern" style={{ flex: 1 }}>
-                  <label>Urutan Tampil (Angka)</label>
+                  <label>URUTAN TAMPIL (ANGKA)</label>
                   <input type="number" className="input-modern" value={formData.sort_order} onChange={e => setFormData({...formData, sort_order: parseInt(e.target.value)})} required />
                 </div>
                 <div className="form-group-modern" style={{ flex: 1 }}>
-                  <label>Status Tampil</label>
+                  <label>STATUS TAMPIL</label>
                   <select className="input-modern" value={formData.show} onChange={e => setFormData({...formData, show: parseInt(e.target.value)})}>
                     <option value={1}>Ditampilkan</option>
                     <option value={0}>Disembunyikan</option>
@@ -310,13 +392,13 @@ export default function ManagePengajar() {
               </div>
 
               <div className="form-group-modern upload-section">
-                <label>Foto Profil</label>
+                <label>FOTO PROFIL</label>
                 <div className="radio-tabs">
                   <div className={`radio-tab ${imageType === 'url' ? 'active' : ''}`} onClick={() => setImageType('url')}>
-                    <LinkIcon size={16}/> Link URL
+                    <LinkIcon size={16} style={{ marginRight: '6px' }} /> Link URL
                   </div>
                   <div className={`radio-tab ${imageType === 'file' ? 'active' : ''}`} onClick={() => setImageType('file')}>
-                    <ImageIcon size={16}/> Upload Foto
+                    <ImageIcon size={16} style={{ marginRight: '6px' }} /> Upload Foto
                   </div>
                 </div>
                 
@@ -324,6 +406,29 @@ export default function ManagePengajar() {
                   <input type="text" placeholder="https://contoh.com/foto.jpg" className="input-modern" value={formData.photo} onChange={e => setFormData({...formData, photo: e.target.value})} />
                 ) : (
                   <input type="file" accept="image/*" className="input-modern file-style" onChange={handleFileUpload} />
+                )}
+
+                {/* =======================================
+                    TAMBAHAN PREVIEW GAMBAR (PRATINJAU) 
+                    ======================================= */}
+                {formData.photo && (
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU GAMBAR:</span>
+                    <img 
+                      src={formData.photo} 
+                      alt="Preview Profil" 
+                      style={{ 
+                        width: '100px', 
+                        height: '100px', 
+                        objectFit: 'cover', 
+                        borderRadius: '50%',
+                        border: '3px solid var(--compreng-surface)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }} 
+                      onError={(e) => { e.target.style.display = 'none'; }} 
+                      onLoad={(e) => { e.target.style.display = 'block'; }} 
+                    />
+                  </div>
                 )}
               </div>
 

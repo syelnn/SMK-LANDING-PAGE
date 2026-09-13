@@ -35,13 +35,15 @@
 }
 
 /* =========================================
-   2. TOOLBAR (SEARCH)
+   2. TOOLBAR (SEARCH & FILTER)
    ========================================= */
 .mp-toolbar {
   display: flex;
   justify-content: flex-start;
   align-items: center;
   margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px; /* Jarak antara search dan dropdown filter */
 }
 
 .mp-search-wrapper {
@@ -70,6 +72,36 @@
   color: var(--compreng-text-muted);
 }
 
+/* Filter Dropdown Baru */
+.mp-filter-wrapper {
+  position: relative;
+  width: 240px;
+  max-width: 100%;
+}
+
+.mp-filter-icon {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--compreng-text-muted);
+  pointer-events: none;
+}
+
+.mp-filter-select {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border);
+  background: var(--compreng-surface);
+  color: var(--compreng-text);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  appearance: none; /* Menghilangkan style default panah browser */
+  cursor: pointer;
+}
+
 /* =========================================
    3. TABLE STYLES & HIDE SCROLLBAR
    ========================================= */
@@ -81,8 +113,6 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   margin-bottom: 40px;
   width: 100%;
-  
-  /* Sembunyikan scrollbar bawaan tapi tetap bisa di-scroll */
   scrollbar-width: none; 
   -ms-overflow-style: none; 
 }
@@ -183,7 +213,6 @@
   color: var(--compreng-text);
 }
 
-/* Menu akan menggunakan position: fixed dari React */
 .mp-dropdown-menu {
   background: var(--compreng-surface);
   border: 1px solid var(--compreng-border);
@@ -231,17 +260,17 @@
 }
 
 /* =========================================
-   6. STANDARISASI TOMBOL MODERN (SESUAI REQUEST)
+   6. STANDARISASI TOMBOL MODERN
    ========================================= */
 .btn-modern-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background-color: var(--compreng-text); /* Tema Terang/Gelap adaptif */
+  background-color: var(--compreng-text);
   color: var(--compreng-bg);
-  padding: 10px 20px; /* Sedikit disesuaikan agar tidak terlalu raksasa */
-  border-radius: 8px; /* Menggunakan 8px agar selaras dgn Shadcn, bukan 12px */
+  padding: 10px 20px;
+  border-radius: 8px;
   font-weight: 600;
   font-size: 13px;
   border: none;

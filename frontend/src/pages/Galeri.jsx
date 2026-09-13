@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, ArrowLeft, Image as ImageIcon, Link as LinkIcon, MoreHorizontal, Star, FolderOpen, Search } from 'lucide-react';
+import { Plus, Edit, Trash2, X, ArrowLeft, Image as ImageIcon, Link as LinkIcon, MoreHorizontal, Star, FolderOpen, Search, Grid, List } from 'lucide-react';
 import '../css/galeri.css'; 
-import '../App.css'; // Wajib panggil CSS global
+import '../App.css'; 
 
 export default function Galeri() {
   const storedUser = localStorage.getItem('userData') || localStorage.getItem('user') || '{}';
@@ -13,6 +13,9 @@ export default function Galeri() {
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState('albums');
   const [selectedAlbum, setSelectedAlbum] = useState(null);
+  
+  // State untuk mengatur tampilan: 'list' (Tabel) atau 'grid' (Kotak-kotak)
+  const [displayMode, setDisplayMode] = useState('grid'); 
 
   // Modal State
   const [showModal, setShowModal] = useState(false);
@@ -115,6 +118,19 @@ export default function Galeri() {
     setLogoType(item.image && item.image.length > 200 ? 'file' : 'url');
     setFormData({ ...item, sort_order: item.sort_order || item.sortOrder || 1, is_featured: item.isFeatured || item.is_featured || 0 });
     setShowModal(true);
+  };
+
+  // Fungsi baru agar file yang di-upload bisa langsung tampil di preview
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({ ...prev, image: reader.result }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const convertFileToBase64 = (file) => {
@@ -267,7 +283,7 @@ export default function Galeri() {
         )}
       </div>
 
-      <div className="galeri-toolbar">
+      <div className="galeri-toolbar" style={{ justifyContent: 'space-between' }}>
         <div className="galeri-search-wrapper">
           <Search size={16} className="galeri-search-icon" />
           <input 
@@ -278,6 +294,26 @@ export default function Galeri() {
             className="galeri-search-input"
           />
         </div>
+
+        {/* ================= SWITCH TAMPILAN (Hanya Aktif saat Buka Album Detail) ================= */}
+        {viewMode === 'detail' && (
+          <div className="galeri-view-toggle">
+            <button 
+              className={`toggle-btn ${displayMode === 'grid' ? 'active' : ''}`}
+              onClick={() => setDisplayMode('grid')}
+              title="Tampilan Grid"
+            >
+              <Grid size={16} />
+            </button>
+            <button 
+              className={`toggle-btn ${displayMode === 'list' ? 'active' : ''}`}
+              onClick={() => setDisplayMode('list')}
+              title="Tampilan Tabel"
+            >
+              <List size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
       {viewMode === 'albums' && (
@@ -335,59 +371,102 @@ export default function Galeri() {
         </div>
       )}
 
+      {/* ================= TAMPILAN DETAIL ALBUM ================= */}
       {viewMode === 'detail' && selectedAlbum && (
-        <div className="galeri-table-card">
-          <table className="galeri-table">
-            <thead>
-              <tr>
-                <th className="galeri-th">Pratinjau Foto</th>
-                <th className="galeri-th">Deskripsi / Caption</th>
-                <th className="galeri-th">Status Album</th>
-                <th className="galeri-th" style={{ textAlign: 'center' }}>Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              {currentAlbumPhotos.length === 0 ? (
+        displayMode === 'list' ? (
+          /* --- MODE 1: TABEL --- */
+          <div className="galeri-table-card">
+            <table className="galeri-table">
+              <thead>
                 <tr>
-                  <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
-                    {searchTerm ? `Tidak ditemukan deskripsi foto "${searchTerm}"` : 'Album ini belum memiliki foto.'}
-                  </td>
+                  <th className="galeri-th">Pratinjau Foto</th>
+                  <th className="galeri-th">Deskripsi / Caption</th>
+                  <th className="galeri-th">Status Album</th>
+                  <th className="galeri-th" style={{ textAlign: 'center' }}>Aksi</th>
                 </tr>
-              ) : (
-                currentAlbumPhotos.sort((a, b) => {
-                  const aIsCover = (a.isFeatured === 1 || a.is_featured === 1) ? 1 : 0;
-                  const bIsCover = (b.isFeatured === 1 || b.is_featured === 1) ? 1 : 0;
-                  return bIsCover - aIsCover; 
-                }).map((item) => (
-                  <tr key={item.id} className="galeri-tr">
-                    <td className="galeri-td">
-                      <img src={item.image} alt="foto" style={{ width: '80px', height: '50px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
-                    </td>
-                    <td className="galeri-td galeri-truncate">{item.caption || <span style={{ color: 'var(--compreng-text-muted)', fontStyle: 'italic' }}>Tidak ada deskripsi</span>}</td>
-                    <td className="galeri-td">
-                      {(item.isFeatured === 1 || item.is_featured === 1) ? (
-                        <span className="galeri-badge-cover"><Star size={12} fill="currentColor" /> Cover Utama</span>
-                      ) : (
-                        <span className="galeri-badge-normal">Foto Biasa</span>
-                      )}
-                    </td>
-                    <td className="galeri-td" style={{ textAlign: 'center', position: 'relative' }}>
-                      {canAccessCRUD && (
-                        <button 
-                          onClick={(e) => handleDropdownClick(e, item.id, 'photo')}
-                          className="galeri-action-btn"
-                          style={{ margin: '0 auto' }}
-                        >
-                          <MoreHorizontal size={18} />
-                        </button>
-                      )}
+              </thead>
+              <tbody>
+                {currentAlbumPhotos.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
+                      {searchTerm ? `Tidak ditemukan deskripsi foto "${searchTerm}"` : 'Album ini belum memiliki foto.'}
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+                ) : (
+                  currentAlbumPhotos.sort((a, b) => {
+                    const aIsCover = (a.isFeatured === 1 || a.is_featured === 1) ? 1 : 0;
+                    const bIsCover = (b.isFeatured === 1 || b.is_featured === 1) ? 1 : 0;
+                    return bIsCover - aIsCover; 
+                  }).map((item) => (
+                    <tr key={item.id} className="galeri-tr">
+                      <td className="galeri-td">
+                        <img src={item.image} alt="foto" style={{ width: '80px', height: '50px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
+                      </td>
+                      <td className="galeri-td galeri-truncate">{item.caption || <span style={{ color: 'var(--compreng-text-muted)', fontStyle: 'italic' }}>Tidak ada deskripsi</span>}</td>
+                      <td className="galeri-td">
+                        {(item.isFeatured === 1 || item.is_featured === 1) ? (
+                          <span className="galeri-badge-cover"><Star size={12} fill="currentColor" /> Cover Utama</span>
+                        ) : (
+                          <span className="galeri-badge-normal">Foto Biasa</span>
+                        )}
+                      </td>
+                      <td className="galeri-td" style={{ textAlign: 'center', position: 'relative' }}>
+                        {canAccessCRUD && (
+                          <button 
+                            onClick={(e) => handleDropdownClick(e, item.id, 'photo')}
+                            className="galeri-action-btn"
+                            style={{ margin: '0 auto' }}
+                          >
+                            <MoreHorizontal size={18} />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          /* --- MODE 2: GRID / KOTAK-KOTAK --- */
+          <div className="galeri-grid-container">
+            {currentAlbumPhotos.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px', width: '100%' }}>
+                {searchTerm ? `Tidak ditemukan foto dengan kata kunci "${searchTerm}"` : 'Album ini belum memiliki foto.'}
+              </div>
+            ) : (
+              currentAlbumPhotos.sort((a, b) => {
+                const aIsCover = (a.isFeatured === 1 || a.is_featured === 1) ? 1 : 0;
+                const bIsCover = (b.isFeatured === 1 || b.is_featured === 1) ? 1 : 0;
+                return bIsCover - aIsCover; 
+              }).map((item) => (
+                <div key={item.id} className="galeri-grid-card">
+                  <div className="galeri-grid-img-wrap">
+                    <img src={item.image} alt="galeri" className="galeri-grid-img" />
+                    {(item.isFeatured === 1 || item.is_featured === 1) && (
+                      <div className="galeri-grid-badge">
+                        <Star size={12} fill="currentColor" /> Cover
+                      </div>
+                    )}
+                    {canAccessCRUD && (
+                      <button 
+                        onClick={(e) => handleDropdownClick(e, item.id, 'photo')}
+                        className="galeri-grid-action-btn"
+                      >
+                        <MoreHorizontal size={18} />
+                      </button>
+                    )}
+                  </div>
+                  <div className="galeri-grid-content">
+                    <p className="galeri-grid-caption">
+                      {item.caption || <span style={{ color: 'var(--compreng-text-muted)', fontStyle: 'italic' }}>Tanpa deskripsi</span>}
+                    </p>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        )
       )}
 
       {/* DROPDOWN MENU */}
@@ -483,7 +562,31 @@ export default function Galeri() {
                 {logoType === 'url' ? (
                   <input type="text" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} className="input-modern" placeholder="https://..." />
                 ) : (
-                  <input type="file" accept="image/*" onChange={(e) => setSelectedFile(e.target.files[0])} className="input-modern file-style" />
+                  <input type="file" accept="image/*" onChange={handleFileChange} className="input-modern file-style" />
+                )}
+
+                {/* =======================================
+                    TAMBAHAN PREVIEW GAMBAR GALERI
+                    ======================================= */}
+                {formData.image && (
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU FOTO:</span>
+                    <img 
+                      src={formData.image} 
+                      alt="Preview Galeri" 
+                      style={{ 
+                        width: '100%', 
+                        maxWidth: '320px', 
+                        height: '180px', 
+                        objectFit: 'cover', 
+                        borderRadius: '8px', 
+                        border: '2px solid var(--compreng-surface)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }} 
+                      onError={(e) => { e.target.style.display = 'none'; }} 
+                      onLoad={(e) => { e.target.style.display = 'block'; }} 
+                    />
+                  </div>
                 )}
               </div>
 

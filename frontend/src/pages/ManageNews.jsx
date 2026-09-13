@@ -432,6 +432,30 @@ export default function ManageNews() {
                     onChange={handleChange}
                   />
                 )}
+
+                {/* =======================================
+                    TAMBAHAN PREVIEW GAMBAR BANNER BERITA
+                    ======================================= */}
+                {formData.image && (
+                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU BANNER:</span>
+                    <img 
+                      src={formData.image} 
+                      alt="Preview Banner" 
+                      style={{ 
+                        width: '100%', 
+                        maxWidth: '320px', 
+                        height: '160px', 
+                        objectFit: 'cover', 
+                        borderRadius: '8px', 
+                        border: '2px solid var(--compreng-surface)',
+                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                      }} 
+                      onError={(e) => { e.target.style.display = 'none'; }} 
+                      onLoad={(e) => { e.target.style.display = 'block'; }} 
+                    />
+                  </div>
+                  )}
               </div>
 
               <div className="form-group-modern">
