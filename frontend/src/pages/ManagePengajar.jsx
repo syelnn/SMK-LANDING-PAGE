@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Trash2, Edit, Image as ImageIcon, Link as LinkIcon, X, MoreHorizontal, Search, Filter } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, Link as LinkIcon, X, MoreHorizontal, Search, Filter, ChevronDown } from 'lucide-react';
 import '../css/managepengajar.css'; 
 import '../App.css'; 
 
@@ -18,12 +18,12 @@ export default function ManagePengajar() {
   const [formData, setFormData] = useState({ 
     name: '', role: '', photo: '', sort_order: 1, show: 1 
   });
-  const [isCustomRole, setIsCustomRole] = useState(false); // <-- Tambahkan state ini
+  const [isCustomRole, setIsCustomRole] = useState(false);
 
   // State Dropdown Action & Filter
   const [dropdownConfig, setDropdownConfig] = useState({ id: null, right: null, top: null, bottom: null });
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterRole, setFilterRole] = useState(''); // State baru untuk filter dropdown
+  const [filterRole, setFilterRole] = useState(''); 
 
   const fetchData = async () => {
     try {
@@ -92,7 +92,7 @@ export default function ManagePengajar() {
     const maxSortOrder = teachers.length > 0 ? Math.max(...teachers.map(t => t.sort_order ?? t.sortOrder ?? 0)) : 0;
     setFormData({ name: '', role: '', photo: '', sort_order: maxSortOrder + 1, show: 1 });
     setImageType('url');
-    setIsCustomRole(false); // <--- TAMBAHKAN INI
+    setIsCustomRole(false); 
     setShowModal(true);
   };
 
@@ -101,7 +101,7 @@ export default function ManagePengajar() {
     setEditId(item.id);
     setFormData({ ...item, sort_order: item.sort_order ?? item.sortOrder ?? 0 });
     setImageType(item.photo && item.photo.length > 200 ? 'file' : 'url');
-    setIsCustomRole(false); // <--- TAMBAHKAN INI
+    setIsCustomRole(false); 
     setShowModal(true);
   };
 
@@ -131,21 +131,36 @@ export default function ManagePengajar() {
     }
   };
 
-// 1. Ekstrak daftar mapel/jabatan unik (Anti-Duplikat & Bersihkan Spasi Nyasar)
-  const rawRoles = teachers.map(t => (t.role || '').trim()).filter(Boolean);
-  const uniqueRoles = [...new Map(rawRoles.map(role => [role.toLowerCase(), role])).values()].sort();
+  // 1. Ekstrak daftar mapel/jabatan unik (Otomatis Kapital)
+  const rawRoles = teachers.map(t => (t.role || '').trim().toUpperCase()).filter(Boolean);
+  const uniqueRoles = [...new Set(rawRoles)].sort();
 
-  // 2. Modifikasi logika filter agar mencocokkan data yang sudah dibersihkan
+  // 2. Modifikasi logika filter agar mencocokkan data
   const filteredTeachers = teachers.filter(teacher => {
     const term = searchTerm.toLowerCase();
-    const teacherRole = (teacher.role || '').trim();
+    const teacherRole = (teacher.role || '').trim().toUpperCase();
     
     const matchesSearch = (teacher.name || '').toLowerCase().includes(term) || teacherRole.toLowerCase().includes(term);
-    // Pencocokan filter mengabaikan huruf besar/kecil
-    const matchesRole = filterRole === '' || teacherRole.toLowerCase() === filterRole.toLowerCase();
+    const matchesRole = filterRole === '' || teacherRole === filterRole;
     
     return matchesSearch && matchesRole;
   });
+
+  // Hapus Massal berdasarkan Mapel (Pembersihan Duplikat/Salah Ketik)
+  const handleDeleteRoleBatch = async (roleName) => {
+    if (!window.confirm(`YAWAS! Anda akan MENGHAPUS SEMUA guru dengan jabatan "${roleName}". Lanjutkan?`)) return;
+    try {
+      const teachersToDelete = teachers.filter(t => (t.role || '').trim().toUpperCase() === roleName);
+      for (const t of teachersToDelete) {
+        await axios.delete(`${API_URL}/teacher/${t.id}`);
+      }
+      setFilterRole('');
+      fetchData();
+      alert(`Berhasil menghapus ${teachersToDelete.length} data guru dengan jabatan ${roleName}`);
+    } catch (error) {
+      alert('Gagal menghapus data secara massal');
+    }
+  };
 
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data pengajar...</div>;
 
@@ -176,7 +191,7 @@ export default function ManagePengajar() {
           />
         </div>
         
-        {/* Tambahan Filter Dropdown Mapel */}
+        {/* Tambahan Filter Dropdown Mapel (Modern UI) */}
         <div className="mp-filter-wrapper">
           <Filter size={16} className="mp-filter-icon" />
           <select 
@@ -189,7 +204,18 @@ export default function ManagePengajar() {
               <option key={idx} value={role}>{role}</option>
             ))}
           </select>
+          <ChevronDown size={14} className="mp-filter-arrow" />
         </div>
+        
+        {/* Tombol Hapus Massal (Muncul jika ada filter aktif) */}
+        {filterRole && (userRole === 'admin') && (
+           <button 
+             onClick={() => handleDeleteRoleBatch(filterRole)}
+             style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
+           >
+             <Trash2 size={14} /> Hapus Mapel Ini
+           </button>
+        )}
       </div>
 
       <div className="mp-table-card">
@@ -227,10 +253,11 @@ export default function ManagePengajar() {
                   </td>
                   
                   <td className="mp-td">
-                    {item.role.toLowerCase().includes('kepala') ? (
-                      <span className="mp-badge-role">{item.role}</span>
+                    {/* Selalu cetak dalam huruf besar */}
+                    {item.role.toUpperCase().includes('KEPALA') ? (
+                      <span className="mp-badge-role">{item.role.toUpperCase()}</span>
                     ) : (
-                      <span style={{ color: 'var(--compreng-text-secondary)' }}>{item.role}</span>
+                      <span style={{ color: 'var(--compreng-text-secondary)' }}>{item.role.toUpperCase()}</span>
                     )}
                   </td>
                   
@@ -315,12 +342,11 @@ export default function ManagePengajar() {
                   <label>JABATAN / POSISI / MAPEL</label>
                   
                   {!isCustomRole ? (
-                    /* TAMPILAN 1: BENTUK DROPDOWN + TOMBOL EDIT */
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <select 
                         className="input-modern" 
                         style={{ flex: 1 }}
-                        value={formData.role} 
+                        value={formData.role.toUpperCase()} 
                         onChange={(e) => {
                           if (e.target.value === 'LAINNYA') {
                             setIsCustomRole(true);
@@ -336,11 +362,10 @@ export default function ManagePengajar() {
                           <option key={idx} value={roleItem}>{roleItem}</option>
                         ))}
                         <option value="LAINNYA" style={{ fontWeight: 'bold', color: '#16a34a' }}>
-                          + Tambah Jabatan Baru...
+                          + Ketik Jabatan Baru...
                         </option>
                       </select>
 
-                      {/* Tombol Pintasan untuk Mengedit Teks Manual */}
                       <button 
                         type="button" 
                         onClick={() => setIsCustomRole(true)}
@@ -352,15 +377,14 @@ export default function ManagePengajar() {
                       </button>
                     </div>
                   ) : (
-                    /* TAMPILAN 2: BENTUK INPUT TEKS (KETIK MANUAL) */
                     <div style={{ display: 'flex', gap: '8px' }}>
                       <input 
                         type="text" 
-                        placeholder="Ketik jabatan/mapel baru..." 
+                        placeholder="Ketik mapel baru..." 
                         className="input-modern" 
-                        style={{ flex: 1 }}
+                        style={{ flex: 1, textTransform: 'uppercase' }} 
                         value={formData.role} 
-                        onChange={e => setFormData({...formData, role: e.target.value})} 
+                        onChange={e => setFormData({...formData, role: e.target.value.toUpperCase()})} // <--- AUTO CAPSLOCK DI SINI
                         required 
                         autoFocus
                       />
@@ -408,9 +432,6 @@ export default function ManagePengajar() {
                   <input type="file" accept="image/*" className="input-modern file-style" onChange={handleFileUpload} />
                 )}
 
-                {/* =======================================
-                    TAMBAHAN PREVIEW GAMBAR (PRATINJAU) 
-                    ======================================= */}
                 {formData.photo && (
                   <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
                     <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU GAMBAR:</span>
