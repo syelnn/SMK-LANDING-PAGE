@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import logoSekolah from '../assets/logo1.png'; 
@@ -11,15 +11,38 @@ const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
 
   const dropdownRef = useRef(null);
+  const isScrolledRef = useRef(false);
   const navigate = useNavigate();
   const location = useLocation();
 
+  // State khusus mengontrol garis aktif navigasi secara real-time
+  const [activePath, setActivePath] = useState(location.pathname);
+
+  // Sync activePath jika URL React Router berubah
   useEffect(() => {
+    setActivePath(location.pathname);
+  }, [location.pathname]);
+
+  // 1. Fetching Menu (DILENGKAPI CACHING AGAR LEBIH CEPTA & TIDAK LOADING LAMA)
+  useEffect(() => {
+    let isMounted = true;
+    
+    // Cek dulu dari cache sessionStorage
+    const cachedMenu = sessionStorage.getItem('app_menu_items');
+    if (cachedMenu) {
+      try {
+        setMenuItems(JSON.parse(cachedMenu));
+      } catch (e) {
+        console.error("Failed to parse cached menu", e);
+      }
+    }
+
     const fetchMenus = async () => {
       try {
         const response = await fetch('http://localhost:5002/api/menu-items');
         const result = await response.json();
         
+        if (!isMounted) return;
         const rawList = Array.isArray(result) ? result : (result.data || []);
         
         const publicMenus = rawList.filter(item => {
@@ -28,6 +51,8 @@ const Navbar = () => {
           return isPublic && isActive;
         });
 
+        // Simpan ke Cache
+        sessionStorage.setItem('app_menu_items', JSON.stringify(publicMenus));
         setMenuItems(publicMenus);
       } catch (error) {
         console.error('Gagal mengambil data menu:', error);
@@ -35,19 +60,26 @@ const Navbar = () => {
     };
 
     fetchMenus();
+    return () => { isMounted = false; };
+  }, []);
 
+  // 2. Optimized Scroll Event
+  useEffect(() => {
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 30);
+      const scrolled = window.scrollY > 20;
+      if (scrolled !== isScrolledRef.current) {
+        isScrolledRef.current = scrolled;
+        setIsScrolled(scrolled);
+      }
     };
 
-    // Menutup dropdown ketika pengguna mengklik di luar area dropdown
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(null);
       }
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     document.addEventListener('mousedown', handleClickOutside);
 
     return () => {
@@ -56,69 +88,102 @@ const Navbar = () => {
     };
   }, []);
 
-  const mainMenus = menuItems.filter(item => !item.parentId && !item.parent_id);
-  const getSubMenus = (parentId) => {
-    return menuItems.filter(item => item.parentId === parentId || item.parent_id === parentId);
-  };
+  // 3. Helper Sanitasi URL
+  const getCleanUrl = useCallback((item) => {
+    let rawUrl = (item.url || item.href || '/').trim();
+    if (rawUrl === '/dashboard') return '/';
+    return rawUrl;
+  }, []);
 
+  // 4. Memoized Data Menu
+  const mainMenus = useMemo(() => {
+    return menuItems.filter(item => !item.parentId && !item.parent_id);
+  }, [menuItems]);
+
+  const getSubMenus = useCallback((parentId) => {
+    return menuItems.filter(item => item.parentId === parentId || item.parent_id === parentId);
+  }, [menuItems]);
+
+  // 5. Automatic IntersectionObserver
+  useEffect(() => {
+    if (menuItems.length === 0) return;
+
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -50% 0px',
+      threshold: 0.1
+    };
+
+    const observerCallback = (entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          const sectionId = entry.target.id;
+          const matchedMenu = menuItems.find(
+            item => (item.sectionKey === sectionId || item.section_key === sectionId)
+          );
+
+          if (matchedMenu) {
+            const targetUrl = getCleanUrl(matchedMenu);
+            if (window.location.pathname !== targetUrl) {
+              window.history.replaceState(null, '', targetUrl);
+            }
+            setActivePath(targetUrl);
+          }
+        }
+      });
+    };
+
+    const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+    menuItems.forEach((item) => {
+      const key = item.sectionKey || item.section_key;
+      if (key) {
+        const el = document.getElementById(key);
+        if (el) observer.observe(el);
+      }
+    });
+
+    return () => observer.disconnect();
+  }, [menuItems, getCleanUrl]);
+
+  // 6. Handle Nav Klik
   const handleNavClick = (item) => {
     setMobileMenuOpen(false);
     setDropdownOpen(null);
 
-    const targetUrl = item.url || item.href || '/';
+    const targetUrl = getCleanUrl(item);
+    const sectionKey = item.sectionKey || item.section_key;
 
-    if ((item.type === 'section' || item.sectionKey) && item.sectionKey) {
-      const element = document.getElementById(item.sectionKey);
+    if (sectionKey) {
+      const element = document.getElementById(sectionKey);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
         window.history.pushState(null, '', targetUrl);
+        setActivePath(targetUrl);
       } else {
-        navigate(`/#${item.sectionKey}`);
+        navigate(targetUrl);
       }
     } else if (targetUrl) {
       navigate(targetUrl);
     }
   };
 
-  // Toggle dropdown saat diklik
   const handleDropdownToggle = (menuId, e) => {
     e.stopPropagation();
     setDropdownOpen(prev => (prev === menuId ? null : menuId));
   };
 
-  // ==========================================
-  // PERBAIKAN LOGIKA PENGECEKAN AKTIF
-  // ==========================================
+  // 7. Logika Check Active Menu
   const checkIsActive = (menu) => {
-    const currentPath = location.pathname;
-    const currentHash = location.hash;
+    const currentPath = activePath;
     const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
-    const menuUrl = (menu.url || menu.href || '').trim();
+    const menuUrl = getCleanUrl(menu);
 
-    // 1. Cek jika URL memiliki Hash (#sectionKey)
-    if (menu.sectionKey && currentHash === `#${menu.sectionKey}`) {
-      return true;
+    if (menuTitle.includes('beranda') || menuTitle.includes('home') || menuUrl === '/') {
+      return currentPath === '/';
     }
 
-    // 2. Jika di Halaman Beranda / Dashboard
-    const isDashboardOrHome = currentPath === '/' || currentPath === '/dashboard';
-    
-    if (isDashboardOrHome) {
-      // Jika URL memiliki Hash lain (misal #kontak), Beranda jangan aktif
-      if (currentHash && currentHash !== '#') {
-        return false;
-      }
-
-      // Validasi Khusus Beranda: hanya aktif jika namanya mengandung 'beranda'/'home' 
-      // ATAU URL-nya '/' / '/dashboard' DAN judulnya BUKAN Kontak/Lainnya
-      const isHomeTitle = menuTitle.includes('beranda') || menuTitle.includes('home');
-      const isHomeUrl = (menuUrl === '/' || menuUrl === '/dashboard') && !menuTitle.includes('kontak');
-
-      return isHomeTitle || isHomeUrl;
-    }
-
-    // 3. Untuk Halaman Lain (misal /profil-sekolah, /berita)
-    if (menuUrl && menuUrl !== '/' && menuUrl !== '/dashboard') {
+    if (menuUrl && menuUrl !== '/') {
       return currentPath === menuUrl;
     }
 
