@@ -1,14 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-// 1. Tambahkan Eye di baris import lucide-react
-import { Plus, Edit3, Trash2, X, Loader2, CheckCircle, AlertCircle, Search, MoreHorizontal, Image as ImageIcon, Link as LinkIcon, Eye } from 'lucide-react';
-// 2. Import Link dari react-router-dom
-import { Link } from 'react-router-dom';
+import { Plus, Edit3, Trash2, X, Loader2, CheckCircle, AlertCircle, Search, MoreHorizontal, Image as ImageIcon, Link as LinkIcon, Tag } from 'lucide-react';
 import '../css/managenews.css';
 import '../App.css';
 
 const API_URL = 'http://localhost:5002/api/news';
-
 
 export default function ManageNews() {
   const [newsList, setNewsList] = useState([]);
@@ -17,10 +13,7 @@ export default function ManageNews() {
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // State untuk mengontrol dropdown menu mana yang sedang terbuka
   const [openMenuId, setOpenMenuId] = useState(null);
-
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [imageMode, setImageMode] = useState('file');
 
@@ -32,6 +25,7 @@ export default function ManageNews() {
     image: '',
     author: 'Admin',
     status: 'published',
+    tags: ''
   });
 
   const showNotification = (message, type = 'success') => {
@@ -58,15 +52,14 @@ export default function ManageNews() {
     fetchNews();
   }, []);
 
-  // Menutup dropdown otomatis jika klik di luar menu
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (!e.target.closest('.dropdown-action-wrapper')) {
         setOpenMenuId(null);
       }
     };
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
   const handleChange = (e) => {
@@ -74,7 +67,7 @@ export default function ManageNews() {
     if (type === 'checkbox') {
       setFormData((prev) => ({
         ...prev,
-        [name]: checked ? 'published' : 'draft',
+        [name]: name === 'status' ? (checked ? 'published' : 'draft') : checked,
       }));
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
@@ -103,14 +96,27 @@ export default function ManageNews() {
       image: '',
       author: 'Admin',
       status: 'published',
+      tags: ''
     });
     setShowModal(true);
   };
-
-  const handleOpenEdit = (item) => {
+const handleOpenEdit = (item) => {
     const itemId = item.id || item._id;
     setEditId(itemId);
     setImageMode(item.image?.startsWith('data:') || !item.image?.startsWith('http') ? 'file' : 'url');
+
+    // Memastikan format tags selalu aman saat di-load ke input teks
+    let formattedTags = '';
+    if (Array.isArray(item.tags)) {
+      formattedTags = item.tags.join(', ');
+    } else if (typeof item.tags === 'string') {
+      try {
+        const parsed = JSON.parse(item.tags);
+        formattedTags = Array.isArray(parsed) ? parsed.join(', ') : item.tags;
+      } catch {
+        formattedTags = item.tags;
+      }
+    }
 
     setFormData({
       title: item.title || '',
@@ -120,6 +126,7 @@ export default function ManageNews() {
       image: item.image || '',
       author: 'Admin',
       status: item.status || 'published',
+      tags: formattedTags
     });
     
     setOpenMenuId(null);
@@ -133,6 +140,7 @@ export default function ManageNews() {
     const payload = {
       ...formData,
       author: 'Admin',
+      tags: formData.tags ? formData.tags.split(',').map((t) => t.trim()).filter(Boolean) : []
     };
 
     try {
@@ -167,12 +175,20 @@ export default function ManageNews() {
     }
   };
 
+  const toggleDropdown = (e, id) => {
+    e.stopPropagation();
+    setOpenMenuId((prevId) => (prevId === id ? null : id));
+  };
+
   const filteredNews = newsList.filter((item) => {
     const query = searchQuery.toLowerCase();
     const matchTitle = item.title?.toLowerCase().includes(query);
     const matchCategory = item.category?.toLowerCase().includes(query);
+    const matchTags = Array.isArray(item.tags) 
+      ? item.tags.some(t => t.toLowerCase().includes(query))
+      : item.tags?.toLowerCase().includes(query);
     
-    return matchTitle || matchCategory;
+    return matchTitle || matchCategory || matchTags;
   });
 
   return (
@@ -184,7 +200,6 @@ export default function ManageNews() {
         </div>
       )}
 
-      {/* Header */}
       <div className="admin-page-header">
         <div>
           <h1 className="admin-title">Kelola Berita & Kegiatan</h1>
@@ -197,13 +212,12 @@ export default function ManageNews() {
         </button>
       </div>
 
-      {/* Toolbar Search */}
       <div className="table-toolbar">
         <div className="search-input-wrapper">
           <Search size={18} className="search-icon" />
           <input
             type="text"
-            placeholder="Cari berita..."
+            placeholder="Cari berita atau tags..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
@@ -211,7 +225,6 @@ export default function ManageNews() {
         </div>
       </div>
 
-      {/* Tabel */}
       <div className="table-wrapper">
         <table className="custom-table">
           <thead>
@@ -241,6 +254,10 @@ export default function ManageNews() {
             ) : (
               filteredNews.map((item) => {
                 const itemId = item.id || item._id;
+                const formattedTags = Array.isArray(item.tags) 
+                  ? item.tags 
+                  : (item.tags ? item.tags.split(',') : []);
+
                 return (
                   <tr key={itemId}>
                     <td>
@@ -249,16 +266,7 @@ export default function ManageNews() {
                           src={item.image}
                           alt={item.title}
                           className="table-thumb"
-                          style={{
-                            width: '60px',
-                            height: '45px',
-                            objectFit: 'cover',
-                            borderRadius: '6px',
-                            display: 'block'
-                          }}
-                          onError={(e) => {
-                            e.target.style.display = 'none'; 
-                          }}
+                          onError={(e) => { e.target.style.display = 'none'; }}
                         />
                       ) : (
                         <div
@@ -280,7 +288,25 @@ export default function ManageNews() {
                       )}
                     </td>
                     <td>
-                      <div className="news-table-title">{item.title}</div>
+                      <div className="news-table-title-wrapper" style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        <div className="news-table-title">
+                          <span style={{ fontWeight: '500', color: 'inherit' }}>
+                            {item.title}
+                          </span>
+                        </div>
+
+                        {formattedTags.length > 0 && (
+                          <div className="news-meta-sub">
+                            <div className="table-tags-list" style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                              {formattedTags.map((tag, idx) => (
+                                <span key={idx} className="badge-tag">
+                                  #{tag.trim()}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     </td>
                     <td>
                       <span className="badge badge-category">{item.category || 'Berita'}</span>
@@ -291,16 +317,12 @@ export default function ManageNews() {
                       </span>
                     </td>
                     <td>Admin</td>
-                    <td>
-                      {/* MENU DROPDOWN AKSI */}
+                    <td style={{ textAlign: 'center' }}>
                       <div className="dropdown-action-wrapper">
                         <button
                           type="button"
                           className="btn-more-action"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setOpenMenuId(openMenuId === itemId ? null : itemId);
-                          }}
+                          onClick={(e) => toggleDropdown(e, itemId)}
                           title="Opsi"
                         >
                           <MoreHorizontal size={18} />
@@ -340,7 +362,6 @@ export default function ManageNews() {
         </table>
       </div>
 
-      {/* Modal Form Tambah/Edit (Mengikuti struktur modal ManagePengajar) */}
       {showModal && (
         <div className="modal-overlay">
           <div className="modal-content modern-modal">
@@ -398,6 +419,20 @@ export default function ManageNews() {
                 </div>
               </div>
 
+              <div className="form-group-modern">
+                <label style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <Tag size={13} /> Tags (Pisahkan dengan koma)
+                </label>
+                <input
+                  type="text"
+                  name="tags"
+                  className="input-modern"
+                  placeholder="Contoh: PPLG, Prestasi, SMK"
+                  value={formData.tags}
+                  onChange={handleChange}
+                />
+              </div>
+
               <div className="form-group-modern upload-section">
                 <label>Gambar Banner</label>
                 <div className="radio-tabs">
@@ -433,12 +468,9 @@ export default function ManageNews() {
                   />
                 )}
 
-                {/* =======================================
-                    TAMBAHAN PREVIEW GAMBAR BANNER BERITA
-                    ======================================= */}
                 {formData.image && (
                   <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU BANNER:</span>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>PRATINJAU BANNER:</span>
                     <img 
                       src={formData.image} 
                       alt="Preview Banner" 
@@ -448,14 +480,14 @@ export default function ManageNews() {
                         height: '160px', 
                         objectFit: 'cover', 
                         borderRadius: '8px', 
-                        border: '2px solid var(--compreng-surface)',
+                        border: '2px solid #e2e8f0',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                       }} 
                       onError={(e) => { e.target.style.display = 'none'; }} 
                       onLoad={(e) => { e.target.style.display = 'block'; }} 
                     />
                   </div>
-                  )}
+                )}
               </div>
 
               <div className="form-group-modern">
@@ -516,7 +548,6 @@ export default function ManageNews() {
                       <Loader2 size={16} className="animate-spin" />
                       &nbsp;Menyimpan...
                     </>
-                    
                   ) : (
                     'Simpan Data'
                   )}

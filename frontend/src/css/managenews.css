@@ -26,8 +26,7 @@
   margin: 0 auto;
 }
 
-.news-public-grid,
-.news-grid {
+.news-public-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 24px;
@@ -44,15 +43,13 @@
   flex-direction: column;
 }
 
-.news-card-img-wrapper,
-.news-card-image {
+.news-card-img-wrapper {
   position: relative;
   height: 180px;
   background-color: #f8fafc;
 }
 
-.news-card-img,
-.news-card-image img {
+.news-card-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -71,8 +68,7 @@
   text-transform: uppercase;
 }
 
-.news-card-body,
-.news-card-content {
+.news-card-body {
   padding: 16px;
   display: flex;
   flex-direction: column;
@@ -100,14 +96,14 @@
   margin-bottom: 16px;
   line-height: 1.5;
   display: -webkit-box;
-  line-clamp: 2;
-  -webkit-line-clamp: 4;
+  
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
   overflow: hidden;
 }
 
-.news-link,
-.news-readmore {
+.news-link {
   color: #2563eb;
   font-size: 13px;
   font-weight: 600;
@@ -258,7 +254,6 @@
   font-family: 'Inter', sans-serif;
 }
 
-.admin-header,
 .admin-page-header {
   display: flex;
   justify-content: space-between;
@@ -334,12 +329,11 @@
   background-color: #1e293b;
 }
 
-
 .table-wrapper {
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  overflow: visible; 
+  overflow: visible !important; 
   border: 1px solid #f1f5f9;
 }
 
@@ -364,7 +358,10 @@
   vertical-align: middle;
 }
 
-.custom-table td img,
+tr.row-featured {
+  background-color: #fefce8 !important;
+}
+
 .table-thumb {
   width: 60px !important;
   height: 45px !important;
@@ -373,11 +370,6 @@
   object-fit: cover !important;
   border-radius: 6px !important;
   display: block !important;
-}
-
-.news-table-title {
-  font-weight: 600;
-  color: #0f172a;
 }
 
 .badge {
@@ -408,9 +400,7 @@
    ========================================== */
 .dropdown-action-wrapper {
   position: relative;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: inline-block;
 }
 
 .btn-more-action {
@@ -439,10 +429,10 @@
   width: 140px;
   background: #ffffff;
   border-radius: 10px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-  border: 1px solid #f1f5f9;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
   padding: 6px;
-  z-index: 1000;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -462,6 +452,8 @@
   border-radius: 6px;
   cursor: pointer;
   text-align: left;
+  text-decoration: none;
+  box-sizing: border-box;
   transition: background 0.15s ease;
 }
 
@@ -478,8 +470,10 @@
   background-color: #fef2f2;
   color: #dc2626;
 }
+
+
 /* ==========================================
-   E. MODAL ADMIN & FORM (Sesuai Foto 1)
+   E. MODAL ADMIN & FORM
    ========================================== */
 .modal-overlay {
   position: fixed;
@@ -489,16 +483,16 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10000;
   padding: 20px;
 }
 
-.modal-content-wrapper {
+.modal-content.modern-modal {
   background-color: #ffffff;
   border-radius: 20px;
   width: 100%;
-  max-width: 520px;
-  max-height: 85vh; /* Sedikit dikurangi dari 90vh agar muat di layar laptop standar */
+  max-width: 540px;
+  max-height: 85vh;
   display: flex;
   flex-direction: column;
   box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.15);
@@ -506,7 +500,7 @@
   border: 1px solid #f1f5f9;
 }
 
-.modal-header-custom {
+.modal-header-modern {
   padding: 20px 24px;
   border-bottom: 1px solid #f1f5f9;
   display: flex;
@@ -514,14 +508,14 @@
   align-items: center;
 }
 
-.modal-header-custom h2 {
+.modal-header-modern h3 {
   margin: 0;
   font-size: 1.15rem;
   font-weight: 700;
   color: #0f172a;
 }
 
-.btn-icon-close {
+.btn-close-modal {
   border: none;
   background-color: transparent;
   color: #94a3b8;
@@ -535,63 +529,46 @@
   transition: all 0.2s ease;
 }
 
-.btn-icon-close:hover {
+.btn-close-modal:hover {
   background-color: #f1f5f9;
   color: #0f172a;
 }
 
-.modal-form {
+.form-modern-layout {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  flex: 1;
-}
-
-/* MODIFIKASI: Area Scroll Body & Custom Scrollbar */
-.modal-body-custom {
   padding: 20px 24px;
   overflow-y: auto;
+  gap: 16px;
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  
-  /* Dukungan Firefox */
   scrollbar-width: thin;
   scrollbar-color: #cbd5e1 transparent;
 }
 
-/* Custom Webkit Scrollbar (Chrome, Edge, Safari) */
-.modal-body-custom::-webkit-scrollbar {
-  width: 6px; /* Lebar scrollbar yang pas dan bersih */
+.form-modern-layout::-webkit-scrollbar {
+  width: 6px;
 }
 
-.modal-body-custom::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-.modal-body-custom::-webkit-scrollbar-thumb {
+.form-modern-layout::-webkit-scrollbar-thumb {
   background-color: #cbd5e1;
   border-radius: 20px;
 }
 
-.modal-body-custom::-webkit-scrollbar-thumb:hover {
-  background-color: #94a3b8;
+.form-group-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.form-label {
-  display: block;
-  font-size: 0.725rem;
+.form-group-modern label {
+  font-size: 0.75rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #475569;
-  margin-bottom: 6px;
 }
 
-.form-input,
-.form-select,
-.form-textarea {
+.input-modern {
   width: 100%;
   padding: 10px 14px;
   border-radius: 10px;
@@ -604,44 +581,26 @@
   transition: all 0.2s ease;
 }
 
-.form-input:focus,
-.form-select:focus,
-.form-textarea:focus {
+.input-modern:focus {
   border-color: #0f172a;
   box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
 }
 
-.form-textarea {
-  resize: none;
-  height: 68px;
+.input-modern.file-style {
+  padding: 8px;
+  font-size: 0.8rem;
 }
 
-.form-grid-2,
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px;
-}
-
-/* Image Mode Container */
-.image-mode-container {
-  background-color: #f8fafc;
-  padding: 10px;
-  border-radius: 12px;
-  border: 1px solid #f1f5f9;
-}
-
-.image-mode-wrapper {
+.radio-tabs {
   display: flex;
-  background-color: #e2e8f0;
-  padding: 3px;
+  background-color: #f1f5f9;
+  padding: 4px;
   border-radius: 10px;
   gap: 4px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
-.btn-mode-switch,
-.btn-mode {
+.radio-tab {
   flex: 1;
   padding: 8px 12px;
   border-radius: 8px;
@@ -658,81 +617,105 @@
   transition: all 0.2s ease;
 }
 
-.btn-mode-switch.active,
-.btn-mode.active {
+.radio-tab.active {
   background: #ffffff;
   color: #0f172a;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-/* Modal Footer & Standarisasi Tombol Modern */
-.modal-footer-custom {
-  padding: 16px 24px;
-  border-top: 1px solid #f1f5f9;
+.modal-actions-modern {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  gap: 12px;
-  background-color: #ffffff;
+  gap: 10px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid #f1f5f9;
 }
 
-.modal-footer-custom .btn-secondary {
+.btn-modern-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   background-color: #f1f5f9;
   color: #475569;
-  padding: 10px 24px;
-  border-radius: 12px;
-  font-weight: 700;
+  padding: 10px 20px;
+  border-radius: 10px;
+  font-weight: 600;
   font-size: 13.5px;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
-.modal-footer-custom .btn-secondary:hover {
+.btn-modern-secondary:hover {
   background-color: #e2e8f0;
   color: #0f172a;
 }
 
-.btn-primary-green {
+.btn-modern-primary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
   background-color: #0f172a;
   color: #ffffff;
-  padding: 10px 28px;
-  border-radius: 12px;
-  font-weight: 700;
+  padding: 10px 24px;
+  border-radius: 10px;
+  font-weight: 600;
   font-size: 13.5px;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
-.btn-primary-green:hover {
+.btn-modern-primary:hover {
   background-color: #1e293b;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.3);
+  transform: translateY(-1px);
 }
 
 
 /* ==========================================
-   F. RESPONSIVENESS
+   F. TOAST NOTIFICATION
+   ========================================== */
+.toast-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 20px;
+  border-radius: 10px;
+  background: #ffffff;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+  z-index: 99999;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.toast-notification.success {
+  border-left: 4px solid #166534;
+  color: #166534;
+}
+
+.toast-notification.error {
+  border-left: 4px solid #dc2626;
+  color: #dc2626;
+}
+
+
+/* ==========================================
+   G. RESPONSIVENESS
    ========================================== */
 @media (max-width: 768px) {
   .admin-container {
     padding: 16px;
   }
 
-  .form-grid-2,
-  .form-row {
-    grid-template-columns: 1fr;
-    gap: 12px;
+  .form-row-modern {
+    flex-direction: column;
+    gap: 12px !important;
   }
 
   .admin-header,
@@ -748,4 +731,44 @@
   .news-public-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* ==========================================
+   H. TAGS, FEATURED & VIEW COUNT STYLES
+   ========================================== */
+.btn-star-toggle {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease;
+}
+
+.btn-star-toggle:hover {
+  transform: scale(1.2);
+}
+
+.badge-tag {
+  background-color: #f1f5f9;
+  color: #475569;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 500;
+}
+
+.badge-featured-label {
+  background-color: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
 }

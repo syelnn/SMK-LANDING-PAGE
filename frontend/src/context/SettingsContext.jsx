@@ -25,6 +25,8 @@ export const SettingsProvider = ({ children }) => {
     }
   };
 
+  
+
   // Menyuntik warna LANGSUNG ke variabel --compreng-* yang sudah dipakai
   // di ratusan class pada App.css. Tidak perlu ganti nama class apa pun.
   const applyGlobalStyles = (data) => {
@@ -58,6 +60,8 @@ export const SettingsProvider = ({ children }) => {
 
     if (data.font_family) root.style.setProperty('--main-font', data.font_family);
   };
+
+  
 
   const applyPreview = (formData) => applyGlobalStyles(formData);
   const cancelPreview = () => applyGlobalStyles(settings);

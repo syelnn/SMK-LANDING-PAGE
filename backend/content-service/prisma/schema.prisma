@@ -21,7 +21,7 @@ model User {
   createdAt   DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime?    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   auditLogs   AuditLog[]
-  news        News[]       @relation("NewsAuthor")
+
   testimonial Testimonial?
 
   @@map("users")
@@ -38,28 +38,20 @@ model Setting {
 }
 
 model News {
-  id              Int       @id @default(autoincrement())
-  category        String?   @db.VarChar(100)
-  tags            Json?
-  title           String    @db.VarChar(255)
-  slug            String    @unique @db.VarChar(255)
-  excerpt         String?
-  content         String?
-  image           String?
-  author          String?   @default("Admin") @db.VarChar(100)
-  publishedAt     DateTime? @map("published_at") @db.Timestamp(6)
-  status          String?   @default("draft") @db.VarChar(50)
-  isFeatured      Int?      @default(0) @map("is_featured")
-  metaTitle       String?   @map("meta_title") @db.VarChar(255)
-  metaDescription String?   @map("meta_description") @db.VarChar(255)
-  viewCount       Int?      @default(0) @map("view_count")
-  createdAt       DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt       DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  authorId        Int?      @map("author_id")
-  authorUser      User?     @relation("NewsAuthor", fields: [authorId], references: [id], onUpdate: NoAction, map: "fk_news_author")
+  id          Int       @id @default(autoincrement())
+  category    String?   @db.VarChar(100)
+  tags        Json?
+  title       String    @db.VarChar(255)
+  slug        String    @unique @db.VarChar(255)
+  excerpt     String?
+  content     String?
+  image       String?
+  author      String?   @default("Admin") @db.VarChar(100)
+  publishedAt DateTime? @map("published_at") @db.Timestamp(6)
+  status      String?   @default("published") @db.VarChar(50)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
 
-  @@index([publishedAt], map: "idx_news_published")
-  @@index([status], map: "idx_news_status")
   @@map("news")
 }
 
