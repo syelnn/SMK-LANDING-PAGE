@@ -35,7 +35,7 @@
 }
 
 /* =========================================
-   2. TOOLBAR (SEARCH & FILTER)
+   2. TOOLBAR (SEARCH & MODERN FILTER)
    ========================================= */
 .mp-toolbar {
   display: flex;
@@ -43,9 +43,10 @@
   align-items: center;
   margin-bottom: 16px;
   flex-wrap: wrap;
-  gap: 12px; /* Jarak antara search dan dropdown filter */
+  gap: 12px;
 }
 
+/* Kotak Pencarian */
 .mp-search-wrapper {
   position: relative;
   width: 280px;
@@ -55,24 +56,30 @@
 .mp-search-input {
   width: 100%;
   padding: 8px 12px 8px 36px;
-  border-radius: 6px;
+  border-radius: 8px; /* Lebih tumpul sedikit */
   border: 1px solid var(--compreng-border);
   background: var(--compreng-surface);
   color: var(--compreng-text);
   font-size: 13px;
   outline: none;
   box-sizing: border-box;
+  transition: all 0.2s ease;
+}
+
+.mp-search-input:focus {
+  border-color: var(--compreng-text-muted);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
 }
 
 .mp-search-icon {
   position: absolute;
-  left: 10px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--compreng-text-muted);
 }
 
-/* Filter Dropdown Baru */
+/* Kotak Filter (Modern UI) */
 .mp-filter-wrapper {
   position: relative;
   width: 240px;
@@ -81,7 +88,7 @@
 
 .mp-filter-icon {
   position: absolute;
-  left: 10px;
+  left: 12px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--compreng-text-muted);
@@ -90,16 +97,36 @@
 
 .mp-filter-select {
   width: 100%;
-  padding: 8px 12px 8px 36px;
-  border-radius: 6px;
+  padding: 8px 36px; /* Ruang untuk Ikon Kiri & Kanan */
+  border-radius: 8px; /* Konsisten dengan search */
   border: 1px solid var(--compreng-border);
   background: var(--compreng-surface);
   color: var(--compreng-text);
   font-size: 13px;
+  font-weight: 500;
   outline: none;
   box-sizing: border-box;
-  appearance: none; /* Menghilangkan style default panah browser */
+  appearance: none; /* Buang panah bawaan browser yang jelek */
   cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mp-filter-select:hover {
+  background: var(--compreng-surface-soft);
+}
+
+.mp-filter-select:focus {
+  border-color: var(--compreng-text-muted);
+}
+
+/* Ikon Panah Bawah Buatan Sendiri (Biar Estetik) */
+.mp-filter-arrow {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--compreng-text-muted);
+  pointer-events: none;
 }
 
 /* =========================================
