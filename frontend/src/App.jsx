@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import LandingPage from './pages/viewer/LandingPage'; 
 
+
 import Login from './Login';
 import Register from './Register';
 import DownloadPage from './pages/DownloadPage';
@@ -16,7 +17,7 @@ import Sidebar from './Sidebar';
 
 // Import Halaman Admin
 import ManageNews from './pages/ManageNews';
-import DetailManageNews from './pages/DetailManageNews';
+import DetailNews from './pages/DetailNews';
 import ManageSettings from './pages/ManageSettings';
 import ManageUsers from './pages/ManageUsers';
 import ForgotPassword from './pages/ForgotPassword'; 
@@ -482,7 +483,7 @@ const DashboardLayout = () => {
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="profil" element={<ProfilSekolah />} />
               <Route path="berita" element={<ManageNews />} />
-              <Route path="berita/:slug" element={<DetailManageNews />} />
+              <Route path="berita/:slug" element={<DetailNews />} />
               <Route path="jurusan" element={<ManageJurusanProgram />} />
               <Route path="ekstrakurikuler" element={<Ekstrakurikuler />} />
               <Route path="pengajar" element={<ManagePengajar />} />
@@ -492,6 +493,7 @@ const DashboardLayout = () => {
               <Route path="faq" element={<FaqPage />} />
               <Route path="kurikulum/:slug" element={<DetailKurikulum />} />
               <Route path="downloads" element={<DownloadPage />} />
+             
 
               {userData.role === 'ADMIN' && (
                 <Route path="users" element={<ManageUsers />} />
@@ -533,8 +535,10 @@ const MainApp = () => {
 
   return (
     <Routes>
-      {/* Ganti PublicLayout dengan LandingPage di bawah ini */}
+    
       <Route path="/" element={<LandingPage />} />
+
+    
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/lupa-password" element={<ForgotPassword />} />
@@ -545,6 +549,7 @@ const MainApp = () => {
         </ProtectedRoute>
       } />
       <Route path="*" element={<Navigate to="/" replace />} />
+      
     </Routes>
   );
 };
