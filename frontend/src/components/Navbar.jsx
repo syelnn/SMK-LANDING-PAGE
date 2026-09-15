@@ -109,46 +109,53 @@ const Navbar = () => {
     return menuItems.filter(item => item.parentId === parentId || item.parent_id === parentId);
   }, [menuItems]);
 
-  // 3. SCROLL SPY PERBAIKAN URL AKURAT
-  useEffect(() => {
-    // Tambahkan '/tenagapengajar' dan '/guru' ke valid paths
-    const validLandingPaths = ['/', '/profil', '/berita', '/program', '/jurusan', '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', '/pengajar', '/kontak'];
-    if (!validLandingPaths.includes(location.pathname)) return;
+ // 3. SCROLL SPY PERBAIKAN URL AKURAT
+useEffect(() => {
+  // TAMBAHKAN '/karya', '/prestasi', '/achievement' ke array validLandingPaths
+  const validLandingPaths = [
+    '/', '/profil', '/berita', '/program', '/jurusan', 
+    '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', 
+    '/pengajar', '/karya', '/prestasi', '/achievement', '/kontak'
+  ];
+  if (!validLandingPaths.includes(location.pathname)) return;
 
-    let ticking = false;
+  let ticking = false;
 
-    const handleScrollSpy = () => {
-      if (isManualScrolling.current) return;
+  const handleScrollSpy = () => {
+    if (isManualScrolling.current) return;
 
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const scrollPos = window.scrollY + 250;
+    if (!ticking) {
+      window.requestAnimationFrame(() => {
+        const scrollPos = window.scrollY + 250;
 
-          const heroEl = document.getElementById('section-hero');
-          const profilEl = document.getElementById('section-profil');
-          const beritaEl = document.getElementById('section-berita');
-          const programEl = document.getElementById('section-program');
-          const ekskulEl = document.getElementById('section-ekskul');
-          const pengajarEl = document.getElementById('section-pengajar'); 
-          const kontakEl = document.getElementById('section-kontak');
+        const heroEl = document.getElementById('section-hero');
+        const profilEl = document.getElementById('section-profil');
+        const beritaEl = document.getElementById('section-berita');
+        const programEl = document.getElementById('section-program');
+        const ekskulEl = document.getElementById('section-ekskul');
+        const pengajarEl = document.getElementById('section-pengajar');
+        const prestasiEl = document.getElementById('section-prestasi'); // <-- Tambahkan ini
+        const kontakEl = document.getElementById('section-kontak');
 
-          let activeKey = 'section-hero';
+        let activeKey = 'section-hero';
 
-          if (heroEl && scrollPos >= heroEl.offsetTop) activeKey = 'section-hero';
-          if (profilEl && scrollPos >= profilEl.offsetTop) activeKey = 'section-profil';
-          if (beritaEl && scrollPos >= beritaEl.offsetTop) activeKey = 'section-berita';
-          if (programEl && scrollPos >= programEl.offsetTop) activeKey = 'section-program';
-          if (ekskulEl && scrollPos >= ekskulEl.offsetTop) activeKey = 'section-ekskul';
-          if (pengajarEl && scrollPos >= pengajarEl.offsetTop) activeKey = 'section-pengajar'; 
-          if (kontakEl && scrollPos >= kontakEl.offsetTop) activeKey = 'section-kontak';
+        if (heroEl && scrollPos >= heroEl.offsetTop) activeKey = 'section-hero';
+        if (profilEl && scrollPos >= profilEl.offsetTop) activeKey = 'section-profil';
+        if (beritaEl && scrollPos >= beritaEl.offsetTop) activeKey = 'section-berita';
+        if (programEl && scrollPos >= programEl.offsetTop) activeKey = 'section-program';
+        if (ekskulEl && scrollPos >= ekskulEl.offsetTop) activeKey = 'section-ekskul';
+        if (pengajarEl && scrollPos >= pengajarEl.offsetTop) activeKey = 'section-pengajar';
+        if (prestasiEl && scrollPos >= prestasiEl.offsetTop) activeKey = 'section-prestasi'; // <-- Tambahkan ini
+        if (kontakEl && scrollPos >= kontakEl.offsetTop) activeKey = 'section-kontak';
 
-          // Jika posisi scroll mendekati bagian paling bawah
-          const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150;
-          if (isBottom) {
-            if (kontakEl) activeKey = 'section-kontak';
-            else if (pengajarEl) activeKey = 'section-pengajar';
-            else if (ekskulEl) activeKey = 'section-ekskul';
-          }
+        // Pengecekan posisi paling bawah layar
+        const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150;
+        if (isBottom) {
+          if (kontakEl) activeKey = 'section-kontak';
+          else if (prestasiEl) activeKey = 'section-prestasi'; // <-- Tambahkan ini
+          else if (pengajarEl) activeKey = 'section-pengajar';
+          else if (ekskulEl) activeKey = 'section-ekskul';
+        }
 
           const matchedMenu = menuItems.find(item => {
             const key = item.sectionKey || item.section_key;
@@ -178,7 +185,14 @@ const Navbar = () => {
               setActivePath(targetUrl);
               window.history.replaceState(null, '', targetUrl);
             }
+          } else if (activeKey === 'section-prestasi') { // <-- Tambahkan blok ini
+          const targetUrl = '/prestasi';
+          if (activePathRef.current !== targetUrl) {
+            activePathRef.current = targetUrl;
+            setActivePath(targetUrl);
+            window.history.replaceState(null, '', targetUrl);
           }
+        }
 
           ticking = false;
         });
@@ -208,6 +222,9 @@ const Navbar = () => {
       '/tenagapengajar': 'section-pengajar',
       '/guru': 'section-pengajar', 
       '/pengajar': 'section-pengajar',
+      '/karya': 'section-prestasi',      
+      '/prestasi': 'section-prestasi',  
+      '/achievement': 'section-prestasi',
       '/kontak': 'section-kontak',
       '/': 'section-hero'
     };
@@ -248,7 +265,11 @@ const Navbar = () => {
     const menuUrl = getCleanUrl(menu);
 
     // Mencegah garis biru menyala saat discroll ke area dropdown (Ekskul & Pengajar)
-    const isDropdownArea = ['/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru'].includes(activePath);
+    const isDropdownArea = [
+      '/ekstrakurikuler', '/ekskul', '/tenagapengajar', 
+      '/guru', '/karya', '/prestasi', '/achievement'
+    ].includes(activePath);
+    
     if (isDropdownArea) {
       if (menuTitle.includes('jurusan') || menuTitle.includes('program') || menuTitle.includes('berita')) {
         return false;

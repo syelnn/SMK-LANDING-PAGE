@@ -1,0 +1,348 @@
+/* ==========================================================================
+   CONTAINER & LAYOUT UTAMA
+   ========================================================================== */
+.achievement-viewer-container {
+  width: 100%;
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  padding-bottom: 50px;
+}
+
+/* ==========================================================================
+   1. HERO / BANNER SECTION
+   ========================================================================== */
+.achievement-viewer-container .achievement-hero {
+  position: relative;
+  width: 100%;
+  padding: 36px 20px 20px;
+  background-color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.achievement-viewer-container .hero-content17 {
+  width: 100%;
+  max-width: 720px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+/* Tag Pill / Badge Kapsul di atas Judul */
+.achievement-viewer-container .hero-badge-pill117 {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px auto;
+  background-color: #e0f2fe;
+  color: #0284c7;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  padding: 6px 16px;
+  border-radius: 9999px;
+}
+
+/* Judul Utama Hero */
+.achievement-viewer-container .hero-title17 {
+  font-size: 1.85rem;
+  font-weight: 800;
+  margin-bottom: 10px;
+  line-height: 1.3;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+  text-align: center;
+}
+
+/* Highlight Teks Hijau */
+.achievement-viewer-container .highlight-text {
+  color: #10b981;
+  font-weight: 800;
+}
+
+/* Subtitle Hero */
+.achievement-viewer-container .hero-subtitle17 {
+  font-size: 0.92rem;
+  color: #64748b;
+  line-height: 1.5;
+  max-width: 580px;
+  margin: 0 auto;
+  font-weight: 400;
+  text-align: center;
+}
+
+/* ==========================================================================
+   2. GRID CARDS SECTION
+   ========================================================================== */
+.achievement-viewer-container .achievement-grid-section {
+  max-width: 1000px;
+  margin: 20px auto 0;
+  padding: 0 20px;
+}
+
+.achievement-viewer-container .achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+/* Card Wrapper */
+.achievement-viewer-container .achievement-card {
+  background: #ffffff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e2e8f0;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.achievement-viewer-container .achievement-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.08);
+}
+
+/* Card Image Container */
+.achievement-viewer-container .card-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 155px;
+  background: #f1f5f9;
+  overflow: hidden;
+}
+
+.achievement-viewer-container .card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 0.3s ease;
+}
+
+.achievement-viewer-container .achievement-card:hover .card-img {
+  transform: scale(1.03);
+}
+
+.achievement-viewer-container .card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #cbd5e1 0%, #94a3b8 100%);
+  color: #ffffff;
+  font-size: 1.8rem;
+  font-weight: 700;
+}
+
+/* ==========================================================================
+   3. LEVEL BADGE (DIPOSISIKAN DI KANAN ATAS GAMBAR)
+   ========================================================================== */
+.achievement-viewer-container .level-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  backdrop-filter: blur(4px);
+  z-index: 2;
+}
+
+.achievement-viewer-container .level-kabupaten,
+.achievement-viewer-container .level-kota { 
+  background: rgba(224, 242, 254, 0.95); 
+  color: #0369a1; 
+}
+
+.achievement-viewer-container .level-provinsi { 
+  background: rgba(254, 243, 199, 0.95); 
+  color: #b45309; 
+}
+
+.achievement-viewer-container .level-nasional { 
+  background: rgba(220, 252, 231, 0.95); 
+  color: #15803d; 
+}
+
+.achievement-viewer-container .level-internasional { 
+  background: rgba(243, 232, 255, 0.95); 
+  color: #6b21a8; 
+}
+
+/* ==========================================================================
+   4. CARD BODY & META ROW (IKON & NAMA MEDALI SEJAJAR KELAS)
+   ========================================================================== */
+.achievement-viewer-container .card-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+/* Container Flex Baris Meta (Kelas di Kiri, Medali di Kanan) */
+.achievement-viewer-container .card-meta-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.achievement-viewer-container .card-category-tag {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: #d97706;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0;
+}
+
+/* Badge Medali di Card Body (Pill Kapsul) */
+.achievement-viewer-container .medal-pill-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.achievement-viewer-container .medal-pill-badge svg {
+  width: 13px;
+  height: 13px;
+}
+
+/* Variasi Warna Pill Medali berdasarkan Database */
+.achievement-viewer-container .medal-pill-gold,
+.achievement-viewer-container .medal-pill-emas,
+.achievement-viewer-container .medal-pill-juara-1 {
+  background-color: #fef3c7;
+  color: #b45309;
+}
+
+.achievement-viewer-container .medal-pill-gold svg,
+.achievement-viewer-container .medal-pill-emas svg,
+.achievement-viewer-container .medal-pill-juara-1 svg {
+  color: #f59e0b;
+  fill: #fbbf24;
+}
+
+.achievement-viewer-container .medal-pill-silver,
+.achievement-viewer-container .medal-pill-perak,
+.achievement-viewer-container .medal-pill-juara-2 {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.achievement-viewer-container .medal-pill-silver svg,
+.achievement-viewer-container .medal-pill-perak svg,
+.achievement-viewer-container .medal-pill-juara-2 svg {
+  color: #64748b;
+  fill: #cbd5e1;
+}
+
+.achievement-viewer-container .medal-pill-bronze,
+.achievement-viewer-container .medal-pill-perunggu,
+.achievement-viewer-container .medal-pill-juara-3 {
+  background-color: #ffedd5;
+  color: #c2410c;
+}
+
+.achievement-viewer-container .medal-pill-bronze svg,
+.achievement-viewer-container .medal-pill-perunggu svg,
+.achievement-viewer-container .medal-pill-juara-3 svg {
+  color: #d97706;
+  fill: #f59e0b;
+}
+
+/* Judul & Deskripsi */
+.achievement-viewer-container .achievement-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 6px;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.achievement-viewer-container .achievement-desc {
+  font-size: 0.8rem;
+  color: #64748b;
+  line-height: 1.45;
+  margin-bottom: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ==========================================================================
+   5. LOADING & EMPTY STATE
+   ========================================================================== */
+.achievement-viewer-container .loading-state, 
+.achievement-viewer-container .empty-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: #64748b;
+}
+
+.achievement-viewer-container .loading-state p {
+  margin-top: 10px;
+  font-size: 0.88rem;
+  font-weight: 500;
+}
+
+.achievement-viewer-container .empty-state h3 {
+  font-size: 1.1rem;
+  color: #1e293b;
+  margin: 10px 0 4px;
+}
+
+/* ==========================================================================
+   6. MEDIA QUERIES (RESPONSIF)
+   ========================================================================== */
+@media (max-width: 900px) {
+  .achievement-viewer-container .achievement-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .achievement-viewer-container .achievement-hero {
+    padding: 28px 16px 16px;
+  }
+
+  .achievement-viewer-container .hero-title17 {
+    font-size: 1.4rem;
+  }
+
+  .achievement-viewer-container .hero-subtitle17 {
+    font-size: 0.85rem;
+  }
+
+  .achievement-viewer-container .achievement-grid {
+    grid-template-columns: 1fr;
+  }
+}

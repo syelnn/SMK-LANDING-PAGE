@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom'; // <-- Tambahkan us
 import Navbar from '../../components/Navbar';
 import '../../css/viewer/landing.css';
 import TenagaPengajarViewer from './TenagaPengajar';
+import AchievementViewer from './AchievementViewer';
 
 // Import Foto dari folder Assets
 import bgSekolah from '../../assets/latar.webp'; 
@@ -55,6 +56,9 @@ const LandingPage = () => {
       '/tenagapengajar': 'section-pengajar', // <-- Tambahkan baris ini
       '/guru': 'section-pengajar',           // <-- Tambahkan baris ini
       '/pengajar': 'section-pengajar',
+      '/karya': 'section-prestasi',       
+      '/prestasi': 'section-prestasi',     
+      '/achievement': 'section-prestasi',
       '/kontak': 'section-kontak',
     };
     
@@ -180,6 +184,12 @@ const LandingPage = () => {
       <div id="section-pengajar">
         <TenagaPengajarViewer />
       </div>
+
+     {/* 5. KARYA & PRESTASI SECTION */}
+      <AchievementViewer />
+
+
+
     </div>
   );
 };
