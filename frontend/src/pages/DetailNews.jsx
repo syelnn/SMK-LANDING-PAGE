@@ -1,30 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Calendar, User, Loader2 } from 'lucide-react';
+import { ArrowLeft, Calendar, User, Tag, Loader2 } from 'lucide-react';
 
-export default function DetailManageNews() {
+
+export default function DetailNews() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [news, setNews] = useState(null);
   const [loading, setLoading] = useState(true);
-
-  // Fungsi navigasi balik ke section berita di dashboard
-  const handleBackToNews = () => {
-    navigate('/admin');
-
-    setTimeout(() => {
-      const newsElement = document.getElementById('section-berita');
-      const contentElement = document.querySelector('.dashboard-content');
-
-      if (newsElement && contentElement) {
-        contentElement.scrollTo({
-          top: newsElement.offsetTop - 70,
-          behavior: 'smooth'
-        });
-      }
-    }, 100);
-  };
 
   useEffect(() => {
     const fetchNewsDetail = async () => {
@@ -57,8 +41,8 @@ export default function DetailManageNews() {
         <h2>Berita Tidak Ditemukan</h2>
         <p style={{ color: '#64748b', marginBottom: '20px' }}>Artikel yang Anda cari tidak ada atau telah dihapus.</p>
         <button 
-          onClick={handleBackToNews} 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#2563eb', fontWeight: '600', marginBottom: '20px', margin: '0 auto' }}
+          onClick={() => navigate('/berita')} 
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#2563eb', fontWeight: '600', margin: '0 auto' }}
         >
           <ArrowLeft size={18} /> Kembali ke Berita
         </button>
@@ -66,47 +50,49 @@ export default function DetailManageNews() {
     );
   }
 
-  const authorName = 
-    news.authorUser?.fullName || 
-    news.authorUser?.username || 
-    news.authorName || 
-    news.author || 
-    'Admin';
+  const authorName = news.authorUser?.fullName || news.authorUser?.username || news.author || 'Admin';
+  const rawDate = news.createdAt || news.date || news.publishedAt;
 
-  // Mengambil field tanggal terbit dari database
-  const rawDate = news.createdAt || news.date || news.publishedAt || news.updatedAt;
+  // Format array tags dari database
+  const parsedTags = Array.isArray(news.tags) 
+    ? news.tags 
+    : typeof news.tags === 'string' 
+      ? news.tags.split(',').map((t) => t.trim()).filter(Boolean)
+      : [];
 
   return (
-    <div style={{ maxWidth: '900px', margin: '40px auto', padding: '30px', background: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+    <div style={{ maxWidth: '850px', margin: '40px auto', padding: '30px', background: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
       {/* Tombol Kembali */}
       <button 
-        onClick={handleBackToNews} 
+        onClick={() => navigate('/berita')} 
         style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#2563eb', fontWeight: '600', marginBottom: '20px' }}
       >
         <ArrowLeft size={18} /> Kembali ke Berita
       </button>
 
-      {/* Badge Kategori */}
-      <span style={{ background: '#eff6ff', color: '#2563eb', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' }}>
-        {news.category || 'Berita'}
-      </span>
+      {/* Category Badge */}
+      {news.category && (
+        <span style={{ background: '#eff6ff', color: '#2563eb', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' }}>
+          {news.category}
+        </span>
+      )}
 
-      {/* Judul Berita */}
-      <h1 style={{ fontSize: '32px', fontWeight: 'bold', color: '#0f172a', margin: '15px 0' }}>
+      {/* Judul */}
+      <h1 style={{ fontSize: '30px', fontWeight: 'bold', color: '#0f172a', margin: '15px 0' }}>
         {news.title}
       </h1>
 
-      {/* Meta Penulis & Tanggal (Sudah ditambah keterangannya) */}
+      {/* Meta Info */}
       <div style={{ display: 'flex', gap: '20px', color: '#64748b', fontSize: '14px', marginBottom: '25px', borderBottom: '1px solid #e2e8f0', paddingBottom: '15px' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <User size={16} /> Penulis: {authorName}
+          <User size={16} /> {authorName}
         </span>
         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Calendar size={16} /> Tanggal Terbit: {new Date(rawDate || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
+          <Calendar size={16} /> {new Date(rawDate || Date.now()).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' })}
         </span>
       </div>
 
-      {/* Gambar Banner Utama */}
+      {/* Gambar Utama */}
       {news.image && (
         <img 
           src={news.image} 
@@ -116,12 +102,25 @@ export default function DetailManageNews() {
         />
       )}
 
-      {/* Isi Berita Lengkap */}
-      <div 
-        style={{ lineHeight: '1.8', color: '#334155', fontSize: '16px', whiteSpace: 'pre-line' }}
-      >
+      {/* Deskripsi / Isi Berita */}
+      <div style={{ lineHeight: '1.8', color: '#334155', fontSize: '16px', whiteSpace: 'pre-line', marginBottom: '30px' }}>
         {news.content}
       </div>
+
+      {/* Tags */}
+      {parsedTags.length > 0 && (
+        <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '20px', marginTop: '30px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <Tag size={16} color="#64748b" />
+            <span style={{ fontWeight: '600', color: '#475569', fontSize: '14px' }}>Tags:</span>
+            {parsedTags.map((tag, idx) => (
+              <span key={idx} style={{ background: '#f1f5f9', color: '#475569', padding: '4px 10px', borderRadius: '6px', fontSize: '13px' }}>
+                #{tag}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

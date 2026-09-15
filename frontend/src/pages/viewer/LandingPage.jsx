@@ -1,17 +1,33 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import '../../css/viewer/landing.css';
 
-// 1. Import Foto dari folder Assets
-import bgSekolah from '../../assets/latar.webp'; // Sesuaikan nama file & ekstensi
-import heroIllustration from '../../assets/hero.png'; // Sesuaikan nama file & ekstensi
+// Import Foto dari folder Assets
+import bgSekolah from '../../assets/latar.webp'; 
+import heroIllustration from '../../assets/hero.png'; 
+
+import ProfileSection from './ProfileSection';
+import NewsPage from './NewsPage';
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+
+  const handleNavigateToProfile = (e) => {
+    e.preventDefault();
+    const section = document.getElementById('section-profil');
+    if (section) {
+      section.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/profil');
+    }
+  };
+
   return (
     <div className="landing-wrapper">
       <Navbar />
 
-      {/* 2. Pasang Background Foto melalui Inline Style */}
+      {/* Hero Section */}
       <section 
         id="section-hero" 
         className="hero-section"
@@ -23,7 +39,8 @@ const LandingPage = () => {
           {/* Sisi Kiri: Teks & Tombol */}
           <div className="hero-content">
             <div className="badge-akreditasi">
-              <span className="dot">•</span> Terakreditasi A • Kurikulum Merdeka
+              <span className="green-dot"></span> 
+              <span>Terakreditasi A • Kurikulum Merdeka</span>
             </div>
 
             <h1 className="hero-title">
@@ -37,20 +54,20 @@ const LandingPage = () => {
 
             <div className="hero-buttons">
               <a 
-                href="#section-profil" 
-                className="btn-hero-primary"
-                style={{ backgroundColor: '#0ea5e9', background: '#0ea5e9' }}
-              >
-                Jelajah Sekolah  ➔
+                href="/profil" 
+                onClick={handleNavigateToProfile}
+                className="btn-hero-primary" >
+                <span>Jelajah Sekolah</span>
+                <span className="btn-arrow">➔</span>
               </a>
               <a href="#section-kontak" className="btn-hero-secondary">
                 <span className="btn-icon">ⓘ</span>
                 <span>Hubungi Kami</span>
-             </a>
+              </a>
             </div>
           </div>
 
-          {/* 3. Pasang Foto Samping Kanan pada Tag <img> */}
+          {/* Sisi Kanan: Grafik / Ilustrasi */}
           <div className="hero-graphic">
             <div className="graphic-frame">
               <img 
@@ -62,10 +79,38 @@ const LandingPage = () => {
           </div>
         </div>
 
-        <div className="scroll-down">
-          <span>∨</span>
-        </div>
+        {/* Indicator Scroll Down */}
+        <a 
+          href="/profil" 
+          onClick={handleNavigateToProfile}
+          className="scroll-down" 
+          aria-label="Ke Profil Sekolah"
+        >
+          <svg 
+            width="20" 
+            height="20" 
+            viewBox="0 0 24 24" 
+            fill="none" 
+            stroke="currentColor" 
+            strokeWidth="2.5" 
+            strokeLinecap="round" 
+            strokeLinejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </a>
       </section>
+
+      {/* Profile Section */}
+      <div id="section-profil">
+        <ProfileSection />
+      </div>
+
+      {/* News Section */}
+      <div id="section-berita">
+        <NewsPage />
+      </div>
+
     </div>
   );
 };

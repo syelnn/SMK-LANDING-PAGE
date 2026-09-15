@@ -698,18 +698,12 @@ app.delete('/api/galleries/:id', async (req, res) => {
 app.get('/api/news', async (req, res) => {
   try {
     const data = await prisma.news.findMany({
-      orderBy: { createdAt: 'desc' },
-      include: {
-        authorUser: {
-          select: { id: true, username: true, email: true }
-        }
-        // DIHAPUS: _count: { select: { comments: true } }
-      }
+      orderBy: { createdAt: 'desc' }
     });
     res.json({ success: true, data });
   } catch (error) {
     console.error('Error GET News:', error);
-    res.status(500).json({ success: false, message: 'Gagal memuat berita' });
+    res.status(500).json({ success: false, message: 'Gagal memuat berita', error: error.message });
   }
 });
 
@@ -717,24 +711,15 @@ app.get('/api/news', async (req, res) => {
 app.get('/api/news/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
-    
-    // Cek apakah 'slug' berisi angka ID (seperti "2") atau teks slug
     const isNumber = !isNaN(slug);
     
     const news = await prisma.news.findUnique({
       where: isNumber ? { id: Number(slug) } : { slug: slug }
-      // DIHAPUS: include: { comments: { ... } }
     });
 
     if (!news) {
       return res.status(404).json({ success: false, message: 'Berita tidak ditemukan' });
     }
-
-    // Tambah jumlah pembaca (viewCount)
-    await prisma.news.update({
-      where: { id: news.id },
-      data: { viewCount: { increment: 1 } }
-    });
 
     res.json({ success: true, data: news });
   } catch (error) {
@@ -746,42 +731,27 @@ app.get('/api/news/:slug', async (req, res) => {
 // 3. Tambah berita baru (POST)
 app.post('/api/news', async (req, res) => {
   try {
-    const { 
-      title, 
-      slug, 
-      category, 
-      tags, 
-      excerpt, 
-      content, 
-      image, 
-      author, 
-      status, 
-      isFeatured, 
-      is_featured, 
-      authorId, 
-      author_id 
-    } = req.body;
+    const { title, slug, category, tags, excerpt, content, image, author, status } = req.body;
 
     const generatedSlug = slug || title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    // Cegah nilai NaN pada authorId
-    const rawAuthorId = authorId || author_id;
-    const parsedAuthorId = rawAuthorId && !isNaN(rawAuthorId) ? Number(rawAuthorId) : null;
+    // Pastikan tags berupa array/json
+    const formattedTags = Array.isArray(tags) 
+      ? tags 
+      : (typeof tags === 'string' && tags ? tags.split(',').map(t => t.trim()) : []);
 
     const newNews = await prisma.news.create({
       data: {
         title: title || 'Tanpa Judul',
         slug: generatedSlug || `berita-${Date.now()}`,
         category: category || 'Umum',
-        tags: tags || null,
+        tags: formattedTags,
         excerpt: excerpt || '',
         content: content || '',
         image: image || '',
         author: author || 'Admin',
         status: status || 'draft',
-        isFeatured: Number(isFeatured ?? is_featured ?? 0),
-        publishedAt: status === 'published' ? new Date() : null,
-        authorId: parsedAuthorId
+        publishedAt: status === 'published' ? new Date() : null
       }
     });
 
@@ -796,24 +766,14 @@ app.post('/api/news', async (req, res) => {
 app.put('/api/news/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const { 
-      title, 
-      slug, 
-      category, 
-      tags, 
-      excerpt, 
-      content, 
-      image, 
-      author, 
-      status, 
-      isFeatured, 
-      is_featured, 
-      authorId, 
-      author_id 
-    } = req.body;
+    const { title, slug, category, tags, excerpt, content, image, author, status } = req.body;
 
-    // Otomatis perbarui slug sesuai judul jika tidak di-pass manual
     const generatedSlug = slug || title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+    // Pastikan tags berupa array/json
+    const formattedTags = Array.isArray(tags) 
+      ? tags 
+      : (typeof tags === 'string' && tags ? tags.split(',').map(t => t.trim()) : []);
 
     const updated = await prisma.news.update({
       where: { id: Number(id) },
@@ -821,15 +781,13 @@ app.put('/api/news/:id', async (req, res) => {
         title,
         slug: generatedSlug,
         category,
-        tags: tags || null,
+        tags: formattedTags,
         excerpt,
         content,
         image,
         author,
         status,
-        isFeatured: Number(isFeatured ?? is_featured ?? 0),
-        publishedAt: status === 'published' ? new Date() : undefined,
-        authorId: (authorId || author_id) ? Number(authorId || author_id) : undefined
+        publishedAt: status === 'published' ? new Date() : undefined
       }
     });
 
