@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react'; // <-- useEffect ditambahkan di sini
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import '../../css/viewer/landing.css';
@@ -7,11 +7,27 @@ import '../../css/viewer/landing.css';
 import bgSekolah from '../../assets/latar.webp'; 
 import heroIllustration from '../../assets/hero.png'; 
 
+// Import Komponen Section
 import ProfileSection from './ProfileSection';
 import NewsPage from './NewsPage';
+import JurusanProgramViewer from './JurusanProgram'; 
 
 const LandingPage = () => {
   const navigate = useNavigate();
+
+  // PENJEMPUT SINYAL: Scroll otomatis ke section-program jika datang dari halaman detail
+useEffect(() => {
+    const targetSection = sessionStorage.getItem('scrollToSection');
+    if (targetSection) {
+      sessionStorage.removeItem('scrollToSection');
+      setTimeout(() => {
+        const el = document.getElementById(targetSection);
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth' });
+        }
+      }, 200);
+    }
+  }, []);
 
   const handleNavigateToProfile = (e) => {
     e.preventDefault();
@@ -54,7 +70,7 @@ const LandingPage = () => {
 
             <div className="hero-buttons">
               <a 
-                href="/profil" 
+                href="#section-profil" 
                 onClick={handleNavigateToProfile}
                 className="btn-hero-primary" >
                 <span>Jelajah Sekolah</span>
@@ -81,7 +97,7 @@ const LandingPage = () => {
 
         {/* Indicator Scroll Down */}
         <a 
-          href="/profil" 
+          href="#section-profil" 
           onClick={handleNavigateToProfile}
           className="scroll-down" 
           aria-label="Ke Profil Sekolah"
@@ -106,9 +122,14 @@ const LandingPage = () => {
         <ProfileSection />
       </div>
 
-      {/* News Section */}
+      {/* News Section (Berita) */}
       <div id="section-berita">
         <NewsPage />
+      </div>
+
+      {/* Jurusan & Program */}
+      <div id="section-program">
+        <JurusanProgramViewer />
       </div>
 
     </div>

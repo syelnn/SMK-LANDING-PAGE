@@ -8,6 +8,8 @@ import {
   Image as ImageIcon, LayoutTemplate, PlusCircle, LayoutDashboard
 } from 'lucide-react';
 import LandingPage from './pages/viewer/LandingPage'; 
+import JurusanProgramViewer from './pages/viewer/JurusanProgram';
+import DetailKurikulumViewer from './pages/viewer/DetailKurikulum';
 
 
 import Login from './Login';
@@ -537,6 +539,8 @@ const MainApp = () => {
     <Routes>
     
       <Route path="/" element={<LandingPage />} />
+      <Route path="/jurusan" element={<JurusanProgramViewer />} />
+      <Route path="/jurusan/detail-kurikulum/:slug" element={<DetailKurikulumViewer />} />
 
     
       <Route path="/login" element={<Login />} />

@@ -15,26 +15,25 @@ const Navbar = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // State khusus mengontrol garis aktif navigasi secara real-time
   const [activePath, setActivePath] = useState(location.pathname);
 
-  // Sync activePath jika URL React Router berubah
   useEffect(() => {
     setActivePath(location.pathname);
   }, [location.pathname]);
 
-  // 1. Fetching Menu (DILENGKAPI CACHING AGAR LEBIH CEPTA & TIDAK LOADING LAMA)
+  const getCleanUrl = useCallback((item) => {
+    let rawUrl = (item.url || item.href || '/').trim();
+    if (rawUrl === '/dashboard') return '/';
+    return rawUrl;
+  }, []);
+
+  // 1. Fetching Menu dari Database
   useEffect(() => {
     let isMounted = true;
     
-    // Cek dulu dari cache sessionStorage
     const cachedMenu = sessionStorage.getItem('app_menu_items');
     if (cachedMenu) {
-      try {
-        setMenuItems(JSON.parse(cachedMenu));
-      } catch (e) {
-        console.error("Failed to parse cached menu", e);
-      }
+      try { setMenuItems(JSON.parse(cachedMenu)); } catch (e) {}
     }
 
     const fetchMenus = async () => {
@@ -46,12 +45,11 @@ const Navbar = () => {
         const rawList = Array.isArray(result) ? result : (result.data || []);
         
         const publicMenus = rawList.filter(item => {
-          const isPublic = item.isPublic ?? item.is_public ?? true;
+          const isPublic = item.isPublic ?? item.is_public ?? false;
           const isActive = item.status === 1 || item.status === 'ACTIVE' || item.status === true || item.status === undefined;
           return isPublic && isActive;
         });
 
-        // Simpan ke Cache
         sessionStorage.setItem('app_menu_items', JSON.stringify(publicMenus));
         setMenuItems(publicMenus);
       } catch (error) {
@@ -63,7 +61,7 @@ const Navbar = () => {
     return () => { isMounted = false; };
   }, []);
 
-  // 2. Optimized Scroll Event
+  // 2. Scroll Navbar Background Shadow Listener
   useEffect(() => {
     const handleScroll = () => {
       const scrolled = window.scrollY > 20;
@@ -88,14 +86,6 @@ const Navbar = () => {
     };
   }, []);
 
-  // 3. Helper Sanitasi URL
-  const getCleanUrl = useCallback((item) => {
-    let rawUrl = (item.url || item.href || '/').trim();
-    if (rawUrl === '/dashboard') return '/';
-    return rawUrl;
-  }, []);
-
-  // 4. Memoized Data Menu
   const mainMenus = useMemo(() => {
     return menuItems.filter(item => !item.parentId && !item.parent_id);
   }, [menuItems]);
@@ -104,66 +94,73 @@ const Navbar = () => {
     return menuItems.filter(item => item.parentId === parentId || item.parent_id === parentId);
   }, [menuItems]);
 
-  // 5. Automatic IntersectionObserver
+  // ==========================================
+  // 3. SCROLL SPY KHUSUS LANDING PAGE
+  // ==========================================
   useEffect(() => {
+    // Jika sedang di halaman detail kurikulum, matikan scroll-spy agar tidak error
+    if (location.pathname.includes('/detail-kurikulum')) return;
     if (menuItems.length === 0) return;
 
-    const observerOptions = {
-      root: null,
-      rootMargin: '-20% 0px -50% 0px',
-      threshold: 0.1
-    };
+    const handleScrollSpy = () => {
+      const scrollPos = window.scrollY + 250;
 
-    const observerCallback = (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const sectionId = entry.target.id;
-          const matchedMenu = menuItems.find(
-            item => (item.sectionKey === sectionId || item.section_key === sectionId)
-          );
+      const heroEl = document.getElementById('section-hero');
+      const profilEl = document.getElementById('section-profil');
+      const beritaEl = document.getElementById('section-berita');
+      const programEl = document.getElementById('section-program');
 
-          if (matchedMenu) {
-            const targetUrl = getCleanUrl(matchedMenu);
-            if (window.location.pathname !== targetUrl) {
-              window.history.replaceState(null, '', targetUrl);
-            }
-            setActivePath(targetUrl);
-          }
-        }
+      let activeKey = 'section-hero';
+
+      if (heroEl && scrollPos >= heroEl.offsetTop) activeKey = 'section-hero';
+      if (profilEl && scrollPos >= profilEl.offsetTop) activeKey = 'section-profil';
+      if (beritaEl && scrollPos >= beritaEl.offsetTop) activeKey = 'section-berita';
+      if (programEl && scrollPos >= programEl.offsetTop) activeKey = 'section-program';
+
+      const matchedMenu = menuItems.find(item => {
+        const key = item.sectionKey || item.section_key;
+        return key === activeKey;
       });
+
+      if (matchedMenu) {
+        setActivePath(getCleanUrl(matchedMenu));
+      }
     };
 
-    const observer = new IntersectionObserver(observerCallback, observerOptions);
+    window.addEventListener('scroll', handleScrollSpy, { passive: true });
+    const initialSpy = setTimeout(handleScrollSpy, 500);
 
-    menuItems.forEach((item) => {
-      const key = item.sectionKey || item.section_key;
-      if (key) {
-        const el = document.getElementById(key);
-        if (el) observer.observe(el);
-      }
-    });
+    return () => {
+      window.removeEventListener('scroll', handleScrollSpy);
+      clearTimeout(initialSpy);
+    };
+  }, [menuItems, getCleanUrl, location.pathname]);
 
-    return () => observer.disconnect();
-  }, [menuItems, getCleanUrl]);
-
-  // 6. Handle Nav Klik
+  // 4. Handle Nav Klik (Smooth Scroll)
   const handleNavClick = (item) => {
     setMobileMenuOpen(false);
     setDropdownOpen(null);
 
     const targetUrl = getCleanUrl(item);
-    const sectionKey = item.sectionKey || item.section_key;
 
-    if (sectionKey) {
+    const sectionMap = {
+      '/profil': 'section-profil',
+      '/berita': 'section-berita',
+      '/program': 'section-program',
+      '/jurusan': 'section-program',
+      '/kontak': 'section-kontak',
+      '/': 'section-hero'
+    };
+
+    const sectionKey = sectionMap[targetUrl];
+
+    if (sectionKey && location.pathname === '/') {
       const element = document.getElementById(sectionKey);
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
-        window.history.pushState(null, '', targetUrl);
         setActivePath(targetUrl);
-      } else {
-        navigate(targetUrl);
       }
-    } else if (targetUrl) {
+    } else {
       navigate(targetUrl);
     }
   };
@@ -173,28 +170,29 @@ const Navbar = () => {
     setDropdownOpen(prev => (prev === menuId ? null : menuId));
   };
 
-  // 7. Logika Check Active Menu
+  // 5. PENGECEKAN MENU AKTIF YANG CERDAS
   const checkIsActive = (menu) => {
-    const currentPath = activePath;
     const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
     const menuUrl = getCleanUrl(menu);
 
-    if (menuTitle.includes('beranda') || menuTitle.includes('home') || menuUrl === '/') {
-      return currentPath === '/';
+    // Jika sedang berada di Halaman Detail Kurikulum, paksa aktif di menu Jurusan & Program!
+    if (location.pathname.includes('/detail-kurikulum')) {
+      return menuTitle.includes('jurusan') || menuTitle.includes('program') || menuUrl.includes('jurusan');
     }
 
-    if (menuUrl && menuUrl !== '/') {
-      return currentPath === menuUrl;
-    }
-
-    return false;
+    // Jika di Landing Page, sesuaikan dengan activePath yang didapat dari scroll spy
+    return activePath === menuUrl;
   };
 
   return (
     <nav className={`viewer-navbar ${isScrolled ? 'navbar-scrolled' : ''}`}>
       <div className="navbar-container">
         {/* Logo Sekolah */}
-        <Link to="/" className="navbar-logo">
+        <div 
+          className="navbar-logo" 
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        >
           <img 
             src={logoSekolah} 
             alt="Logo Sekolah" 
@@ -205,7 +203,7 @@ const Navbar = () => {
             <span className="brand-title">SMKN COMPRENG</span>
             <span className="brand-subtitle">The School of SESCO Model</span>
           </div>
-        </Link>
+        </div>
 
         {/* Toggle Mobile */}
         <button 
@@ -225,11 +223,7 @@ const Navbar = () => {
             if (hasChildren) {
               const isDropdownActive = dropdownOpen === menu.id;
               return (
-                <li 
-                  key={menu.id} 
-                  ref={dropdownRef}
-                  className="nav-item dropdown"
-                >
+                <li key={menu.id} ref={dropdownRef} className="nav-item dropdown">
                   <button 
                     className={`dropdown-btn ${isDropdownActive ? 'active-pill' : ''}`}
                     onClick={(e) => handleDropdownToggle(menu.id, e)}

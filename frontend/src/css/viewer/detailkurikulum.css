@@ -1,0 +1,219 @@
+/* src/css/viewer/detailkurikulum.css */
+
+.dk-wrapper {
+  background-color: #ffffff;
+  min-height: 100vh;
+  padding: 120px 24px 60px 24px; /* Padding atas ditambahkan agar tidak tertutup Navbar */
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+
+.dk-container {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* Tombol Kembali */
+.dk-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #64748b;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  margin-bottom: 40px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.dk-back-link:hover {
+  color: #0f172a;
+  background-color: #f1f5f9;
+  transform: translateX(-4px); /* Efek bergeser ke kiri sedikit */
+}
+
+/* Header Section */
+.dk-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.dk-icon-box {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 25px;
+  transform: rotate(-5deg);
+  background-color: var(--badge-bg); /* Diambil dari CSS Variable di JSX */
+  color: var(--badge-color);
+  box-shadow: 0 10px 25px -5px var(--badge-bg);
+}
+
+.dk-tagline {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 15px;
+  color: var(--badge-color);
+}
+
+.dk-title {
+  font-size: 42px;
+  font-weight: 900;
+  color: #0f172a;
+  margin: 0 0 15px 0;
+  letter-spacing: -1px;
+}
+
+.dk-subtitle {
+  font-size: 18px;
+  color: #64748b;
+  font-style: italic;
+  margin: 0;
+}
+
+/* Body Section */
+.dk-body-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 50px;
+  align-items: flex-start;
+}
+
+.dk-col-left {
+  flex: 1 1 60%;
+  min-width: 300px;
+}
+
+.dk-col-right {
+  flex: 1 1 35%;
+  min-width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+}
+
+.dk-section-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 15px;
+}
+
+.dk-desc-text {
+  font-size: 15px;
+  color: #475569;
+  line-height: 1.8;
+  margin-bottom: 50px;
+}
+
+/* Grid Mata Pelajaran */
+.dk-subjects-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 15px;
+}
+
+.dk-subject-card {
+  background: #f8fafc;
+  padding: 16px 20px;
+  border-radius: 12px;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  transition: all 0.2s ease;
+  cursor: default;
+}
+
+.dk-subject-card:hover {
+  border-color: var(--badge-color);
+  background-color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.dk-subject-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background-color: var(--badge-color);
+}
+
+/* Prospek Karir Card (Mode Gelap) */
+.dk-career-card {
+  background-color: #0f172a;
+  border-radius: 24px;
+  padding: 40px 30px;
+  color: white;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.dk-career-ornament {
+  position: absolute;
+  top: -20px;
+  right: -20px;
+  width: 100px;
+  height: 100px;
+  background-color: #1e293b;
+  border-radius: 50%;
+  opacity: 0.5;
+}
+
+.dk-career-title {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 25px;
+  position: relative;
+  z-index: 1;
+}
+
+.dk-career-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.dk-career-item {
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #cbd5e1;
+}
+
+.dk-career-footer {
+  font-size: 12px;
+  color: #94a3b8;
+  font-style: italic;
+  margin-top: 30px;
+  border-top: 1px solid #334155;
+  padding-top: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Responsif untuk Mobile */
+@media (max-width: 768px) {
+  .dk-title { font-size: 32px; }
+  .dk-body-row { gap: 30px; }
+}
