@@ -12,13 +12,19 @@ const Navbar = () => {
 
   const dropdownRef = useRef(null);
   const isScrolledRef = useRef(false);
+  const isManualScrolling = useRef(false);
+
+  // Inisialisasi hook router
   const navigate = useNavigate();
   const location = useLocation();
 
+  // Inisialisasi state & ref
+  const activePathRef = useRef(location.pathname);
   const [activePath, setActivePath] = useState(location.pathname);
 
   useEffect(() => {
     setActivePath(location.pathname);
+    activePathRef.current = location.pathname;
   }, [location.pathname]);
 
   const getCleanUrl = useCallback((item) => {
@@ -61,13 +67,21 @@ const Navbar = () => {
     return () => { isMounted = false; };
   }, []);
 
-  // 2. Scroll Navbar Background Shadow Listener
+  // 2. Listener Background Navbar (Scroll & Click Outside)
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const scrolled = window.scrollY > 20;
-      if (scrolled !== isScrolledRef.current) {
-        isScrolledRef.current = scrolled;
-        setIsScrolled(scrolled);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrolled = window.scrollY > 20;
+          if (scrolled !== isScrolledRef.current) {
+            isScrolledRef.current = scrolled;
+            setIsScrolled(scrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
@@ -86,6 +100,7 @@ const Navbar = () => {
     };
   }, []);
 
+  // Filter Menu Utama & Submenu
   const mainMenus = useMemo(() => {
     return menuItems.filter(item => !item.parentId && !item.parent_id);
   }, [menuItems]);
@@ -93,58 +108,76 @@ const Navbar = () => {
   const getSubMenus = useCallback((parentId) => {
     return menuItems.filter(item => item.parentId === parentId || item.parent_id === parentId);
   }, [menuItems]);
-// ==========================================
-  // 3. SCROLL SPY KHUSUS LANDING PAGE & UPDATE SLUG
-  // ==========================================
+
+  // 3. SCROLL SPY PERBAIKAN URL AKURAT
   useEffect(() => {
-    // Aktifkan scroll spy pada path landing page
-    const validLandingPaths = ['/', '/profil', '/berita', '/program', '/jurusan', '/kontak'];
+    const validLandingPaths = ['/', '/profil', '/berita', '/program', '/jurusan', '/ekstrakurikuler', '/ekskul', '/kontak'];
     if (!validLandingPaths.includes(location.pathname)) return;
 
+    let ticking = false;
+
     const handleScrollSpy = () => {
-      const scrollPos = window.scrollY + 250;
+      if (isManualScrolling.current) return;
 
-      const heroEl = document.getElementById('section-hero');
-      const profilEl = document.getElementById('section-profil');
-      const beritaEl = document.getElementById('section-berita');
-      const programEl = document.getElementById('section-program');
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollPos = window.scrollY + 250;
 
-      let activeKey = 'section-hero';
+          const heroEl = document.getElementById('section-hero');
+          const profilEl = document.getElementById('section-profil');
+          const beritaEl = document.getElementById('section-berita');
+          const programEl = document.getElementById('section-program');
+          const ekskulEl = document.getElementById('section-ekskul');
+          const kontakEl = document.getElementById('section-kontak');
 
-      if (heroEl && scrollPos >= heroEl.offsetTop) activeKey = 'section-hero';
-      if (profilEl && scrollPos >= profilEl.offsetTop) activeKey = 'section-profil';
-      if (beritaEl && scrollPos >= beritaEl.offsetTop) activeKey = 'section-berita';
-      if (programEl && scrollPos >= programEl.offsetTop) activeKey = 'section-program';
+          let activeKey = 'section-hero';
 
-      // ====================================================================
-      // KUNCI FIX: Jika scroll mentok di paling bawah, paksakan ke 'section-program'
-      // ====================================================================
-      const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 50;
-      if (isBottom && programEl) {
-        activeKey = 'section-program';
-      }
+          if (heroEl && scrollPos >= heroEl.offsetTop) activeKey = 'section-hero';
+          if (profilEl && scrollPos >= profilEl.offsetTop) activeKey = 'section-profil';
+          if (beritaEl && scrollPos >= beritaEl.offsetTop) activeKey = 'section-berita';
+          if (programEl && scrollPos >= programEl.offsetTop) activeKey = 'section-program';
+          if (ekskulEl && scrollPos >= ekskulEl.offsetTop) activeKey = 'section-ekskul';
+          if (kontakEl && scrollPos >= kontakEl.offsetTop) activeKey = 'section-kontak';
 
-      const matchedMenu = menuItems.find(item => {
-        const key = item.sectionKey || item.section_key;
-        return key === activeKey;
-      });
+          // Jika posisi scroll mendekati bagian paling bawah
+          const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150;
+          if (isBottom) {
+            if (kontakEl) activeKey = 'section-kontak';
+            else if (ekskulEl) activeKey = 'section-ekskul';
+          }
 
-      if (matchedMenu) {
-        const cleanUrl = getCleanUrl(matchedMenu);
-        setActivePath(cleanUrl);
-        
-        if (window.location.pathname !== cleanUrl) {
-          window.history.replaceState(null, '', cleanUrl);
-        }
+          const matchedMenu = menuItems.find(item => {
+            const key = item.sectionKey || item.section_key;
+            return key === activeKey;
+          });
+
+          if (matchedMenu) {
+            const cleanUrl = getCleanUrl(matchedMenu);
+            
+            if (activePathRef.current !== cleanUrl) {
+              activePathRef.current = cleanUrl;
+              setActivePath(cleanUrl);
+              window.history.replaceState(null, '', cleanUrl);
+            }
+          } else if (activeKey === 'section-ekskul') {
+            const targetUrl = '/ekstrakurikuler';
+            if (activePathRef.current !== targetUrl) {
+              activePathRef.current = targetUrl;
+              setActivePath(targetUrl);
+              window.history.replaceState(null, '', targetUrl);
+            }
+          }
+
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
     window.addEventListener('scroll', handleScrollSpy, { passive: true });
-    const initialSpy = setTimeout(handleScrollSpy, 500);
 
     return () => {
       window.removeEventListener('scroll', handleScrollSpy);
-      clearTimeout(initialSpy);
     };
   }, [menuItems, getCleanUrl, location.pathname]);
 
@@ -160,20 +193,30 @@ const Navbar = () => {
       '/berita': 'section-berita',
       '/program': 'section-program',
       '/jurusan': 'section-program',
+      '/ekstrakurikuler': 'section-ekskul',
+      '/ekskul': 'section-ekskul',
       '/kontak': 'section-kontak',
       '/': 'section-hero'
     };
 
     const sectionKey = sectionMap[targetUrl];
 
-    if (sectionKey && location.pathname === '/') {
+    if (sectionKey) {
       const element = document.getElementById(sectionKey);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
+        isManualScrolling.current = true;
+        
+        activePathRef.current = targetUrl;
         setActivePath(targetUrl);
-        // Ubah URL browser tanpa reload
-        const newHashOrPath = targetUrl === '/' ? '/' : `${targetUrl.replace('/', '')}`;
-        window.history.replaceState(null, '', newHashOrPath);
+        window.history.replaceState(null, '', targetUrl);
+
+        element.scrollIntoView({ behavior: 'smooth' });
+
+        setTimeout(() => {
+          isManualScrolling.current = false;
+        }, 800);
+      } else {
+        navigate(targetUrl);
       }
     } else {
       navigate(targetUrl);
@@ -185,23 +228,26 @@ const Navbar = () => {
     setDropdownOpen(prev => (prev === menuId ? null : menuId));
   };
 
-  // 5. PENGECEKAN MENU AKTIF YANG CERDAS
+  // 5. PENGECEKAN MENU AKTIF (Garis Biru)
   const checkIsActive = (menu) => {
     const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
     const menuUrl = getCleanUrl(menu);
 
-    // 1) Jika berada di Halaman Detail Kurikulum
+    // Mencegah garis biru pada "Jurusan & Program" saat berada di area ekstrakurikuler
+    if (activePath === '/ekstrakurikuler' || activePath === '/ekskul') {
+      if (menuTitle.includes('jurusan') || menuTitle.includes('program')) {
+        return false;
+      }
+    }
+
     if (location.pathname.includes('/detail-kurikulum')) {
       return menuTitle.includes('jurusan') || menuTitle.includes('program') || menuUrl.includes('jurusan');
     }
 
-    // --- TAMBAHKAN BLOK KODE INI ---
     if (location.pathname.startsWith('/berita')) {
       return menuTitle.includes('berita') || menuUrl.includes('berita');
     }
-    // --------------------------------
 
-    // 3) Default (Landing Page scroll spy & exact match)
     return activePath === menuUrl;
   };
 
@@ -242,22 +288,31 @@ const Navbar = () => {
             const hasChildren = subMenus.length > 0 || menu.type === 'dropdown';
 
             if (hasChildren) {
-              const isDropdownActive = dropdownOpen === menu.id;
+              const isDropdownOpenState = dropdownOpen === menu.id;
+
+              // Menu dropdown ("Lainnya") dibuat selalu false agar tidak muncul garis biru/aktif
+              const isAnyChildActive = false;
+
               return (
                 <li key={menu.id} ref={dropdownRef} className="nav-item dropdown">
                   <button 
-                    className={`dropdown-btn ${isDropdownActive ? 'active-pill' : ''}`}
+                    className={`dropdown-btn ${isAnyChildActive ? 'active' : ''} ${isDropdownOpenState ? 'active-pill' : ''}`}
                     onClick={(e) => handleDropdownToggle(menu.id, e)}
                   >
                     {menu.title}
-                    <span className="arrow">{isDropdownActive ? '▲' : '▾'}</span>
+                    <span className="arrow">{isDropdownOpenState ? '▲' : '▾'}</span>
                   </button>
-                  <ul className={`dropdown-menu ${isDropdownActive ? 'show' : ''}`}>
-                    {subMenus.map((sub) => (
-                      <li key={sub.id} onClick={() => handleNavClick(sub)}>
-                        <span className="dropdown-link">{sub.title}</span>
-                      </li>
-                    ))}
+                  <ul className={`dropdown-menu ${isDropdownOpenState ? 'show' : ''}`}>
+                    {subMenus.map((sub) => {
+                      // Submenu di dalam dropdown "Lainnya" juga tidak ditandai active
+                      return (
+                        <li key={sub.id} onClick={() => handleNavClick(sub)}>
+                          <span className="dropdown-link">
+                            {sub.title}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </li>
               );

@@ -11,6 +11,7 @@ import heroIllustration from '../../assets/hero.png';
 import ProfileSection from './ProfileSection';
 import NewsPage from './NewsPage';
 import JurusanProgramViewer from './JurusanProgram'; 
+import EkstrakurikulerViewer from './EkstrakurikulerViewer';
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -48,6 +49,8 @@ const LandingPage = () => {
       '/berita': 'section-berita',
       '/program': 'section-program',
       '/jurusan': 'section-program',
+      '/ekstrakurikuler': 'section-ekskul', 
+      '/ekskul': 'section-ekskul',
       '/kontak': 'section-kontak',
     };
     
@@ -162,6 +165,11 @@ const LandingPage = () => {
       {/* Jurusan & Program */}
       <div id="section-program">
         <JurusanProgramViewer />
+      </div>
+
+      {/* 3. EKSTRAKURIKULER SECTION */}
+      <div id="section-ekskul">
+        <EkstrakurikulerViewer />
       </div>
 
     </div>

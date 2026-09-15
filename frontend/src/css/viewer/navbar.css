@@ -347,3 +347,27 @@
     width: 80%;
   }
 }
+
+/* 1. Tambahkan ke root CSS agar scroll halaman otomatis smooth */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 2. Tambahkan animasi halus pada indikator garis aktif di navbar */
+.nav-link, 
+.dropdown-btn {
+  transition: color 0.3s ease, border-color 0.3s ease;
+}
+
+.nav-link::after,
+.dropdown-btn::after {
+  transition: width 0.3s ease-in-out, background-color 0.3s ease;
+}
+/* Aktifkan garis biru di tombol dropdown (misal: "Lainnya") saat sub-menu aktif */
+.dropdown-btn.active::after {
+  width: 75%;
+}
+
+.dropdown-btn.active {
+  color: #ffffff;
+}
