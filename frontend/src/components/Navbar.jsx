@@ -98,8 +98,8 @@ const Navbar = () => {
   // 3. SCROLL SPY KHUSUS LANDING PAGE
   // ==========================================
   useEffect(() => {
-    // Jika sedang di halaman detail kurikulum, matikan scroll-spy agar tidak error
-    if (location.pathname.includes('/detail-kurikulum')) return;
+    // --- UBAH BARIS INI (Tambahkan: || location.pathname.startsWith('/berita/')) ---
+    if (location.pathname.includes('/detail-kurikulum') || location.pathname.startsWith('/berita/')) return;
     if (menuItems.length === 0) return;
 
     const handleScrollSpy = () => {
@@ -175,12 +175,18 @@ const Navbar = () => {
     const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
     const menuUrl = getCleanUrl(menu);
 
-    // Jika sedang berada di Halaman Detail Kurikulum, paksa aktif di menu Jurusan & Program!
+    // 1) Jika berada di Halaman Detail Kurikulum
     if (location.pathname.includes('/detail-kurikulum')) {
       return menuTitle.includes('jurusan') || menuTitle.includes('program') || menuUrl.includes('jurusan');
     }
 
-    // Jika di Landing Page, sesuaikan dengan activePath yang didapat dari scroll spy
+    // --- TAMBAHKAN BLOK KODE INI ---
+    if (location.pathname.startsWith('/berita')) {
+      return menuTitle.includes('berita') || menuUrl.includes('berita');
+    }
+    // --------------------------------
+
+    // 3) Default (Landing Page scroll spy & exact match)
     return activePath === menuUrl;
   };
 

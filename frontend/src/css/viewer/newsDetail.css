@@ -1,0 +1,352 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+.vnd-page {
+  width: 100% !important;
+  min-height: 100vh;
+  background-color: #ffffff !important;
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  color: #0f172a !important;
+}
+
+/* Jarak atas agar tidak tertutup Navbar sticky/fixed */
+.vnd-main-content {
+  padding-top: 100px !important;
+  padding-bottom: 80px !important;
+}
+
+.vnd-article-container {
+  max-width: 860px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+}
+
+/* Navigasi Breadcrumb */
+.vnd-breadcrumb {
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.05em !important;
+  color: #94a3b8 !important;
+  margin-bottom: 24px !important;
+  flex-wrap: wrap !important;
+}
+
+.vnd-breadcrumb a {
+  color: #94a3b8 !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+}
+
+.vnd-breadcrumb a:hover {
+  color: #2563eb !important;
+}
+
+.vnd-breadcrumb-icon {
+  color: #cbd5e1 !important;
+}
+
+.vnd-breadcrumb-active {
+  color: #cbd5e1 !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: 300px !important;
+}
+
+/* Tag Badge di Atas Judul */
+.vnd-tags-wrapper {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+  margin-bottom: 16px !important;
+}
+
+.vnd-tag-badge {
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  padding: 6px 14px !important;
+  border-radius: 6px !important;
+  letter-spacing: 0.04em !important;
+}
+
+/* Judul Utama */
+.vnd-title {
+  font-size: 36px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  line-height: 1.25 !important;
+  margin: 0 0 24px 0 !important;
+  letter-spacing: -0.02em !important;
+}
+
+/* Meta Informasi Penulis & Tanggal */
+.vnd-author-card {
+  display: flex !important;
+  align-items: center !important;
+  gap: 16px !important;
+  margin-bottom: 32px !important;
+  padding-bottom: 24px !important;
+  border-bottom: 1px solid #f1f5f9 !important;
+}
+
+.vnd-author-avatar {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 50% !important;
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+}
+
+.vnd-author-info {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+/* Container Tanggal: Ikon di kiri, teks bertumpuk vertikal di kanan */
+.vnd-date-info {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+/* Pembungkus teks di dalam Tanggal agar bertumpuk persis seperti Penulis */
+.vnd-date-info > div {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+}
+
+.vnd-date-icon {
+  color: #94a3b8 !important;
+  flex-shrink: 0 !important;
+}
+
+.vnd-author-label {
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  color: #94a3b8 !important;
+  letter-spacing: 0.05em !important;
+  display: block !important;
+  line-height: 1.2 !important;
+  margin-bottom: 2px !important;
+}
+
+.vnd-author-name,
+.vnd-date-value {
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #1e293b !important;
+  display: block !important;
+  line-height: 1.2 !important;
+}
+
+.vnd-author-divider {
+  width: 1px !important;
+  height: 28px !important;
+  background-color: #e2e8f0 !important;
+  margin: 0 8px !important;
+}
+
+/* Gambar Sampul Artikel */
+.vnd-banner-wrapper {
+  width: 100% !important;
+  border-radius: 20px !important;
+  overflow: hidden !important;
+  margin-bottom: 36px !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06) !important;
+}
+
+.vnd-banner-wrapper img {
+  width: 100% !important;
+  max-height: 480px !important;
+  object-fit: cover !important;
+  display: block !important;
+}
+
+/* Format Paragraf Artikel */
+.vnd-content p {
+  font-size: 17px !important;
+  line-height: 1.85 !important;
+  color: #334155 !important;
+  margin-bottom: 24px !important;
+}
+
+/* Tags Bawah */
+.vnd-footer-tags {
+  display: flex !important;
+  align-items: center !important;
+  gap: 12px !important;
+  margin-top: 40px !important;
+  padding-top: 24px !important;
+  border-top: 1px solid #f1f5f9 !important;
+  flex-wrap: wrap !important;
+}
+
+.vnd-footer-tags-title {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 13px !important;
+  font-weight: 700 !important;
+  color: #64748b !important;
+}
+
+.vnd-footer-tags-list {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 8px !important;
+}
+
+.vnd-footer-tag-item {
+  background-color: #f8fafc !important;
+  border: 1px solid #e2e8f0 !important;
+  color: #475569 !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  padding: 4px 12px !important;
+  border-radius: 6px !important;
+}
+
+/* Section Berita Lainnya */
+.vnd-other-section {
+  margin-top: 72px !important;
+  background-color: #f8fafc !important;
+  padding: 60px 0 !important;
+  border-top: 1px solid #f1f5f9 !important;
+}
+
+.vnd-other-container {
+  max-width: 1140px !important;
+  margin: 0 auto !important;
+  padding: 0 24px !important;
+}
+
+.vnd-other-title {
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #0f172a !important;
+  margin-bottom: 28px !important;
+}
+
+.vnd-other-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 24px !important;
+}
+
+.vnd-other-card {
+  background: #ffffff !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  text-decoration: none !important;
+  transition: all 0.25s ease !important;
+}
+
+.vnd-other-card:hover {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.06) !important;
+}
+
+.vnd-other-img {
+  width: 100% !important;
+  height: 180px !important;
+}
+
+.vnd-other-img img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+
+.vnd-other-body {
+  padding: 20px !important;
+}
+
+.vnd-other-date {
+  font-size: 12px !important;
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
+}
+
+.vnd-other-body h3 {
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+  margin: 8px 0 !important;
+  line-height: 1.4 !important;
+}
+
+.vnd-other-body p {
+  font-size: 13px !important;
+  color: #64748b !important;
+  margin: 0 !important;
+  line-height: 1.5 !important;
+}
+
+/* State Loading & Error */
+.vnd-loading-container,
+.vnd-error-container {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 60vh !important;
+  padding-top: 100px !important;
+  text-align: center !important;
+}
+
+.vnd-spinner {
+  animation: spin 1s linear infinite !important;
+  color: #2563eb !important;
+  margin-bottom: 12px !important;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.vnd-btn-back {
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  padding: 10px 20px !important;
+  border-radius: 8px !important;
+  text-decoration: none !important;
+  font-weight: 600 !important;
+  margin-top: 16px !important;
+}
+
+/* Responsif */
+@media (max-width: 768px) {
+  .vnd-main-content {
+    padding-top: 80px !important;
+  }
+
+  .vnd-title {
+    font-size: 26px !important;
+  }
+
+  .vnd-author-card {
+    flex-wrap: wrap !important;
+    gap: 12px !important;
+  }
+
+  .vnd-author-divider {
+    display: none !important;
+  }
+
+  .vnd-other-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

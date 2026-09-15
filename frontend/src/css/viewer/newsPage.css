@@ -1,216 +1,263 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
 /* ==========================================
-   VIEWER NEWS PAGE (ISOLATED & SCOPED)
+   VIEWER NEWS PAGE (EXCLUSIVELY SCOPED)
    ========================================== */
 
-.viewer-news-page {
-  background-color: #f8fafc;
-  color: #1e293b;
+.vnp-wrapper {
+  background-color: #ffffff !important;
+  color: #0f172a !important;
+  width: 100% !important;
   min-height: 100vh;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-  padding-bottom: 60px;
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+  padding-top: 36px !important;
+  padding-bottom: 80px !important;
+  box-sizing: border-box !important;
 }
 
-/* Hero Header Scoped */
-.viewer-news-page .viewer-news-hero {
-  background: transparent;
-  padding: 30px 20px 20px;
-  text-align: center;
+/* Hero Header */
+.vnp-hero {
+  width: 100% !important;
+  padding: 10px 20px 28px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
 }
 
-.viewer-news-page .hero-content {
-  max-width: 700px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+.vnp-hero-inner {
+  max-width: 580px !important;
+  width: 100% !important;
+  text-align: center !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
 }
 
-.viewer-news-page .badge-pill {
-  display: inline-block;
-  background-color: #eff6ff;
-  color: #2563eb;
-  border: 1px solid #bfdbfe;
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+/* Pill Badge di Atas Berita (Gambar 2) */
+.vnp-hero-badge {
+  display: inline-block !important;
+  background-color: #eff6ff !important;
+  color: #2563eb !important;
+  border: 1px solid #dbeafe !important;
+  padding: 5px 16px !important;
+  border-radius: 50px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  margin-bottom: 14px !important;
 }
 
-.viewer-news-page .hero-title {
-  font-size: 28px !important;
+/* Judul Utama */
+.vnp-main-title {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 30px !important;
   font-weight: 800 !important;
   color: #0f172a !important;
-  margin-bottom: 8px !important;
+  margin: 0 0 10px 0 !important;
   line-height: 1.25 !important;
-  letter-spacing: -0.3px !important;
+  letter-spacing: -0.5px !important;
+  text-align: center !important;
 }
 
-.viewer-news-page .hero-title .highlight {
+.vnp-title-accent {
   color: #2563eb !important;
 }
 
-.viewer-news-page .hero-subtitle {
+/* Subtitle Header */
+.vnp-main-subtitle {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
   color: #64748b !important;
-  font-size: 13.5px !important;
-  line-height: 1.5 !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
   font-weight: 400 !important;
   text-align: center !important;
-  max-width: 580px !important;
+  max-width: 480px !important;
   margin: 0 auto !important;
 }
 
-/* Main Container Scoped */
-.viewer-news-page .viewer-news-container {
-  max-width: 1080px;
-  margin: 0 auto;
-  padding: 24px 20px 0;
+/* Container */
+.vnp-container {
+  max-width: 1120px !important;
+  margin: 0 auto !important;
+  padding: 0 20px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-/* News Grid Layout Scoped */
-.viewer-news-page .viewer-news-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
-  gap: 20px;
+/* Grid Layout */
+.vnp-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 22px !important;
+  align-items: stretch !important;
 }
 
-/* Card Berita Scoped */
-.viewer-news-page .viewer-news-card {
-  background-color: #ffffff;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
-  display: flex;
-  flex-direction: column;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+/* Card Berita Presisi Sesuai Gambar 2 */
+.vnp-card {
+  background-color: #ffffff !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  border: 1px solid #f1f5f9 !important;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.03) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
 }
 
-.viewer-news-page .viewer-news-card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.06);
+.vnp-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.08) !important;
 }
 
-/* Image Wrapper Scoped */
-.viewer-news-page .card-image-wrapper {
-  position: relative;
-  width: 100%;
-  height: 175px;
-  overflow: hidden;
-  background-color: #f1f5f9;
+/* Thumbnail Wrapper */
+.vnp-card-thumb {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  height: 175px !important;
+  overflow: hidden !important;
+  background-color: #f8fafc !important;
 }
 
-.viewer-news-page .card-image-wrapper img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
+.vnp-card-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  transition: transform 0.4s ease !important;
 }
 
-/* Card Body & Typography Scoped */
-.viewer-news-page .card-body {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  flex-grow: 1;
+.vnp-card:hover .vnp-card-thumb img {
+  transform: scale(1.03) !important;
 }
 
-.viewer-news-page .card-meta {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-bottom: 8px;
+/* Badge Kategori Pada Gambar */
+.vnp-badge {
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  z-index: 2 !important;
+  background-color: #2563eb !important;
+  color: #ffffff !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  padding: 3px 12px !important;
+  border-radius: 999px !important;
+  text-transform: capitalize !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2) !important;
 }
 
-.viewer-news-page .meta-date {
-  font-size: 11px;
-  color: #2563eb;
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  text-transform: uppercase;
+/* Content Body */
+.vnp-card-content {
+  padding: 16px 16px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-grow: 1 !important;
 }
 
-.viewer-news-page .card-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: #0f172a;
-  line-height: 1.35;
-  margin-bottom: 6px;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.vnp-card-date {
+  font-size: 10.5px !important;
+  color: #94a3b8 !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 8px !important;
+  text-transform: uppercase !important;
 }
 
-.viewer-news-page .card-excerpt {
-  font-size: 12.5px;
-  color: #64748b;
-  line-height: 1.5;
-  margin-bottom: 14px;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.vnp-card-heading {
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  margin: 0 0 8px 0 !important;
 }
 
-.viewer-news-page .card-footer {
-  margin-top: auto;
-  padding-top: 10px;
-  border-top: 1px solid #f1f5f9;
+.vnp-card-heading a {
+  color: #0f172a !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
 }
 
-.viewer-news-page .read-more-btn {
-  color: #2563eb;
-  text-decoration: none;
-  font-size: 12px;
-  font-weight: 600;
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+.vnp-card-heading a:hover {
+  color: #2563eb !important;
 }
 
-.viewer-news-page .read-more-btn:hover {
-  color: #1d4ed8;
-  gap: 8px;
+.vnp-card-desc {
+  font-size: 12px !important;
+  color: #64748b !important;
+  line-height: 1.5 !important;
+  margin: 0 0 14px 0 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
 }
 
-/* Loading & Empty State Scoped */
-.viewer-news-page .loading-state,
-.viewer-news-page .empty-state {
-  text-align: center;
-  padding: 50px 20px;
-  color: #64748b;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  border: 1px dashed #cbd5e1;
+/* Link Baca Selengkapnya Sesuai Gambar 2 */
+.vnp-card-link {
+  margin-top: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: #2563eb !important;
+  text-decoration: none !important;
+  transition: gap 0.2s ease !important;
 }
 
-.viewer-news-page .animate-spin {
-  animation: spin 1s linear infinite;
+.vnp-card-link:hover {
+  gap: 8px !important;
+  text-decoration: underline !important;
 }
 
-@keyframes spin {
+/* State Loading & Empty */
+.vnp-state-box {
+  text-align: center !important;
+  padding: 50px 20px !important;
+  color: #64748b !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background-color: #ffffff !important;
+  border-radius: 16px !important;
+  border: 1px dashed #cbd5e1 !important;
+}
+
+.vnp-spinner {
+  animation: vnpSpin 1s linear infinite !important;
+}
+
+@keyframes vnpSpin {
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
 
-/* Responsiveness Scoped */
-@media (max-width: 768px) {
-  .viewer-news-page .hero-title {
-    font-size: 22px !important;
+/* Responsive Grid Design */
+@media (max-width: 1024px) {
+  .vnp-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
   }
+}
 
-  .viewer-news-page .viewer-news-grid {
-    grid-template-columns: 1fr;
+@media (max-width: 640px) {
+  .vnp-main-title {
+    font-size: 24px !important;
+  }
+  
+  .vnp-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .vnp-container {
+    padding: 0 16px !important;
   }
 }
