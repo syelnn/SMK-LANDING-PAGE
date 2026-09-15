@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom'; // <-- Tambahkan useLocation
 import Navbar from '../../components/Navbar';
 import '../../css/viewer/landing.css';
+import TenagaPengajarViewer from './TenagaPengajar';
 
 // Import Foto dari folder Assets
 import bgSekolah from '../../assets/latar.webp'; 
@@ -51,6 +52,9 @@ const LandingPage = () => {
       '/jurusan': 'section-program',
       '/ekstrakurikuler': 'section-ekskul', 
       '/ekskul': 'section-ekskul',
+      '/tenagapengajar': 'section-pengajar', // <-- Tambahkan baris ini
+      '/guru': 'section-pengajar',           // <-- Tambahkan baris ini
+      '/pengajar': 'section-pengajar',
       '/kontak': 'section-kontak',
     };
     
@@ -171,7 +175,11 @@ const LandingPage = () => {
       <div id="section-ekskul">
         <EkstrakurikulerViewer />
       </div>
-
+      
+      {/* 4. TENAGA PENGAJAR SECTION (Tambahkan Ini) */}
+      <div id="section-pengajar">
+        <TenagaPengajarViewer />
+      </div>
     </div>
   );
 };

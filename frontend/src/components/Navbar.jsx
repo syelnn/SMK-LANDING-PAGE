@@ -111,7 +111,8 @@ const Navbar = () => {
 
   // 3. SCROLL SPY PERBAIKAN URL AKURAT
   useEffect(() => {
-    const validLandingPaths = ['/', '/profil', '/berita', '/program', '/jurusan', '/ekstrakurikuler', '/ekskul', '/kontak'];
+    // Tambahkan '/tenagapengajar' dan '/guru' ke valid paths
+    const validLandingPaths = ['/', '/profil', '/berita', '/program', '/jurusan', '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', '/pengajar', '/kontak'];
     if (!validLandingPaths.includes(location.pathname)) return;
 
     let ticking = false;
@@ -128,6 +129,7 @@ const Navbar = () => {
           const beritaEl = document.getElementById('section-berita');
           const programEl = document.getElementById('section-program');
           const ekskulEl = document.getElementById('section-ekskul');
+          const pengajarEl = document.getElementById('section-pengajar'); 
           const kontakEl = document.getElementById('section-kontak');
 
           let activeKey = 'section-hero';
@@ -137,12 +139,14 @@ const Navbar = () => {
           if (beritaEl && scrollPos >= beritaEl.offsetTop) activeKey = 'section-berita';
           if (programEl && scrollPos >= programEl.offsetTop) activeKey = 'section-program';
           if (ekskulEl && scrollPos >= ekskulEl.offsetTop) activeKey = 'section-ekskul';
+          if (pengajarEl && scrollPos >= pengajarEl.offsetTop) activeKey = 'section-pengajar'; 
           if (kontakEl && scrollPos >= kontakEl.offsetTop) activeKey = 'section-kontak';
 
           // Jika posisi scroll mendekati bagian paling bawah
           const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150;
           if (isBottom) {
             if (kontakEl) activeKey = 'section-kontak';
+            else if (pengajarEl) activeKey = 'section-pengajar';
             else if (ekskulEl) activeKey = 'section-ekskul';
           }
 
@@ -153,14 +157,22 @@ const Navbar = () => {
 
           if (matchedMenu) {
             const cleanUrl = getCleanUrl(matchedMenu);
-            
             if (activePathRef.current !== cleanUrl) {
               activePathRef.current = cleanUrl;
               setActivePath(cleanUrl);
               window.history.replaceState(null, '', cleanUrl);
             }
-          } else if (activeKey === 'section-ekskul') {
+          } 
+          // Fallback slug manual jika menu dinamis gagal fetch
+          else if (activeKey === 'section-ekskul') {
             const targetUrl = '/ekstrakurikuler';
+            if (activePathRef.current !== targetUrl) {
+              activePathRef.current = targetUrl;
+              setActivePath(targetUrl);
+              window.history.replaceState(null, '', targetUrl);
+            }
+          } else if (activeKey === 'section-pengajar') {
+            const targetUrl = '/tenagapengajar';
             if (activePathRef.current !== targetUrl) {
               activePathRef.current = targetUrl;
               setActivePath(targetUrl);
@@ -175,10 +187,7 @@ const Navbar = () => {
     };
 
     window.addEventListener('scroll', handleScrollSpy, { passive: true });
-
-    return () => {
-      window.removeEventListener('scroll', handleScrollSpy);
-    };
+    return () => window.removeEventListener('scroll', handleScrollSpy);
   }, [menuItems, getCleanUrl, location.pathname]);
 
   // 4. Handle Nav Klik (Smooth Scroll)
@@ -188,6 +197,7 @@ const Navbar = () => {
 
     const targetUrl = getCleanUrl(item);
 
+    // Tambahkan pemetaan untuk tenagapengajar
     const sectionMap = {
       '/profil': 'section-profil',
       '/berita': 'section-berita',
@@ -195,6 +205,9 @@ const Navbar = () => {
       '/jurusan': 'section-program',
       '/ekstrakurikuler': 'section-ekskul',
       '/ekskul': 'section-ekskul',
+      '/tenagapengajar': 'section-pengajar',
+      '/guru': 'section-pengajar', 
+      '/pengajar': 'section-pengajar',
       '/kontak': 'section-kontak',
       '/': 'section-hero'
     };
@@ -223,6 +236,7 @@ const Navbar = () => {
     }
   };
 
+  // INI ADALAH FUNGSI DROPDOWN YANG SEBELUMNYA HILANG
   const handleDropdownToggle = (menuId, e) => {
     e.stopPropagation();
     setDropdownOpen(prev => (prev === menuId ? null : menuId));
@@ -233,9 +247,10 @@ const Navbar = () => {
     const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
     const menuUrl = getCleanUrl(menu);
 
-    // Mencegah garis biru pada "Jurusan & Program" saat berada di area ekstrakurikuler
-    if (activePath === '/ekstrakurikuler' || activePath === '/ekskul') {
-      if (menuTitle.includes('jurusan') || menuTitle.includes('program')) {
+    // Mencegah garis biru menyala saat discroll ke area dropdown (Ekskul & Pengajar)
+    const isDropdownArea = ['/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru'].includes(activePath);
+    if (isDropdownArea) {
+      if (menuTitle.includes('jurusan') || menuTitle.includes('program') || menuTitle.includes('berita')) {
         return false;
       }
     }
@@ -289,8 +304,6 @@ const Navbar = () => {
 
             if (hasChildren) {
               const isDropdownOpenState = dropdownOpen === menu.id;
-
-              // Menu dropdown ("Lainnya") dibuat selalu false agar tidak muncul garis biru/aktif
               const isAnyChildActive = false;
 
               return (
@@ -304,7 +317,6 @@ const Navbar = () => {
                   </button>
                   <ul className={`dropdown-menu ${isDropdownOpenState ? 'show' : ''}`}>
                     {subMenus.map((sub) => {
-                      // Submenu di dalam dropdown "Lainnya" juga tidak ditandai active
                       return (
                         <li key={sub.id} onClick={() => handleNavClick(sub)}>
                           <span className="dropdown-link">
