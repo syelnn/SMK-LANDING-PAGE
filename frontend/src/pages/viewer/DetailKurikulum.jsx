@@ -1,12 +1,13 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Code, Sprout, Wrench, Check, ArrowLeft } from 'lucide-react';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Code, Sprout, Wrench, Check, ArrowLeft, ChevronRight } from 'lucide-react';
 import Navbar from '../../components/Navbar'; 
 import '../../css/viewer/detailkurikulum.css'; 
 import '../../App.css'; 
 
 export default function DetailKurikulumViewer() {
   const { slug } = useParams();
+  const navigate = useNavigate();
 
   const dataKurikulum = {
     rpl: {
@@ -39,9 +40,29 @@ export default function DetailKurikulumViewer() {
   };
 
   const current = dataKurikulum[slug] || dataKurikulum['rpl'];
+// =========================================================================
+  // FUNGSI KEMBALI (Meniru NewsDetail, Tanpa Sentuh Landing Page)
+  // =========================================================================
+  const handleGoToProgramSection = (e) => {
+    e.preventDefault();
+    
+    // 1. Ubah URL langsung ke /program
+    navigate('/program'); 
 
-  const handleSaveScrollSinyal = () => {
-    sessionStorage.setItem('scrollToSection', 'section-program');
+    // 2. Fungsi untuk men-scroll ke section program
+    const scrollToProgram = () => {
+      const element = document.getElementById('section-program');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    // 3. Tembak scroll 3 kali dari sini!
+    // Kenapa 3 kali? Untuk mengejar target section-program yang terdorong ke bawah 
+    // akibat gambar-gambar berita yang baru selesai loading beberapa milidetik kemudian.
+    setTimeout(scrollToProgram, 100);  // Tarikan awal
+    setTimeout(scrollToProgram, 600);  // Tarikan koreksi setelah kerangka berita muncul
+    setTimeout(scrollToProgram, 1300); // Tarikan final agar pas di posisi program
   };
 
   return (
@@ -57,13 +78,14 @@ export default function DetailKurikulumViewer() {
       >
         <div className="dk-container">
           
-          <Link 
-            to="/" 
-            onClick={handleSaveScrollSinyal} 
-            className="dk-back-link"
-          >
-            <ArrowLeft size={16} /> Kembali ke Jurusan
-          </Link>
+          {/* Breadcrumb Navigasi */}
+          <nav className="dk-breadcrumb" aria-label="Breadcrumb" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600' }}>
+            <Link to="/" style={{ color: '#64748b', textDecoration: 'none' }}>BERANDA</Link>
+            <ChevronRight size={14} style={{ color: '#94a3b8' }} />
+            <a href="/program" onClick={handleGoToProgramSection} style={{ color: '#64748b', textDecoration: 'none' }}>JURUSAN & PROGRAM</a>
+            <ChevronRight size={14} style={{ color: '#94a3b8' }} />
+            <span style={{ color: '#0f172a' }}>{current.title}</span>
+          </nav>
 
           <div className="dk-header">
             <div className="dk-icon-box">{current.icon}</div>

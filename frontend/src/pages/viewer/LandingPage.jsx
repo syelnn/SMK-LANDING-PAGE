@@ -1,5 +1,5 @@
-import React, { useEffect } from 'react'; // <-- useEffect ditambahkan di sini
-import { useNavigate } from 'react-router-dom';
+import React, { useEffect } from 'react'; 
+import { useNavigate, useLocation } from 'react-router-dom'; // <-- Tambahkan useLocation
 import Navbar from '../../components/Navbar';
 import '../../css/viewer/landing.css';
 
@@ -14,20 +14,52 @@ import JurusanProgramViewer from './JurusanProgram';
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation(); // <-- Inisialisasi useLocation
 
-  // PENJEMPUT SINYAL: Scroll otomatis ke section-program jika datang dari halaman detail
-useEffect(() => {
+// =========================================================================
+  // PENJEMPUT SINYAL & SCROLL BERTAHAP (FIX FINAL)
+  // =========================================================================
+  useEffect(() => {
+    const scrollToTarget = (sectionId) => {
+      const el = document.getElementById(sectionId);
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth' });
+      }
+    };
+
+    // 1. PRIORITAS UTAMA: Cek sinyal dari tombol kembali (sessionStorage)
     const targetSection = sessionStorage.getItem('scrollToSection');
+    
     if (targetSection) {
+      // Bersihkan sinyal
       sessionStorage.removeItem('scrollToSection');
-      setTimeout(() => {
-        const el = document.getElementById(targetSection);
-        if (el) {
-          el.scrollIntoView({ behavior: 'smooth' });
-        }
-      }, 200);
+      
+      // PAKSA scroll tanpa peduli path URL-nya apa
+      setTimeout(() => scrollToTarget(targetSection), 100);
+      setTimeout(() => scrollToTarget(targetSection), 600);
+      setTimeout(() => scrollToTarget(targetSection), 1200);
+      
+      return; // Berhenti di sini agar logika bawahnya tidak ikut dieksekusi
     }
-  }, []);
+
+    // 2. PRIORITAS KEDUA: Cek jika user ketik URL manual / refresh (misal: /program)
+    const pathToSectionMap = {
+      '/profil': 'section-profil',
+      '/berita': 'section-berita',
+      '/program': 'section-program',
+      '/jurusan': 'section-program',
+      '/kontak': 'section-kontak',
+    };
+    
+    const currentPath = location.pathname;
+    const mappedSection = pathToSectionMap[currentPath];
+
+    if (mappedSection && currentPath !== '/') {
+      setTimeout(() => scrollToTarget(mappedSection), 100);
+      setTimeout(() => scrollToTarget(mappedSection), 600);
+      setTimeout(() => scrollToTarget(mappedSection), 1200);
+    }
+  }, [location.pathname]);
 
   const handleNavigateToProfile = (e) => {
     e.preventDefault();

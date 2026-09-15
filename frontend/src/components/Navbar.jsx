@@ -93,14 +93,13 @@ const Navbar = () => {
   const getSubMenus = useCallback((parentId) => {
     return menuItems.filter(item => item.parentId === parentId || item.parent_id === parentId);
   }, [menuItems]);
-
-  // ==========================================
-  // 3. SCROLL SPY KHUSUS LANDING PAGE
+// ==========================================
+  // 3. SCROLL SPY KHUSUS LANDING PAGE & UPDATE SLUG
   // ==========================================
   useEffect(() => {
-    // --- UBAH BARIS INI (Tambahkan: || location.pathname.startsWith('/berita/')) ---
-    if (location.pathname.includes('/detail-kurikulum') || location.pathname.startsWith('/berita/')) return;
-    if (menuItems.length === 0) return;
+    // Aktifkan scroll spy pada path landing page
+    const validLandingPaths = ['/', '/profil', '/berita', '/program', '/jurusan', '/kontak'];
+    if (!validLandingPaths.includes(location.pathname)) return;
 
     const handleScrollSpy = () => {
       const scrollPos = window.scrollY + 250;
@@ -117,13 +116,26 @@ const Navbar = () => {
       if (beritaEl && scrollPos >= beritaEl.offsetTop) activeKey = 'section-berita';
       if (programEl && scrollPos >= programEl.offsetTop) activeKey = 'section-program';
 
+      // ====================================================================
+      // KUNCI FIX: Jika scroll mentok di paling bawah, paksakan ke 'section-program'
+      // ====================================================================
+      const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 50;
+      if (isBottom && programEl) {
+        activeKey = 'section-program';
+      }
+
       const matchedMenu = menuItems.find(item => {
         const key = item.sectionKey || item.section_key;
         return key === activeKey;
       });
 
       if (matchedMenu) {
-        setActivePath(getCleanUrl(matchedMenu));
+        const cleanUrl = getCleanUrl(matchedMenu);
+        setActivePath(cleanUrl);
+        
+        if (window.location.pathname !== cleanUrl) {
+          window.history.replaceState(null, '', cleanUrl);
+        }
       }
     };
 
@@ -159,6 +171,9 @@ const Navbar = () => {
       if (element) {
         element.scrollIntoView({ behavior: 'smooth' });
         setActivePath(targetUrl);
+        // Ubah URL browser tanpa reload
+        const newHashOrPath = targetUrl === '/' ? '/' : `${targetUrl.replace('/', '')}`;
+        window.history.replaceState(null, '', newHashOrPath);
       }
     } else {
       navigate(targetUrl);
