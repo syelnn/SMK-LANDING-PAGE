@@ -12,6 +12,7 @@ import JurusanProgramViewer from './pages/viewer/JurusanProgram';
 import DetailKurikulumViewer from './pages/viewer/DetailKurikulum';
 import NewsPage from './pages/viewer/NewsPage';
 import NewsDetail from './pages/viewer/NewsDetail';
+import DownloadViewer from './pages/viewer/DownloadViewer';
 
 
 import Login from './Login';
@@ -545,6 +546,7 @@ const MainApp = () => {
       <Route path="/jurusan/detail-kurikulum/:slug" element={<DetailKurikulumViewer />} />
       <Route path="/berita" element={<NewsPage />} />
         <Route path="/berita/:slug" element={<NewsDetail />} />
+       <Route path="/download" element={<DownloadViewer />} />
 
     
       <Route path="/login" element={<Login />} />

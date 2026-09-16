@@ -1,7 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Award, Trophy, Medal, Loader2 } from 'lucide-react';
+import { Award, Loader2, Sparkles } from 'lucide-react';
 import '../../css/viewer/AchievementViewer.css';
+
+// Helper agar teks otomatis huruf Kapital Awal Kata (Title Case) seperti Gambar 2
+const toTitleCase = (str) => {
+  if (!str) return '';
+  return str.toLowerCase().replace(/(?:^|\s|-)\S/g, (m) => m.toUpperCase());
+};
 
 const AchievementViewer = () => {
   const [achievements, setAchievements] = useState([]);
@@ -27,42 +33,26 @@ const AchievementViewer = () => {
     fetchAchievements();
   }, []);
 
-  // Helper untuk menentukan Ikon Lucide & class warnanya berdasarkan nilai 'medal'
-  const renderMedalIcon = (medal) => {
-    if (!medal) return null;
-    const m = medal.toLowerCase();
-
-    if (m === 'gold' || m === 'emas' || m === 'juara 1') {
-      return <Trophy className="icon-gold" title="Juara 1 / Emas" />;
-    }
-    if (m === 'silver' || m === 'perak' || m === 'juara 2') {
-      return <Medal className="icon-silver" title="Juara 2 / Perak" />;
-    }
-    if (m === 'bronze' || m === 'perunggu' || m === 'juara 3') {
-      return <Award className="icon-bronze" title="Juara 3 / Perunggu" />;
-    }
-
-    return <Award className="icon-default" title={medal} />;
-  };
-
   return (
     <div className="achievement-viewer-container" id="section-prestasi">
-      {/* 1. HERO / BANNER SECTION */}
+      {/* HERO SECTION */}
       <section className="achievement-hero">
         <div className="hero-content17">
-          <span className="hero-badge-pill117">KARYA & PRESTASI</span>
+          <span className="hero-badge-pill117">
+            <Sparkles size={14} className="icon-sparkle" /> KARYA & PRESTASI
+          </span>
 
           <h1 className="hero-title17">
-           Karya <span className="highlight-text">& Prestasi</span> Taruna/i SMKN COMPRENG
+            Karya <span className="highlight-text">& Prestasi</span> Taruna/i SMKN COMPRENG
           </h1>
 
           <p className="hero-subtitle17">
-            Pilar utama pembentuk karakter, inovasi, dan kompetensi siswa SMK Negeri Compreng.
+            Apresiasi atas kerja keras, inovasi, dan dedikasi luar biasa para siswa/i SMK Negeri Compreng dalam mengharumkan nama sekolah.
           </p>
         </div>
       </section>
 
-      {/* 2. GRID CONTENT SECTION */}
+      {/* GRID SECTION */}
       <section className="achievement-grid-section">
         {loading ? (
           <div className="loading-state">
@@ -71,7 +61,7 @@ const AchievementViewer = () => {
           </div>
         ) : achievements.length === 0 ? (
           <div className="empty-state">
-            <Award size={40} />
+            <Award size={44} />
             <h3>Belum Ada Prestasi Ditemukan</h3>
             <p>Data karya & prestasi belum tersedia.</p>
           </div>
@@ -79,8 +69,8 @@ const AchievementViewer = () => {
           <div className="achievement-grid">
             {achievements.map((item) => (
               <div className="achievement-card" key={item.id}>
-                {/* Image Container */}
-                <div className="card-image-wrapper">
+                {/* Banner Image */}
+                <div className="card-image-box">
                   {item.photo ? (
                     <img
                       src={item.photo}
@@ -88,46 +78,40 @@ const AchievementViewer = () => {
                       className="card-img"
                       onError={(e) => {
                         e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/400x250?text=Foto+Tidak+Tersedia';
+                        e.target.src = 'https://via.placeholder.com/400x220?text=Foto+Prestasi';
                       }}
                     />
                   ) : (
                     <div className="card-img-placeholder">
-                      <span>{item.student_name ? item.student_name.charAt(0).toUpperCase() : '?'}</span>
+                      <Award size={36} />
                     </div>
                   )}
 
-                  {/* BADGE LEVEL (Kembali di Kanan Atas Gambar) */}
-                  <span className={`level-badge level-${item.level?.toLowerCase() || 'nasional'}`}>
+                  {/* Top Level Badge */}
+                  <span className={`card-top-level level-${item.level?.toLowerCase() || 'nasional'}`}>
                     {item.level || 'Nasional'}
                   </span>
                 </div>
 
-                {/* Card Body */}
+                {/* Content Body */}
                 <div className="card-body">
-                  {/* Baris Meta: Kelas/Tahun (Kiri) & Medali/Piala (Kanan) */}
-                  <div className="card-meta-row">
-                    <span className="card-category-tag">
-                      {item.class_name || item.category || 'PRESTASI SISWA'} {item.year ? `• ${item.year}` : ''}
-                    </span>
-
-                    {item.medal && (
-                      <span className={`medal-pill-badge medal-pill-${item.medal.toLowerCase()}`}>
-                        {renderMedalIcon(item.medal)}
-                        <span>{item.medal}</span>
-                      </span>
-                    )}
-                  </div>
-
-                  <h3 className="achievement-title" title={item.achievement}>
-                    {item.achievement}
-                  </h3>
-
-                  <p className="achievement-desc">
-                    Selamat & Sukses atas prestasi membanggakan yang diraih oleh{' '}
-                    <strong>{item.student_name}</strong>
-                    {item.class_name ? ` (${item.class_name})` : ''} dalam ajang ini.
+                  {/* Nama Siswa */}
+                  <h3 className="student-name">{item.student_name || 'Siswa SMKN Compreng'}</h3>
+                  
+                  {/* Kelas */}
+                  <p className="student-class">
+                    {item.class_name ? item.class_name : 'SMKN Compreng'}
                   </p>
+
+                  {/* Judul Prestasi / Lomba (Font & Style Presisi Gambar 2) */}
+                  <h4 className="achievement-title" title={item.achievement}>
+                    {toTitleCase(item.achievement)}
+                  </h4>
+
+                  {/* Footer Tag Tahun */}
+                  <div className="card-footer-tags">
+                    <span className="footer-tag year-tag">{item.year || '2026'}</span>
+                  </div>
                 </div>
               </div>
             ))}

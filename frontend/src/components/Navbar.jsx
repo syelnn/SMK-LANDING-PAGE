@@ -28,10 +28,14 @@ const Navbar = () => {
   }, [location.pathname]);
 
   const getCleanUrl = useCallback((item) => {
-    let rawUrl = (item.url || item.href || '/').trim();
-    if (rawUrl === '/dashboard') return '/';
-    return rawUrl;
-  }, []);
+  let rawUrl = (item.url || item.href || '/').trim();
+  if (rawUrl === '/dashboard') return '/';
+  // TAMBAHAN: Otomatis tambahkan '/' di depan jika URL dari database berupa kata polos "download"
+  if (!rawUrl.startsWith('/') && !rawUrl.startsWith('http') && !rawUrl.startsWith('#')) {
+    rawUrl = '/' + rawUrl;
+  }
+  return rawUrl;
+}, []);
 
   // 1. Fetching Menu dari Database
   useEffect(() => {
@@ -114,7 +118,7 @@ useEffect(() => {
     const validLandingPaths = [
       '', '/', '/profil', '/berita', '/program', '/jurusan', 
       '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', 
-      '/pengajar', '/karya', '/prestasi', '/achievement', '/galeri', '/testimoni', '/kontak'
+      '/pengajar', '/karya', '/prestasi', '/achievement', '/galeri', '/testimoni', '/faq', '/kontak'
     ];
     if (!validLandingPaths.includes(location.pathname)) return;
 
@@ -136,6 +140,7 @@ useEffect(() => {
         const prestasiEl = document.getElementById('section-prestasi'); 
         const galeriEl = document.getElementById('section-galeri');
         const testimoniEl = document.getElementById('section-testimoni');
+        const faqEl = document.getElementById('section-faq');
         const kontakEl = document.getElementById('section-kontak');
 
         let activeKey = 'section-hero';
@@ -149,12 +154,14 @@ useEffect(() => {
         if (prestasiEl && scrollPos >= prestasiEl.offsetTop) activeKey = 'section-prestasi'; 
         if (galeriEl && scrollPos >= galeriEl.offsetTop) activeKey = 'section-galeri';
         if (testimoniEl && scrollPos >= testimoniEl.offsetTop) activeKey = 'section-testimoni';
+        if (faqEl && scrollPos >= faqEl.offsetTop) activeKey = 'section-faq';
         if (kontakEl && scrollPos >= kontakEl.offsetTop) activeKey = 'section-kontak';
 
         // Pengecekan posisi paling bawah layar
         const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150;
         if (isBottom) {
           if (kontakEl) activeKey = 'section-kontak';
+          else if (faqEl) activeKey = 'section-faq'; 
           else if (testimoniEl) activeKey = 'section-testimoni';
           else if (galeriEl) activeKey = 'section-galeri';
           else if (prestasiEl) activeKey = 'section-prestasi'; 
@@ -205,7 +212,16 @@ useEffect(() => {
             setActivePath(targetUrl);
             window.history.replaceState(null, '', targetUrl);
           }
+        } else if (activeKey === 'section-faq') {
+          const targetUrl = '/faq';
+          if (activePathRef.current !== targetUrl) {
+            activePathRef.current = targetUrl;
+            setActivePath(targetUrl);
+            window.history.replaceState(null, '', targetUrl);
+          }
         }
+
+        
 
           ticking = false;
         });
@@ -217,14 +233,19 @@ useEffect(() => {
     return () => window.removeEventListener('scroll', handleScrollSpy);
   }, [menuItems, getCleanUrl, location.pathname]);
 
-  // 4. Handle Nav Klik (Smooth Scroll)
-  const handleNavClick = (item) => {
-    setMobileMenuOpen(false);
-    setDropdownOpen(null);
+ const handleNavClick = (item) => {
+  setMobileMenuOpen(false);
+  setDropdownOpen(null);
 
-    const targetUrl = getCleanUrl(item);
+  const targetUrl = getCleanUrl(item);
+  const itemTitle = (item.title || '').toLowerCase().trim(); // TAMBAHAN: ambil judul menu
 
-    // Tambahkan pemetaan untuk tenagapengajar
+  // PERBAIKAN: Pengecekan lebih fleksibel mencakup URL maupun Judul Menu
+  if (targetUrl === '/download' || targetUrl.includes('download') || itemTitle.includes('download')) {
+    navigate('/download');
+    return;
+  }
+  
     const sectionMap = {
       '/profil': 'section-profil',
       '/berita': 'section-berita',
@@ -240,11 +261,18 @@ useEffect(() => {
       '/achievement': 'section-prestasi',
       '/galeri': 'section-galeri',
       '/testimoni': 'section-testimoni',
+      '/faq': 'section-faq',
       '/kontak': 'section-kontak',
       '/': 'section-hero'
     };
 
     const sectionKey = sectionMap[targetUrl];
+
+    // Jika posisi browser bukan di landing page ('/'), langsung pindah halaman lewat router
+    if (location.pathname !== '/' && location.pathname !== '') {
+      navigate(targetUrl);
+      return;
+    }
 
     if (sectionKey) {
       const element = document.getElementById(sectionKey);
@@ -274,11 +302,15 @@ useEffect(() => {
     setDropdownOpen(prev => (prev === menuId ? null : menuId));
   };
 
-  // 5. PENGECEKAN MENU AKTIF (Garis Biru)
-  const checkIsActive = (menu) => {
-    const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
-    const menuUrl = getCleanUrl(menu);
+ // 5. PENGECEKAN MENU AKTIF (Garis Biru)
+const checkIsActive = (menu) => {
+  const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
+  const menuUrl = getCleanUrl(menu);
 
+ // Penanganan status aktif jika URL saat ini sedang berada di /download
+if (location.pathname === '/download' && (menuUrl.includes('download') || menuTitle.includes('download'))) {
+  return true;
+}
     // Mencegah garis biru menyala saat discroll ke area dropdown (Ekskul & Pengajar)
     const isDropdownArea = [
       '/ekstrakurikuler', '/ekskul', '/tenagapengajar', 
@@ -337,10 +369,10 @@ useEffect(() => {
           {mainMenus.map((menu) => {
             const subMenus = getSubMenus(menu.id);
             const hasChildren = subMenus.length > 0 || menu.type === 'dropdown';
-
-            if (hasChildren) {
-              const isDropdownOpenState = dropdownOpen === menu.id;
-              const isAnyChildActive = false;
+              if (hasChildren) {
+                const isDropdownOpenState = dropdownOpen === menu.id;
+                // Memeriksa apakah salah satu submenu sedang aktif
+                const isAnyChildActive = subMenus.some(sub => checkIsActive(sub));
 
               return (
                 <li key={menu.id} ref={dropdownRef} className="nav-item dropdown">

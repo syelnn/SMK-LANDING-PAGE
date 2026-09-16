@@ -341,39 +341,39 @@ const AchievementSection = () => {
 
             <form onSubmit={handleSubmit} className="form-modern-layout">
               <div className="form-group-modern">
-                <label>Nama Siswa *</label>
+                <label>Nama Siswa / Ekstrakurikuler*</label>
                 <input
                   type="text"
                   name="student_name"
                   className="input-modern"
                   required
-                  placeholder="Contoh: Alya Putri"
+                  placeholder="Contoh: Alya Putri / Ekstrakurikuler"
                   value={formData.student_name}
                   onChange={handleChange}
                 />
               </div>
 
               <div className="form-group-modern">
-                <label>Kelas *</label>
+                <label>Kelas / Kejuaraan *</label>
                 <input
                   type="text"
                   name="class_name"
                   className="input-modern"
                   required
-                  placeholder="Contoh: XII RPL 1"
+                  placeholder="Contoh: XII RPL 1 / Kejuaraan"
                   value={formData.class_name}
                   onChange={handleChange}
                 />
               </div>
 
               <div className="form-group-modern">
-                <label>Judul Prestasi / Kejuaraan *</label>
+                <label>Judul Prestasi / Event *</label>
                 <input
                   type="text"
                   name="achievement"
                   className="input-modern"
                   required
-                  placeholder="Contoh: Juara 1 LKS Web Technologies"
+                  placeholder="Contoh: Juara 1 LKS Web Technologies / Event"
                   value={formData.achievement}
                   onChange={handleChange}
                 />
@@ -388,7 +388,8 @@ const AchievementSection = () => {
                     value={formData.level}
                     onChange={handleChange}
                   >
-                    <option value="Kota">Kota</option>
+                    <option value="Kecamatan">Kecamatan</option>
+                    <option value="Kabupaten">Kabupaten</option>
                     <option value="Provinsi">Provinsi</option>
                     <option value="Nasional">Nasional</option>
                     <option value="Internasional">Internasional</option>
@@ -424,7 +425,7 @@ const AchievementSection = () => {
               </div>
 
               <div className="form-group-modern upload-section">
-                <label>Foto Profil / Siswa</label>
+                <label>Foto Siswa / Dokumentasi</label>
                 <div className="radio-tabs">
                   <div
                     className={`radio-tab ${imageTab === 'url' ? 'active' : ''}`}
@@ -471,7 +472,7 @@ const AchievementSection = () => {
                         width: '100px', 
                         height: '100px', 
                         objectFit: 'cover', 
-                        borderRadius: '8px', /* Menggunakan sudut tumpul agar pas untuk foto dokumentasi */
+                        borderRadius: '8px', 
                         border: '2px solid var(--compreng-surface)',
                         boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                       }} 

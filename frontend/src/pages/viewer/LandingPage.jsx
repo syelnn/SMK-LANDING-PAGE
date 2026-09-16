@@ -6,6 +6,9 @@ import TenagaPengajarViewer from './TenagaPengajar';
 import AchievementViewer from './AchievementViewer';
 import TampilanGalery from './TampilanGalery';
 import Testimoni from './Testimoni';
+import FaqViewer from './FaqViewer';
+import FooterViewer from './FooterViewer';
+
 
 // Import Foto dari folder Assets
 import bgSekolah from '../../assets/latar.webp'; 
@@ -63,6 +66,7 @@ const LandingPage = () => {
       '/achievement': 'section-prestasi',
       '/galeri': 'section-galeri',
       '/testimoni': 'section-testimoni',
+      '/faq': 'section-faq',
       '/kontak': 'section-kontak',
     };
     
@@ -202,6 +206,18 @@ const LandingPage = () => {
       <div id="section-testimoni">
         <Testimoni />
       </div>
+
+      {/* 8. FAQ SECTION (TAMBAHKAN INI) */}
+    <div id="section-faq">
+      <FaqViewer />
+    </div>
+
+    {/* 9. KONTAK & FOOTER SECTION */}
+      <div id="section-kontak">
+        <FooterViewer /> {/* <-- 2. Dipanggil di sini */}
+      </div>
+
+
     </div>
   );
 };
