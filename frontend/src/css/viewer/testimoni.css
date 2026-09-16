@@ -1,0 +1,136 @@
+/* ==========================================
+   STYLING TESTIMONI VIEWER (MODERN & CLEAN)
+   ========================================== */
+.tampilan-testimoni-wrapper {
+  padding: 100px 24px;
+  background-color: #ffffff;
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.tt-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tt-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.tt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background-color: rgba(34, 197, 94, 0.08);
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-radius: 30px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.tt-title {
+  font-size: 38px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.tt-subtitle {
+  font-size: 16px;
+  color: #64748b;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Grid Kartu Testimoni */
+.tt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 32px;
+}
+
+.tt-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 35px 30px;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tt-card:hover {
+  transform: translateY(-6px);
+  border-color: #16a34a;
+  box-shadow: 0 20px 40px -12px rgba(22, 163, 74, 0.12);
+}
+
+.tt-quote-icon {
+  font-size: 36px;
+  color: #16a34a;
+  font-family: Georgia, serif;
+  line-height: 1;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.tt-quote-text {
+  font-size: 15px;
+  color: #334155;
+  line-height: 1.7;
+  margin-bottom: 30px;
+  font-style: italic;
+}
+
+.tt-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 20px;
+}
+
+.tt-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #e2e8f0;
+}
+
+.tt-avatar-initial {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #16a34a;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tt-info h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0 0 4px 0;
+}
+
+.tt-info p {
+  font-size: 13px;
+  color: #64748b;
+  margin: 0;
+}

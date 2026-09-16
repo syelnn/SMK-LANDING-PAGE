@@ -1,0 +1,352 @@
+/* ==========================================
+   STYLING HALAMAN GALERI VIEWER (PROPOSIONAL & LEGA)
+   ========================================== */
+.tampilan-galeri-wrapper {
+  padding: 80px 24px;
+  background-color: #f8fafc;
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.tg-container {
+  max-width: 1180px; /* Lebar kontainer dibuat sedikit lebih ramping agar ada ruang di pinggir */
+  margin: 0 auto;
+}
+
+.tg-header {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.tg-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background-color: rgba(34, 197, 94, 0.08);
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-radius: 30px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.tg-title {
+  font-size: 38px;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.tg-subtitle {
+  font-size: 15px;
+  color: #64748b;
+  max-width: 580px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* ==========================================
+   GRID ALBUM UTAMA (LEBIH PROPORSIONAL & TIDAK MENTOK)
+   ========================================== */
+.tg-album-grid {
+  display: grid;
+  /* Ukuran minmax diperkecil jadi 300px agar ada 3-4 kolom rapi dan tidak terlalu raksasa */
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 28px;
+}
+
+.tg-album-card {
+  position: relative;
+  height: 250px; /* Tinggi kartu dikurangi agar tidak makan tempat dan terlihat proporsional */
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #0f172a;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 10px 25px -8px rgba(15, 23, 42, 0.1), 
+              0 4px 10px -4px rgba(15, 23, 42, 0.05);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tg-album-card:hover {
+  transform: translateY(-6px);
+  border-color: #16a34a;
+  box-shadow: 0 20px 40px -10px rgba(22, 163, 74, 0.2), 
+              0 6px 16px -4px rgba(15, 23, 42, 0.08);
+}
+
+.tg-album-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tg-album-card:hover .tg-album-img {
+  transform: scale(1.06);
+}
+
+.tg-album-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 35%, rgba(15, 23, 42, 0.88) 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+  color: #ffffff;
+}
+
+.tg-album-count {
+  font-size: 11px;
+  font-weight: 600;
+  background-color: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 5px 12px;
+  border-radius: 6px;
+  width: fit-content;
+  margin-bottom: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  letter-spacing: 0.5px;
+}
+
+.tg-album-name {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.3px;
+}
+
+/* ==========================================
+   TAMPILAN DETAIL ALBUM (GRID FOTO & HEADER)
+   ========================================== */
+.tg-detail-top {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  margin-bottom: 35px;
+}
+
+.tg-btn-back {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #1e293b;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.03);
+  transition: all 0.2s ease;
+}
+
+.tg-btn-back:hover {
+  background-color: #0f172a;
+  color: #ffffff;
+  border-color: #0f172a;
+  transform: translateX(-3px);
+  box-shadow: 0 6px 16px rgba(15, 23, 42, 0.15);
+}
+
+.tg-detail-title {
+  justify-self: center;
+  text-align: center;
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.tg-photo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.tg-photo-item {
+  position: relative;
+  height: 220px;
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #e2e8f0;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  box-shadow: 0 6px 18px -4px rgba(15, 23, 42, 0.06);
+  transition: all 0.3s ease;
+}
+
+.tg-photo-item:hover {
+  transform: translateY(-4px);
+  border-color: #16a34a;
+  box-shadow: 0 12px 28px -6px rgba(22, 163, 74, 0.15);
+}
+
+.tg-photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.tg-photo-item:hover img {
+  transform: scale(1.05);
+}
+
+.tg-photo-caption-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(15, 23, 42, 0.88), transparent);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  padding: 14px 16px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ==========================================
+   LIGHTBOX / MODAL SLIDER FOTO
+   ========================================== */
+.tg-lightbox {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.25s ease;
+}
+
+.tg-lightbox-content {
+  position: relative;
+  max-width: 900px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tg-lightbox-close {
+  position: fixed;
+  top: 30px;
+  right: 30px;
+  width: 44px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10000;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.tg-lightbox-close:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: rotate(90deg) scale(1.1);
+}
+
+.tg-lightbox-img-wrapper {
+  position: relative;
+  width: 100%;
+  max-height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tg-lightbox-img {
+  max-width: 100%;
+  max-height: 70vh;
+  object-fit: contain;
+  border-radius: 12px;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.6);
+}
+
+.tg-lightbox-caption {
+  color: #f1f5f9;
+  margin-top: 20px;
+  font-size: 15px;
+  font-weight: 500;
+  text-align: center;
+  letter-spacing: 0.2px;
+}
+
+.tg-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  z-index: 10;
+  backdrop-filter: blur(6px);
+}
+
+.tg-nav-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  transform: translateY(-50%) scale(1.08);
+}
+
+.tg-prev { left: -18px; }
+.tg-next { right: -18px; }
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .tg-detail-top {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+  }
+  .tg-detail-title {
+    font-size: 22px;
+    text-align: center;
+  }
+  .tg-nav-btn {
+    width: 38px;
+    height: 38px;
+  }
+  .tg-prev { left: 5px; }
+  .tg-next { right: 5px; }
+  .tg-lightbox-close {
+    top: 20px;
+    right: 20px;
+    width: 38px;
+    height: 38px;
+  }
+}

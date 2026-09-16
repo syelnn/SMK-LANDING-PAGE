@@ -4,6 +4,8 @@ import Navbar from '../../components/Navbar';
 import '../../css/viewer/landing.css';
 import TenagaPengajarViewer from './TenagaPengajar';
 import AchievementViewer from './AchievementViewer';
+import TampilanGalery from './TampilanGalery';
+import Testimoni from './Testimoni';
 
 // Import Foto dari folder Assets
 import bgSekolah from '../../assets/latar.webp'; 
@@ -59,6 +61,8 @@ const LandingPage = () => {
       '/karya': 'section-prestasi',       
       '/prestasi': 'section-prestasi',     
       '/achievement': 'section-prestasi',
+      '/galeri': 'section-galeri',
+      '/testimoni': 'section-testimoni',
       '/kontak': 'section-kontak',
     };
     
@@ -189,7 +193,15 @@ const LandingPage = () => {
       <AchievementViewer />
 
 
+    {/* 6. GALLERY */}
+    <div id="section-galeri">
+  <TampilanGalery />
+     </div>
 
+     {/* 7. TESTIMONI SECTION */}
+      <div id="section-testimoni">
+        <Testimoni />
+      </div>
     </div>
   );
 };

@@ -111,13 +111,12 @@ const Navbar = () => {
 
  // 3. SCROLL SPY PERBAIKAN URL AKURAT
 useEffect(() => {
-  // TAMBAHKAN '/karya', '/prestasi', '/achievement' ke array validLandingPaths
-  const validLandingPaths = [
-    '/', '/profil', '/berita', '/program', '/jurusan', 
-    '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', 
-    '/pengajar', '/karya', '/prestasi', '/achievement', '/kontak'
-  ];
-  if (!validLandingPaths.includes(location.pathname)) return;
+    const validLandingPaths = [
+      '', '/', '/profil', '/berita', '/program', '/jurusan', 
+      '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', 
+      '/pengajar', '/karya', '/prestasi', '/achievement', '/galeri', '/testimoni', '/kontak'
+    ];
+    if (!validLandingPaths.includes(location.pathname)) return;
 
   let ticking = false;
 
@@ -134,7 +133,9 @@ useEffect(() => {
         const programEl = document.getElementById('section-program');
         const ekskulEl = document.getElementById('section-ekskul');
         const pengajarEl = document.getElementById('section-pengajar');
-        const prestasiEl = document.getElementById('section-prestasi'); // <-- Tambahkan ini
+        const prestasiEl = document.getElementById('section-prestasi'); 
+        const galeriEl = document.getElementById('section-galeri');
+        const testimoniEl = document.getElementById('section-testimoni');
         const kontakEl = document.getElementById('section-kontak');
 
         let activeKey = 'section-hero';
@@ -145,14 +146,18 @@ useEffect(() => {
         if (programEl && scrollPos >= programEl.offsetTop) activeKey = 'section-program';
         if (ekskulEl && scrollPos >= ekskulEl.offsetTop) activeKey = 'section-ekskul';
         if (pengajarEl && scrollPos >= pengajarEl.offsetTop) activeKey = 'section-pengajar';
-        if (prestasiEl && scrollPos >= prestasiEl.offsetTop) activeKey = 'section-prestasi'; // <-- Tambahkan ini
+        if (prestasiEl && scrollPos >= prestasiEl.offsetTop) activeKey = 'section-prestasi'; 
+        if (galeriEl && scrollPos >= galeriEl.offsetTop) activeKey = 'section-galeri';
+        if (testimoniEl && scrollPos >= testimoniEl.offsetTop) activeKey = 'section-testimoni';
         if (kontakEl && scrollPos >= kontakEl.offsetTop) activeKey = 'section-kontak';
 
         // Pengecekan posisi paling bawah layar
         const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150;
         if (isBottom) {
           if (kontakEl) activeKey = 'section-kontak';
-          else if (prestasiEl) activeKey = 'section-prestasi'; // <-- Tambahkan ini
+          else if (testimoniEl) activeKey = 'section-testimoni';
+          else if (galeriEl) activeKey = 'section-galeri';
+          else if (prestasiEl) activeKey = 'section-prestasi'; 
           else if (pengajarEl) activeKey = 'section-pengajar';
           else if (ekskulEl) activeKey = 'section-ekskul';
         }
@@ -192,6 +197,14 @@ useEffect(() => {
             setActivePath(targetUrl);
             window.history.replaceState(null, '', targetUrl);
           }
+
+        } else if (activeKey === 'section-testimoni') {
+          const targetUrl = '/testimoni';
+          if (activePathRef.current !== targetUrl) {
+            activePathRef.current = targetUrl;
+            setActivePath(targetUrl);
+            window.history.replaceState(null, '', targetUrl);
+          }
         }
 
           ticking = false;
@@ -225,6 +238,8 @@ useEffect(() => {
       '/karya': 'section-prestasi',      
       '/prestasi': 'section-prestasi',  
       '/achievement': 'section-prestasi',
+      '/galeri': 'section-galeri',
+      '/testimoni': 'section-testimoni',
       '/kontak': 'section-kontak',
       '/': 'section-hero'
     };
