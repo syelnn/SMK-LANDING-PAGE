@@ -56,7 +56,7 @@ const DownloadViewer = () => {
           
           {/* Header section (Tanpa Background Gambar) */}
           <div className="download-header-clean">
-            <span className="badge-subtitle">Download Center</span>
+            <span className="badge-subtitle">Download</span>
             <h1>Pusat Unduhan Document & Berkas</h1>
             <p>Unduh berkas-berkas penting seputar akademik, kurikulum, dan administrasi sekolah.</p>
           </div>
