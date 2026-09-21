@@ -37,6 +37,17 @@ const Navbar = () => {
   return rawUrl;
 }, []);
 
+  // Datang dari halaman lain (mis. /download) menuju section landing:
+  // matikan scroll-spy sementara supaya menu tidak berkedip saat animasi scroll berjalan.
+  useEffect(() => {
+    if (!sessionStorage.getItem('scrollToSection')) return;
+    isManualScrolling.current = true;
+    setTimeout(() => {
+      isManualScrolling.current = false;
+      window.dispatchEvent(new Event('scroll')); // sinkronkan menu aktif di posisi akhir
+    }, 2200);
+  }, []);
+
   // 1. Fetching Menu dari Database
   useEffect(() => {
     let isMounted = true;
@@ -268,9 +279,16 @@ useEffect(() => {
 
     const sectionKey = sectionMap[targetUrl];
 
-    // Jika posisi browser bukan di landing page ('/'), langsung pindah halaman lewat router
-    if (location.pathname !== '/' && location.pathname !== '') {
-      navigate(targetUrl);
+    // Sedang BUKAN di landing page (mis. /download, /berita/slug, detail kurikulum):
+    // kembali ke landing lalu otomatis scroll ke section yang dipilih.
+    const onLanding = !!document.getElementById('section-hero');
+    if (!onLanding) {
+      if (sectionKey) {
+        sessionStorage.setItem('scrollToSection', sectionKey); // dibaca LandingPage
+        navigate('/');
+      } else {
+        navigate(targetUrl);
+      }
       return;
     }
 
@@ -302,7 +320,7 @@ useEffect(() => {
     setDropdownOpen(prev => (prev === menuId ? null : menuId));
   };
 
- // 5. PENGECEKAN MENU AKTIF (Garis Biru)
+ // 5. PENGECEKAN MENU AKTIF (pil + buletan aktif)
 const checkIsActive = (menu) => {
   const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
   const menuUrl = getCleanUrl(menu);
@@ -311,7 +329,7 @@ const checkIsActive = (menu) => {
 if (location.pathname === '/download' && (menuUrl.includes('download') || menuTitle.includes('download'))) {
   return true;
 }
-    // Mencegah garis biru menyala saat discroll ke area dropdown (Ekskul & Pengajar)
+    // Mencegah buletan menyala di menu utama saat discroll ke area dropdown (Ekskul & Pengajar)
     const isDropdownArea = [
       '/ekstrakurikuler', '/ekskul', '/tenagapengajar', 
       '/guru', '/karya', '/prestasi', '/achievement'
@@ -381,7 +399,8 @@ if (location.pathname === '/download' && (menuUrl.includes('download') || menuTi
                     onClick={(e) => handleDropdownToggle(menu.id, e)}
                   >
                     {menu.title}
-                    <span className="arrow">{isDropdownOpenState ? '▲' : '▾'}</span>
+                    <span className="nav-dot" aria-hidden="true"></span>
+                    <span className="arrow" aria-hidden="true">▾</span>
                   </button>
                   <ul className={`dropdown-menu ${isDropdownOpenState ? 'show' : ''}`}>
                     {subMenus.map((sub) => {
@@ -402,8 +421,13 @@ if (location.pathname === '/download' && (menuUrl.includes('download') || menuTi
 
             return (
               <li key={menu.id} className="nav-item" onClick={() => handleNavClick(menu)}>
-                <span className={`nav-link ${isActive ? 'active' : ''}`}>
+                <span
+                  className={`nav-link ${isActive ? 'active' : ''}`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
                   {menu.title}
+                  {/* Buletan aktif: menyala saat menu aktif, mati saat tidak (warna ikut tema) */}
+                  <span className="nav-dot" aria-hidden="true"></span>
                 </span>
               </li>
             );

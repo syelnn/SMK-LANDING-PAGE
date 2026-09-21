@@ -15,13 +15,12 @@ model User {
   password    String       @db.VarChar(255)
   fullName    String?      @map("full_name") @db.VarChar(200)
   avatar      String?      @db.VarChar(255)
-  role        String?      @default("editor") @db.VarChar(50)
+  role        String?      @default("viewer") @db.VarChar(50)
   isActive    Int?         @default(1) @map("is_active")
   lastLogin   DateTime?    @map("last_login") @db.Timestamp(6)
   createdAt   DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime?    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   auditLogs   AuditLog[]
-
   testimonial Testimonial?
 
   @@map("users")
@@ -153,10 +152,10 @@ model MenuItem {
   sortOrder  Int?       @default(0) @map("sort_order")
   status     Int?       @default(1)
   type       String?    @default("section") @db.VarChar(50)
-  isPublic   Boolean    @default(true) @map("is_public")
   pageId     Int?       @map("page_id")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
+  isPublic   Boolean    @default(true) @map("is_public")
   page       Page?      @relation(fields: [pageId], references: [id])
   parent     MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
   children   MenuItem[] @relation("MenuHierarchy")

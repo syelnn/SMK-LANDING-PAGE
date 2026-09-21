@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
+import { saveSession, homeFor } from './utils/auth';
 import './App.css';
 
 export default function Login() {
@@ -9,6 +10,15 @@ export default function Login() {
   const [errorMsg, setErrorMsg] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
+
+  // Halaman asal (mis. "/testimoni/tulis") — diisi saat viewer diarahkan ke login dari tombol CTA
+  const from = location.state?.from;
+  const sessionExpired = location.state?.reason === 'expired' || new URLSearchParams(location.search).get('expired') === '1';
+  const isTestimoniFlow = location.state?.reason === 'testimoni';
+
+  useEffect(() => {
+    if (sessionExpired) setErrorMsg('Sesi Anda tidak valid atau sudah berakhir. Silakan login kembali.');
+  }, [sessionExpired]);
 
   // Menangkap username jika dikirim dari halaman lupa password
   useEffect(() => {
@@ -22,9 +32,12 @@ export default function Login() {
     setErrorMsg('');
     try {
       const response = await axios.post('http://localhost:5001/api/auth/login', { username, password });
-      localStorage.setItem('token', response.data.data.token);
-      localStorage.setItem('role', response.data.data.user.role);
-      navigate('/admin');
+      const { token, user } = response.data.data;
+      saveSession({ token, user });
+
+      // Ada halaman tujuan -> langsung ke sana. Jika tidak: admin/editor ke dashboard, viewer ke beranda.
+      if (from) navigate(from, { replace: true });
+      else navigate(homeFor(String(user.role || '').toLowerCase()), { replace: true });
     } catch (error) {
       setErrorMsg(error.response?.data?.message || 'Gagal terhubung ke server.');
     }
@@ -35,7 +48,11 @@ export default function Login() {
       <div className="auth-card">
         <img src="https://yt3.googleusercontent.com/ytc/AIdro_kgxgSlJ__b2JUfQ_stLFyVrcgM8-5y1n27pRHQUodzkA=s900-c-k-c0x00ffffff-no-rj" alt="Logo" className="auth-logo" />
         <h2 className="auth-title login-title">Selamat Datang</h2>
-        <p className="auth-subtitle">Masuk untuk memberi komentar dan menyukai konten</p>
+        <p className="auth-subtitle">
+          {isTestimoniFlow
+            ? 'Masuk dulu, lalu kamu langsung diarahkan ke form testimoni.'
+            : 'Masuk untuk memberi komentar dan menyukai konten'}
+        </p>
 
         {errorMsg && <p className="error-message login-error">{errorMsg}</p>}
 
@@ -57,7 +74,7 @@ export default function Login() {
         </form>
 
         <p className="footer-text">
-          Belum punya akun? <Link to="/register" className="auth-link">Daftar sekarang</Link>
+          Belum punya akun? <Link to="/register" state={location.state} className="auth-link">Daftar sekarang</Link>
         </p>
         <p className="back-home">
           <Link to="/">← KEMBALI KE BERANDA</Link>

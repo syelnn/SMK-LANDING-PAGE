@@ -13,6 +13,7 @@ const DownloadViewer = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    window.scrollTo(0, 0); // selalu mulai dari atas saat pindah dari landing/footer
     fetchDownloads();
   }, []);
 

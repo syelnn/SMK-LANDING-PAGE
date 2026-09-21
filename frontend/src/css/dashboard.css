@@ -238,7 +238,7 @@
 }
 
 .topbar-dropdown-item.danger:hover {
-  background: #fef2f2;
+  background: var(--compreng-surface-soft, #f1f5f9);
 }
 
 /* =========================================
@@ -486,7 +486,7 @@
   body, 
   .layout-content-wrapper, 
   .main-content-area {
-    background-color: white !important;
+    background-color: var(--compreng-surface, #ffffff) !important;
     height: auto !important;
     overflow: visible !important;
     padding: 0 !important;
@@ -496,7 +496,7 @@
   .dash-stat-card, 
   .dash-chart-card {
     page-break-inside: avoid;
-    border: 1px solid #e2e8f0 !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
     box-shadow: none !important;
   }
 

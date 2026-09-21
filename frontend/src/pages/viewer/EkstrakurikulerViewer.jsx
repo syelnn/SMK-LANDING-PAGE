@@ -61,7 +61,7 @@ export default function EkstrakurikulerViewer() {
   }, []);
 
   if (loading) {
-    return <div className="text-center py-5" style={{ color: '#64748b' }}>Memuat data ekstrakurikuler...</div>;
+    return <div className="text-center py-5" style={{ color: 'var(--compreng-text-secondary, #475569)' }}>Memuat data ekstrakurikuler...</div>;
   }
 
   return (

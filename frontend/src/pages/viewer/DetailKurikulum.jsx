@@ -80,11 +80,11 @@ export default function DetailKurikulumViewer() {
           
           {/* Breadcrumb Navigasi */}
           <nav className="dk-breadcrumb" aria-label="Breadcrumb" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600' }}>
-            <Link to="/" style={{ color: '#64748b', textDecoration: 'none' }}>BERANDA</Link>
-            <ChevronRight size={14} style={{ color: '#94a3b8' }} />
-            <a href="/program" onClick={handleGoToProgramSection} style={{ color: '#64748b', textDecoration: 'none' }}>JURUSAN & PROGRAM</a>
-            <ChevronRight size={14} style={{ color: '#94a3b8' }} />
-            <span style={{ color: '#0f172a' }}>{current.title}</span>
+            <Link to="/" style={{ color: 'var(--compreng-text-secondary, #475569)', textDecoration: 'none' }}>BERANDA</Link>
+            <ChevronRight size={14} style={{ color: 'var(--compreng-text-secondary, #475569)' }} />
+            <a href="/program" onClick={handleGoToProgramSection} style={{ color: 'var(--compreng-text-secondary, #475569)', textDecoration: 'none' }}>JURUSAN & PROGRAM</a>
+            <ChevronRight size={14} style={{ color: 'var(--compreng-text-secondary, #475569)' }} />
+            <span style={{ color: 'var(--compreng-text, #0f172a)' }}>{current.title}</span>
           </nav>
 
           <div className="dk-header">

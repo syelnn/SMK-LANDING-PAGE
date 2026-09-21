@@ -1,13 +1,30 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
+const { verifyToken, optionalAuth, checkRole } = require('./middleware/authMiddleware')(prisma);
+const requireStaff = [verifyToken, checkRole(['admin', 'editor'])]; // khusus admin/editor
+const requireAdmin = [verifyToken, checkRole(['admin'])];           // khusus admin (footer, menu, settings)
+
+// ?admin=true hanya boleh untuk staff (data FAQ yang disembunyikan tidak bocor ke publik)
+const staffIfAdminQuery = (req, res, next) =>
+  req.query.admin === 'true'
+    ? verifyToken(req, res, (err) => (err ? next(err) : checkRole(['admin', 'editor'])(req, res, next)))
+    : next();
+
 const app = express();
 const PORT = process.env.PORT || 5002; // Bedakan port-nya, misal 5002 untuk content-service
 
-app.use(cors());
+app.disable('x-powered-by');
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(cors({
+  origin: (process.env.CORS_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173').split(',').map((x) => x.trim()),
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 // Tambahkan limit 50mb agar gambar Base64 tidak error 413
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
@@ -36,7 +53,7 @@ app.get('/api/jurusan', async (req, res) => {
 // API EDIT (PUT) JURUSAN & PROGRAM
 // ===================================
 
-app.put('/api/jurusan/:id', async (req, res) => {
+app.put('/api/jurusan/:id', ...requireStaff, async (req, res) => {
   try {
     const { title, slug, desc, imageIcon, subjects, career } = req.body;
     const updated = await prisma.jurusanCustom.update({
@@ -49,7 +66,7 @@ app.put('/api/jurusan/:id', async (req, res) => {
   }
 });
 
-app.put('/api/program/:id', async (req, res) => {
+app.put('/api/program/:id', ...requireStaff, async (req, res) => {
   try {
     const { title, desc, badge, imageIcon } = req.body;
     const updated = await prisma.programUnggulanCustom.update({
@@ -61,7 +78,7 @@ app.put('/api/program/:id', async (req, res) => {
     res.status(500).json({ success: false, message: 'Gagal update program' });
   }
 });
-app.post('/api/jurusan', async (req, res) => {
+app.post('/api/jurusan', ...requireStaff, async (req, res) => {
   try {
     const { title, slug, desc, imageIcon, subjects, career } = req.body;
     const newData = await prisma.jurusanCustom.create({
@@ -73,7 +90,7 @@ app.post('/api/jurusan', async (req, res) => {
   }
 });
 
-app.delete('/api/jurusan/:id', async (req, res) => {
+app.delete('/api/jurusan/:id', ...requireStaff, async (req, res) => {
   try {
     await prisma.jurusanCustom.delete({ where: { id: parseInt(req.params.id) } });
     res.json({ success: true, message: 'Jurusan dihapus' });
@@ -99,7 +116,7 @@ app.get('/api/program', async (req, res) => {
   }
 });
 
-app.post('/api/program', async (req, res) => {
+app.post('/api/program', ...requireStaff, async (req, res) => {
   try {
     const { title, desc, badge, imageIcon } = req.body;
     const newData = await prisma.programUnggulanCustom.create({
@@ -112,7 +129,7 @@ app.post('/api/program', async (req, res) => {
   }
 });
 
-app.delete('/api/program/:id', async (req, res) => {
+app.delete('/api/program/:id', ...requireStaff, async (req, res) => {
   try {
     await prisma.programUnggulanCustom.delete({ where: { id: parseInt(req.params.id) } });
     res.json({ success: true, message: 'Program dihapus' });
@@ -138,7 +155,7 @@ app.get('/api/teacher', async (req, res) => {
 });
 
 // 2. Tambah guru baru (POST)
-app.post('/api/teacher', async (req, res) => {
+app.post('/api/teacher', ...requireStaff, async (req, res) => {
   try {
     const { name, role, photo, sort_order, show } = req.body;
     const newData = await prisma.teacher.create({
@@ -158,7 +175,7 @@ app.post('/api/teacher', async (req, res) => {
 });
 
 // 3. Edit / Update data guru (PUT)
-app.put('/api/teacher/:id', async (req, res) => {
+app.put('/api/teacher/:id', ...requireStaff, async (req, res) => {
   try {
     const { name, role, photo, sort_order, show } = req.body;
     const updated = await prisma.teacher.update({
@@ -179,7 +196,7 @@ app.put('/api/teacher/:id', async (req, res) => {
 });
 
 // 4. Hapus guru (DELETE)
-app.delete('/api/teacher/:id', async (req, res) => {
+app.delete('/api/teacher/:id', ...requireStaff, async (req, res) => {
   try {
     await prisma.teacher.delete({ 
       where: { id: parseInt(req.params.id) } 
@@ -206,7 +223,7 @@ app.get('/api/extracurriculars', async (req, res) => {
 });
 
 // 2. Tambah ekstrakurikuler baru (POST)
-app.post('/api/extracurriculars', async (req, res) => {
+app.post('/api/extracurriculars', ...requireStaff, async (req, res) => {
   try {
     const { title, description, icon, show } = req.body;
 
@@ -238,7 +255,7 @@ app.post('/api/extracurriculars', async (req, res) => {
 });
 
 // 3. Update ekstrakurikuler (PUT) - Dengan Auto-Shift Reorder
-app.put('/api/extracurriculars/:id', async (req, res) => {
+app.put('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, icon, show, sortOrder, sort_order } = req.body;
@@ -300,7 +317,7 @@ app.put('/api/extracurriculars/:id', async (req, res) => {
 });
 
 // 4. Hapus ekstrakurikuler (DELETE) - Auto-reorder setelah hapus
-app.delete('/api/extracurriculars/:id', async (req, res) => {
+app.delete('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
   try {
     const targetId = Number(req.params.id);
 
@@ -333,36 +350,63 @@ app.delete('/api/extracurriculars/:id', async (req, res) => {
 });
 
 // khusus testimoni 
-// 1. KIRIM TESTIMONI (Khusus Viewer/User Login dengan batasan 1x kirim)
-app.post('/api/testimonials', async (req, res) => {
+// 1. KIRIM TESTIMONI (Viewer yang sudah login, maksimal 1x kirim)
+//    - userId diambil dari TOKEN (bukan dari body) supaya tidak bisa dipalsukan
+//    - show SELALU 0 -> tidak tampil di halaman viewer sampai admin/editor menyetujui
+app.post('/api/testimonials', verifyToken, async (req, res) => {
   try {
-    const { userId, name, photo, role, quote } = req.body;
+    const userId = parseInt(req.user.id);
+    const name = String(req.body.name || '').trim();
+    const role = String(req.body.role || '').trim();
+    const quote = String(req.body.quote || '').trim();
+    const photo = typeof req.body.photo === 'string' ? req.body.photo.trim() : '';
 
-    // Cek apakah user ini sudah pernah mengirim testimoni sebelumnya
-    const existingTestimonial = await prisma.testimonial.findUnique({
-      where: { userId: parseInt(userId) }
-    });
-
-    if (existingTestimonial) {
-      return res.status(400).json({ success: false, message: 'Anda hanya dapat mengirim 1 testimoni saja!' });
+    if (!name || !role || !quote) {
+      return res.status(400).json({ success: false, message: 'Nama, status, dan cerita wajib diisi.' });
+    }
+    if (quote.length < 20) {
+      return res.status(400).json({ success: false, message: 'Cerita terlalu singkat (minimal 20 karakter).' });
+    }
+    if (quote.length > 500 || name.length > 100 || role.length > 200) {
+      return res.status(400).json({ success: false, message: 'Teks terlalu panjang.' });
+    }
+    if (photo.length > 400 * 1024) {
+      return res.status(400).json({ success: false, message: 'Ukuran foto terlalu besar.' });
     }
 
-    // Simpan testimoni dengan status show = 0 (Menunggu moderasi Admin)
+    // Cek apakah user ini sudah pernah mengirim testimoni sebelumnya
+    const existingTestimonial = await prisma.testimonial.findUnique({ where: { userId } });
+    if (existingTestimonial) {
+      return res.status(400).json({
+        success: false,
+        message: 'Anda hanya dapat mengirim 1 testimoni saja!',
+        data: existingTestimonial
+      });
+    }
+
     const newTestimonial = await prisma.testimonial.create({
-      data: {
-        userId: parseInt(userId),
-        name,
-        photo: photo || '',
-        role,
-        quote,
-        show: 0 
-      }
+      data: { userId, name, photo: photo || '', role, quote, show: 0 }
     });
 
     res.json({ success: true, message: 'Testimoni berhasil dikirim dan menunggu persetujuan admin!', data: newTestimonial });
   } catch (error) {
+    // P2002 = pelanggaran unique (double klik / kirim dari 2 tab bersamaan)
+    if (error.code === 'P2002') {
+      return res.status(400).json({ success: false, message: 'Anda hanya dapat mengirim 1 testimoni saja!' });
+    }
     console.error('Error kirim testimoni:', error);
     res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server.' });
+  }
+});
+
+// 1b. CEK TESTIMONI MILIK SAYA (untuk menampilkan status: menunggu / sudah tampil)
+app.get('/api/testimonials/mine', verifyToken, async (req, res) => {
+  try {
+    const data = await prisma.testimonial.findUnique({ where: { userId: parseInt(req.user.id) } });
+    res.json({ success: true, data: data || null });
+  } catch (error) {
+    console.error('Error cek testimoni saya:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat testimoni Anda' });
   }
 });
 
@@ -380,7 +424,7 @@ app.get('/api/testimonials/public', async (req, res) => {
 });
 
 // 3. AMBIL SEMUA TESTIMONI UNTUK ADMIN/EDITOR (Manage Dashboard)
-app.get('/api/testimonials', async (req, res) => {
+app.get('/api/testimonials', ...requireStaff, async (req, res) => {
   try {
     const testimonials = await prisma.testimonial.findMany({
       orderBy: { createdAt: 'desc' }
@@ -392,7 +436,7 @@ app.get('/api/testimonials', async (req, res) => {
 });
 
 // 4. TOGGLE STATUS SHOW (Admin/Editor menyetujui atau menyembunyikan testimoni)
-app.put('/api/testimonials/:id/toggle-show', async (req, res) => {
+app.put('/api/testimonials/:id/toggle-show', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     const { show } = req.body; // Nilai 0 atau 1
@@ -409,7 +453,7 @@ app.put('/api/testimonials/:id/toggle-show', async (req, res) => {
 });
 
 // 5. HAPUS TESTIMONI
-app.delete('/api/testimonials/:id', async (req, res) => {
+app.delete('/api/testimonials/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.testimonial.delete({
@@ -422,7 +466,7 @@ app.delete('/api/testimonials/:id', async (req, res) => {
 });
 
 // TAMBAH TESTIMONI KHUSUS ADMIN
-app.post('/api/testimonials/admin', async (req, res) => {
+app.post('/api/testimonials/admin', ...requireStaff, async (req, res) => {
   try {
     // PASTIKAN 'photo' ADA DI DALAM KURUNG KURAWAL INI
     const { name, role, quote, show, photo } = req.body; 
@@ -444,7 +488,7 @@ app.post('/api/testimonials/admin', async (req, res) => {
 });
 
 // EDIT / UPDATE TESTIMONI (Full Update)
-app.put('/api/testimonials/:id', async (req, res) => {
+app.put('/api/testimonials/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, role, quote, show, photo } = req.body; // <-- photo ditambahkan di sini
@@ -470,7 +514,7 @@ app.put('/api/testimonials/:id', async (req, res) => {
 // API FAQ (PERTANYAAN)
 
 // GET ALL FAQ (Disesuaikan agar Admin dapat melihat semua data)
-app.get('/api/faqs', async (req, res) => {
+app.get('/api/faqs', staffIfAdminQuery, async (req, res) => {
   try {
     const isAdmin = req.query.admin === 'true';
     
@@ -491,7 +535,7 @@ app.get('/api/faqs', async (req, res) => {
 
 
 // 2. Tambah FAQ baru (POST)
-app.post('/api/faqs', async (req, res) => {
+app.post('/api/faqs', ...requireStaff, async (req, res) => {
   try {
     const { question, answer, category, show } = req.body;
 
@@ -525,7 +569,7 @@ app.post('/api/faqs', async (req, res) => {
   }
 });
 // 3. Update FAQ (PUT) - Mengikuti pola re-order Ekstrakurikuler Anda
-app.put('/api/faqs/:id', async (req, res) => {
+app.put('/api/faqs/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     const { question, answer, category, show, sortOrder, sort_order } = req.body;
@@ -584,7 +628,7 @@ app.put('/api/faqs/:id', async (req, res) => {
 });
 
 // 4. Hapus FAQ (DELETE) - Auto-reorder setelah hapus
-app.delete('/api/faqs/:id', async (req, res) => {
+app.delete('/api/faqs/:id', ...requireStaff, async (req, res) => {
   try {
     const targetId = Number(req.params.id);
 
@@ -631,7 +675,7 @@ app.get('/api/galleries', async (req, res) => {
 });
 
 // 2. POST - Tambah Foto Baru
-app.post('/api/galleries', async (req, res) => {
+app.post('/api/galleries', ...requireStaff, async (req, res) => {
   try {
     const { category, image, caption, is_featured, sort_order, show } = req.body;
     const newGallery = await prisma.gallery.create({
@@ -652,7 +696,7 @@ app.post('/api/galleries', async (req, res) => {
 });
 
 // 3. PUT - Edit Foto
-app.put('/api/galleries/:id', async (req, res) => {
+app.put('/api/galleries/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     const { category, image, caption, is_featured, sort_order, show } = req.body;
@@ -676,7 +720,7 @@ app.put('/api/galleries/:id', async (req, res) => {
 });
 
 // 4. DELETE - Hapus Foto
-app.delete('/api/galleries/:id', async (req, res) => {
+app.delete('/api/galleries/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.gallery.delete({
@@ -729,7 +773,7 @@ app.get('/api/news/:slug', async (req, res) => {
 });
 
 // 3. Tambah berita baru (POST)
-app.post('/api/news', async (req, res) => {
+app.post('/api/news', ...requireStaff, async (req, res) => {
   try {
     const { title, slug, category, tags, excerpt, content, image, author, status } = req.body;
 
@@ -763,7 +807,7 @@ app.post('/api/news', async (req, res) => {
 });
 
 // 4. Update / Edit berita (PUT)
-app.put('/api/news/:id', async (req, res) => {
+app.put('/api/news/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     const { title, slug, category, tags, excerpt, content, image, author, status } = req.body;
@@ -799,7 +843,7 @@ app.put('/api/news/:id', async (req, res) => {
 });
 
 // 5. Hapus berita (DELETE)
-app.delete('/api/news/:id', async (req, res) => {
+app.delete('/api/news/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.news.delete({
@@ -829,7 +873,7 @@ app.get('/api/footer', async (req, res) => {
 });
 
 // 2. Update data footer (PUT)
-app.put('/api/footer', async (req, res) => {
+app.put('/api/footer', ...requireAdmin, async (req, res) => {
   try {
     const { 
       schoolName, 
@@ -902,7 +946,7 @@ app.get('/api/menu-items', async (req, res) => {
 });
 
 // 2. POST - Tambah Menu Baru
-app.post('/api/menu-items', async (req, res) => {
+app.post('/api/menu-items', ...requireAdmin, async (req, res) => {
   try {
     const { parent_id, parentId, title, url, target, icon, section_key, sectionKey, sort_order, sortOrder, status, type, page_id, pageId } = req.body;
     
@@ -948,7 +992,7 @@ app.get('/api/menu-items', async (req, res) => {
 });
 
 // 2. POST - Tambah Menu Item Baru
-app.post('/api/menu-items', async (req, res) => {
+app.post('/api/menu-items', ...requireAdmin, async (req, res) => {
   try {
     const { title, url, target, icon, sectionKey, sortOrder, status, type, pageId, parentId } = req.body;
 
@@ -975,7 +1019,7 @@ app.post('/api/menu-items', async (req, res) => {
 });
 
 // 3. PUT - Update Menu Item
-app.put('/api/menu-items/:id', async (req, res) => {
+app.put('/api/menu-items/:id', ...requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { title, url, target, icon, sectionKey, sortOrder, status, type, pageId, parentId } = req.body;
@@ -1004,7 +1048,7 @@ app.put('/api/menu-items/:id', async (req, res) => {
 });
 
 // 4. DELETE - Hapus Menu Item
-app.delete('/api/menu-items/:id', async (req, res) => {
+app.delete('/api/menu-items/:id', ...requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     await prisma.menuItem.delete({ where: { id: Number(id) } });
@@ -1049,7 +1093,7 @@ app.get('/api/achievements', async (req, res) => {
 app.use(express.json());
 
 // POST: Tambah Prestasi Baru
-app.post('/api/achievements', async (req, res) => {
+app.post('/api/achievements', ...requireStaff, async (req, res) => {
   try {
     const { student_name, class_name, achievement, level, year, photo, sort_order } = req.body;
 
@@ -1082,7 +1126,7 @@ app.post('/api/achievements', async (req, res) => {
 });
 
 // PUT: Update data achievement
-app.put('/api/achievements/:id', async (req, res) => {
+app.put('/api/achievements/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
     const { student_name, class_name, achievement, level, year, sort_order, photo } = req.body;
@@ -1150,7 +1194,7 @@ app.put('/api/achievements/:id', async (req, res) => {
 });
 
 // DELETE: Hapus data achievement berdasarkan ID
-app.delete('/api/achievements/:id', async (req, res) => {
+app.delete('/api/achievements/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -1186,7 +1230,7 @@ app.get('/api/settings', async (req, res) => {
   }
 });
 
-app.put('/api/settings/bulk-update', async (req, res) => {
+app.put('/api/settings/bulk-update', ...requireAdmin, async (req, res) => {
   try {
     const updates = req.body; 
     for (const [key, value] of Object.entries(updates)) {
@@ -1216,9 +1260,11 @@ app.put('/api/settings/bulk-update', async (req, res) => {
 // ==========================================
 
 // 1. GET ALL DOWNLOADS
-app.get('/api/downloads', async (req, res) => {
+app.get('/api/downloads', optionalAuth, async (req, res) => {
   try {
+    const isStaff = ['admin', 'editor'].includes(req.user?.role);
     const downloads = await prisma.download.findMany({
+      where: isStaff ? {} : { show: 1 }, // tamu hanya melihat file yang ditampilkan
       orderBy: [
         { sortOrder: 'asc' }, // Menggunakan sortOrder (bukan sort_order)
         { id: 'desc' }
@@ -1239,7 +1285,7 @@ app.get('/api/downloads', async (req, res) => {
 });
 
 // 2. POST DOWNLOAD (Tambah Data Baru)
-app.post('/api/downloads', async (req, res) => {
+app.post('/api/downloads', ...requireStaff, async (req, res) => {
   const { title, category, description, url, file_size, fileSize, sort_order, sortOrder, show } = req.body;
 
   if (!title || !url) {
@@ -1271,7 +1317,7 @@ app.post('/api/downloads', async (req, res) => {
 });
 
 // 3. PUT DOWNLOAD (Edit Data)
-app.put('/api/downloads/:id', async (req, res) => {
+app.put('/api/downloads/:id', ...requireStaff, async (req, res) => {
   const { id } = req.params;
   const { title, category, description, url, file_size, fileSize, sort_order, sortOrder, show } = req.body;
 
@@ -1306,7 +1352,7 @@ app.put('/api/downloads/:id', async (req, res) => {
 });
 
 // 4. DELETE DOWNLOAD (Hapus Data)
-app.delete('/api/downloads/:id', async (req, res) => {
+app.delete('/api/downloads/:id', ...requireStaff, async (req, res) => {
   const { id } = req.params;
 
   try {

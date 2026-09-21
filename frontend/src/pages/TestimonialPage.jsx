@@ -6,12 +6,7 @@ import '../App.css'; // Wajib di-import agar class .modal-overlay, .modern-modal
 
 const TestimonialPage = () => {
   const [testimonials, setTestimonials] = useState([]);
-  const [hasSubmitted, setHasSubmitted] = useState(false);
-  
-  // State form Pengunjung
-  const [viewerFormData, setViewerFormData] = useState({ name: '', role: '', quote: '', photo: '' });
-  const [viewerPhotoMode, setViewerPhotoMode] = useState('url'); 
-  
+
   // State form Admin
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState('add');
@@ -25,6 +20,7 @@ const TestimonialPage = () => {
   
   const userRole = localStorage.getItem('role') || 'viewer';
   const userId = localStorage.getItem('userId');
+  const authHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
   useEffect(() => {
     fetchData();
@@ -46,14 +42,9 @@ const TestimonialPage = () => {
         ? 'http://localhost:5002/api/testimonials' 
         : 'http://localhost:5002/api/testimonials/public';
         
-      const res = await axios.get(endpoint);
+      const isStaff = userRole === 'admin' || userRole === 'editor';
+      const res = await axios.get(endpoint, isStaff ? authHeaders() : undefined);
       setTestimonials(res.data.data);
-
-      if (userRole === 'viewer' && userId) {
-        const checkAll = await axios.get('http://localhost:5002/api/testimonials');
-        const submitted = checkAll.data.data.find(t => t.userId === Number(userId));
-        if (submitted) setHasSubmitted(true);
-      }
     } catch (error) {
       console.error("Gagal memuat testimoni", error);
     }
@@ -130,9 +121,9 @@ const TestimonialPage = () => {
     e.preventDefault();
     try {
       if (modalMode === 'add') {
-        await axios.post('http://localhost:5002/api/testimonials/admin', adminFormData);
+        await axios.post('http://localhost:5002/api/testimonials/admin', adminFormData, authHeaders());
       } else {
-        await axios.put(`http://localhost:5002/api/testimonials/${editId}`, adminFormData);
+        await axios.put(`http://localhost:5002/api/testimonials/${editId}`, adminFormData, authHeaders());
       }
       setIsModalOpen(false);
       fetchData();
@@ -145,7 +136,7 @@ const TestimonialPage = () => {
     setDropdownConfig({ id: null, right: null, top: null, bottom: null });
     try {
       const newShow = currentShow === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5002/api/testimonials/${id}/toggle-show`, { show: newShow });
+      await axios.put(`http://localhost:5002/api/testimonials/${id}/toggle-show`, { show: newShow }, authHeaders());
       fetchData();
     } catch (error) {
       alert('Gagal merubah status');
@@ -156,7 +147,7 @@ const TestimonialPage = () => {
     setDropdownConfig({ id: null, right: null, top: null, bottom: null });
     if (!window.confirm("Hapus testimoni ini secara permanen?")) return;
     try {
-      await axios.delete(`http://localhost:5002/api/testimonials/${id}`);
+      await axios.delete(`http://localhost:5002/api/testimonials/${id}`, authHeaders());
       fetchData();
     } catch (error) {
       alert('Gagal menghapus');
@@ -175,98 +166,12 @@ const TestimonialPage = () => {
 
   return (
     <div className="testi-wrapper">
-      
       {/* =========================================================
-          VIEW UNTUK PENGUNJUNG
+          Halaman ini KHUSUS admin/editor (dijaga juga oleh
+          ProtectedRoute di App.jsx). Viewer TIDAK PERNAH melihat
+          halaman ini — alur kirim testimoni untuk viewer ada di
+          /testimoni/tulis (lihat pages/viewer/TulisTestimoni.jsx).
       ========================================================= */}
-      {userRole === 'viewer' ? (
-        <>
-          <div className="modern-testi-public">
-            <div className="modern-testi-header">
-              <span className="modern-testi-header-badge">Testimoni</span>
-              <h2 style={{ color: 'var(--compreng-text)', margin: '10px 0' }}>Testimoni <span style={{ color: 'var(--compreng-green)' }}>SMK Negeri Compreng</span></h2>
-              <p style={{ color: 'var(--compreng-text-secondary)' }}>Apa kata siswa, alumni, dan orang tua tentang pengalaman mereka.</p>
-            </div>
-
-            <div className="modern-testi-grid">
-              {displayCards.map((t, index) => (
-                <div key={t.id || index} className="testi-card-public">
-                  <div className="testi-card-quote-icon">&ldquo;</div>
-                  <p className="testi-card-text">{t.quote}</p>
-                  
-                  <div className="testi-card-author">
-                    {t.photo ? (
-                      <img src={t.photo} alt={t.name} className="testi-card-author-img" />
-                    ) : (
-                      <div className="testi-card-author-initial">{t.name.charAt(0).toUpperCase()}</div>
-                    )}
-                    <div>
-                      <h4 style={{ margin: 0, color: 'var(--compreng-text)', fontSize: '15px' }}>{t.name}</h4>
-                      <p style={{ margin: 0, color: 'var(--compreng-text-muted)', fontSize: '12px' }}>{t.role}</p>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="testi-viewer-form-container">
-            <h3 style={{ textAlign: 'center', color: 'var(--compreng-text)', marginBottom: '20px' }}>Bagikan Pengalamanmu</h3>
-            {!userId ? (
-              <div style={{ padding: '15px', backgroundColor: 'var(--compreng-surface-soft)', color: 'var(--compreng-text-muted)', textAlign: 'center', borderRadius: '8px' }}>Silakan login untuk mengirim testimoni.</div>
-            ) : hasSubmitted ? (
-              <div className="testi-viewer-alert">Terima kasih! Testimoni kamu sedang menunggu moderasi Admin.</div>
-            ) : (
-              <form onSubmit={handleViewerSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                <div>
-                  <label className="testi-form-label">Nama Lengkap</label>
-                  <input type="text" required value={viewerFormData.name} onChange={e => setViewerFormData({...viewerFormData, name: e.target.value})} className="testi-form-input" />
-                </div>
-                <div>
-                  <label className="testi-form-label">Status (contoh: Alumni 2025)</label>
-                  <input type="text" required value={viewerFormData.role} onChange={e => setViewerFormData({...viewerFormData, role: e.target.value})} className="testi-form-input" />
-                </div>
-                
-                <div>
-                  <label className="testi-form-label">Foto Profil (Opsional)</label>
-                  <div className="upload-section" style={{ marginBottom: '10px' }}>
-                    <div className="radio-tabs">
-                      <div 
-                        className={`radio-tab ${viewerPhotoMode === 'url' ? 'active' : ''}`} 
-                        onClick={() => setViewerPhotoMode('url')}
-                      >
-                        <LinkIcon size={16} /> Link URL
-                      </div>
-                      <div 
-                        className={`radio-tab ${viewerPhotoMode === 'upload' ? 'active' : ''}`} 
-                        onClick={() => setViewerPhotoMode('upload')}
-                      >
-                        <ImageIcon size={16} /> Upload Foto
-                      </div>
-                    </div>
-                  </div>
-                  {viewerPhotoMode === 'url' ? (
-                    <input type="text" placeholder="https://..." value={viewerFormData.photo} onChange={e => setViewerFormData(prev => ({...prev, photo: e.target.value}))} className="testi-form-input" />
-                  ) : (
-                    <input type="file" accept="image/*" onChange={(e) => handleFileUpload(e, 'viewer')} className="testi-form-input" style={{ padding: '7px 14px' }} />
-                  )}
-                </div>
-
-                <div>
-                  <label className="testi-form-label">Kutipan Pengalaman</label>
-                  <textarea required value={viewerFormData.quote} onChange={e => setViewerFormData({...viewerFormData, quote: e.target.value})} rows={4} className="testi-form-textarea"></textarea>
-                </div>
-                <button type="submit" className="btn-modern-primary" style={{ marginTop: '10px' }}>Kirim Testimoni</button>
-              </form>
-            )}
-          </div>
-        </>
-
-      ) : (
-
-        /* =========================================================
-           VIEW UNTUK ADMIN/EDITOR
-        ========================================================= */
         <div>
           <div className="testi-header-box">
             <div>
@@ -387,7 +292,7 @@ const TestimonialPage = () => {
           )}
 
         </div>
-      )}
+      
 
       {/* =========================================================
           MODAL CRUD ADMIN IDENTIK JURUSAN
@@ -455,8 +360,7 @@ const TestimonialPage = () => {
             </form>
           </div>
         </div>
-      )}
-
+        )}
     </div>
   );
 };

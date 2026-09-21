@@ -6,6 +6,7 @@ import '../App.css';
 
 export default function ForgotPassword() {
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   
@@ -52,6 +53,7 @@ export default function ForgotPassword() {
     try {
       const response = await axios.post('http://localhost:5001/api/auth/forgot-password', {
         username,
+        email,
         newPassword
       });
 
@@ -71,7 +73,7 @@ export default function ForgotPassword() {
           <KeyRound size={48} className="forgot-icon-svg" />
         </div>
         <h2 className="auth-title">Reset Password</h2>
-        <p className="auth-subtitle">Masukkan username akunmu dan sandi baru yang aman.</p>
+        <p className="auth-subtitle">Masukkan username dan email akunmu serta sandi baru yang aman.</p>
 
         {message && <div className="success-banner">{message}</div>}
         
@@ -85,6 +87,18 @@ export default function ForgotPassword() {
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
               required 
+            />
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">EMAIL AKUN</label>
+            <input
+              type="email"
+              placeholder="Email yang didaftarkan"
+              className="form-input"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
             />
           </div>
 

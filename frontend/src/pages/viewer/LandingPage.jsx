@@ -46,6 +46,7 @@ const LandingPage = () => {
       setTimeout(() => scrollToTarget(targetSection), 100);
       setTimeout(() => scrollToTarget(targetSection), 600);
       setTimeout(() => scrollToTarget(targetSection), 1200);
+      setTimeout(() => scrollToTarget(targetSection), 2000); // konten section dimuat async -> posisi bisa bergeser
       
       return; // Berhenti di sini agar logika bawahnya tidak ikut dieksekusi
     }
@@ -107,7 +108,10 @@ const LandingPage = () => {
           <div className="hero-content">
             <div className="badge-akreditasi">
               <span className="green-dot"></span> 
-              <span>Terakreditasi A • Kurikulum Merdeka</span>
+              <span className="shine-text">Terakreditasi A • Kurikulum Merdeka</span>
+              <i className="shine-spark shine-spark-1" aria-hidden="true"></i>
+              <i className="shine-spark shine-spark-2" aria-hidden="true"></i>
+              <i className="shine-spark shine-spark-3" aria-hidden="true"></i>
             </div>
 
             <h1 className="hero-title">

@@ -1,9 +1,20 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Pencil } from 'lucide-react';
+import { getSession } from '../../utils/auth';
 import '../../css/viewer/testimoni.css';
 
 export default function Testimoni() {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const session = getSession();
+
+  // Sudah login -> langsung ke form. Belum -> login/daftar dulu, lalu otomatis kembali ke form.
+  const handleShare = () => {
+    if (getSession()) navigate('/testimoni/tulis');
+    else navigate('/login', { state: { from: '/testimoni/tulis', reason: 'testimoni' } });
+  };
 
   useEffect(() => {
     const fetchPublicTestimonials = async () => {
@@ -25,7 +36,7 @@ export default function Testimoni() {
   }, []);
 
   if (loading) {
-    return <div style={{ textAlign: 'center', padding: '80px', color: '#64748b' }}>Memuat Testimoni...</div>;
+    return <div style={{ textAlign: 'center', padding: '80px', color: 'var(--compreng-text-secondary, #475569)' }}>Memuat Testimoni...</div>;
   }
 
   return (
@@ -45,7 +56,7 @@ export default function Testimoni() {
 
         {/* GRID TESTIMONI */}
         {testimonials.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px', color: '#94a3b8' }}>Belum ada testimoni yang ditampilkan.</div>
+          <div style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-secondary, #475569)' }}>Belum ada testimoni yang ditampilkan.</div>
         ) : (
           <div className="tt-grid">
             {testimonials.map((t, index) => (
@@ -72,6 +83,24 @@ export default function Testimoni() {
             ))}
           </div>
         )}
+
+        {/* CTA: AJAK PENGUNJUNG MENULIS TESTIMONI */}
+        <div className="tt-cta">
+          <div className="tt-cta-copy">
+            <div className="tt-cta-lead">Ingin berbagi pengalaman Anda terkait SMKN Compreng?</div>
+            <div className="tt-cta-note">
+              Ceritakan kesan Anda. Testimoni akan tampil di sini setelah ditinjau oleh tim sekolah.
+            </div>
+          </div>
+          <div className="tt-cta-action">
+            <button type="button" className="tt-cta-go" onClick={handleShare}>
+              <Pencil size={18} /> Tulis testimoni
+            </button>
+            <div className="tt-cta-hint">
+              {session ? `Masuk sebagai ${session.name}` : 'Perlu masuk atau daftar dulu, hanya semenit.'}
+            </div>
+          </div>
+        </div>
 
       </div>
     </div>

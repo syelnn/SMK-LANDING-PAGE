@@ -3,10 +3,10 @@
    ========================================================================== */
 .faq-admin-container {
   padding: 24px;
-  background-color: #f8fafc;
+  background-color: var(--compreng-bg, #f8fafc);
   min-height: 100vh;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #1e293b;
+  color: var(--compreng-text, #0f172a);
   box-sizing: border-box;
 }
 
@@ -23,13 +23,13 @@
 .faq-page-header h2 {
   font-size: 24px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--compreng-text, #0f172a);
   margin: 0 0 4px 0;
 }
 
 .faq-page-header p {
   font-size: 14px;
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
   margin: 0;
 }
 
@@ -53,23 +53,23 @@
   left: 12px;
   top: 50%;
   transform: translateY(-50%);
-  color: #94a3b8;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 .search-box input {
   width: 100%;
   padding: 9px 12px 9px 38px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 8px;
   font-size: 14px;
-  background: #ffffff;
-  color: #1e293b;
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .search-box input:focus {
-  border-color: #2563eb;
+  border-color: var(--compreng-accent, #2563eb);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -77,8 +77,8 @@
    2. TAMPILAN TABEL & KARTU
    ========================================================================== */
 .faq-table-card {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   overflow: hidden;
@@ -108,19 +108,19 @@
 }
 
 .faq-table th {
-  background-color: #ffffff;
-  color: #64748b;
+  background-color: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text-secondary, #475569);
   font-weight: 600;
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 14px 18px;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
 }
 
 .faq-table td {
   padding: 16px 18px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
   vertical-align: middle;
 }
 
@@ -129,14 +129,14 @@
 }
 
 .faq-table tbody tr:hover {
-  background-color: #f8fafc;
+  background-color: var(--compreng-bg, #f8fafc);
 }
 
 /* ==========================================================================
    3. KONTEN SEL & ELEMEN BADGE
    ========================================================================== */
 .col-no {
-  color: #94a3b8;
+  color: var(--compreng-text-secondary, #475569);
   font-weight: 500;
 }
 
@@ -146,13 +146,13 @@
 
 .faq-question-title {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--compreng-text, #0f172a);
   margin-bottom: 4px;
   line-height: 1.4;
 }
 
 .faq-answer-snippet {
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
   font-size: 13px;
   line-height: 1.4;
   max-height: 2.8em;
@@ -171,9 +171,9 @@
   border-radius: 6px;
   font-size: 12px;
   font-weight: 500;
-  background-color: #f1f5f9;
-  color: #334155;
-  border: 1px solid #e2e8f0;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text-secondary, #475569);
+  border: 1px solid var(--compreng-border, #e2e8f0);
 }
 
 .badge-sort {
@@ -182,9 +182,9 @@
   border-radius: 4px;
   font-size: 12px;
   font-weight: 600;
-  background: #f8fafc;
-  color: #475569;
-  border: 1px solid #cbd5e1;
+  background: var(--compreng-bg, #f8fafc);
+  color: var(--compreng-text-secondary, #475569);
+  border: 1px solid var(--compreng-border, #e2e8f0);
 }
 
 .badge-status {
@@ -198,13 +198,13 @@
 }
 
 .status-active {
-  background-color: #dcfce7;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   color: #166534;
 }
 
 .status-hidden {
-  background-color: #f1f5f9;
-  color: #64748b;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text-secondary, #475569);
 }
 
 /* State Loading & Kosong */
@@ -212,7 +212,7 @@
 .faq-empty-state {
   padding: 48px 20px;
   text-align: center;
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 .faq-empty-state {
@@ -226,8 +226,8 @@
    4. TOMBOL & DROPDOWN AKSI
    ========================================================================== */
 .btn-add-faq {
-  background-color: #ffffff;
-  color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
+  color: var(--compreng-accent-text, #ffffff);
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
@@ -241,7 +241,7 @@
 }
 
 .btn-add-faq:hover {
-  background-color: #1e293b;
+  background-color: var(--compreng-nav-bg, #0f172a);
   transform: translateY(-1px);
 }
 
@@ -265,27 +265,27 @@
 }
 
 .btn-action.edit {
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 .btn-action.edit:hover {
-  background-color: #eff6ff;
-  color: #2563eb;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-accent, #2563eb);
 }
 
 .btn-action.delete {
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 .btn-action.delete:hover {
-  background-color: #fef2f2;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   color: #dc2626;
 }
 
 .btn-action-more {
   background: transparent;
   border: none;
-  color: #94a3b8;
+  color: var(--compreng-text-secondary, #475569);
   padding: 6px;
   border-radius: 6px;
   cursor: pointer;
@@ -296,8 +296,8 @@
 }
 
 .btn-action-more:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text, #0f172a);
 }
 
 /* Dropdown Popup Melayang */
@@ -305,8 +305,8 @@
   position: absolute;
   right: 18px;
   top: calc(100% - 8px);
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
+  background: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 10px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
   padding: 6px;
@@ -333,12 +333,12 @@
 }
 
 .dropdown-item.edit {
-  color: #334155;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 .dropdown-item.edit:hover {
-  background-color: #f1f5f9;
-  color: #0f172a;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text, #0f172a);
 }
 
 .dropdown-item.delete {
@@ -346,7 +346,7 @@
 }
 
 .dropdown-item.delete:hover {
-  background-color: #fef2f2;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
 }
 
 /* ==========================================================================
@@ -365,7 +365,7 @@
 }
 
 .faq-modal-card {
-  background: #ffffff;
+  background: var(--compreng-surface, #ffffff);
   width: 100%;
   max-width: 520px;
   border-radius: 16px;
@@ -384,14 +384,14 @@
   margin: 0;
   font-size: 18px;
   font-weight: 700;
-  color: #0f172a;
+  color: var(--compreng-text, #0f172a);
 }
 
 .btn-close-modal {
   background: none;
   border: none;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--compreng-text-secondary, #475569);
   padding: 4px;
   border-radius: 6px;
   display: flex;
@@ -399,8 +399,8 @@
 }
 
 .btn-close-modal:hover {
-  color: #0f172a;
-  background-color: #f1f5f9;
+  color: var(--compreng-text, #0f172a);
+  background-color: var(--compreng-surface-soft, #f1f5f9);
 }
 
 .faq-form {
@@ -418,7 +418,7 @@
 .form-group label {
   font-size: 11px;
   font-weight: 700;
-  color: #475569;
+  color: var(--compreng-text-secondary, #475569);
   text-transform: uppercase;  
   letter-spacing: 0.06em;    
 }
@@ -428,11 +428,11 @@
 .form-group select {
   width: 100%;
   padding: 10px 12px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 8px;
   font-size: 14px;
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--compreng-bg, #f8fafc);
+  color: var(--compreng-text, #0f172a);
   outline: none;
   transition: all 0.2s ease;
   box-sizing: border-box;
@@ -441,8 +441,8 @@
 .form-group input:focus, 
 .form-group textarea:focus, 
 .form-group select:focus {
-  border-color: #2563eb;
-  background-color: #ffffff;
+  border-color: var(--compreng-accent, #2563eb);
+  background-color: var(--compreng-surface, #ffffff);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
@@ -463,7 +463,7 @@
   justify-content: flex-start;
   position: relative;
   padding: 12px 16px 12px 42px;
-  background-color: #f0fdf4;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   border-radius: 8px;
   cursor: pointer;
   font-size: 12px;
@@ -489,14 +489,14 @@
   transform: translateY(-50%);
   height: 18px;
   width: 18px;
-  background-color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
   border: 1.5px solid #16a34a;
   border-radius: 4px;
   transition: all 0.2s ease;
 }
 
 .checkbox-container:hover input ~ .checkmark {
-  background-color: #f0fdf4;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
 }
 
 .checkbox-container input:checked ~ .checkmark {
@@ -519,7 +519,7 @@
   top: 2px;
   width: 4px;
   height: 8px;
-  border: solid white;
+  border: solid var(--compreng-border, #e2e8f0);
   border-width: 0 2px 2px 0;
   transform: rotate(45deg);
 }
@@ -533,8 +533,8 @@
 }
 
 .btn-cancel {
-  background: #e2e8f0;
-  color: #475569;
+  background: var(--compreng-border, #e2e8f0);
+  color: var(--compreng-text-secondary, #475569);
   border: none;
   padding: 10px 16px;
   border-radius: 8px;
@@ -544,12 +544,12 @@
 }
 
 .btn-cancel:hover {
-  background: #cbd5e1;
+  background: var(--compreng-border, #e2e8f0);
 }
 
 .btn-submit {
   background: #059669;
-  color: #ffffff;
+  color: var(--compreng-accent-text, #ffffff);
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
@@ -627,7 +627,7 @@
    FAQ PUBLIC SECTION (VIEWER)
 ========================================= */
 #section-faq {
-  background-color: #ffffff !important;
+  background-color: var(--compreng-surface, #ffffff) !important;
   width: 100%;
 }
 
@@ -636,8 +636,8 @@
   max-width: 1000px;
   margin: 0 auto;
   padding: 60px 20px;
-  background-color: #ffffff !important;
-  color: #0f172a;
+  background-color: var(--compreng-surface, #ffffff) !important;
+  color: var(--compreng-text, #0f172a);
   box-sizing: border-box;
 }
 
@@ -662,12 +662,12 @@
 .faq-public-header h2 {
   font-size: 30px;
   font-weight: 800;
-  color: #0f172a !important;
+  color: var(--compreng-text, #0f172a) !important;
   margin: 0 0 10px 0;
 }
 
 .faq-public-header p {
-  color: #475569 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   font-size: 15px;
   margin: 0;
 }
@@ -679,9 +679,9 @@
 }
 
 .faq-public-card {
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 12px;
-  background-color: #ffffff !important;
+  background-color: var(--compreng-surface, #ffffff) !important;
   overflow: hidden;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
@@ -689,7 +689,7 @@
 .faq-public-question {
   width: 100%;
   padding: 18px 20px;
-  background-color: #ffffff !important;
+  background-color: var(--compreng-surface, #ffffff) !important;
   border: none;
   display: flex;
   justify-content: space-between;
@@ -697,15 +697,15 @@
   text-align: left;
   font-size: 16px;
   font-weight: 600;
-  color: #0f172a !important;
+  color: var(--compreng-text, #0f172a) !important;
   cursor: pointer;
 }
 
 .faq-public-answer {
   padding: 16px 20px 20px 20px;
-  color: #334155 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   font-size: 15px;
   line-height: 1.6;
-  border-top: 1px solid #f1f5f9;
-  background-color: #ffffff !important;
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
+  background-color: var(--compreng-surface, #ffffff) !important;
 }

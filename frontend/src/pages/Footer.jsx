@@ -16,7 +16,7 @@ const WebsiteFavicon = ({ url, title }) => {
         width: '36px',
         height: '36px',
         borderRadius: '50%',
-        backgroundColor: '#1e293b',
+        backgroundColor: 'var(--compreng-nav-bg, #0f172a)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',

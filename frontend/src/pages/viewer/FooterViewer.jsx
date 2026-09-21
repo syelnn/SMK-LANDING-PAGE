@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Mail } from 'lucide-react';
 import axios from 'axios';
+import { SettingsContext } from '../../context/SettingsContext';
+import { resolveContact, normalizeUrl, toMapEmbedSrc } from '../../utils/contact';
 import '../../css/viewer/footerviewer.css';
 
 const API_URL = 'http://localhost:5002';
@@ -11,13 +13,7 @@ const WebsiteFavicon = ({ url, title }) => {
   const faviconUrl = `https://www.google.com/s2/favicons?domain=${url}&sz=64`;
 
   return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="footer-social-icon"
-      title={title}
-    >
+    <a href={url} target="_blank" rel="noopener noreferrer" className="footer-social-icon" title={title}>
       <img
         src={faviconUrl}
         alt={title || 'Icon Website'}
@@ -28,6 +24,7 @@ const WebsiteFavicon = ({ url, title }) => {
 };
 
 const FooterViewer = () => {
+  const { settings } = useContext(SettingsContext);
   const [footerData, setFooterData] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -36,68 +33,73 @@ const FooterViewer = () => {
     const fetchFooter = async () => {
       try {
         const response = await axios.get(`${API_URL}/api/footer`);
-        if (response.data.success && response.data.data) {
-          setFooterData(response.data.data);
-        }
+        if (response.data.success && response.data.data) setFooterData(response.data.data);
       } catch (error) {
         console.error('Gagal mengambil data footer dari API:', error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchFooter();
   }, []);
 
-  // Perbaikan: Smooth Scroll Optimal Tanpa Lag
+  // Tautan cepat:
+  //  - /download            -> pindah halaman via router
+  //  - sedang di landing    -> smooth scroll ke section
+  //  - sedang di halaman lain -> kembali ke landing lalu scroll ke section
   const handleQuickLink = (e, path, sectionId) => {
     e.preventDefault();
 
-    // 1. Ubah URL di address bar tanpa mentrigger re-render React Router yang berat
-    window.history.pushState({}, '', path);
+    if (path === '/download') {
+      navigate('/download');
+      window.scrollTo({ top: 0 });
+      return;
+    }
 
-    // 2. Jalankan animasi scroll menggunakan requestAnimationFrame agar rendering frame mulus (60fps)
-    requestAnimationFrame(() => {
-      if (sectionId) {
-        const element = document.getElementById(sectionId);
-        if (element) {
-          element.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      } else {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-      }
-    });
+    const onLanding = !!document.getElementById('section-hero');
+    const element = sectionId ? document.getElementById(sectionId) : null;
+
+    if (onLanding && element) {
+      window.history.replaceState(null, '', path);
+      requestAnimationFrame(() => element.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+      return;
+    }
+
+    sessionStorage.setItem('scrollToSection', sectionId || 'section-hero');
+    navigate('/');
   };
 
   if (loading) {
     return (
       <footer className="footer-container" id="section-kontak">
-        <div style={{ textAlign: 'center', padding: '2rem', color: '#94a3b8' }}>
+        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--compreng-footer-muted, var(--compreng-nav-text-muted, #94a3b8))' }}>
           Memuat data footer...
         </div>
       </footer>
     );
   }
 
-  // Mengambil data dari database (snake_case & camelCase)
-  const schoolName = footerData?.school_name || footerData?.schoolName || '';
+  // Nama & deskripsi: dari data footer
+  const schoolName = footerData?.school_name || footerData?.schoolName || settings?.school_name || '';
   const description = footerData?.description || '';
-  const address = footerData?.address || '';
-  const phone = footerData?.phone || '';
-  const email = footerData?.email || '';
-  
-  // Mengambil URL Sosmed dari DB
-  const facebookUrl = footerData?.facebook_url || footerData?.facebookUrl;
-  const instagramUrl = footerData?.instagram_url || footerData?.instagramUrl;
-  const tiktokUrl = footerData?.tiktok_url || footerData?.tiktokUrl;
-  const twitterUrl = footerData?.twitter_url || footerData?.twitterUrl;
-  const youtubeUrl = footerData?.youtube_url || footerData?.youtubeUrl;
-  const mapUrl = footerData?.maps_embed_url || footerData?.mapsEmbedUrl;
+
+  // KONTAK & SOSMED: dari Pengaturan Website (Contact & Maps). Belum pernah disimpan -> data footer lama.
+  const c = resolveContact(settings, footerData);
+  const address = c.contact_address;
+  const phone = c.contact_phone;
+  const email = c.contact_email;
+  const mapUrl = toMapEmbedSrc(c.contact_map_embed_url, address);
+
+  const facebookUrl = normalizeUrl(c.social_facebook);
+  const instagramUrl = normalizeUrl(c.social_instagram);
+  const tiktokUrl = normalizeUrl(c.social_tiktok);
+  const twitterUrl = normalizeUrl(c.social_twitter);
+  const youtubeUrl = normalizeUrl(c.social_youtube);
 
   return (
     <footer className="footer-container" id="section-kontak">
       <div className="footer-content">
-        
+
         {/* KOLOM 1: NAMA SEKOLAH & SOSIAL MEDIA */}
         <div className="footer-column brand-column">
           <h3 className="footer-title-main">{schoolName}</h3>
@@ -137,7 +139,7 @@ const FooterViewer = () => {
             {address && (
               <li className="footer-contact-item">
                 <MapPin size={18} className="footer-icon" />
-                <a 
+                <a
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -149,7 +151,7 @@ const FooterViewer = () => {
             {phone && (
               <li className="footer-contact-item">
                 <Phone size={18} className="footer-icon" />
-                <a href={`tel:${phone.replace(/\s+/g, '')}`}>
+                <a href={`tel:${phone.replace(/[^\d+]/g, '')}`}>
                   <span>{phone}</span>
                 </a>
               </li>
@@ -171,6 +173,7 @@ const FooterViewer = () => {
           <div className="footer-map-box">
             {mapUrl ? (
               <iframe
+                key={mapUrl}
                 title="Peta Lokasi Sekolah"
                 src={mapUrl}
                 width="100%"

@@ -3,7 +3,7 @@
 /* 1. KUNCI PERBAIKAN WARNA LATAR GELAP */
 /* Kita bungkus seluruh komponen dengan background putih penuh */
 .tp-wrapper-light {
-  background-color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
   width: 100%;
   /* Format padding: atas(120px) kiri-kanan(0) bawah(80px) */
   padding: 120px 0 80px; 
@@ -29,7 +29,7 @@
   color: #d97706;
   text-transform: uppercase;
   letter-spacing: 0.15em;
-  background-color: #fef3c7;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   padding: 6px 14px;
   border-radius: 20px;
   display: inline-block;
@@ -38,7 +38,7 @@
 .section-title {
   font-size: 32px; 
   font-weight: 900;
-  color: #0f172a;
+  color: var(--compreng-text, #0f172a);
   margin: 0 0 12px 0;
   line-height: 1.2;
   letter-spacing: -0.02em;
@@ -48,7 +48,7 @@
 }
 .section-desc {
   font-size: 16px;
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
   max-width: 650px;
   margin: 0 auto;
   line-height: 1.6;
@@ -74,8 +74,8 @@
 /* Desain Kartu Terang */
 .teacher-card-light {
   position: relative;
-  background: #ffffff;
-  border: 1px solid #f1f5f9;
+  background: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 20px;
   padding: 35px 25px;
   min-width: 260px;
@@ -91,7 +91,7 @@
 }
 .teacher-card-light:hover {
   transform: translateY(-5px);
-  border-color: #cbd5e1;
+  border-color: var(--compreng-border, #e2e8f0);
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
@@ -106,7 +106,7 @@
 .principal-card {
   min-width: 320px;
   padding: 45px 35px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--compreng-border, #e2e8f0);
   box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.08);
 }
 
@@ -115,7 +115,7 @@
   width: 110px;
   height: 110px;
   border-radius: 50%;
-  background-color: #f8fafc; /* Tidak lagi warna merah melainkan keabuan */
+  background-color: var(--compreng-bg, #f8fafc); /* Tidak lagi warna merah melainkan keabuan */
   margin-bottom: 20px;
   overflow: hidden;
   display: flex;
@@ -137,17 +137,17 @@
 .teacher-name-light {
   font-size: 18px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--compreng-text, #0f172a);
   margin: 0 0 8px 0;
   line-height: 1.3;
 }
 .teacher-role-light {
   font-size: 12px;
   font-weight: 700;
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .highlight-role {
-  color: #2563eb; /* Biru terang khusus Kepala Sekolah */
+  color: var(--compreng-accent, #2563eb); /* Biru terang khusus Kepala Sekolah */
 }

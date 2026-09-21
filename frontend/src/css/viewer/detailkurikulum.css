@@ -1,7 +1,7 @@
 /* src/css/viewer/detailkurikulum.css */
 
 .dk-wrapper {
-  background-color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
   min-height: 100vh;
   padding: 120px 24px 60px 24px; /* Padding atas ditambahkan agar tidak tertutup Navbar */
   font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
@@ -19,19 +19,19 @@
   gap: 8px;
   font-size: 14px;
   font-weight: 600;
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
   text-decoration: none;
   transition: all 0.2s ease;
   margin-bottom: 40px;
   padding: 8px 16px;
   border-radius: 8px;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background-color: var(--compreng-bg, #f8fafc);
+  border: 1px solid var(--compreng-border, #e2e8f0);
 }
 
 .dk-back-link:hover {
-  color: #0f172a;
-  background-color: #f1f5f9;
+  color: var(--compreng-text, #0f172a);
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   transform: translateX(-4px); /* Efek bergeser ke kiri sedikit */
 }
 
@@ -70,14 +70,14 @@
 .dk-title {
   font-size: 42px;
   font-weight: 900;
-  color: #0f172a;
+  color: var(--compreng-text, #0f172a);
   margin: 0 0 15px 0;
   letter-spacing: -1px;
 }
 
 .dk-subtitle {
   font-size: 18px;
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
   font-style: italic;
   margin: 0;
 }
@@ -106,13 +106,13 @@
 .dk-section-title {
   font-size: 22px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--compreng-text, #0f172a);
   margin-bottom: 15px;
 }
 
 .dk-desc-text {
   font-size: 15px;
-  color: #475569;
+  color: var(--compreng-text-secondary, #475569);
   line-height: 1.8;
   margin-bottom: 50px;
 }
@@ -125,23 +125,23 @@
 }
 
 .dk-subject-card {
-  background: #f8fafc;
+  background: var(--compreng-bg, #f8fafc);
   padding: 16px 20px;
   border-radius: 12px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--compreng-border, #e2e8f0);
   display: flex;
   align-items: center;
   gap: 12px;
   font-size: 14px;
   font-weight: 700;
-  color: #1e293b;
+  color: var(--compreng-text, #0f172a);
   transition: all 0.2s ease;
   cursor: default;
 }
 
 .dk-subject-card:hover {
   border-color: var(--badge-color);
-  background-color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
@@ -156,10 +156,10 @@
 
 /* Prospek Karir Card (Mode Gelap) */
 .dk-career-card {
-  background-color: #0f172a;
+  background-color: var(--compreng-nav-bg, #0f172a);
   border-radius: 24px;
   padding: 40px 30px;
-  color: white;
+  color: var(--compreng-accent-text, #ffffff);
   position: relative;
   overflow: hidden;
   box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -171,7 +171,7 @@
   right: -20px;
   width: 100px;
   height: 100px;
-  background-color: #1e293b;
+  background-color: var(--compreng-nav-bg, #0f172a);
   border-radius: 50%;
   opacity: 0.5;
 }
@@ -198,15 +198,15 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  color: #cbd5e1;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 .dk-career-footer {
   font-size: 12px;
-  color: #94a3b8;
+  color: var(--compreng-text-secondary, #475569);
   font-style: italic;
   margin-top: 30px;
-  border-top: 1px solid #334155;
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
   padding-top: 20px;
   position: relative;
   z-index: 1;

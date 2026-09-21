@@ -3,9 +3,9 @@
 /* KUNCI UTAMA: Menimpa background gelap dari landing.css */
 .vp-full-wrapper {
   width: 100%;
-  background-color: #ffffff; 
-  border-top: 1px solid #e2e8f0;
-  border-bottom: 1px solid #e2e8f0;
+  background-color: var(--compreng-surface, #ffffff); 
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
 }
 
 .vp-container {
@@ -17,7 +17,7 @@
 
 .vp-loading {
   text-align: center;
-  color: #64748b; 
+  color: var(--compreng-text-secondary, #475569); 
   font-size: 15px;
   padding: 60px 0;
 }
@@ -36,8 +36,8 @@
 .vp-tag {
   font-size: 11px;
   font-weight: 800;
-  color: #2563eb; 
-  background-color: #eff6ff; 
+  color: var(--compreng-accent, #2563eb); 
+  background-color: var(--compreng-surface-soft, #f1f5f9); 
   padding: 6px 14px;
   border-radius: 20px; 
   text-transform: uppercase;
@@ -48,14 +48,14 @@
 
 .vp-tag-alt {
   color: #b45309; 
-  background-color: #fef3c7; 
+  background-color: var(--compreng-surface-soft, #f1f5f9); 
   border-color: #fde68a;
 }
 
 .vp-title {
   font-size: 28px;
   font-weight: 800;
-  color: #0f172a; 
+  color: var(--compreng-text, #0f172a); 
   margin: 0 0 12px 0;
   letter-spacing: -0.02em;
 }
@@ -66,7 +66,7 @@
 
 .vp-desc {
   font-size: 15px;
-  color: #64748b; 
+  color: var(--compreng-text-secondary, #475569); 
   max-width: 600px;
   line-height: 1.6;
   margin: 0;
@@ -76,7 +76,7 @@
   margin: 40px 0; 
   border: 0; 
   height: 1px; 
-  background: #e2e8f0;
+  background: var(--compreng-border, #e2e8f0);
 }
 
 /* =========================================
@@ -90,11 +90,11 @@
 }
 
 .vp-jurusan-card {
-  background: #ffffff; 
+  background: var(--compreng-surface, #ffffff); 
   border-radius: 12px; 
   padding: 24px; 
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05); 
-  border: 1px solid #e2e8f0; 
+  border: 1px solid var(--compreng-border, #e2e8f0); 
   transition: all 0.3s ease; 
   display: flex; 
   flex-direction: column; 
@@ -113,7 +113,7 @@
   height: 64px; 
   object-fit: contain;
   padding: 12px; 
-  background-color: #f0fdf4; /* Background Hijau Super Soft */
+  background-color: var(--compreng-surface-soft, #f1f5f9); /* Background Hijau Super Soft */
   border-radius: 10px; 
   margin-bottom: 16px;
   border: none;
@@ -122,14 +122,14 @@
 .vp-card-title {
   font-size: 18px; 
   font-weight: 700; 
-  color: #0f172a; 
+  color: var(--compreng-text, #0f172a); 
   margin: 0 0 8px 0;
   line-height: 1.3;
 }
 
 .vp-card-text {
   font-size: 13px; 
-  color: #475569; 
+  color: var(--compreng-text-secondary, #475569); 
   line-height: 1.5; 
   margin: 0 0 16px 0;
 }
@@ -146,7 +146,7 @@
 .vp-card-list li {
   font-size: 12px; 
   font-weight: 600; 
-  color: #1e293b; 
+  color: var(--compreng-text, #0f172a); 
   display: flex; 
   align-items: center; 
   gap: 8px;
@@ -193,10 +193,10 @@
 
 .vp-program-card {
   position: relative;
-  background: #ffffff;
+  background: var(--compreng-surface, #ffffff);
   border-radius: 12px; /* Sesuai referensi */
   padding: 24px; /* Sesuai referensi */
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--compreng-border, #e2e8f0);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
   transition: all 0.3s ease;
   display: flex;
@@ -208,13 +208,13 @@
 .vp-program-card:hover {
   transform: translateY(-3px); /* Sesuai referensi */
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06); /* Sesuai referensi */
-  border-color: #e2e8f0;
+  border-color: var(--compreng-border, #e2e8f0);
 }
 
 .vp-program-icon {
   width: 48px; /* Sesuai referensi */
   height: 48px;
-  background-color: #eef2ff; /* Sesuai referensi (biru pucat) */
+  background-color: var(--compreng-surface-soft, #f1f5f9); /* Sesuai referensi (biru pucat) */
   border-radius: 10px;
   display: flex;
   align-items: center;
@@ -233,8 +233,8 @@
   display: inline-block;
   font-size: 10px;
   font-weight: 800;
-  color: #2563eb;
-  background-color: #eff6ff;
+  color: var(--compreng-accent, #2563eb);
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   padding: 4px 10px;
   border-radius: 6px;
   text-transform: uppercase;
@@ -245,14 +245,14 @@
 .vp-program-title {
   font-size: 16px; /* Sesuai referensi */
   font-weight: 800;
-  color: #1e293b; /* Sesuai referensi */
+  color: var(--compreng-text, #0f172a); /* Sesuai referensi */
   margin: 0 0 8px 0;
   line-height: 1.4;
 }
 
 .vp-program-desc {
   font-size: 13px; /* Sesuai referensi */
-  color: #64748b; /* Sesuai referensi */
+  color: var(--compreng-text-secondary, #475569); /* Sesuai referensi */
   line-height: 1.5;
   margin: 0;
 }

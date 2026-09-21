@@ -32,7 +32,7 @@ export default function TenagaPengajarViewer() {
   const principal = teachers.find(t => t.role && t.role.toLowerCase().includes('kepala'));
   const staff = teachers.filter(t => !t.role || !t.role.toLowerCase().includes('kepala'));
 
-  if (loading) return <div className="tp-wrapper-light"><div className="section-container"><p style={{textAlign: 'center', color: '#64748b'}}>Memuat data pengajar...</p></div></div>;
+  if (loading) return <div className="tp-wrapper-light"><div className="section-container"><p style={{textAlign: 'center', color: 'var(--compreng-text-secondary, #475569)'}}>Memuat data pengajar...</p></div></div>;
 
   return (
     // INI KUNCI UTAMANYA: tp-wrapper-light akan memaksakan background putih

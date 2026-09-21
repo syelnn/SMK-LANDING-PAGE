@@ -30,19 +30,19 @@ export default function DetailNews() {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
         <Loader2 className="animate-spin" size={32} color="#2563eb" />
-        <span style={{ marginLeft: '10px', color: '#64748b' }}>Memuat berita...</span>
+        <span style={{ marginLeft: '10px', color: 'var(--compreng-text-secondary, #475569)' }}>Memuat berita...</span>
       </div>
     );
   }
 
   if (!news) {
     return (
-      <div style={{ padding: '60px', textAlign: 'center', background: '#fff', borderRadius: '12px', margin: '40px' }}>
+      <div style={{ padding: '60px', textAlign: 'center', background: 'var(--compreng-surface, #ffffff)', borderRadius: '12px', margin: '40px' }}>
         <h2>Berita Tidak Ditemukan</h2>
-        <p style={{ color: '#64748b', marginBottom: '20px' }}>Artikel yang Anda cari tidak ada atau telah dihapus.</p>
+        <p style={{ color: 'var(--compreng-text-secondary, #475569)', marginBottom: '20px' }}>Artikel yang Anda cari tidak ada atau telah dihapus.</p>
         <button 
           onClick={() => navigate('/berita')} 
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#2563eb', fontWeight: '600', margin: '0 auto' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--compreng-accent, #2563eb)', fontWeight: '600', margin: '0 auto' }}
         >
           <ArrowLeft size={18} /> Kembali ke Berita
         </button>
@@ -61,29 +61,29 @@ export default function DetailNews() {
       : [];
 
   return (
-    <div style={{ maxWidth: '850px', margin: '40px auto', padding: '30px', background: '#ffffff', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+    <div style={{ maxWidth: '850px', margin: '40px auto', padding: '30px', background: 'var(--compreng-surface, #ffffff)', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
       {/* Tombol Kembali */}
       <button 
         onClick={() => navigate('/berita')} 
-        style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: '#2563eb', fontWeight: '600', marginBottom: '20px' }}
+        style={{ display: 'flex', alignItems: 'center', gap: '8px', border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--compreng-accent, #2563eb)', fontWeight: '600', marginBottom: '20px' }}
       >
         <ArrowLeft size={18} /> Kembali ke Berita
       </button>
 
       {/* Category Badge */}
       {news.category && (
-        <span style={{ background: '#eff6ff', color: '#2563eb', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' }}>
+        <span style={{ background: 'var(--compreng-surface-soft, #f1f5f9)', color: 'var(--compreng-accent, #2563eb)', padding: '6px 12px', borderRadius: '20px', fontSize: '13px', fontWeight: '600' }}>
           {news.category}
         </span>
       )}
 
       {/* Judul */}
-      <h1 style={{ fontSize: '30px', fontWeight: 'bold', color: '#0f172a', margin: '15px 0' }}>
+      <h1 style={{ fontSize: '30px', fontWeight: 'bold', color: 'var(--compreng-text, #0f172a)', margin: '15px 0' }}>
         {news.title}
       </h1>
 
       {/* Meta Info */}
-      <div style={{ display: 'flex', gap: '20px', color: '#64748b', fontSize: '14px', marginBottom: '25px', borderBottom: '1px solid #e2e8f0', paddingBottom: '15px' }}>
+      <div style={{ display: 'flex', gap: '20px', color: 'var(--compreng-text-secondary, #475569)', fontSize: '14px', marginBottom: '25px', borderBottom: '1px solid #e2e8f0', paddingBottom: '15px' }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
           <User size={16} /> {authorName}
         </span>
@@ -103,7 +103,7 @@ export default function DetailNews() {
       )}
 
       {/* Deskripsi / Isi Berita */}
-      <div style={{ lineHeight: '1.8', color: '#334155', fontSize: '16px', whiteSpace: 'pre-line', marginBottom: '30px' }}>
+      <div style={{ lineHeight: '1.8', color: 'var(--compreng-text-secondary, #475569)', fontSize: '16px', whiteSpace: 'pre-line', marginBottom: '30px' }}>
         {news.content}
       </div>
 
@@ -112,9 +112,9 @@ export default function DetailNews() {
         <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: '20px', marginTop: '30px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
             <Tag size={16} color="#64748b" />
-            <span style={{ fontWeight: '600', color: '#475569', fontSize: '14px' }}>Tags:</span>
+            <span style={{ fontWeight: '600', color: 'var(--compreng-text-secondary, #475569)', fontSize: '14px' }}>Tags:</span>
             {parsedTags.map((tag, idx) => (
-              <span key={idx} style={{ background: '#f1f5f9', color: '#475569', padding: '4px 10px', borderRadius: '6px', fontSize: '13px' }}>
+              <span key={idx} style={{ background: 'var(--compreng-surface-soft, #f1f5f9)', color: 'var(--compreng-text-secondary, #475569)', padding: '4px 10px', borderRadius: '6px', fontSize: '13px' }}>
                 #{tag}
               </span>
             ))}

@@ -5,8 +5,8 @@
    ========================================== */
 
 .vnp-wrapper {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
+  background-color: var(--compreng-surface, #ffffff) !important;
+  color: var(--compreng-text, #0f172a) !important;
   width: 100% !important;
   min-height: 100vh;
   font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
@@ -37,9 +37,9 @@
 /* Pill Badge di Atas Berita (Gambar 2) */
 .vnp-hero-badge {
   display: inline-block !important;
-  background-color: #eff6ff !important;
-  color: #2563eb !important;
-  border: 1px solid #dbeafe !important;
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-accent, #2563eb) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
   padding: 5px 16px !important;
   border-radius: 50px !important;
   font-size: 11px !important;
@@ -54,7 +54,7 @@
   font-family: 'Plus Jakarta Sans', sans-serif !important;
   font-size: 30px !important;
   font-weight: 800 !important;
-  color: #0f172a !important;
+  color: var(--compreng-text, #0f172a) !important;
   margin: 0 0 10px 0 !important;
   line-height: 1.25 !important;
   letter-spacing: -0.5px !important;
@@ -62,13 +62,13 @@
 }
 
 .vnp-title-accent {
-  color: #2563eb !important;
+  color: var(--compreng-accent, #2563eb) !important;
 }
 
 /* Subtitle Header */
 .vnp-main-subtitle {
   font-family: 'Plus Jakarta Sans', sans-serif !important;
-  color: #64748b !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   font-size: 13px !important;
   line-height: 1.55 !important;
   font-weight: 400 !important;
@@ -96,10 +96,10 @@
 
 /* Card Berita Presisi Sesuai Gambar 2 */
 .vnp-card {
-  background-color: #ffffff !important;
+  background-color: var(--compreng-surface, #ffffff) !important;
   border-radius: 16px !important;
   overflow: hidden !important;
-  border: 1px solid #f1f5f9 !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
   box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.03) !important;
   display: flex !important;
   flex-direction: column !important;
@@ -118,7 +118,7 @@
   width: 100% !important;
   height: 175px !important;
   overflow: hidden !important;
-  background-color: #f8fafc !important;
+  background-color: var(--compreng-bg, #f8fafc) !important;
 }
 
 .vnp-card-thumb img {
@@ -139,8 +139,8 @@
   top: 10px !important;
   left: 10px !important;
   z-index: 2 !important;
-  background-color: #2563eb !important;
-  color: #ffffff !important;
+  background-color: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #ffffff) !important;
   font-size: 10.5px !important;
   font-weight: 600 !important;
   padding: 3px 12px !important;
@@ -159,7 +159,7 @@
 
 .vnp-card-date {
   font-size: 10.5px !important;
-  color: #94a3b8 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   font-weight: 600 !important;
   letter-spacing: 0.5px !important;
   margin-bottom: 8px !important;
@@ -174,7 +174,7 @@
 }
 
 .vnp-card-heading a {
-  color: #0f172a !important;
+  color: var(--compreng-text, #0f172a) !important;
   text-decoration: none !important;
   transition: color 0.2s ease !important;
   display: -webkit-box !important;
@@ -185,12 +185,12 @@
 }
 
 .vnp-card-heading a:hover {
-  color: #2563eb !important;
+  color: var(--compreng-accent, #2563eb) !important;
 }
 
 .vnp-card-desc {
   font-size: 12px !important;
-  color: #64748b !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   line-height: 1.5 !important;
   margin: 0 0 14px 0 !important;
   display: -webkit-box !important;
@@ -208,7 +208,7 @@
   gap: 4px !important;
   font-size: 12px !important;
   font-weight: 600 !important;
-  color: #2563eb !important;
+  color: var(--compreng-accent, #2563eb) !important;
   text-decoration: none !important;
   transition: gap 0.2s ease !important;
 }
@@ -222,14 +222,14 @@
 .vnp-state-box {
   text-align: center !important;
   padding: 50px 20px !important;
-  color: #64748b !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   gap: 12px !important;
-  background-color: #ffffff !important;
+  background-color: var(--compreng-surface, #ffffff) !important;
   border-radius: 16px !important;
-  border: 1px dashed #cbd5e1 !important;
+  border: 1px dashed var(--compreng-border, #e2e8f0) !important;
 }
 
 .vnp-spinner {

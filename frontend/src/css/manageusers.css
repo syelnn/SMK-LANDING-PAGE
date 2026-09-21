@@ -233,7 +233,7 @@
 }
 
 .mu-dropdown-item.danger:hover {
-  background: #fef2f2;
+  background: var(--compreng-surface-soft, #f1f5f9);
 }
 
 /* =========================================

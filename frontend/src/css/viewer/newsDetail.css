@@ -3,9 +3,9 @@
 .vnd-page {
   width: 100% !important;
   min-height: 100vh;
-  background-color: #ffffff !important;
+  background-color: var(--compreng-surface, #ffffff) !important;
   font-family: 'Plus Jakarta Sans', sans-serif !important;
-  color: #0f172a !important;
+  color: var(--compreng-text, #0f172a) !important;
 }
 
 /* Jarak atas agar tidak tertutup Navbar sticky/fixed */
@@ -28,27 +28,27 @@
   font-size: 12px !important;
   font-weight: 700 !important;
   letter-spacing: 0.05em !important;
-  color: #94a3b8 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   margin-bottom: 24px !important;
   flex-wrap: wrap !important;
 }
 
 .vnd-breadcrumb a {
-  color: #94a3b8 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   text-decoration: none !important;
   transition: color 0.2s ease !important;
 }
 
 .vnd-breadcrumb a:hover {
-  color: #2563eb !important;
+  color: var(--compreng-accent, #2563eb) !important;
 }
 
 .vnd-breadcrumb-icon {
-  color: #cbd5e1 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
 }
 
 .vnd-breadcrumb-active {
-  color: #cbd5e1 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   white-space: nowrap !important;
   overflow: hidden !important;
   text-overflow: ellipsis !important;
@@ -64,8 +64,8 @@
 }
 
 .vnd-tag-badge {
-  background-color: #eff6ff !important;
-  color: #2563eb !important;
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-accent, #2563eb) !important;
   font-size: 11px !important;
   font-weight: 700 !important;
   padding: 6px 14px !important;
@@ -77,7 +77,7 @@
 .vnd-title {
   font-size: 36px !important;
   font-weight: 800 !important;
-  color: #0f172a !important;
+  color: var(--compreng-text, #0f172a) !important;
   line-height: 1.25 !important;
   margin: 0 0 24px 0 !important;
   letter-spacing: -0.02em !important;
@@ -90,15 +90,15 @@
   gap: 16px !important;
   margin-bottom: 32px !important;
   padding-bottom: 24px !important;
-  border-bottom: 1px solid #f1f5f9 !important;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
 }
 
 .vnd-author-avatar {
   width: 42px !important;
   height: 42px !important;
   border-radius: 50% !important;
-  background-color: #2563eb !important;
-  color: #ffffff !important;
+  background-color: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #ffffff) !important;
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
@@ -127,14 +127,14 @@
 }
 
 .vnd-date-icon {
-  color: #94a3b8 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   flex-shrink: 0 !important;
 }
 
 .vnd-author-label {
   font-size: 10px !important;
   font-weight: 800 !important;
-  color: #94a3b8 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   letter-spacing: 0.05em !important;
   display: block !important;
   line-height: 1.2 !important;
@@ -145,7 +145,7 @@
 .vnd-date-value {
   font-size: 13px !important;
   font-weight: 700 !important;
-  color: #1e293b !important;
+  color: var(--compreng-text, #0f172a) !important;
   display: block !important;
   line-height: 1.2 !important;
 }
@@ -153,7 +153,7 @@
 .vnd-author-divider {
   width: 1px !important;
   height: 28px !important;
-  background-color: #e2e8f0 !important;
+  background-color: var(--compreng-border, #e2e8f0) !important;
   margin: 0 8px !important;
 }
 
@@ -177,7 +177,7 @@
 .vnd-content p {
   font-size: 17px !important;
   line-height: 1.85 !important;
-  color: #334155 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   margin-bottom: 24px !important;
 }
 
@@ -188,7 +188,7 @@
   gap: 12px !important;
   margin-top: 40px !important;
   padding-top: 24px !important;
-  border-top: 1px solid #f1f5f9 !important;
+  border-top: 1px solid var(--compreng-border, #e2e8f0) !important;
   flex-wrap: wrap !important;
 }
 
@@ -198,7 +198,7 @@
   gap: 6px !important;
   font-size: 13px !important;
   font-weight: 700 !important;
-  color: #64748b !important;
+  color: var(--compreng-text-secondary, #475569) !important;
 }
 
 .vnd-footer-tags-list {
@@ -208,9 +208,9 @@
 }
 
 .vnd-footer-tag-item {
-  background-color: #f8fafc !important;
-  border: 1px solid #e2e8f0 !important;
-  color: #475569 !important;
+  background-color: var(--compreng-bg, #f8fafc) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   font-size: 12px !important;
   font-weight: 600 !important;
   padding: 4px 12px !important;
@@ -220,9 +220,9 @@
 /* Section Berita Lainnya */
 .vnd-other-section {
   margin-top: 72px !important;
-  background-color: #f8fafc !important;
+  background-color: var(--compreng-bg, #f8fafc) !important;
   padding: 60px 0 !important;
-  border-top: 1px solid #f1f5f9 !important;
+  border-top: 1px solid var(--compreng-border, #e2e8f0) !important;
 }
 
 .vnd-other-container {
@@ -234,7 +234,7 @@
 .vnd-other-title {
   font-size: 22px !important;
   font-weight: 800 !important;
-  color: #0f172a !important;
+  color: var(--compreng-text, #0f172a) !important;
   margin-bottom: 28px !important;
 }
 
@@ -245,8 +245,8 @@
 }
 
 .vnd-other-card {
-  background: #ffffff !important;
-  border: 1px solid #e2e8f0 !important;
+  background: var(--compreng-surface, #ffffff) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
   border-radius: 16px !important;
   overflow: hidden !important;
   text-decoration: none !important;
@@ -275,21 +275,21 @@
 
 .vnd-other-date {
   font-size: 12px !important;
-  color: #94a3b8 !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   font-weight: 600 !important;
 }
 
 .vnd-other-body h3 {
   font-size: 16px !important;
   font-weight: 700 !important;
-  color: #0f172a !important;
+  color: var(--compreng-text, #0f172a) !important;
   margin: 8px 0 !important;
   line-height: 1.4 !important;
 }
 
 .vnd-other-body p {
   font-size: 13px !important;
-  color: #64748b !important;
+  color: var(--compreng-text-secondary, #475569) !important;
   margin: 0 !important;
   line-height: 1.5 !important;
 }
@@ -308,7 +308,7 @@
 
 .vnd-spinner {
   animation: spin 1s linear infinite !important;
-  color: #2563eb !important;
+  color: var(--compreng-accent, #2563eb) !important;
   margin-bottom: 12px !important;
 }
 
@@ -318,8 +318,8 @@
 }
 
 .vnd-btn-back {
-  background-color: #2563eb !important;
-  color: #ffffff !important;
+  background-color: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #ffffff) !important;
   padding: 10px 20px !important;
   border-radius: 8px !important;
   text-decoration: none !important;

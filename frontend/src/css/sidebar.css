@@ -5,8 +5,8 @@
    ========================================= */
 .dashboard-sidebar {
   width: 260px;
-  background-color: var(--compreng-surface, #ffffff);
-  border-right: 1px solid var(--compreng-border, #e2e8f0);
+  background-color: var(--compreng-surface, var(--compreng-surface, #ffffff));
+  border-right: 1px solid var(--compreng-border, var(--compreng-border, #e2e8f0));
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease; 
@@ -353,7 +353,7 @@
 }
 
 .sidebar-popup-action.danger:hover {
-  background: #fef2f2;
+  background: var(--compreng-surface-soft, #f1f5f9);
 }
 
 /* =========================================

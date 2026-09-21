@@ -251,7 +251,7 @@ export default function DownloadPage() {
                 <tr key={item.id} className="mp-tr">
                   <td className="mp-td">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: '#eff6ff', color: '#2563eb', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                      <div style={{ width: '36px', height: '36px', borderRadius: '8px', backgroundColor: 'var(--compreng-surface-soft, #f1f5f9)', color: 'var(--compreng-accent, #2563eb)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                         <FileText size={20} />
                       </div>
                       <div>
@@ -264,7 +264,7 @@ export default function DownloadPage() {
                   </td>
                   
                   <td className="mp-td">
-                    <span className="mp-badge-role" style={{ backgroundColor: '#f1f5f9', color: '#475569' }}>
+                    <span className="mp-badge-role" style={{ backgroundColor: 'var(--compreng-surface-soft, #f1f5f9)', color: 'var(--compreng-text-secondary, #475569)' }}>
                       {item.category || 'Lainnya'}
                     </span>
                   </td>

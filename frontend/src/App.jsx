@@ -1,4 +1,5 @@
-import React, { useState, useEffect, useContext } from 'react';
+//app.jsx
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { SettingsContext, SettingsProvider } from './context/SettingsContext';
 import { Routes, Route, Navigate, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -13,12 +14,16 @@ import DetailKurikulumViewer from './pages/viewer/DetailKurikulum';
 import NewsPage from './pages/viewer/NewsPage';
 import NewsDetail from './pages/viewer/NewsDetail';
 import DownloadViewer from './pages/viewer/DownloadViewer';
+import TulisTestimoni from './pages/viewer/TulisTestimoni';
+
 
 
 import Login from './Login';
 import Register from './Register';
 import DownloadPage from './pages/DownloadPage';
 import Sidebar from './Sidebar';
+import CommandPalette from './components/CommandPalette';
+import { verifySession, clearSession } from './utils/auth';
 
 // Import Halaman Admin
 import ManageNews from './pages/ManageNews';
@@ -36,49 +41,52 @@ import Galeri from './pages/Galeri';
 import FaqPage from "./pages/FaqPage";
 import AchievementSection from './pages/AchievementSection';
 
-import './css/dashboard.css'; // MENGIMPOR CSS DASHBOARD BARU
+import './css/dashboard.css'; // MENGIMPOR CSS DASHBOARD 
+import './css/theme.css';
 
 // ==========================================
-// HALAMAN DASHBOARD ANALYTICS (REAL DATA)
-// ==========================================
-const AdminDashboard = () => {
-  const [stats, setStats] = useState({
-    users: 0, teachers: 0, news: 0, jurusan: 0, program: 0, ekskul: 0, prestasi: 0, testimoni: 0
-  });
-  const [loading, setLoading] = useState(true);
+  // HALAMAN DASHBOARD ANALYTICS (REAL DATA)
+  // ==========================================
+  const AdminDashboard = () => {
+    const [stats, setStats] = useState({
+      users: 0, teachers: 0, news: 0, jurusan: 0, program: 0, ekskul: 0, prestasi: 0, testimoni: 0
+    });
+    const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchStats = async () => {
-      const endpoints = [
-        { key: 'users', url: 'http://localhost:5001/api/users' },
-        { key: 'teachers', url: 'http://localhost:5002/api/teacher' },
-        { key: 'news', url: 'http://localhost:5002/api/news' },
-        { key: 'jurusan', url: 'http://localhost:5002/api/jurusan' },
-        { key: 'program', url: 'http://localhost:5002/api/program' },
-        { key: 'ekskul', url: 'http://localhost:5002/api/extracurriculars' },
-        { key: 'prestasi', url: 'http://localhost:5002/api/achievements' },
-        { key: 'testimoni', url: 'http://localhost:5002/api/testimonials' },
-      ];
+    useEffect(() => {
+      const fetchStats = async () => {
+        const endpoints = [
+          { key: 'users', url: 'http://localhost:5001/api/users' },
+          { key: 'teachers', url: 'http://localhost:5002/api/teacher' },
+          { key: 'news', url: 'http://localhost:5002/api/news' },
+          { key: 'jurusan', url: 'http://localhost:5002/api/jurusan' },
+          { key: 'program', url: 'http://localhost:5002/api/program' },
+          { key: 'ekskul', url: 'http://localhost:5002/api/extracurriculars' },
+          { key: 'prestasi', url: 'http://localhost:5002/api/achievements' },
+          { key: 'testimoni', url: 'http://localhost:5002/api/testimonials' },
+        ];
 
-      const newStats = { ...stats };
-      
-      await Promise.allSettled(
-        endpoints.map(async ({ key, url }) => {
+        // PERBAIKAN: Ganti Promise.allSettled dengan 'for...of' loop
+        // API akan dipanggil secara mengantre (satu selesai, baru lanjut yang lain)
+        // Ini menyelamatkan database dari serangan koneksi mendadak!
+        const token = localStorage.getItem('token');
+        for (const { key, url } of endpoints) {
           try {
-            const res = await axios.get(url);
-            newStats[key] = res.data.data ? res.data.data.length : 0;
+            const res = await axios.get(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
+            const count = res.data.data ? res.data.data.length : 0;
+            
+            // Update angka secara real-time satu per satu (efeknya keren lho!)
+            setStats(prevStats => ({ ...prevStats, [key]: count }));
           } catch (e) {
             console.warn(`Gagal mengambil data untuk ${key}`);
           }
-        })
-      );
-      
-      setStats(newStats);
-      setLoading(false);
-    };
+        }
+        
+        setLoading(false);
+      };
 
-    fetchStats();
-  }, []);
+      fetchStats();
+    }, []);
 
   return (
     <div className="dash-wrapper">
@@ -223,38 +231,70 @@ const AdminDashboard = () => {
 };
 
 
+// URL section landing page (hasil scroll-spy) — kalau di-refresh tetap membuka landing & scroll ke section
+const LANDING_SECTION_PATHS = [
+  '/profil', '/program', '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', '/pengajar',
+  '/karya', '/prestasi', '/achievement', '/galeri', '/testimoni', '/faq', '/kontak',
+];
+
 const PublicLayout = () => (
   <div style={{ padding: '50px', textAlign: 'center', fontFamily: 'sans-serif' }}>
     <h1>Landing Page SMKN COMPRENG</h1>
     <p>Ini adalah halaman publik yang bisa dilihat oleh pengunjung tanpa perlu Login.</p>
-    <NavLink to="/login" style={{ padding: '10px 20px', background: '#2563eb', color: 'white', textDecoration: 'none', borderRadius: '8px' }}>Masuk ke CMS</NavLink>
+    <NavLink to="/login" style={{ padding: '10px 20px', background: 'var(--compreng-accent, #2563eb)', color: 'var(--compreng-accent-text, #ffffff)', textDecoration: 'none', borderRadius: '8px' }}>Masuk ke CMS</NavLink>
   </div>
 );
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
-  const token = localStorage.getItem('token');
-  let userRole = (localStorage.getItem('role') || '').toUpperCase();
-  
-  if (token && token.split('.').length === 3) {
-    try {
-      const base64Url = token.split('.')[1];
-      const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-      const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
-      const payload = JSON.parse(jsonPayload);
-      if (payload.role) userRole = payload.role.toUpperCase();
-    } catch (e) {
-      console.error("Gagal membaca token di ProtectedRoute", e);
+  const location = useLocation();
+  // status: checking | ok | invalid | network
+  const [auth, setAuth] = useState({ status: 'checking', role: '', reason: '' });
+
+  // Token SELALU dicek ke server (bukan cuma dibaca dari localStorage)
+  const check = useCallback(async () => {
+    const result = await verifySession();
+    if (result.ok) {
+      setAuth({ status: 'ok', role: result.user.role, reason: '' });
+    } else if (result.reason === 'NETWORK') {
+      // server mati/sibuk: jangan tendang user yang sudah terverifikasi, tapi jangan loloskan yang belum
+      setAuth((prev) => (prev.status === 'ok' ? prev : { status: 'network', role: '', reason: '' }));
+    } else {
+      clearSession();
+      setAuth({ status: 'invalid', role: '', reason: result.reason });
     }
+  }, []);
+
+  // Verifikasi ulang setiap pindah halaman admin, saat tab difokuskan, dan tiap 60 detik
+  useEffect(() => { check(); }, [check, location.pathname]);
+  useEffect(() => {
+    const id = setInterval(check, 60000);
+    window.addEventListener('focus', check);
+    return () => { clearInterval(id); window.removeEventListener('focus', check); };
+  }, [check]);
+
+  if (auth.status === 'checking') {
+    return <div style={{ padding: '50px', textAlign: 'center', fontFamily: 'sans-serif' }}>Memverifikasi sesi...</div>;
   }
 
-  if (!token) return <Navigate to="/login" replace />;
-  
-  const safeAllowedRoles = allowedRoles ? allowedRoles.map(r => r.toUpperCase()) : null;
+  if (auth.status === 'invalid') {
+    return <Navigate to="/login" replace state={{ from: location.pathname, reason: auth.reason === 'INVALID' ? 'expired' : undefined }} />;
+  }
 
-  if (safeAllowedRoles && !safeAllowedRoles.includes(userRole)) return (
+  if (auth.status === 'network') {
+    return (
+      <div style={{ padding: '50px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+        <h2>Tidak dapat terhubung ke server</h2>
+        <p>Pastikan auth-service (port 5001) berjalan.</p>
+        <button onClick={check} style={{ padding: '8px 16px', cursor: 'pointer' }}>Coba lagi</button>
+      </div>
+    );
+  }
+
+  const safeAllowedRoles = allowedRoles ? allowedRoles.map((r) => r.toLowerCase()) : null;
+  if (safeAllowedRoles && !safeAllowedRoles.includes(auth.role)) return (
     <div style={{ padding: '50px', textAlign: 'center', color: 'red', fontFamily: 'sans-serif' }}>
       <h2>Akses Ditolak!</h2>
-      <p>Role "{userRole}" tidak memiliki izin untuk melihat halaman ini.</p>
+      <p>Role "{auth.role.toUpperCase()}" tidak memiliki izin untuk melihat halaman ini.</p>
       <NavLink to="/login">Kembali ke Login</NavLink>
     </div>
   );
@@ -288,7 +328,7 @@ const DashboardLayout = () => {
 
         exactName = decoded.name || decoded.nama_lengkap || decoded.full_name || decoded.username || exactName;
         exactEmail = decoded.email || decoded.userEmail || decoded.mail || (decoded.username && decoded.username.includes('@') ? decoded.username : exactEmail);
-        exactRole = decoded.role || exactRole;
+        exactRole = localStorage.getItem('role') || decoded.role || exactRole;
       } catch (e) {
         console.error("Token JWT tidak valid atau rusak", e);
       }
@@ -312,7 +352,7 @@ const DashboardLayout = () => {
   
   // STATE COMMAND PALETTE (Universal Search)
   const [isCommandOpen, setIsCommandOpen] = useState(false);
-  const [cmdSearch, setCmdSearch] = useState('');
+  const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad/i.test(navigator.platform || navigator.userAgent || '');
 
   const handleLogout = () => {
     localStorage.clear();
@@ -326,7 +366,7 @@ const DashboardLayout = () => {
   // ==============================================
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+      if ((e.ctrlKey || e.metaKey) && (e.key || '').toLowerCase() === 'k') {
         e.preventDefault();
         setIsCommandOpen((prev) => !prev);
       }
@@ -355,10 +395,10 @@ const DashboardLayout = () => {
     { title: 'Tambah Pengguna', type: 'aksi', url: '/admin/users', icon: <PlusCircle size={16}/> },
   ];
 
-  const filteredCommands = COMMAND_ITEMS.filter(cmd => 
-    cmd.title.toLowerCase().includes(cmdSearch.toLowerCase()) || 
-    cmd.type.toLowerCase().includes(cmdSearch.toLowerCase())
-  );
+  const handleCommandSelect = (cmd) => {
+    setIsCommandOpen(false);
+    navigate(cmd.url);
+  };
 
   return (
     <div className="dashboard-container">
@@ -386,13 +426,20 @@ const DashboardLayout = () => {
             </button>
             
             {/* Global Search Bar (Trigger Command Palette) */}
-            <div onClick={() => setIsCommandOpen(true)} className="topbar-search-trigger">
-              <Search size={16} className="topbar-search-icon" />
-              <div className="topbar-search-box">
-                <span>Pencarian Cepat...</span>
-                <span className="topbar-search-shortcut">Ctrl K</span>
-              </div>
-            </div>
+            <button
+              type="button"
+              onClick={() => setIsCommandOpen(true)}
+              className="qs-trigger"
+              aria-label="Buka pencarian cepat"
+              aria-keyshortcuts="Control+K Meta+K"
+            >
+              <Search size={16} className="qs-trigger-glyph" aria-hidden="true" />
+              <span className="qs-trigger-label">Pencarian Cepat…</span>
+              <span className="qs-trigger-keys" aria-hidden="true">
+                <kbd>{isMac ? '⌘' : 'Ctrl'}</kbd>
+                <kbd>K</kbd>
+              </span>
+            </button>
           </div>
           
           <div className="topbar-right">
@@ -438,42 +485,12 @@ const DashboardLayout = () => {
         {/* ==============================================
             MODAL COMMAND PALETTE (Universal Search)
             ============================================== */}
-        {isCommandOpen && (
-          <div className="cmd-overlay" onClick={() => setIsCommandOpen(false)}>
-            <div className="cmd-modal" onClick={e => e.stopPropagation()}>
-              
-              <div className="cmd-header">
-                <Search size={18} color="var(--compreng-text-muted)" style={{ marginRight: '12px' }} />
-                <input 
-                  autoFocus
-                  value={cmdSearch}
-                  onChange={e => setCmdSearch(e.target.value)}
-                  placeholder="Ketik perintah, cari halaman, atau aksi..." 
-                  className="cmd-input"
-                />
-                <span className="cmd-esc">ESC</span>
-              </div>
-              
-              <div className="cmd-body">
-                {filteredCommands.length > 0 ? (
-                  filteredCommands.map((cmd, idx) => (
-                    <button 
-                      key={idx}
-                      onClick={() => { navigate(cmd.url); setIsCommandOpen(false); setCmdSearch(''); }}
-                      className="cmd-item"
-                    >
-                      <span className="cmd-item-icon">{cmd.icon}</span>
-                      <span style={{ flex: 1 }}>{cmd.title}</span>
-                      <span className="cmd-item-type">{cmd.type}</span>
-                    </button>
-                  ))
-                ) : (
-                  <p style={{ textAlign: 'center', padding: '40px', fontSize: '14px', color: 'var(--compreng-text-muted)', margin: 0 }}>Halaman atau perintah tidak ditemukan.</p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
+        <CommandPalette
+          open={isCommandOpen}
+          items={COMMAND_ITEMS}
+          onSelect={handleCommandSelect}
+          onClose={() => setIsCommandOpen(false)}
+        />
 
         {/* ==============================================
             WADAH KONTEN UTAMA DENGAN PADDING GLOBAL (FIX ZOOM)
@@ -526,6 +543,10 @@ const DashboardLayout = () => {
 
 const MainApp = () => {
   const { isMaintenance, isLoading } = useContext(SettingsContext);
+  // Catatan: penerapan data-theme, font, dan variabel warna SEKARANG
+  // sepenuhnya ditangani terpusat oleh SettingsProvider (lihat SettingsContext.jsx),
+  // supaya tema TERSIMPAN dan tema PREVIEW selalu memakai jalur yang sama persis
+  // dan tidak pernah ada dua logic yang saling menimpa / balapan.
 
   if (isLoading) return <div style={{ padding: '50px', textAlign: 'center' }}>Memuat Sistem...</div>;
 
@@ -547,6 +568,8 @@ const MainApp = () => {
       <Route path="/berita" element={<NewsPage />} />
         <Route path="/berita/:slug" element={<NewsDetail />} />
        <Route path="/download" element={<DownloadViewer />} />
+      {LANDING_SECTION_PATHS.map((p) => <Route key={p} path={p} element={<LandingPage />} />)}
+      <Route path="/testimoni/tulis" element={<TulisTestimoni />} />
 
     
       <Route path="/login" element={<Login />} />
