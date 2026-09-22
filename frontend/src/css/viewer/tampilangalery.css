@@ -27,6 +27,27 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
+/* ---------- HALAMAN TERSENDIRI (GaleriAlbumViewer.jsx) ----------
+   Dipakai saat album dibuka di route /galeri/:slug, lengkap dengan
+   Navbar (fixed) & FooterViewer di luar wrapper ini, jadi butuh
+   padding-top ekstra supaya konten tidak tertutup Navbar. */
+.gav-page-wrapper {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.tampilan-galeri-wrapper.gav-standalone {
+  padding-top: 140px;
+  flex: 1;
+}
+
+@media (max-width: 768px) {
+  .tampilan-galeri-wrapper.gav-standalone {
+    padding-top: 110px;
+  }
+}
+
 .tg-container {
   max-width: 1180px;
   margin: 0 auto;

@@ -15,6 +15,7 @@ import NewsPage from './pages/viewer/NewsPage';
 import NewsDetail from './pages/viewer/NewsDetail';
 import DownloadViewer from './pages/viewer/DownloadViewer';
 import TulisTestimoni from './pages/viewer/TulisTestimoni';
+import GaleriAlbumViewer from './pages/viewer/GaleriAlbumViewer';
 
 
 
@@ -564,6 +565,7 @@ const MainApp = () => {
       <Route path="/berita" element={<NewsPage />} />
         <Route path="/berita/:slug" element={<NewsDetail />} />
        <Route path="/download" element={<DownloadViewer />} />
+      <Route path="/galeri/:slug" element={<GaleriAlbumViewer />} />
       {LANDING_SECTION_PATHS.map((p) => <Route key={p} path={p} element={<LandingPage />} />)}
       <Route path="/testimoni/tulis" element={<TulisTestimoni />} />
 
