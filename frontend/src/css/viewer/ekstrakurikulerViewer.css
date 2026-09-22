@@ -1,0 +1,145 @@
+/* Pembungkus Utama Latar Putih */
+.ekskul-section-wrapper {
+  background-color: var(--compreng-surface, #ffffff);
+  width: 100%;
+  padding: 50px 0 70px 0;
+}
+
+/* Container Diperketat Agar Tampilan Ringkas & Tidak Zoom */
+.ekskul-container {
+  width: 100%;
+  max-width: 1060px; /* Diperkecil agar card tidak terlalu lebar */
+  margin: 0 auto;
+  padding: 0 24px;
+  box-sizing: border-box;
+}
+
+/* Badge Header */
+.ekskul-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: #d97706;
+  font-size: 11px;
+  font-weight: 800;
+  border-radius: 9999px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Title & Subtitle Header */
+.ekskul-title {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--compreng-text, #0f172a);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.ekskul-title span {
+  color: #10b981;
+}
+
+.ekskul-desc {
+  color: var(--compreng-text-secondary, #475569);
+  font-size: 13.5px;
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+/* Grid Layout 3 Kolom - Jarak Ke Header Diperlebar (Mengikuti Gambar 2) */
+.ekskul-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 52px; /* Margin diperbesar agar jarak dari teks header tidak dempet */
+}
+
+/* Style Kartu Ringkas (Tidak Terlalu Besar) */
+.ekskul-card {
+  background-color: var(--compreng-surface, #ffffff);
+  border-radius: 16px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  padding: 28px 22px; /* Padding disesuaikan agar ukuran pas */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+}
+
+.ekskul-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.06);
+}
+
+/* Frame Logo Bulat Sempurna Presisi */
+.ekskul-icon-box {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%; /* Memastikan bentuk bulat */
+  background-color: var(--compreng-bg, #f8fafc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+  overflow: hidden; /* Memotong sudut gambar agar wajib bulat */
+  flex-shrink: 0;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+/* Foto Logo Wajib Bulat Sempurna */
+.ekskul-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.ekskul-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Judul Kartu */
+.ekskul-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--compreng-text, #0f172a);
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+
+/* Deskripsi Kartu */
+.ekskul-card-text {
+  font-size: 12.5px;
+  color: var(--compreng-text-secondary, #475569);
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Warna Icon Lucide */
+.text-blue { color: #2563eb; }
+.text-green { color: #16a34a; }
+.text-yellow { color: #ca8a04; }
+.text-orange { color: #ea580c; }
+.text-red { color: #dc2626; }
+.text-emerald { color: #059669; }
+.text-pink { color: #db2777; }
+.text-purple { color: #9333ea; }
+
+/* Responsive Adjustments */
+@media (max-width: 850px) {
+  .ekskul-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 580px) {
+  .ekskul-grid {
+    grid-template-columns: 1fr;
+  }
+}

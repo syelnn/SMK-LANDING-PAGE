@@ -24,12 +24,12 @@
   margin: 0;
   font-size: 24px;
   font-weight: 800;
-  color: #0f172a;
+  color: var(--compreng-text, #0f172a);
 }
 
 .ekskul-desc {
   margin: 6px 0 0 0;
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
   font-size: 14px;
 }
 
@@ -42,8 +42,8 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background-color: #0f172a;
-  color: #ffffff;
+  background-color: var(--compreng-nav-bg, #0f172a);
+  color: var(--compreng-accent-text, #ffffff);
   border: none;
   padding: 10px 18px;
   border-radius: 8px;
@@ -54,14 +54,14 @@
 }
 
 .ekskul-add-btn:hover {
-  background-color: #1e293b;
+  background-color: var(--compreng-nav-bg, #0f172a);
 }
 
 /* KARTU TABEL (Sama seperti foto 1) */
 .ekskul-table-card {
-  background-color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
   border-radius: 12px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--compreng-border, #e2e8f0);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
   overflow: hidden;
 }
@@ -81,27 +81,27 @@
 .ekskul-search-icon {
   position: absolute;
   left: 12px;
-  color: #94a3b8;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 .ekskul-search-input {
   width: 100%;
   padding: 8px 12px 8px 38px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 8px;
   font-size: 14px;
-  color: #334155;
+  color: var(--compreng-text-secondary, #475569);
   outline: none;
-  background-color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
   transition: border-color 0.2s;
 }
 
 .ekskul-search-input:focus {
-  border-color: #0f172a;
+  border-color: var(--compreng-border, #e2e8f0);
 }
 
 .ekskul-search-input::placeholder {
-  color: #94a3b8;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 /* TABEL STYLING - SESUAI FOTO 1 */
@@ -118,23 +118,23 @@
 }
 
 .ekskul-table th {
-  background-color: #ffffff;
-  color: #64748b;
+  background-color: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text-secondary, #475569);
   font-weight: 500;
   padding: 16px 20px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
   white-space: nowrap;
 }
 
 .ekskul-table td {
   padding: 16px 20px;
-  border-bottom: 1px solid #f8fafc;
-  color: #334155;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  color: var(--compreng-text-secondary, #475569);
   vertical-align: middle;
 }
 
 .ekskul-table tbody tr:hover {
-  background-color: #f8fafc;
+  background-color: var(--compreng-bg, #f8fafc);
 }
 
 .ekskul-table tbody tr:last-child td {
@@ -146,7 +146,7 @@
   width: 42px;
   height: 42px;
   border-radius: 6px;
-  background-color: #f8fafc;
+  background-color: var(--compreng-bg, #f8fafc);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -170,12 +170,12 @@
 }
 
 .badge-status.show {
-  background-color: #ecfdf5;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   color: #10b981;
 }
 
 .badge-status.hide {
-  background-color: #fef2f2;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   color: #ef4444;
 }
 
@@ -188,7 +188,7 @@
 .btn-more-action {
   background: transparent;
   border: none;
-  color: #cbd5e1;
+  color: var(--compreng-text-secondary, #475569);
   padding: 6px;
   border-radius: 6px;
   cursor: pointer;
@@ -199,8 +199,8 @@
 }
 
 .btn-more-action:hover {
-  background-color: #f1f5f9;
-  color: #475569;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text-secondary, #475569);
 }
 
 .dropdown-action-menu {
@@ -209,10 +209,10 @@
   top: 100%;
   margin-top: 4px;
   width: 140px;
-  background-color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
   border-radius: 8px;
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--compreng-border, #e2e8f0);
   padding: 4px;
   z-index: 50;
 }
@@ -225,7 +225,7 @@
   padding: 8px 12px;
   font-size: 13px;
   font-weight: 500;
-  color: #475569;
+  color: var(--compreng-text-secondary, #475569);
   background: transparent;
   border: none;
   border-radius: 6px;
@@ -235,8 +235,8 @@
 }
 
 .dropdown-item:hover {
-  background-color: #f8fafc;
-  color: #0f172a;
+  background-color: var(--compreng-bg, #f8fafc);
+  color: var(--compreng-text, #0f172a);
 }
 
 .dropdown-item.danger {
@@ -244,7 +244,7 @@
 }
 
 .dropdown-item.danger:hover {
-  background-color: #fef2f2;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   color: #dc2626;
 }
 
@@ -265,7 +265,7 @@
 }
 
 .ekskul-modal-box {
-  background-color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
   border-radius: 16px;
   width: 100%;
   max-width: 520px;
@@ -281,21 +281,21 @@
   justify-content: space-between;
   align-items: center;
   padding: 20px 24px 16px 24px;
-  border-bottom: 1px solid #f1f5f9;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
 }
 
 .ekskul-modal-header h3 {
   font-size: 18px;
   font-weight: 700;
   margin: 0;
-  color: #0f172a;
+  color: var(--compreng-text, #0f172a);
 }
 
 .ekskul-close-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--compreng-text-secondary, #475569);
   padding: 4px;
   border-radius: 6px;
 }
@@ -316,7 +316,7 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   margin-bottom: 8px;
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 .ekskul-form-input,
@@ -324,10 +324,10 @@
   width: 100%;
   padding: 10px 14px;
   border-radius: 8px;
-  border: 1px solid #e2e8f0;
-  background-color: #f8fafc;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  background-color: var(--compreng-bg, #f8fafc);
   font-size: 14px;
-  color: #334155;
+  color: var(--compreng-text-secondary, #475569);
   outline: none;
   box-sizing: border-box;
 }
@@ -335,22 +335,22 @@
 .ekskul-form-input:focus,
 .ekskul-form-textarea:focus {
   border-color: #10b981;
-  background-color: #ffffff;
+  background-color: var(--compreng-surface, #ffffff);
 }
 
 .ekskul-logo-box {
   margin-bottom: 16px;
   padding: 16px;
-  background-color: #f8fafc;
+  background-color: var(--compreng-bg, #f8fafc);
   border-radius: 12px;
-  border: 1px solid #f1f5f9;
+  border: 1px solid var(--compreng-border, #e2e8f0);
 }
 
 .ekskul-tab-container {
   display: flex;
   gap: 8px;
   margin-bottom: 12px;
-  background-color: #e2e8f0;
+  background-color: var(--compreng-border, #e2e8f0);
   padding: 4px;
   border-radius: 8px;
 }
@@ -363,7 +363,7 @@
   border-radius: 6px;
   border: none;
   background-color: transparent;
-  color: #64748b;
+  color: var(--compreng-text-secondary, #475569);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -372,8 +372,8 @@
 }
 
 .ekskul-tab-btn.active {
-  background-color: #ffffff;
-  color: #0f172a;
+  background-color: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
 }
 
 .ekskul-modal-actions {
@@ -385,32 +385,32 @@
 
 .ekskul-btn-cancel {
   padding: 12px;
-  background-color: #f1f5f9;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  color: #475569;
+  color: var(--compreng-text-secondary, #475569);
 }
 
 /* UBAH WARNA FOCUS INPUT & TEXTAREA */
 .ekskul-form-input:focus,
 .ekskul-form-textarea:focus {
-  border-color: #0f172a; 
-  background-color: #ffffff;
+  border-color: var(--compreng-border, #e2e8f0); 
+  background-color: var(--compreng-surface, #ffffff);
 }
 
 /* UBAH TOMBOL SUBMIT (SIMPAN DATA) MENJADI HITAM */
 .ekskul-btn-submit {
   padding: 12px;
-  background-color: #0f172a;
+  background-color: var(--compreng-nav-bg, #0f172a);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   font-size: 14px;
   font-weight: 600;
-  color: #ffffff;
+  color: var(--compreng-accent-text, #ffffff);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -419,7 +419,7 @@
 }
 
 .ekskul-btn-submit:hover {
-  background-color: #1e293b; 
+  background-color: var(--compreng-nav-bg, #0f172a); 
 }
 
 /* HELPER CLASSES */

@@ -1,0 +1,263 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+/* ==========================================
+   VIEWER NEWS PAGE (EXCLUSIVELY SCOPED)
+   ========================================== */
+
+.vnp-wrapper {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  color: var(--compreng-text, #0f172a) !important;
+  width: 100% !important;
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', -apple-system, sans-serif !important;
+  padding-top: 36px !important;
+  padding-bottom: 80px !important;
+  box-sizing: border-box !important;
+}
+
+/* Hero Header */
+.vnp-hero {
+  width: 100% !important;
+  padding: 10px 20px 28px !important;
+  display: flex !important;
+  justify-content: center !important;
+  align-items: center !important;
+}
+
+.vnp-hero-inner {
+  max-width: 580px !important;
+  width: 100% !important;
+  text-align: center !important;
+  margin: 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+}
+
+/* Pill Badge di Atas Berita (Gambar 2) */
+.vnp-hero-badge {
+  display: inline-block !important;
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-accent, #2563eb) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  padding: 5px 16px !important;
+  border-radius: 50px !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+  margin-bottom: 14px !important;
+}
+
+/* Judul Utama */
+.vnp-main-title {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  font-size: 30px !important;
+  font-weight: 800 !important;
+  color: var(--compreng-text, #0f172a) !important;
+  margin: 0 0 10px 0 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.5px !important;
+  text-align: center !important;
+}
+
+.vnp-title-accent {
+  color: var(--compreng-accent, #2563eb) !important;
+}
+
+/* Subtitle Header */
+.vnp-main-subtitle {
+  font-family: 'Plus Jakarta Sans', sans-serif !important;
+  color: var(--compreng-text-secondary, #475569) !important;
+  font-size: 13px !important;
+  line-height: 1.55 !important;
+  font-weight: 400 !important;
+  text-align: center !important;
+  max-width: 480px !important;
+  margin: 0 auto !important;
+}
+
+/* Container */
+.vnp-container {
+  max-width: 1120px !important;
+  margin: 0 auto !important;
+  padding: 0 20px !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
+}
+
+/* Grid Layout */
+.vnp-grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 1fr) !important;
+  gap: 22px !important;
+  align-items: stretch !important;
+}
+
+/* Card Berita Presisi Sesuai Gambar 2 */
+.vnp-card {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  box-shadow: 0 4px 16px -2px rgba(15, 23, 42, 0.03) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+}
+
+.vnp-card:hover {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Thumbnail Wrapper */
+.vnp-card-thumb {
+  position: relative !important;
+  display: block !important;
+  width: 100% !important;
+  height: 175px !important;
+  overflow: hidden !important;
+  background-color: var(--compreng-bg, #f8fafc) !important;
+}
+
+.vnp-card-thumb img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  transition: transform 0.4s ease !important;
+}
+
+.vnp-card:hover .vnp-card-thumb img {
+  transform: scale(1.03) !important;
+}
+
+/* Badge Kategori Pada Gambar */
+.vnp-badge {
+  position: absolute !important;
+  top: 10px !important;
+  left: 10px !important;
+  z-index: 2 !important;
+  background-color: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #ffffff) !important;
+  font-size: 10.5px !important;
+  font-weight: 600 !important;
+  padding: 3px 12px !important;
+  border-radius: 999px !important;
+  text-transform: capitalize !important;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2) !important;
+}
+
+/* Content Body */
+.vnp-card-content {
+  padding: 16px 16px 18px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  flex-grow: 1 !important;
+}
+
+.vnp-card-date {
+  font-size: 10.5px !important;
+  color: var(--compreng-text-secondary, #475569) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px !important;
+  margin-bottom: 8px !important;
+  text-transform: uppercase !important;
+}
+
+.vnp-card-heading {
+  font-size: 14.5px !important;
+  font-weight: 700 !important;
+  line-height: 1.4 !important;
+  margin: 0 0 8px 0 !important;
+}
+
+.vnp-card-heading a {
+  color: var(--compreng-text, #0f172a) !important;
+  text-decoration: none !important;
+  transition: color 0.2s ease !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+.vnp-card-heading a:hover {
+  color: var(--compreng-accent, #2563eb) !important;
+}
+
+.vnp-card-desc {
+  font-size: 12px !important;
+  color: var(--compreng-text-secondary, #475569) !important;
+  line-height: 1.5 !important;
+  margin: 0 0 14px 0 !important;
+  display: -webkit-box !important;
+  -webkit-line-clamp: 2 !important;
+  line-clamp: 2 !important;
+  -webkit-box-orient: vertical !important;
+  overflow: hidden !important;
+}
+
+/* Link Baca Selengkapnya Sesuai Gambar 2 */
+.vnp-card-link {
+  margin-top: auto !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  color: var(--compreng-accent, #2563eb) !important;
+  text-decoration: none !important;
+  transition: gap 0.2s ease !important;
+}
+
+.vnp-card-link:hover {
+  gap: 8px !important;
+  text-decoration: underline !important;
+}
+
+/* State Loading & Empty */
+.vnp-state-box {
+  text-align: center !important;
+  padding: 50px 20px !important;
+  color: var(--compreng-text-secondary, #475569) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 12px !important;
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border-radius: 16px !important;
+  border: 1px dashed var(--compreng-border, #e2e8f0) !important;
+}
+
+.vnp-spinner {
+  animation: vnpSpin 1s linear infinite !important;
+}
+
+@keyframes vnpSpin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive Grid Design */
+@media (max-width: 1024px) {
+  .vnp-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .vnp-main-title {
+    font-size: 24px !important;
+  }
+  
+  .vnp-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .vnp-container {
+    padding: 0 16px !important;
+  }
+}

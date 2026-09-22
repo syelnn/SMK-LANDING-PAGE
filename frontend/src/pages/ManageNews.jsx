@@ -273,13 +273,13 @@ const handleOpenEdit = (item) => {
                           style={{
                             width: '60px',
                             height: '45px',
-                            backgroundColor: '#f3f4f6',
+                            backgroundColor: 'var(--compreng-surface-soft, #f1f5f9)',
                             borderRadius: '6px',
                             border: '1px dashed #cbd5e1',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: '#94a3b8',
+                            color: 'var(--compreng-text-secondary, #475569)',
                             fontSize: '10px'
                           }}
                         >
@@ -414,7 +414,7 @@ const handleOpenEdit = (item) => {
                     className="input-modern"
                     value="Admin"
                     readOnly
-                    style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed', color: '#374151', fontWeight: '500' }}
+                    style={{ backgroundColor: 'var(--compreng-surface-soft, #f1f5f9)', cursor: 'not-allowed', color: '#374151', fontWeight: '500' }}
                   />
                 </div>
               </div>
@@ -470,7 +470,7 @@ const handleOpenEdit = (item) => {
 
                 {formData.image && (
                   <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '600' }}>PRATINJAU BANNER:</span>
+                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-secondary, #475569)', fontWeight: '600' }}>PRATINJAU BANNER:</span>
                     <img 
                       src={formData.image} 
                       alt="Preview Banner" 

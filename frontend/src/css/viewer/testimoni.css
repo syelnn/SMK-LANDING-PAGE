@@ -1,0 +1,245 @@
+/* ==========================================
+   STYLING TESTIMONI VIEWER (MODERN & CLEAN)
+   ========================================== */
+.tampilan-testimoni-wrapper {
+  padding: 100px 24px;
+  background-color: var(--compreng-surface, #ffffff);
+  min-height: 100vh;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+.tt-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.tt-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.tt-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  background-color: rgba(34, 197, 94, 0.08);
+  color: #16a34a;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  border-radius: 30px;
+  margin-bottom: 14px;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.tt-title {
+  font-size: 38px;
+  font-weight: 800;
+  color: var(--compreng-text, #0f172a);
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.tt-subtitle {
+  font-size: 16px;
+  color: var(--compreng-text-secondary, #475569);
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Grid Kartu Testimoni */
+.tt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(350px, 100%), 1fr));
+  gap: 32px;
+}
+
+.tt-card {
+  position: relative;
+  background: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 20px;
+  padding: 35px 30px;
+  box-shadow: 0 10px 30px -10px rgba(15, 23, 42, 0.05);
+  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.tt-card:hover {
+  transform: translateY(-6px);
+  border-color: #16a34a;
+  box-shadow: 0 20px 40px -12px rgba(22, 163, 74, 0.12);
+}
+
+.tt-quote-icon {
+  font-size: 36px;
+  color: #16a34a;
+  font-family: Georgia, serif;
+  line-height: 1;
+  margin-bottom: 16px;
+  opacity: 0.8;
+}
+
+.tt-quote-text {
+  font-size: 15px;
+  color: var(--compreng-text-secondary, #475569);
+  line-height: 1.7;
+  margin-bottom: 30px;
+  font-style: italic;
+}
+
+.tt-profile {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
+  padding-top: 20px;
+}
+
+.tt-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--compreng-border, #e2e8f0);
+}
+
+.tt-avatar-initial {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: #16a34a;
+  color: var(--compreng-accent-text, #ffffff);
+  font-weight: 700;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tt-info h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--compreng-text, #0f172a);
+  margin: 0 0 4px 0;
+}
+
+.tt-info p {
+  font-size: 13px;
+  color: var(--compreng-text-secondary, #475569);
+  margin: 0;
+}
+
+/* ==========================================
+   CTA "TULIS TESTIMONI"
+   Warna ikut token navbar (hijau tua + lime di tema system).
+   Teks pakai <div> karena theme.css memaksa warna p/span/h*.
+   ========================================== */
+.tt-cta {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  margin-top: 56px;
+  padding: 40px 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 36px;
+  border-radius: 28px;
+  background: var(--compreng-nav-bg, #06231D);
+  color: var(--compreng-nav-text, #FFFDEE);
+}
+
+/* Tanda kutip besar: satu-satunya dekorasi, nyambung dengan topik testimoni */
+.tt-cta::before {
+  content: '\201C';
+  position: absolute;
+  z-index: -1;
+  left: 24px;
+  top: -14px;
+  font: 800 210px/1 Georgia, serif;
+  color: var(--compreng-nav-accent, #E3EF26);
+  opacity: 0.1;
+  pointer-events: none;
+}
+
+.tt-cta-copy { max-width: 620px; }
+
+.tt-cta-lead {
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.tt-cta-note {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--compreng-nav-text-muted, #E2FBCE);
+}
+
+.tt-cta-action {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.tt-cta-go {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 15px 28px;
+  border: none;
+  border-radius: 999px;
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 15px;
+  font-weight: 700;
+  white-space: nowrap;
+  background: var(--compreng-nav-accent, #E3EF26);
+  color: var(--compreng-nav-bg, #06231D);
+  box-shadow: 0 14px 30px -14px var(--compreng-nav-accent, #E3EF26);
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease;
+}
+
+.tt-cta-go:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 20px 34px -14px var(--compreng-nav-accent, #E3EF26);
+}
+
+.tt-cta-go:focus-visible {
+  outline: 3px solid var(--compreng-nav-text, #FFFDEE);
+  outline-offset: 3px;
+}
+
+.tt-cta-hint {
+  font-size: 12.5px;
+  color: var(--compreng-nav-text-muted, #E2FBCE);
+  opacity: 0.85;
+  text-align: center;
+}
+
+@media (max-width: 820px) {
+  .tt-cta {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: left;
+    padding: 32px 26px;
+    gap: 26px;
+  }
+  .tt-cta-lead { font-size: 23px; }
+  .tt-cta-go { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tt-cta-go, .tt-cta-go:hover { transition: none; transform: none; }
+}

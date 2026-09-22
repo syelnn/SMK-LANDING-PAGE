@@ -202,13 +202,13 @@ const FaqPage = () => {
                   <td>{index + 1}</td>
                   <td>
                     <div className="news-table-title" style={{ fontWeight: '600' }}>{faq.question}</div>
-                    <div style={{ fontSize: '13px', color: '#6b7280', marginTop: '4px' }}>{faq.answer}</div>
+                    <div style={{ fontSize: '13px', color: 'var(--compreng-text-secondary, #475569)', marginTop: '4px' }}>{faq.answer}</div>
                   </td>
                   <td>
                     <span className="badge badge-category">{faq.category || 'Umum'}</span>
                   </td>
                   <td style={{ textAlign: 'center' }}>
-                    <span className="badge" style={{ backgroundColor: '#f3f4f6', color: '#374151' }}>
+                    <span className="badge" style={{ backgroundColor: 'var(--compreng-surface-soft, #f1f5f9)', color: '#374151' }}>
                       {faq.sortOrder || index + 1}
                     </span>
                   </td>

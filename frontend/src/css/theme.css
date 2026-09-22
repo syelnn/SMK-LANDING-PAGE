@@ -1,0 +1,1757 @@
+/* ==========================================================================
+   src/css/theme.css — ENGINE TEMA TERPUSAT (ADMIN + VIEWER)
+   ==========================================================================
+   4 tema: system (branding SMKN), light, dark, custom (warna bebas dari admin).
+   Semua warna WAJIB lewat variabel di bawah — jangan menaruh hex code baru
+   di file CSS lain untuk elemen yang butuh ikut berganti tema.
+
+   Token warna:
+   --compreng-bg / -surface / -surface-soft   -> latar halaman & kartu
+   --compreng-text / -text-secondary          -> teks utama & teks muted
+   --compreng-border                          -> garis/divider
+   --compreng-accent / -accent-hover / -accent-text -> tombol, link, highlight
+   --compreng-nav-*                           -> navbar publik, footer, sidebar admin
+   --compreng-badge-*                         -> badge/status/kategori
+   --compreng-shadow                          -> warna dasar box-shadow
+
+   Setiap var() di bawah SELALU punya fallback (var(--x, #hex)), supaya kalau
+   variabel gagal ter-load karena alasan apa pun, tampilan tidak pernah pecah
+   jadi putih kosong / teks tak terbaca ("anti-gagal").
+   ========================================================================== */
+
+/* ==========================================================================
+   1. TEMA LIGHT & SYSTEM BASE (nilai default sebelum di-override tema lain)
+   ========================================================================== */
+:root, [data-theme='light'] {
+  --compreng-bg: #f8fafc;
+  --compreng-surface: #ffffff;
+  --compreng-surface-soft: #f1f5f9;
+  --compreng-text: #0f172a;
+  --compreng-text-secondary: #475569;
+  --compreng-border: #e2e8f0;
+
+  --compreng-accent: #2563eb;
+  --compreng-accent-hover: #1d4ed8;
+  --compreng-accent-text: #ffffff;
+
+  --compreng-nav-bg: #0f172a;
+  --compreng-nav-border: rgba(255, 255, 255, 0.08);
+  --compreng-nav-text: #f8fafc;
+  --compreng-nav-text-muted: #94a3b8;
+  --compreng-nav-accent: #38bdf8;
+
+  --compreng-badge-bg: var(--compreng-surface-soft);
+  --compreng-badge-text: var(--compreng-text-secondary);
+  --compreng-badge-border: var(--compreng-border);
+
+  --compreng-shadow: rgba(15, 23, 42, 0.08);
+
+  color-scheme: light;
+}
+
+/* ==========================================================================
+   2. TEMA DARK MODE (TRUE SHADCN ZINC/SLATE)
+   ========================================================================== */
+[data-theme='dark'] {
+  --compreng-bg: #09090b !important;
+  --compreng-surface: #09090b !important;
+  --compreng-surface-soft: #27272a !important;
+  --compreng-text: #fafafa !important;
+  --compreng-text-secondary: #a1a1aa !important;
+  --compreng-border: #27272a !important;
+
+  --compreng-accent: #38bdf8 !important;
+  --compreng-accent-hover: #0ea5e9 !important;
+  --compreng-accent-text: #09090b !important;
+
+  --compreng-nav-bg: #000000 !important;
+  --compreng-nav-border: #27272a !important;
+  --compreng-nav-text: #fafafa !important;
+  --compreng-nav-text-muted: #a1a1aa !important;
+  --compreng-nav-accent: #38bdf8 !important;
+
+  --compreng-badge-bg: rgba(255, 255, 255, 0.1) !important;
+  --compreng-badge-text: #e4e4e7 !important;
+  --compreng-badge-border: rgba(255, 255, 255, 0.15) !important;
+
+  --compreng-shadow: rgba(0, 0, 0, 0.7) !important;
+
+  color-scheme: dark;
+}
+
+/* ==========================================================================
+   3. TEMA SYSTEM (BRANDING KUNING & HIJAU SMKN COMPRENG)
+   Berlaku untuk dashboard admin/editor MAUPUN halaman publik (sesuai keputusan produk).
+   ========================================================================== */
+[data-theme='system'] {
+  --sys-dark-green: #06231D;
+  --sys-emerald: #0C342C;
+  --sys-green-mid: #076653;
+  --sys-lime: #E3EF26;
+  --sys-lime-soft: #E2FBCE;
+  --sys-light: #FFFDEE;
+
+  --compreng-bg: var(--sys-light) !important;
+  --compreng-surface: #ffffff !important;
+  --compreng-surface-soft: var(--sys-lime-soft) !important;
+  --compreng-border: #e2e8f0 !important;
+  --compreng-text: var(--sys-dark-green) !important;
+  --compreng-text-secondary: var(--sys-green-mid) !important;
+
+  --compreng-accent: var(--sys-green-mid) !important;
+  --compreng-accent-hover: var(--sys-emerald) !important;
+  --compreng-accent-text: #ffffff !important;
+
+  --compreng-nav-bg: var(--sys-dark-green) !important;
+  --compreng-nav-border: var(--sys-emerald) !important;
+  --compreng-nav-text: var(--sys-light) !important;
+  --compreng-nav-text-muted: var(--sys-lime-soft) !important;
+  --compreng-nav-accent: var(--sys-lime) !important;
+
+  --compreng-badge-bg: var(--sys-lime-soft) !important;
+  --compreng-badge-text: var(--sys-dark-green) !important;
+  --compreng-badge-border: #c7eaae !important;
+
+  --compreng-shadow: rgba(6, 35, 29, 0.25) !important;
+
+  color-scheme: light;
+}
+
+/* ==========================================================================
+   4. TEMA CUSTOM (warna bebas dari admin)
+   Nilai NYATA di-inject via JavaScript (SettingsContext.jsx -> applyThemeToDOM)
+   memakai style.setProperty(..., 'important') pada :root, sehingga menang atas
+   blok ini. Blok ini HANYA jaring pengaman kalau JS belum sempat jalan / gagal,
+   supaya tema custom tidak pernah tampil kosong/transparan.
+   ========================================================================== */
+[data-theme='custom'] {
+  --compreng-bg: #f8fafc;
+  --compreng-surface: #ffffff;
+  --compreng-surface-soft: #f1f5f9;
+  --compreng-text: #0f172a;
+  --compreng-text-secondary: #64748b;
+  --compreng-border: #e2e8f0;
+
+  --compreng-accent: #2563eb;
+  --compreng-accent-hover: #1d4ed8;
+  --compreng-accent-text: #ffffff;
+
+  --compreng-nav-bg: #0b132b;
+  --compreng-nav-border: rgba(255, 255, 255, 0.08);
+  --compreng-nav-text: #ffffff;
+  --compreng-nav-text-muted: rgba(255, 255, 255, 0.65);
+  --compreng-nav-accent: var(--compreng-accent);
+
+  --compreng-badge-bg: var(--compreng-surface-soft);
+  --compreng-badge-text: var(--compreng-text-secondary);
+  --compreng-badge-border: var(--compreng-border);
+
+  --compreng-shadow: rgba(15, 23, 42, 0.12);
+
+  color-scheme: light;
+}
+
+/* ==========================================================================
+   5. TRANSISI HALUS SAAT GANTI TEMA ("super wah", bukan berkedip kasar)
+   ========================================================================== */
+html {
+  transition: background-color 0.25s ease;
+}
+body, .admin-container, .ekskul-container, .faq-admin-container, .download-page,
+[class*="wrapper"], [class*="container"], [class*="-card"] {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* ==========================================================================
+   GLOBAL TYPOGRAPHY & LAYOUT OVERRIDE (berlaku ADMIN + VIEWER, tag-level)
+   ========================================================================== */
+html, body {
+  background-color: var(--compreng-bg, #f8fafc) !important;
+}
+body, .admin-container, .ekskul-container, .faq-admin-container, .download-page {
+  color: var(--compreng-text, #0f172a) !important;
+}
+
+h1, h2, h3, h4, h5, h6,
+.admin-title, .ekskul-title, .faq-page-header h2, .simple-main-title,
+.settings-subtitle, label, .modal-content h3, .modern-modal h2 {
+  color: var(--compreng-text, #0f172a) !important;
+}
+
+p, span, small,
+.admin-subtitle, .ekskul-desc, .faq-page-header p, .simple-subtitle,
+.text-muted, .muted, [class*="desc"], [class*="subtitle"] {
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+
+/* ==========================================================================
+   KOTAK PENCARIAN (SEARCH BAR) - GAYA SHADCN MINIMALIS
+   ========================================================================== */
+.search-input, .ekskul-search-input, .search-box input, .topbar-search-trigger {
+  background-color: transparent !important;
+  color: var(--compreng-text, #0f172a) !important;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  transition: border-color 0.2s ease;
+}
+
+.search-input:focus, .search-box input:focus, .ekskul-search-input:focus {
+  border-bottom-color: var(--compreng-text-secondary, #475569) !important;
+  outline: none !important;
+}
+
+.search-container {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* ==========================================================================
+   TABEL & KARTU (ADMIN)
+   ========================================================================== */
+.table-wrapper, .ekskul-table-card, .faq-table-card, .news-card,
+.faq-public-card, .faq-public-question, .faq-public-answer {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+.custom-table th, .ekskul-table th, .faq-table th {
+  background-color: transparent !important;
+  color: var(--compreng-text-secondary, #475569) !important;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
+  font-weight: 600 !important;
+}
+
+.custom-table td, .ekskul-table td, .faq-table td {
+  color: var(--compreng-text, #0f172a) !important;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
+}
+
+.custom-table tbody tr:hover, .ekskul-table tbody tr:hover, .faq-table tbody tr:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+}
+
+/* ==========================================================================
+   BADGE / STATUS / KATEGORI — SEKARANG IKUT SEMUA TEMA (dulu cuma dark mode)
+   ========================================================================== */
+[class*="badge"]:not(svg),
+[class*="status"]:not(svg),
+[class*="category"]:not(svg):not(.download-category-group):not(.category-header):not(.category-title):not(.category-icon),
+td > span {
+  background-color: var(--compreng-badge-bg, #f1f5f9) !important;
+  color: var(--compreng-badge-text, #475569) !important;
+  border: 1px solid var(--compreng-badge-border, #e2e8f0) !important;
+  box-shadow: none !important;
+}
+
+/* ==========================================================================
+   TOMBOL & AKSEN (dulu tidak ada variabel aksen sama sekali di seluruh app)
+   ========================================================================== */
+[class*="btn-primary"], .btn-cms-login, .btn-download-action,
+.btn-modern-primary, button[type="submit"]:not([class*="cancel"]) {
+  background-color: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #ffffff) !important;
+  border-color: var(--compreng-accent, #2563eb) !important;
+}
+[class*="btn-primary"]:hover, .btn-cms-login:hover, .btn-download-action:hover,
+.btn-modern-primary:hover, button[type="submit"]:not([class*="cancel"]):hover {
+  background-color: var(--compreng-accent-hover, #1d4ed8) !important;
+  border-color: var(--compreng-accent-hover, #1d4ed8) !important;
+}
+a, .nav-link.active, [class*="-link"].active {
+  color: var(--compreng-accent, #2563eb);
+}
+
+/* ==========================================================================
+   SIDEBAR & TOPBAR ADMIN (netral di Light/Dark, branded di System/Custom)
+   ========================================================================== */
+.dashboard-sidebar, .topbar, .sidebar-header, .sidebar-footer, .sidebar-user-popup {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border-color: var(--compreng-border, #e2e8f0) !important;
+}
+
+.topbar {
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
+}
+
+.sidebar-brand-title, .topbar-user-name, .sidebar-group-label {
+  color: var(--compreng-text, #0f172a) !important;
+  font-weight: 600;
+}
+.sidebar-brand-subtitle, .topbar-user-email, .sidebar-user-chevron {
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+.sidebar-link, .sidebar-sub-link {
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+
+.sidebar-link.active, .sidebar-sub-link.active {
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-text, #0f172a) !important;
+  font-weight: 600 !important;
+}
+.sidebar-link:hover, .sidebar-sub-link:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-text, #0f172a) !important;
+}
+
+[data-theme='dark'] .sidebar-link.active,
+[data-theme='dark'] .sidebar-sub-link.active {
+  border-right: 3px solid var(--compreng-text, #fafafa) !important;
+}
+
+/* Sidebar & topbar BERBRANDING (System + Custom) — pakai token nav-* universal */
+[data-theme='system'] .dashboard-sidebar, [data-theme='custom'] .dashboard-sidebar,
+[data-theme='system'] .sidebar-header, [data-theme='custom'] .sidebar-header,
+[data-theme='system'] .sidebar-footer, [data-theme='custom'] .sidebar-footer {
+  background-color: var(--compreng-nav-bg) !important;
+  border-right: 1px solid var(--compreng-nav-border) !important;
+  border-color: var(--compreng-nav-border) !important;
+}
+
+[data-theme='system'] .sidebar-brand-title, [data-theme='custom'] .sidebar-brand-title,
+[data-theme='system'] .sidebar-user-name, [data-theme='custom'] .sidebar-user-name,
+[data-theme='system'] .sidebar-group-label, [data-theme='custom'] .sidebar-group-label {
+  color: var(--compreng-nav-text) !important;
+}
+
+[data-theme='system'] .sidebar-brand-subtitle, [data-theme='custom'] .sidebar-brand-subtitle,
+[data-theme='system'] .sidebar-user-email, [data-theme='custom'] .sidebar-user-email {
+  color: var(--compreng-nav-text-muted) !important;
+  opacity: 0.9;
+}
+
+/* [FIX] BUG: .sidebar-user-name & .sidebar-user-email dipakai DUA tempat —
+   1) di tombol footer sidebar (latar gelap, benar pakai --compreng-nav-text)
+   2) di dalam .sidebar-user-popup (kartu dropdown "naila / naila@gmail.com")
+   Popup-nya SELALU berlatar terang (--compreng-surface), tapi rule di atas ikut
+   memaksa teksnya jadi terang juga → teks putih di atas putih, tak terbaca.
+   Override lebih spesifik ini menang di cascade & mengunci teks popup tetap gelap. */
+.sidebar-user-popup .sidebar-user-name {
+  color: var(--compreng-text, #0f172a) !important;
+  opacity: 1 !important;
+}
+.sidebar-user-popup .sidebar-user-email {
+  color: var(--compreng-text-secondary, #475569) !important;
+  opacity: 1 !important;
+}
+
+[data-theme='system'] .sidebar-link, [data-theme='custom'] .sidebar-link,
+[data-theme='system'] .sidebar-sub-link, [data-theme='custom'] .sidebar-sub-link {
+  color: var(--compreng-nav-text-muted) !important;
+}
+
+[data-theme='system'] .sidebar-link.active, [data-theme='custom'] .sidebar-link.active,
+[data-theme='system'] .sidebar-sub-link.active, [data-theme='custom'] .sidebar-sub-link.active {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--compreng-nav-text) !important;
+  font-weight: 700 !important;
+  border-left: 4px solid var(--compreng-nav-accent) !important;
+  border-right: none !important;
+}
+
+[data-theme='system'] .sidebar-link:hover, [data-theme='custom'] .sidebar-link:hover,
+[data-theme='system'] .sidebar-sub-link:hover, [data-theme='custom'] .sidebar-sub-link:hover {
+  background-color: rgba(255, 255, 255, 0.06) !important;
+  color: var(--compreng-nav-accent) !important;
+}
+
+/* ==========================================================================
+   MODAL CRUD (bersih di semua tema)
+   ========================================================================== */
+.modal-overlay, .modal-backdrop {
+  background-color: rgba(0, 0, 0, 0.8) !important;
+  backdrop-filter: blur(4px) !important;
+}
+
+.modern-modal, .modal-box, .modal-content, [class*="modal"] {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  box-shadow: 0 25px 50px -12px var(--compreng-shadow, rgba(0,0,0,0.4)) !important;
+  border-radius: 8px !important;
+}
+
+[data-theme='dark'] .modern-modal *,
+[data-theme='dark'] .modal-content *,
+.modal-actions-modern, [class*="modal-actions"], .modal-footer {
+  border-top: none !important;
+  box-shadow: none !important;
+}
+
+.modern-modal button:empty, .modal-actions-modern > div:empty {
+  display: none !important;
+}
+
+input, select, textarea, input[type="file"] {
+  background-color: transparent !important;
+  color: var(--compreng-text, #0f172a) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 6px !important;
+}
+
+.modern-modal button, .modal-content button, button[class*="cancel"], .btn-cancel,
+.ekskul-tab-btn, .radio-tab, .tab-btn, [role="tab"] {
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-text, #0f172a) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+}
+
+.ekskul-tab-btn.active, .radio-tab.active, .tab-btn.active, [role="tab"].active,
+.ms-toggle-btn.active, .toggle-btn.active {
+  background-color: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #ffffff) !important;
+}
+
+/* Tombol akun di footer sidebar admin: pil transparan senada aksen (sama
+   seperti item menu aktif lainnya), BUKAN kotak solid warna surface — supaya
+   konsisten di System/Custom (dulu jadi kotak hijau muda mencolok). */
+.dashboard-sidebar .sidebar-user-btn.active,
+.dashboard-sidebar .sidebar-user-btn:hover {
+  background-color: color-mix(in srgb, var(--dot, var(--compreng-accent)) 12%, transparent) !important;
+}
+
+/* ==========================================================================
+   6. HALAMAN PUBLIK / VIEWER — SEKARANG BENAR-BENAR IKUT TEMA (dulu 0%)
+   Latar halaman (page wrapper) mengikuti --compreng-bg di SEMUA tema.
+   ========================================================================== */
+.landing-wrapper, .vnp-wrapper, .vnp-container,
+.vnd-article-container, .vnd-other-container, .vnd-loading-container, .vnd-error-container,
+.profil-page-wrapper, .profil-container, .section-container,
+.tampilan-galeri-wrapper, .tg-container,
+.tampilan-testimoni-wrapper, .tt-container,
+.faq-public-section, .faq-public-container,
+.download-page-wrapper, .download-container,
+.achievement-viewer-container,
+.dk-wrapper, .dk-container,
+.vp-full-wrapper, .vp-container,
+.principal-wrapper, .tp-wrapper-light,
+.ekskul-section-wrapper, .staff-scroll-container {
+  background-color: var(--compreng-bg, #f8fafc) !important;
+}
+
+/* Kartu-kartu di halaman publik: ikut permukaan (surface) & border tema */
+.vnp-card, .tg-album-card, .tt-card, .ekskul-card,
+.vp-jurusan-card, .vp-program-card, .dk-career-card, .dk-subject-card,
+.download-card, .teacher-card-light, .principal-card, .misi-card, .visi-card,
+.vnd-author-card, .vnd-other-card {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border-color: var(--compreng-border, #e2e8f0) !important;
+  color: var(--compreng-text, #0f172a) !important;
+}
+
+/* Judul halaman publik */
+.dk-title, .dk-section-title, .dk-career-title,
+.ekskul-title, .ekskul-card-title,
+.vp-title, .vp-card-title, .vp-program-title,
+.vnp-main-title, .vnp-card-heading, .vnp-title-accent,
+.vnd-title, .vnd-other-title,
+.tg-title, .tg-detail-title,
+.tt-title,
+.badge-title, .misi-section-title, .section-title, .section-title-wrapper,
+.file-title, .category-title, .vnd-footer-tags-title {
+  color: var(--compreng-text, #0f172a) !important;
+}
+
+/* Deskripsi / subjudul halaman publik */
+.dk-subtitle, .dk-desc-text,
+.ekskul-desc, .ekskul-card-text,
+.vp-desc, .vp-card-text, .vp-program-desc,
+.vnp-main-subtitle, .vnp-card-desc,
+.tg-subtitle, .tt-subtitle,
+.section-desc, .file-description, .badge-subtitle {
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+
+/* Badge/kategori khusus halaman publik ikut token badge universal */
+.ekskul-badge, .vp-program-badge, .tg-badge, .tt-badge,
+.vnd-tag-badge, .faq-public-badge, .vnp-badge, .vnp-hero-badge {
+  background-color: var(--compreng-badge-bg, #f1f5f9) !important;
+  color: var(--compreng-badge-text, #475569) !important;
+  border: 1px solid var(--compreng-badge-border, #e2e8f0) !important;
+}
+
+/* ==========================================================================
+   NAVBAR & FOOTER PUBLIK — pakai token nav-* universal (bukan lagi
+   hardcode --sys-dark-green yang cuma kebetulan berlaku waktu tema System).
+   Lihat navbar.css & footerviewer.css: variabel yang dipakai sudah diganti
+   menjadi --compreng-nav-* agar bekerja konsisten di ke-4 tema.
+   ========================================================================== */
+.viewer-navbar, .footer-container, #section-kontak {
+  background-color: var(--compreng-nav-bg) !important;
+  border-color: var(--compreng-nav-border) !important;
+}
+
+.nav-link, .footer-title, .footer-title-main, .brand-title {
+  color: var(--compreng-nav-text) !important;
+}
+.brand-subtitle, .footer-desc, .footer-copyright {
+  color: var(--compreng-nav-text-muted) !important;
+}
+.nav-link:hover, .nav-link.active {
+  color: var(--compreng-nav-accent) !important;
+}
+
+/* ==========================================================================
+   7. PATCH REVISI — PERBAIKAN MENYELURUH DARK / SYSTEM / CUSTOM
+   Blok ini sengaja diletakkan PALING BAWAH supaya selalu menang di cascade.
+   ========================================================================== */
+
+/* --- 7.1 ALIAS VARIABEL (jaring pengaman untuk salah ketik nama variabel) -- */
+:root, [data-theme='light'], [data-theme='dark'],
+[data-theme='system'], [data-theme='custom'] {
+  --compreng-text-muted: var(--compreng-text-secondary);
+  --compreng-card: var(--compreng-surface);
+  --compreng-card-bg: var(--compreng-surface);
+  --compreng-muted: var(--compreng-text-secondary);
+  --compreng-divider: var(--compreng-border);
+  --compreng-radius: 12px;
+}
+
+/* Naikkan kontras teks sekunder di dark mode (dulu terlalu abu & sulit dibaca) */
+[data-theme='dark'] {
+  --compreng-text-secondary: #d4d4d8 !important;
+  --compreng-text-muted: #d4d4d8 !important;
+}
+
+/* --- 7.2 ANTI "BOCOR PUTIH": semua wrapper/kontainer ikut latar tema ------- */
+/* [FIX] BUG UTAMA ditemukan di sini: selector ini terlalu rakus (menangkap SEMUA
+   class yang mengandung "-wrapper"/"-container"), sehingga tanpa sengaja ikut
+   mengecat .navbar-container (navbar publik) dan .sidebar-brand-wrapper (area
+   logo sidebar admin) dengan warna --compreng-bg (putih/krem latar HALAMAN),
+   menimpa warna gelap navbar/sidebar yang seharusnya. Inilah akar dari:
+   1) "navbar putih & teks menu tak terbaca" (teks nav tetap terang, tapi latar
+      di baliknya ikut jadi putih/krem) dan
+   2) "blok putih mengotak di belakang logo sidebar".
+   Ditambahkan :not([class*="nav"]) & :not([class*="brand"]) agar 2 elemen itu
+   dikecualikan dan tetap memakai warna --compreng-nav-bg dari parent-nya. */
+[class*="-wrapper"]:not(svg):not([class*="search"]):not([class*="filter"]):not([class*="toolbar"]):not([class*="title"]):not([class*="hero"]):not([class*="banner"]):not([class*="img"]):not([class*="image"]):not([class*="logo"]):not([class*="avatar"]):not([class*="btn"]):not([class*="badge"]):not([class*="nav"]):not([class*="brand"]):not([class*="icon"]),
+[class*="-container"]:not(svg):not([class*="hero"]):not([class*="banner"]):not([class*="img"]):not([class*="image"]):not([class*="logo"]):not([class*="modal"]):not([class*="nav"]),
+[class*="-page"]:not(svg):not([class*="hero"]),
+[class*="-section"]:not(svg):not([class*="hero"]):not([class*="banner"]):not([class*="tag"]):not([class*="badge"]) {
+  background-color: var(--compreng-bg, #f8fafc) !important;
+}
+
+/* [FIX] Jaring pengaman eksplisit (selain exclusion di atas), supaya kedua
+   elemen ini SELALU transparan dan menyatu mulus dengan latar gelap parent-nya
+   (.viewer-navbar / .dashboard-sidebar / .sidebar-header), apa pun temanya. */
+.navbar-container,
+.sidebar-brand-wrapper {
+  background-color: transparent !important;
+}
+
+/* Kartu-kartu: selalu permukaan tema, tidak pernah putih paksa */
+[class*="-card"]:not(svg):not([class*="badge"]):not([class*="tag"]):not([class*="btn"]),
+[class*="-box"]:not(svg):not([class*="badge"]):not([class*="btn"]):not([class*="search"]),
+[class*="-panel"]:not(svg),
+[class*="-item"]:not(svg):not(li):not([class*="tag"]):not([class*="badge"]):not([class*="footer"]):not([class*="contact"]):not([class*="nav"]):not([class*="menu"]):not([class*="dropdown"]):not([class*="social"]) {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border-color: var(--compreng-border, #e2e8f0) !important;
+  color: var(--compreng-text, #0f172a) !important;
+}
+
+/* Garis pembatas / divider tidak boleh putih lagi */
+hr, [class*="divider"], [class*="separator"], [class*="-line"]:not(svg):not([class*="inline"]),
+.vnd-author-divider, .vnd-footer-tags, .faq-modal-footer, .faq-modal-header,
+.ekskul-modal-header, .ekskul-modal-actions, .modal-header, .modal-footer {
+  border-color: var(--compreng-border, #e2e8f0) !important;
+  background-color: transparent !important;
+}
+hr, [class*="divider"]:not([class*="btn"]) {
+  background-color: var(--compreng-border, #e2e8f0) !important;
+  height: 1px;
+  border: none;
+}
+
+/* Scrollbar ikut tema (dulu selalu putih di dark mode) */
+* { scrollbar-color: var(--compreng-border) transparent; scrollbar-width: thin; }
+*::-webkit-scrollbar { width: 8px; height: 8px; }
+*::-webkit-scrollbar-track { background: transparent; }
+*::-webkit-scrollbar-thumb {
+  background: var(--compreng-border, #e2e8f0);
+  border-radius: 8px;
+}
+
+/* --- 7.3 BADGE / TAG YANG SEBELUMNYA TIDAK IKUT TEMA ---------------------- */
+/* .section-tag (Tujuan Strategis, TENAGA PENGAJAR), .vp-tag (Kompetensi
+   Keahlian, Jalur Masa Depan), .tg-badge, dll. */
+.section-tag, .vp-tag, .vp-tag-alt, .tg-badge, .tt-badge, .badge-title,
+.ekskul-badge, .vnp-badge, .vnp-hero-badge, .faq-public-badge, .vnd-tag-badge,
+[class*="-tag"]:not(svg):not([class*="tags"]):not([class*="-table"]) {
+  background-color: var(--compreng-badge-bg, #f1f5f9) !important;
+  color: var(--compreng-badge-text, #475569) !important;
+  border: 1px solid var(--compreng-badge-border, #e2e8f0) !important;
+  border-radius: 999px !important;
+  letter-spacing: 0.06em;
+  font-weight: 600 !important;
+  box-shadow: none !important;
+}
+
+/* Nomor visi & misi — sebelumnya hardcode biru, kini ikut aksen tema */
+.misi-number, .visi-icon-wrapper, [class*="-number"]:not(svg):not(input) {
+  background-color: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #ffffff) !important;
+  border-color: var(--compreng-accent, #2563eb) !important;
+}
+.misi-card, .visi-card {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  color: var(--compreng-text, #0f172a) !important;
+}
+.visi-text, .misi-card p, .misi-card span, .profil-header p {
+  color: var(--compreng-text-secondary) !important;
+}
+
+/* --- 7.4 NAVBAR PUBLIK MODERN (glass tipis di atas, solid saat scroll) ---- */
+.viewer-navbar {
+  background-color: color-mix(in srgb, var(--compreng-nav-bg) 62%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-bottom: 1px solid transparent !important;
+  box-shadow: none !important;
+  transition: background-color .3s ease, box-shadow .3s ease, border-color .3s ease;
+}
+.viewer-navbar.navbar-scrolled {
+  background-color: color-mix(in srgb, var(--compreng-nav-bg) 92%, transparent) !important;
+  border-bottom: 1px solid var(--compreng-nav-border) !important;
+  box-shadow: 0 8px 30px -12px var(--compreng-shadow, rgba(0,0,0,.45)) !important;
+}
+.nav-link, .dropdown-btn {
+  border-radius: 999px !important;
+  transition: background-color .2s ease, color .2s ease;
+}
+.nav-link:hover, .dropdown-btn:hover {
+  background-color: color-mix(in srgb, var(--compreng-nav-accent) 16%, transparent) !important;
+}
+.dropdown-menu {
+  background-color: var(--compreng-surface) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 45px -20px var(--compreng-shadow) !important;
+  overflow: hidden;
+}
+.dropdown-menu li { background-color: transparent !important; }
+.dropdown-link { color: var(--compreng-text) !important; }
+.dropdown-menu li:hover { background-color: var(--compreng-surface-soft) !important; }
+
+/* Tombol Login modern + panah */
+.btn-cms-login {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px !important;
+  border-radius: 999px !important;
+  font-weight: 700 !important;
+  letter-spacing: .01em;
+  background: var(--compreng-accent) !important;
+  color: var(--compreng-accent-text) !important;
+  border: 1px solid color-mix(in srgb, var(--compreng-accent) 70%, #ffffff) !important;
+  box-shadow: 0 8px 22px -10px var(--compreng-accent) !important;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+.btn-cms-login::after {
+  content: '\2192';
+  font-size: 1.05em;
+  line-height: 1;
+  transition: transform .18s ease;
+}
+.btn-cms-login:hover {
+  transform: translateY(-2px);
+  background: var(--compreng-accent-hover) !important;
+  box-shadow: 0 14px 30px -12px var(--compreng-accent) !important;
+}
+.btn-cms-login:hover::after { transform: translateX(4px); }
+
+/* --- 7.5 HALAMAN BERANDA / HERO ------------------------------------------ */
+.hero-section, .landing-hero {
+  color: var(--compreng-nav-text) !important;
+}
+.hero-section h1, .hero-section h2, .hero-section h3,
+.landing-hero h1, .landing-hero h2, .landing-hero h3 {
+  color: var(--compreng-nav-text) !important;
+}
+.hero-section p, .hero-section span:not([class*="badge"]):not([class*="tag"]),
+.landing-hero p, .landing-hero span:not([class*="badge"]):not([class*="tag"]) {
+  color: var(--compreng-nav-text-muted) !important;
+}
+/* Tombol "Jelajahi Sekolah" (primer) & "Hubungi Kami" (sekunder) */
+.btn-hero-primary, .btn-explore, .hero-section [class*="primary"] {
+  background: var(--compreng-accent) !important;
+  color: var(--compreng-accent-text) !important;
+  border: 1px solid var(--compreng-accent) !important;
+  border-radius: 999px !important;
+  box-shadow: 0 10px 26px -12px var(--compreng-accent) !important;
+  transition: transform .18s ease, box-shadow .18s ease;
+}
+.btn-hero-secondary, .btn-contact, .hero-section [class*="secondary"],
+.hero-section [class*="outline"] {
+  background: color-mix(in srgb, var(--compreng-nav-text) 10%, transparent) !important;
+  color: var(--compreng-nav-text) !important;
+  border: 1px solid color-mix(in srgb, var(--compreng-nav-text) 28%, transparent) !important;
+  border-radius: 999px !important;
+}
+.btn-hero-primary:hover, .btn-hero-secondary:hover,
+.hero-section [class*="primary"]:hover, .hero-section [class*="secondary"]:hover {
+  transform: translateY(-2px);
+}
+/* Kotak akreditasi di hero */
+[class*="akreditasi"], [class*="accreditation"], .hero-section [class*="stat"] {
+  background: color-mix(in srgb, var(--compreng-nav-text) 8%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--compreng-nav-text) 18%, transparent) !important;
+  color: var(--compreng-nav-text) !important;
+}
+
+/* --- 7.6 TOMBOL "TAMBAH" & AKSI MODERN (ADMIN) --------------------------- */
+.btn-add-faq, .ekskul-add-btn, [class*="add-btn"], [class*="btn-add"],
+[class*="btn-primary"], .btn-modern-primary, .btn-submit, .ekskul-btn-submit,
+.btn-cms-login, .btn-download-action,
+button[type="submit"]:not([class*="cancel"]) {
+  border-radius: 999px !important;
+  font-weight: 600 !important;
+  padding: 10px 18px !important;
+  background-color: var(--compreng-accent) !important;
+  color: var(--compreng-accent-text) !important;
+  border: 1px solid var(--compreng-accent) !important;
+  box-shadow: 0 8px 22px -12px var(--compreng-accent) !important;
+  transition: transform .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+.btn-add-faq:hover, .ekskul-add-btn:hover, [class*="add-btn"]:hover,
+[class*="btn-add"]:hover, [class*="btn-primary"]:hover, .btn-submit:hover,
+.ekskul-btn-submit:hover, button[type="submit"]:not([class*="cancel"]):hover {
+  transform: translateY(-2px);
+  background-color: var(--compreng-accent-hover) !important;
+  box-shadow: 0 14px 28px -14px var(--compreng-accent) !important;
+}
+.btn-cancel, .ekskul-btn-cancel, button[class*="cancel"] {
+  border-radius: 999px !important;
+  padding: 10px 18px !important;
+  background-color: transparent !important;
+  color: var(--compreng-text-secondary) !important;
+  border: 1px solid var(--compreng-border) !important;
+}
+
+/* --- 7.7 FORM: INPUT, FILE, SELECT, OPTION ------------------------------- */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), select, textarea {
+  background-color: color-mix(in srgb, var(--compreng-surface-soft) 55%, transparent) !important;
+  color: var(--compreng-text) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 10px !important;
+  padding: 10px 12px;
+  transition: border-color .2s ease, box-shadow .2s ease;
+}
+input:not([type="checkbox"]):not([type="radio"]):focus, select:focus, textarea:focus {
+  outline: none !important;
+  border-color: var(--compreng-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-accent) 25%, transparent) !important;
+}
+input::placeholder, textarea::placeholder { color: var(--compreng-text-secondary) !important; opacity: .8; }
+
+/* Dropdown <option> tidak mewarisi warna dari <select> transparan */
+select option, optgroup {
+  background-color: var(--compreng-surface) !important;
+  color: var(--compreng-text) !important;
+}
+
+/* Input file & input link jadi enak dilihat */
+input[type="file"] {
+  padding: 8px !important;
+  cursor: pointer;
+  border-style: dashed !important;
+}
+input[type="file"]::file-selector-button,
+input[type="file"]::-webkit-file-upload-button {
+  background-color: var(--compreng-accent) !important;
+  color: var(--compreng-accent-text) !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 8px 16px;
+  margin-right: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: filter .18s ease;
+}
+input[type="file"]::file-selector-button:hover { filter: brightness(1.08); }
+input[type="url"], input[type="text"][name*="link"], input[name*="url"] {
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: .9rem;
+}
+label { font-weight: 600 !important; }
+
+/* --- 7.8 SIDEBAR & DASHBOARD ADMIN -------------------------------------- */
+.sidebar-link, .sidebar-sub-link {
+  font-weight: 600 !important;      /* dulu terlalu tipis */
+  letter-spacing: .005em;
+  border-radius: 10px !important;
+}
+.sidebar-group-label { font-weight: 700 !important; letter-spacing: .08em; }
+
+/* Ikon dashboard: ikut warna teks utama, bukan abu-abu mati */
+.dash-stat-card svg, .dash-stat-header svg, .dash-chart-card svg,
+.sidebar-link svg, .sidebar-sub-link svg, .topbar svg,
+[class*="-icon"] svg, .dash-stat-header i, [class*="stat"] svg {
+  color: var(--compreng-text) !important;
+  stroke: currentColor;
+  opacity: 1 !important;
+}
+.sidebar-link svg, .sidebar-sub-link svg { color: inherit !important; }
+.dash-stat-value, .dash-title, .dash-chart-title { color: var(--compreng-text) !important; }
+.dash-stat-title, .dash-stat-desc, .dash-chart-subtitle { color: var(--compreng-text-secondary) !important; }
+
+/* --- 7.9 TABEL ADMIN: JANGAN BOX-IN TEKS BIASA -------------------------- */
+/* Aturan lama `td > span` membuat SEMUA teks di tabel (mis. Ekstrakurikuler)
+   tampak seperti kotak jelek. Sekarang hanya badge/status asli yang dikotakkan. */
+td > span:not([class*="badge"]):not([class*="status"]):not([class*="tag"]),
+.ekskul-table td > span:not([class*="badge"]):not([class*="status"]),
+.ekskul-table [class^="text-"], .ekskul-table [class*=" text-"] {
+  background-color: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+  color: inherit !important;
+  box-shadow: none !important;
+}
+.badge-status, .status-active, .status-hidden, .badge-category, .badge-sort {
+  border-radius: 999px !important;
+  padding: 4px 12px !important;
+  font-size: .78rem;
+  font-weight: 600 !important;
+}
+
+/* --- 7.10 DETAIL KURIKULUM, BERITA, FAQ, KARYA/PRESTASI ----------------- */
+.dk-wrapper, .dk-container, .dk-subject-card, .dk-career-card,
+.vnd-page, .vnd-article-container, .vnd-main-content, .vnd-content,
+.vnd-author-card, .vnd-other-card, .vnd-other-section, .vnd-banner-wrapper,
+.faq-admin-container, .faq-table-card, .faq-modal-card, .faq-public-section,
+.faq-public-container, .faq-public-card, .faq-toolbar, .table-responsive,
+.achievement-viewer-container, .news-card, .vnp-card {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border-color: var(--compreng-border, #e2e8f0) !important;
+  color: var(--compreng-text, #0f172a) !important;
+}
+.dk-wrapper, .vnd-page, .faq-admin-container, .faq-public-section,
+.achievement-viewer-container {
+  background-color: var(--compreng-bg, #f8fafc) !important;
+}
+.vnd-content, .vnd-content p, .vnd-content li, .vnd-content span,
+.faq-public-answer, .faq-answer-snippet, .faq-question-title,
+.vnd-date-value, .vnd-author-label, .vnd-other-date {
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+.vnd-title, .vnd-other-title, .vnd-author-name, .faq-public-question {
+  color: var(--compreng-text, #0f172a) !important;
+}
+
+/* Karya & Prestasi: kartu tidak lagi putih paksa di dark mode */
+[class*="achievement"], [class*="prestasi"], [class*="karya"],
+[class*="achievement"] [class*="card"], [class*="prestasi"] [class*="card"] {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border-color: var(--compreng-border, #e2e8f0) !important;
+  color: var(--compreng-text, #0f172a) !important;
+}
+[class*="achievement"] p, [class*="achievement"] small,
+[class*="prestasi"] p, [class*="prestasi"] small {
+  color: var(--compreng-text-secondary) !important;
+}
+
+/* Jurusan: teks kartu tidak abu mati lagi */
+.vp-card-title, .vp-program-title, .vp-jurusan-card h3, .vp-jurusan-card h4 {
+  color: var(--compreng-text) !important;
+}
+.vp-card-text, .vp-program-desc, .vp-jurusan-card p, .vp-jurusan-card li {
+  color: var(--compreng-text-secondary) !important;
+}
+
+/* --- 7.11 GAMBAR & MEDIA: hilangkan bingkai putih ----------------------- */
+img, video, iframe { background-color: transparent !important; }
+/* Latar "placeholder" hanya untuk foto/thumbnail. Logo & ilustrasi hero (PNG transparan)
+   DIKECUALIKAN — dulu selector [class*="-img"] ikut menangkap .logo-img / .graphic-img
+   sehingga logo transparan tampil dengan kotak berwarna di belakangnya. */
+[class*="-img"]:not(svg):not([class*="logo"]):not([class*="graphic"]),
+[class*="-image"]:not(svg):not([class*="logo"]):not([class*="graphic"]),
+[class*="thumb"]:not(svg), [class*="avatar"]:not(svg):not([class*="user-avatar"]) {
+  background-color: var(--compreng-surface-soft) !important;
+  border-color: var(--compreng-border) !important;
+}
+[class*="logo"] img, img[class*="logo"], img[class*="graphic"] {
+  background: transparent !important;
+}
+
+/* [FIX] Kotak inisial profil (sidebar-user-avatar) BUKAN thumbnail foto, jadi tidak boleh
+   ikut ketimpa jadi --compreng-surface-soft (nyaris putih di tema Light/System -> inisial
+   "hilang"). Kunci lagi di sini (paling bawah file = menang cascade) supaya selalu kontras
+   tinggi: kotak gelap/terang mengikuti teks tema, huruf inisial mengikuti latar tema. */
+.sidebar-user-avatar {
+  background-color: var(--compreng-text) !important;
+  color: var(--compreng-bg) !important;
+  border-color: transparent !important;
+}
+
+/* --- 7.12 MODAL: konsisten di semua tema -------------------------------- */
+[class*="modal-overlay"], [class*="modal-backdrop"] {
+  background-color: rgba(0, 0, 0, .55) !important;
+  backdrop-filter: blur(6px) !important;
+}
+[class*="modal-card"], [class*="modal-box"], .modern-modal, .modal-content {
+  background-color: var(--compreng-surface) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 16px !important;
+  color: var(--compreng-text) !important;
+}
+
+/* --- 7.13 SELEKSI TEKS -------------------------------------------------- */
+::selection {
+  background-color: color-mix(in srgb, var(--compreng-accent) 35%, transparent);
+  color: var(--compreng-text);
+}
+
+/* ==========================================================================
+   8. PATCH FINAL — NAVBAR MODERN, TOMBOL LOGIN, SEARCH ADMIN, UPLOAD FILE
+   Blok ini menimpa bagian 7 di atas (cascade paling akhir).
+   ========================================================================== */
+
+/* --- 8.1 NAVBAR: SOLID & SELALU TERBACA DI SEMUA TEMA --------------------
+   Bug sebelumnya: navbar dibuat 62% transparan, sehingga di tema light/system
+   teks terang menumpuk di atas halaman putih -> tidak terlihat.
+   Sekarang navbar tetap memakai --compreng-nav-bg yang pekat (blur hanya
+   sebagai aksen), jadi kontras teks aman di ke-4 tema. */
+.viewer-navbar {
+  background-color: var(--compreng-nav-bg, #0f172a) !important;
+  background-image: linear-gradient(
+      to bottom,
+      color-mix(in srgb, var(--compreng-nav-text) 6%, transparent),
+      transparent
+  ) !important;
+  backdrop-filter: blur(12px) saturate(140%);
+  -webkit-backdrop-filter: blur(12px) saturate(140%);
+  border-bottom: 1px solid color-mix(in srgb, var(--compreng-nav-text) 10%, transparent) !important;
+  box-shadow: none !important;
+  transition: padding .28s ease, box-shadow .28s ease, border-color .28s ease;
+}
+.viewer-navbar.navbar-scrolled {
+  background-color: var(--compreng-nav-bg, #0f172a) !important;
+  border-bottom-color: color-mix(in srgb, var(--compreng-nav-text) 16%, transparent) !important;
+  box-shadow: 0 10px 30px -14px rgba(0, 0, 0, .55) !important;
+}
+.navbar-container {
+  max-width: 1240px;
+  padding: 0.85rem 1.75rem !important;
+  gap: 1rem;
+  transition: padding .28s ease;
+}
+.viewer-navbar.navbar-scrolled .navbar-container { padding: 0.6rem 1.75rem !important; }
+
+/* Brand */
+.brand-title {
+  color: var(--compreng-nav-text) !important;
+  font-weight: 700 !important;
+  font-size: 0.9rem !important;
+  letter-spacing: .01em;
+}
+.brand-subtitle {
+  color: color-mix(in srgb, var(--compreng-nav-text) 65%, transparent) !important;
+  font-size: .68rem !important;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.logo-img { height: 34px !important; }
+
+/* Menu: pil transparan saat hover, pil berwarna tema + buletan menyala saat aktif.
+   (Menggantikan garis bawah lama. Semua warna dari token nav-* / accent tema.) */
+.navbar-menu { gap: .25rem !important; align-items: center; }
+.nav-link, .dropdown-btn {
+  position: relative;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 0 !important;              /* jarak diatur margin .nav-dot & .arrow agar buletan "mati" tidak makan tempat */
+  padding: .55rem 1rem !important;
+  border-radius: 999px !important;
+  font-size: .86rem !important;
+  font-weight: 600 !important;
+  white-space: nowrap;
+  color: color-mix(in srgb, var(--compreng-nav-text) 78%, transparent) !important;
+  background: transparent !important;
+  border: none !important;
+  transition: color .2s ease, background-color .25s ease;
+}
+.nav-link:hover, .dropdown-btn:hover, .dropdown-btn.active-pill {
+  color: var(--compreng-nav-text) !important;
+  background-color: color-mix(in srgb, var(--compreng-nav-text) 9%, transparent) !important;
+}
+/* AKTIF: latar = warna aksen tema (transparan), teks = aksen dilembutkan ke warna teks navbar
+   supaya kontras tetap aman di tema gelap/terang/custom */
+.nav-link.active, .dropdown-btn.active {
+  color: color-mix(in srgb, var(--compreng-nav-accent) 78%, var(--compreng-nav-text)) !important;
+  background-color: color-mix(in srgb, var(--compreng-nav-accent) 16%, transparent) !important;
+}
+
+/* BULETAN AKTIF — mati: tersembunyi & lebar 0 | menyala: warna aksen tema + glow */
+.nav-dot {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 0;
+  height: 7px;
+  margin-left: 0;
+  border-radius: 50%;
+  background: var(--compreng-nav-accent) !important;
+  opacity: 0;
+  transform: scale(.3);
+  box-shadow: 0 0 0 0 transparent;
+  pointer-events: none;
+  transition: width .28s ease, margin-left .28s ease, opacity .2s ease,
+              transform .28s cubic-bezier(.34, 1.56, .64, 1), box-shadow .28s ease;
+}
+.nav-link.active .nav-dot, .dropdown-btn.active .nav-dot {
+  width: 7px;
+  margin-left: 9px;
+  opacity: 1;
+  transform: scale(1);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-nav-accent) 22%, transparent),
+              0 0 12px 1px color-mix(in srgb, var(--compreng-nav-accent) 65%, transparent);
+}
+
+/* Panah dropdown: selalu ▾, diputar saat dropdown terbuka */
+.arrow { margin-left: 7px; color: inherit !important; opacity: .75; transition: transform .2s ease; }
+.dropdown-btn.active-pill .arrow { transform: rotate(180deg); }
+
+/* Fokus keyboard yang terlihat */
+.dropdown-btn:focus-visible, .btn-cms-login:focus-visible {
+  outline: 2px solid var(--compreng-nav-accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-dot, .nav-link, .dropdown-btn, .arrow { transition: none !important; }
+}
+
+/* Dropdown melayang, membulat, bertema */
+.dropdown-menu {
+  margin-top: 10px !important;
+  min-width: 230px;
+  padding: 8px !important;
+  background-color: var(--compreng-surface) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 24px 50px -22px rgba(0, 0, 0, .55) !important;
+  overflow: hidden;
+}
+.dropdown-menu li { border: none !important; background: transparent !important; }
+.dropdown-link {
+  display: block;
+  padding: 9px 12px !important;
+  border-radius: 10px !important;
+  font-size: .86rem;
+  font-weight: 500;
+  color: var(--compreng-text) !important;
+  transition: background-color .18s ease, transform .18s ease;
+}
+.dropdown-menu li:hover .dropdown-link,
+.dropdown-link:hover {
+  background-color: var(--compreng-surface-soft) !important;
+  color: var(--compreng-accent) !important;
+  transform: translateX(3px);
+}
+
+/* --- 8.2 TOMBOL LOGIN: TERANG, KONTRAS, MODERN ---------------------------
+   Memakai --compreng-nav-accent (warna terang) di atas --compreng-nav-bg
+   (warna gelap) sebagai teks, sehingga kontras dijamin di ke-4 tema. */
+/* Pembatas tipis antara menu dan tombol Login */
+.btn-login-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: .75rem;
+  padding-left: 1.1rem;
+}
+.btn-login-wrapper::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  width: 1px;
+  height: 28px;
+  transform: translateY(-50%);
+  background: color-mix(in srgb, var(--compreng-nav-text) 22%, transparent);
+}
+.btn-cms-login {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px 9px 20px !important;
+  border-radius: 999px !important;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: .85rem !important;
+  font-weight: 700 !important;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  text-decoration: none;
+  background: var(--compreng-nav-accent) !important;
+  color: var(--compreng-nav-bg) !important;
+  border: none !important;
+  box-shadow: 0 10px 24px -12px var(--compreng-nav-accent),
+              inset 0 1px 0 color-mix(in srgb, #ffffff 35%, transparent) !important;
+  transition: transform .2s cubic-bezier(.34,1.56,.64,1), box-shadow .2s ease, filter .2s ease;
+}
+/* panah dalam lingkaran kecil */
+.btn-cms-login::after {
+  content: '\2192';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  font-size: .95rem;
+  line-height: 1;
+  background: color-mix(in srgb, var(--compreng-nav-bg) 18%, transparent);
+  color: inherit;
+  transition: transform .22s ease, background-color .22s ease;
+}
+.btn-cms-login:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  background: var(--compreng-nav-accent) !important;
+  color: var(--compreng-nav-bg) !important;
+  box-shadow: 0 16px 32px -14px var(--compreng-nav-accent),
+              inset 0 1px 0 color-mix(in srgb, #ffffff 45%, transparent) !important;
+}
+.btn-cms-login:hover::after {
+  transform: translateX(3px);
+  background: color-mix(in srgb, var(--compreng-nav-bg) 30%, transparent);
+}
+.btn-cms-login:active { transform: translateY(0); }
+
+/* Tombol menu mobile ikut gaya yang sama */
+.mobile-toggle {
+  color: var(--compreng-nav-text) !important;
+  background: color-mix(in srgb, var(--compreng-nav-text) 10%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--compreng-nav-text) 18%, transparent) !important;
+  border-radius: 12px !important;
+  padding: 8px 10px !important;
+}
+@media (max-width: 1024px) {
+  .navbar-menu {
+    background-color: var(--compreng-nav-bg) !important;
+    border-top: 1px solid color-mix(in srgb, var(--compreng-nav-text) 12%, transparent) !important;
+  }
+  .btn-cms-login { justify-content: center; width: 100%; }
+}
+
+/* Drawer mobile: buletan aktif di ujung kanan, pembatas login disembunyikan */
+@media (max-width: 868px) {
+  .nav-link, .dropdown-btn { padding: .7rem 1rem !important; }
+  .nav-link.active .nav-dot, .dropdown-btn.active .nav-dot { margin-left: auto; }
+  .btn-login-wrapper { margin-left: 0; padding-left: 0; }
+  .btn-login-wrapper::before { display: none; }
+}
+
+/* --- 8.3 SEARCH / FILTER ADMIN: JANGAN KEPOTONG LAGI ---------------------
+   Aturan lama memaksa padding seragam sehingga ruang untuk ikon kaca pembesar
+   hilang dan teks tertutup. Sekarang padding kiri dikembalikan & kotaknya utuh. */
+.search-box, .ekskul-search-input-box, .topbar-search-box,
+[class*="search-wrapper"], [class*="search-box"] {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  overflow: visible !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.search-input, .ekskul-search-input, .search-box input,
+[class*="search"] input, .topbar-search-trigger {
+  width: 100%;
+  height: 42px;
+  padding: 0 14px 0 40px !important;
+  background-color: color-mix(in srgb, var(--compreng-surface-soft) 60%, transparent) !important;
+  color: var(--compreng-text) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 999px !important;
+  font-size: .88rem;
+  line-height: 42px;
+  text-overflow: ellipsis;
+  box-shadow: none !important;
+  transition: border-color .2s ease, box-shadow .2s ease, background-color .2s ease;
+}
+.search-input:focus, .ekskul-search-input:focus, .search-box input:focus,
+[class*="search"] input:focus {
+  border-color: var(--compreng-accent) !important;
+  background-color: var(--compreng-surface) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-accent) 22%, transparent) !important;
+  outline: none !important;
+}
+.search-icon, .ekskul-search-icon, .topbar-search-icon,
+[class*="search"] > svg, [class*="search"] [class*="icon"] {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--compreng-text-secondary) !important;
+  background: transparent !important;
+  border: none !important;
+  pointer-events: none;
+  z-index: 2;
+}
+.topbar-search-shortcut {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: var(--compreng-surface-soft) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 6px !important;
+  padding: 2px 6px !important;
+  font-size: .7rem;
+  color: var(--compreng-text-secondary) !important;
+}
+/* Baris toolbar filter: boleh melipat, tidak terpotong */
+.faq-toolbar, .ekskul-search-wrapper, [class*="toolbar"], [class*="filter-bar"] {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  overflow: visible !important;
+}
+/* Dropdown filter (select) disamakan tingginya dengan search */
+.faq-toolbar select, [class*="toolbar"] select, [class*="filter"] select {
+  height: 42px;
+  border-radius: 999px !important;
+  padding: 0 34px 0 16px !important;
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--compreng-text-secondary) 50%),
+                    linear-gradient(135deg, var(--compreng-text-secondary) 50%, transparent 50%);
+  background-position: calc(100% - 18px) 19px, calc(100% - 13px) 19px;
+  background-size: 5px 5px, 5px 5px;
+  background-repeat: no-repeat;
+}
+
+/* --- 8.4 UPLOAD FOTO / LINK URL DI FORM TAMBAH & EDIT -------------------- */
+.form-group, .ekskul-form-group { margin-bottom: 16px; }
+.form-group label, .ekskul-form-label {
+  display: block;
+  margin-bottom: 7px;
+  font-size: .82rem;
+  font-weight: 600 !important;
+  color: var(--compreng-text) !important;
+  letter-spacing: .01em;
+}
+/* Area unggah bergaya "dropzone" */
+input[type="file"] {
+  display: block;
+  width: 100%;
+  padding: 18px !important;
+  min-height: 92px;
+  background-color: color-mix(in srgb, var(--compreng-surface-soft) 45%, transparent) !important;
+  border: 1.5px dashed var(--compreng-border) !important;
+  border-radius: 14px !important;
+  color: var(--compreng-text-secondary) !important;
+  font-size: .84rem;
+  cursor: pointer;
+  transition: border-color .2s ease, background-color .2s ease;
+}
+input[type="file"]:hover {
+  border-color: var(--compreng-accent) !important;
+  background-color: color-mix(in srgb, var(--compreng-accent) 8%, transparent) !important;
+}
+input[type="file"]::file-selector-button,
+input[type="file"]::-webkit-file-upload-button {
+  display: inline-block;
+  background: var(--compreng-accent) !important;
+  color: var(--compreng-accent-text) !important;
+  border: none !important;
+  border-radius: 999px !important;
+  padding: 9px 18px !important;
+  margin-right: 14px;
+  font-weight: 600;
+  font-size: .82rem;
+  cursor: pointer;
+  box-shadow: 0 6px 16px -8px var(--compreng-accent);
+  transition: filter .18s ease, transform .18s ease;
+}
+input[type="file"]::file-selector-button:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+/* Input link / URL: monospace + ikon rantai */
+input[type="url"], input[name*="url"], input[name*="link"],
+input[name*="Url"], input[name*="Link"], input[id*="url"], input[id*="link"] {
+  height: 44px;
+  padding: 0 14px 0 38px !important;
+  border-radius: 12px !important;
+  font-family: ui-monospace, "SFMono-Regular", Menlo, monospace;
+  font-size: .84rem;
+  background-color: color-mix(in srgb, var(--compreng-surface-soft) 55%, transparent) !important;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round'><path d='M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7'/><path d='M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7'/></svg>");
+  background-repeat: no-repeat;
+  background-position: 13px center;
+}
+/* Preview gambar di form */
+[class*="preview"] img, [class*="thumbnail"] img, .image-preview img {
+  border-radius: 12px !important;
+  border: 1px solid var(--compreng-border) !important;
+  object-fit: cover;
+}
+[class*="preview"]:not(img) {
+  border-radius: 14px !important;
+  border: 1px solid var(--compreng-border) !important;
+  background-color: var(--compreng-surface-soft) !important;
+  overflow: hidden;
+}
+
+/* --- 8.5 RAPIKAN SISA-SISA -------------------------------------------- */
+/* Tabel jangan terpotong di layar sempit */
+.table-responsive, .ekskul-table-responsive, .table-wrapper {
+  overflow-x: auto;
+  overflow-y: visible;
+  -webkit-overflow-scrolling: touch;
+}
+/* Tombol ikon aksi (titik tiga, edit, hapus) */
+.btn-action, .btn-action-more, .btn-more-action, [class*="btn-icon"] {
+  background-color: transparent !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 10px !important;
+  color: var(--compreng-text-secondary) !important;
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+.btn-action:hover, .btn-action-more:hover, .btn-more-action:hover {
+  background-color: var(--compreng-surface-soft) !important;
+  color: var(--compreng-text) !important;
+  border-color: var(--compreng-accent) !important;
+}
+.action-dropdown-menu, .dropdown-action-menu {
+  background-color: var(--compreng-surface) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 22px 45px -22px rgba(0, 0, 0, .5) !important;
+  padding: 6px !important;
+  overflow: hidden;
+}
+.action-dropdown-menu .dropdown-item, .dropdown-action-menu .dropdown-item {
+  border-radius: 9px !important;
+  padding: 8px 12px !important;
+  color: var(--compreng-text) !important;
+  background: transparent !important;
+}
+.action-dropdown-menu .dropdown-item:hover, .dropdown-action-menu .dropdown-item:hover {
+  background-color: var(--compreng-surface-soft) !important;
+}
+
+/* ==========================================================================
+   9. PATCH V3 — VISI, DOWNLOAD, JUDUL BERITA/PRESTASI, FAQ, BULETAN NYALA
+   Diletakkan paling bawah agar menang di cascade. Semua warna dari token tema
+   (Light, Dark, System, Custom).
+   ========================================================================== */
+
+/* --- 9.1 IKON KUTIP "VISI": tanpa blok putih, ikut aksen tema ------------- */
+.visi-card { overflow: visible; }
+.visi-card .visi-icon-wrapper {
+  top: -26px;
+  width: 52px;
+  height: 52px;
+  border: none !important;
+  border-radius: 16px !important;
+  background: var(--compreng-accent) !important;
+  /* cincin warna latar halaman = efek "takik" di tepi kartu */
+  box-shadow: 0 0 0 6px var(--compreng-bg),
+              0 12px 24px -10px var(--compreng-accent) !important;
+}
+.visi-card .visi-icon-wrapper svg.visi-icon {
+  width: 24px;
+  height: 24px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  color: var(--compreng-accent-text) !important;
+  fill: currentColor !important;
+  stroke: none !important;
+}
+.visi-card:hover {
+  box-shadow: 0 18px 36px -16px color-mix(in srgb, var(--compreng-accent) 45%, transparent) !important;
+}
+
+/* --- 9.2 JUDUL BERITA & KARYA/PRESTASI: selalu terbaca di semua tema ------ */
+.vnp-hero .vnp-main-title,
+.achievement-hero .hero-title17 {
+  color: var(--compreng-text) !important;
+}
+.vnp-hero .vnp-title-accent,
+.achievement-hero .highlight-text {
+  color: var(--compreng-text-secondary) !important;
+}
+.vnp-hero .vnp-main-subtitle,
+.achievement-hero .hero-subtitle17 {
+  color: var(--compreng-text-secondary) !important;
+}
+.vnp-hero .vnp-hero-badge,
+.achievement-hero .hero-badge-pill117 {
+  color: var(--compreng-badge-text) !important;
+  background-color: var(--compreng-badge-bg) !important;
+  border: 1px solid var(--compreng-badge-border) !important;
+}
+.achievement-hero .hero-badge-pill117 svg { color: var(--compreng-accent) !important; }
+
+/* --- 9.3 HALAMAN DOWNLOAD -------------------------------------------------- */
+.download-page-wrapper .download-category-group {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.download-page-wrapper .category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 0 12px !important;
+  margin-bottom: 16px;
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--compreng-border) !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.download-page-wrapper .category-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+.download-page-wrapper .category-title h2 {
+  margin: 0;
+  color: var(--compreng-text) !important;
+}
+.download-page-wrapper .category-title svg.category-icon {
+  box-sizing: border-box;
+  width: 36px;
+  height: 36px;
+  padding: 8px !important;
+  border-radius: 11px !important;
+  color: var(--compreng-accent) !important;
+  background: color-mix(in srgb, var(--compreng-accent) 12%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--compreng-accent) 28%, transparent) !important;
+  stroke: currentColor;
+}
+.download-page-wrapper .category-count {
+  padding: 4px 12px !important;
+  border-radius: 999px !important;
+  font-size: .75rem;
+  font-weight: 600;
+  background: var(--compreng-badge-bg) !important;
+  color: var(--compreng-badge-text) !important;
+  border: 1px solid var(--compreng-badge-border) !important;
+}
+
+.download-page-wrapper .download-card {
+  padding: 14px 18px !important;
+  background: var(--compreng-surface) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 1px 2px var(--compreng-shadow) !important;
+  transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.download-page-wrapper .download-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--compreng-accent) 45%, var(--compreng-border)) !important;
+  box-shadow: 0 16px 30px -18px var(--compreng-shadow) !important;
+}
+.download-page-wrapper .file-icon-box {
+  width: 46px;
+  height: 46px;
+  padding: 0 !important;
+  border-radius: 13px !important;
+  color: var(--compreng-accent) !important;
+  background: color-mix(in srgb, var(--compreng-accent) 11%, var(--compreng-surface)) !important;
+  border: 1px solid color-mix(in srgb, var(--compreng-accent) 24%, transparent) !important;
+}
+.download-page-wrapper .file-icon-box svg { color: var(--compreng-accent) !important; stroke: currentColor; }
+.download-page-wrapper .file-title { color: var(--compreng-text) !important; }
+.download-page-wrapper .file-description { color: var(--compreng-text-secondary) !important; }
+.download-page-wrapper .file-size-tag {
+  padding: 5px 12px !important;
+  border-radius: 999px !important;
+  background: var(--compreng-surface-soft) !important;
+  border: 1px solid var(--compreng-border) !important;
+  color: var(--compreng-text-secondary) !important;
+}
+.download-page-wrapper .file-size-tag span {
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* Tombol unduh: ikon sempat hilang karena padding 10px 18px dari 7.6 */
+.download-page-wrapper .btn-download-action {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0 !important;
+  border-radius: 50% !important;
+  background: var(--compreng-accent) !important;
+  color: var(--compreng-accent-text) !important;
+  border: none !important;
+  box-shadow: 0 10px 20px -10px var(--compreng-accent) !important;
+}
+.download-page-wrapper .btn-download-action svg {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  color: var(--compreng-accent-text) !important;
+  stroke: currentColor !important;
+  opacity: 1 !important;
+  transition: transform .2s ease;
+}
+.download-page-wrapper .btn-download-action:hover {
+  background: var(--compreng-accent-hover) !important;
+  transform: translateY(-2px);
+}
+.download-page-wrapper .btn-download-action:hover svg { transform: translateY(2px); }
+
+/* --- 9.4 FAQ: hilangkan margin putih di kiri-kanan (Light & System) ------- */
+#section-faq { background-color: var(--compreng-bg) !important; }
+#section-faq .faq-public-section { background-color: transparent !important; }
+#section-faq .faq-icon-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* --- 9.5 BULETAN NYALA (navbar + dashboard) -------------------------------
+   Satu keyframes dipakai bersama; warna lewat variabel --dot. */
+@keyframes comprengDotPulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 color-mix(in srgb, var(--dot) 45%, transparent),
+                0 0 8px 1px color-mix(in srgb, var(--dot) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 5px transparent,
+                0 0 16px 3px color-mix(in srgb, var(--dot) 85%, transparent);
+  }
+}
+
+/* Navbar publik: buletan aktif berdenyut lembut */
+.nav-dot { --dot: var(--compreng-nav-accent); }
+.nav-link.active .nav-dot, .dropdown-btn.active .nav-dot {
+  animation: comprengDotPulse 2.2s ease-in-out infinite;
+}
+
+/* Sidebar dashboard: pil aktif + buletan nyala di ujung kanan */
+.dashboard-sidebar { --dot: var(--compreng-accent); --ring: var(--compreng-surface); }
+[data-theme='system'] .dashboard-sidebar,
+[data-theme='custom'] .dashboard-sidebar { --dot: var(--compreng-nav-accent); --ring: var(--compreng-nav-bg); }
+
+.dashboard-sidebar .sidebar-link,
+.dashboard-sidebar .sidebar-sub-link { position: relative; }
+.dashboard-sidebar .sidebar-link::after,
+.dashboard-sidebar .sidebar-sub-link::after {
+  content: '';
+  position: absolute;          /* absolut: tidak menggeser teks / chevron dropdown */
+  top: calc(50% - 3.5px);
+  right: 18px;
+  width: 7px;
+  height: 7px;
+  pointer-events: none;
+  border-radius: 50%;
+  background: var(--dot);
+  opacity: 0;
+  transform: scale(.3);
+  transition: opacity .25s ease, transform .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+.dashboard-sidebar .sidebar-link:hover::after,
+.dashboard-sidebar .sidebar-sub-link:hover::after { opacity: .35; transform: scale(.8); }
+.dashboard-sidebar .sidebar-link.active::after,
+.dashboard-sidebar .sidebar-sub-link.active::after {
+  opacity: 1;
+  transform: scale(1);
+  animation: comprengDotPulse 2.2s ease-in-out infinite;
+}
+
+/* Item aktif: pil lembut berwarna aksen (menggantikan garis kiri/kanan lama) */
+[data-theme] .dashboard-sidebar .sidebar-link.active,
+[data-theme] .dashboard-sidebar .sidebar-sub-link.active {
+  border-left: none !important;
+  border-right: none !important;
+  color: var(--compreng-text) !important;
+  background-color: color-mix(in srgb, var(--dot) 11%, transparent) !important;
+}
+[data-theme='system'] .dashboard-sidebar .sidebar-link.active,
+[data-theme='custom'] .dashboard-sidebar .sidebar-link.active,
+[data-theme='system'] .dashboard-sidebar .sidebar-sub-link.active,
+[data-theme='custom'] .dashboard-sidebar .sidebar-sub-link.active {
+  color: var(--compreng-nav-text) !important;
+  background-color: color-mix(in srgb, var(--dot) 15%, transparent) !important;
+}
+.dashboard-sidebar .sidebar-link.active .sidebar-link-icon { color: var(--dot) !important; }
+
+/* Sidebar mode mini: buletan pindah ke pojok kanan atas ikon */
+.dashboard-sidebar.sidebar-mini .sidebar-link::after {
+  top: 7px;
+  right: 9px;
+  width: 6px;
+  height: 6px;
+}
+
+/* Avatar (sidebar & topbar): titik "online" menyala */
+.sidebar-user-avatar, .topbar-user-initial { position: relative; overflow: visible; }
+.topbar-user-initial { --ring: var(--compreng-surface); }
+.sidebar-user-avatar::after, .topbar-user-initial::after {
+  content: '';
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  --dot: #22c55e;
+  background: #22c55e;
+  border: 2px solid var(--ring, var(--compreng-surface));
+  animation: comprengDotPulse 2.4s ease-in-out infinite;
+}
+
+/* Dashboard overview: TANPA buletan/glow menyala (sengaja dibuat tenang) */
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-dot, .dashboard-sidebar .sidebar-link::after, .dashboard-sidebar .sidebar-sub-link::after,
+  .sidebar-user-avatar::after, .topbar-user-initial::after { animation: none !important; transition: none !important; }
+}
+
+/* ==========================================================================
+   10. PATCH V4 — RAPIKAN SIDEBAR SYSTEM, TOOLBAR/SEARCH, TABEL, FILTER
+   Diletakkan paling bawah supaya menang di cascade.
+   ========================================================================== */
+
+/* --- 10.1 SIDEBAR (System & Custom): teks + ikon TERBACA JELAS -------------
+   Akar masalah: aturan global `p, span, small {color: text-secondary !important}`
+   ikut mengecat <span class="sidebar-link-text"> & <span class="sidebar-link-icon">
+   dengan hijau tua, sehingga teks menu pudar di atas latar hijau gelap.
+   Sekarang span di dalam menu sidebar mewarisi warna dari tombolnya. */
+[data-theme='system'] .dashboard-sidebar .sidebar-link,
+[data-theme='custom'] .dashboard-sidebar .sidebar-link,
+[data-theme='system'] .dashboard-sidebar .sidebar-sub-link,
+[data-theme='custom'] .dashboard-sidebar .sidebar-sub-link {
+  color: color-mix(in srgb, var(--compreng-nav-text) 90%, transparent) !important;
+}
+[data-theme='system'] .dashboard-sidebar .sidebar-link .sidebar-link-text,
+[data-theme='custom'] .dashboard-sidebar .sidebar-link .sidebar-link-text {
+  color: inherit !important;
+  font-weight: 600;
+}
+[data-theme='system'] .dashboard-sidebar .sidebar-link:not(.active) .sidebar-link-icon,
+[data-theme='custom'] .dashboard-sidebar .sidebar-link:not(.active) .sidebar-link-icon {
+  color: inherit !important;
+  opacity: .95;
+}
+[data-theme='system'] .dashboard-sidebar .sidebar-link:hover,
+[data-theme='custom'] .dashboard-sidebar .sidebar-link:hover,
+[data-theme='system'] .dashboard-sidebar .sidebar-sub-link:hover,
+[data-theme='custom'] .dashboard-sidebar .sidebar-sub-link:hover {
+  color: var(--compreng-nav-accent) !important;
+}
+[data-theme='system'] .dashboard-sidebar .sidebar-link.active .sidebar-link-text,
+[data-theme='custom'] .dashboard-sidebar .sidebar-link.active .sidebar-link-text {
+  color: var(--compreng-nav-text) !important;
+  font-weight: 700;
+}
+/* Ikon sidebar: pastikan tidak pernah punya kotak/latar (mis. ikon Galeri) */
+.dashboard-sidebar svg,
+.topbar svg {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+}
+
+/* --- 10.2 TOOLBAR & SEARCH: rapi, lebar apa adanya (seperti User List) ----- */
+.table-toolbar, .faq-toolbar, .simple-toolbar, .mp-toolbar,
+.mu-toolbar, .galeri-toolbar, .testi-toolbar {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.search-input-wrapper, .search-box, .mp-search-wrapper, .mu-search-wrapper,
+.galeri-search-wrapper, .testi-search-wrapper, .ekskul-search-input-box {
+  position: relative;
+  display: flex !important;
+  align-items: center;
+  flex: 0 1 300px;
+  width: 300px !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* --- 10.3 FILTER PENGAJAR: ikon tidak lagi menabrak teks ------------------
+   Aturan `[class*="filter"] select` memaksa padding-kiri 16px sehingga teks
+   "Semua Mata Pelajaran" tertimpa ikon filter. Ruang ikon dikembalikan. */
+.mp-toolbar .mp-filter-wrapper {
+  position: relative;
+  flex: 0 1 260px;
+  width: 260px;
+  max-width: 100%;
+}
+.mp-toolbar .mp-filter-wrapper .mp-filter-select {
+  width: 100%;
+  height: 42px;
+  padding: 0 40px 0 42px !important;
+  background-image: none !important;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.mp-toolbar .mp-filter-wrapper .mp-filter-icon {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  color: var(--compreng-text-secondary) !important;
+  pointer-events: none;
+  z-index: 2;
+}
+.mp-toolbar .mp-filter-wrapper .mp-filter-arrow {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--compreng-text-secondary) !important;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* --- 10.4 TABEL: tanpa garis/kotak di dalam sel (Berita, FAQ, dll) ---------
+   Akar masalah: `[class*="tab"]` dulu ikut menangkap semua class "table-*"
+   (news-table-title, table-tags-list, table-toolbar, ...) dan memberinya
+   kotak + garis. Selector itu sudah dipersempit di atas; blok ini memastikan
+   isi sel tabel tetap polos dan tabelnya sendiri mempertahankan warna lembut. */
+table[class*="table"] {
+  background-color: var(--compreng-surface-soft) !important;
+}
+td .news-table-title-wrapper,
+td .news-table-title,
+td .news-meta-sub,
+td .table-tags-list {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0;
+}
+td .news-table-title { font-weight: 600; line-height: 1.4; }
+td .news-table-title span { background: transparent !important; border: none !important; padding: 0 !important; }
+td .news-meta-sub { margin-top: 2px; }

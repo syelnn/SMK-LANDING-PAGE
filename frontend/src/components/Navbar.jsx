@@ -10,31 +10,75 @@ const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
 
+  // State untuk Data User (Viewer yang sedang login)
+  const [user, setUser] = useState(null);
+  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
+
   const dropdownRef = useRef(null);
+  const profileRef = useRef(null);
   const isScrolledRef = useRef(false);
+  const isManualScrolling = useRef(false);
+
+  // Inisialisasi hook router
   const navigate = useNavigate();
   const location = useLocation();
 
-  // State khusus mengontrol garis aktif navigasi secara real-time
+  // Inisialisasi state & ref path
+  const activePathRef = useRef(location.pathname);
   const [activePath, setActivePath] = useState(location.pathname);
 
-  // Sync activePath jika URL React Router berubah
+  // Synchronize status Login User dari LocalStorage
+  const syncUserSession = useCallback(() => {
+    const token = localStorage.getItem('token');
+    const username = localStorage.getItem('username');
+    const email = localStorage.getItem('email');
+    const role = localStorage.getItem('role');
+
+    if (token && username) {
+      setUser({
+        username,
+        email: email || 'Email tidak tersedia',
+        role: role || 'viewer'
+      });
+    } else {
+      setUser(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    syncUserSession();
+  }, [location.pathname, syncUserSession]);
+
   useEffect(() => {
     setActivePath(location.pathname);
+    activePathRef.current = location.pathname;
   }, [location.pathname]);
 
-  // 1. Fetching Menu (DILENGKAPI CACHING AGAR LEBIH CEPTA & TIDAK LOADING LAMA)
+  const getCleanUrl = useCallback((item) => {
+    let rawUrl = (item.url || item.href || '/').trim();
+    if (rawUrl === '/dashboard') return '/';
+    if (!rawUrl.startsWith('/') && !rawUrl.startsWith('http') && !rawUrl.startsWith('#')) {
+      rawUrl = '/' + rawUrl;
+    }
+    return rawUrl;
+  }, []);
+
+  useEffect(() => {
+    if (!sessionStorage.getItem('scrollToSection')) return;
+    isManualScrolling.current = true;
+    setTimeout(() => {
+      isManualScrolling.current = false;
+      window.dispatchEvent(new Event('scroll'));
+    }, 2200);
+  }, []);
+
+  // 1. Fetching Menu dari Database
   useEffect(() => {
     let isMounted = true;
     
-    // Cek dulu dari cache sessionStorage
     const cachedMenu = sessionStorage.getItem('app_menu_items');
     if (cachedMenu) {
-      try {
-        setMenuItems(JSON.parse(cachedMenu));
-      } catch (e) {
-        console.error("Failed to parse cached menu", e);
-      }
+      try { setMenuItems(JSON.parse(cachedMenu)); } catch (e) {}
     }
 
     const fetchMenus = async () => {
@@ -46,12 +90,11 @@ const Navbar = () => {
         const rawList = Array.isArray(result) ? result : (result.data || []);
         
         const publicMenus = rawList.filter(item => {
-          const isPublic = item.isPublic ?? item.is_public ?? true;
+          const isPublic = item.isPublic ?? item.is_public ?? false;
           const isActive = item.status === 1 || item.status === 'ACTIVE' || item.status === true || item.status === undefined;
           return isPublic && isActive;
         });
 
-        // Simpan ke Cache
         sessionStorage.setItem('app_menu_items', JSON.stringify(publicMenus));
         setMenuItems(publicMenus);
       } catch (error) {
@@ -63,19 +106,30 @@ const Navbar = () => {
     return () => { isMounted = false; };
   }, []);
 
-  // 2. Optimized Scroll Event
+  // 2. Optimized Scroll Event & Click Outside Listener
   useEffect(() => {
+    let ticking = false;
+
     const handleScroll = () => {
-      const scrolled = window.scrollY > 20;
-      if (scrolled !== isScrolledRef.current) {
-        isScrolledRef.current = scrolled;
-        setIsScrolled(scrolled);
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrolled = window.scrollY > 20;
+          if (scrolled !== isScrolledRef.current) {
+            isScrolledRef.current = scrolled;
+            setIsScrolled(scrolled);
+          }
+          ticking = false;
+        });
+        ticking = true;
       }
     };
 
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(null);
+      }
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setProfileDropdownOpen(false);
       }
     };
 
@@ -88,14 +142,7 @@ const Navbar = () => {
     };
   }, []);
 
-  // 3. Helper Sanitasi URL
-  const getCleanUrl = useCallback((item) => {
-    let rawUrl = (item.url || item.href || '/').trim();
-    if (rawUrl === '/dashboard') return '/';
-    return rawUrl;
-  }, []);
-
-  // 4. Memoized Data Menu
+  // 3. Filter Menu Utama & Submenu (Hanya dideklarasikan sekali di sini)
   const mainMenus = useMemo(() => {
     return menuItems.filter(item => !item.parentId && !item.parent_id);
   }, [menuItems]);
@@ -103,6 +150,120 @@ const Navbar = () => {
   const getSubMenus = useCallback((parentId) => {
     return menuItems.filter(item => item.parentId === parentId || item.parent_id === parentId);
   }, [menuItems]);
+
+  // 4. SCROLL SPY PERBAIKAN URL AKURAT
+  useEffect(() => {
+    const validLandingPaths = [
+      '', '/', '/profil', '/berita', '/program', '/jurusan', 
+      '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', 
+      '/pengajar', '/karya', '/prestasi', '/achievement', '/galeri', '/testimoni', '/faq', '/kontak'
+    ];
+    if (!validLandingPaths.includes(location.pathname)) return;
+
+    let ticking = false;
+
+    const handleScrollSpy = () => {
+      if (isManualScrolling.current) return;
+
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const scrollPos = window.scrollY + 250;
+
+          const heroEl = document.getElementById('section-hero');
+          const profilEl = document.getElementById('section-profil');
+          const beritaEl = document.getElementById('section-berita');
+          const programEl = document.getElementById('section-program');
+          const ekskulEl = document.getElementById('section-ekskul');
+          const pengajarEl = document.getElementById('section-pengajar');
+          const prestasiEl = document.getElementById('section-prestasi'); 
+          const galeriEl = document.getElementById('section-galeri');
+          const testimoniEl = document.getElementById('section-testimoni');
+          const faqEl = document.getElementById('section-faq');
+          const kontakEl = document.getElementById('section-kontak');
+
+          let activeKey = 'section-hero';
+
+          if (heroEl && scrollPos >= heroEl.offsetTop) activeKey = 'section-hero';
+          if (profilEl && scrollPos >= profilEl.offsetTop) activeKey = 'section-profil';
+          if (beritaEl && scrollPos >= beritaEl.offsetTop) activeKey = 'section-berita';
+          if (programEl && scrollPos >= programEl.offsetTop) activeKey = 'section-program';
+          if (ekskulEl && scrollPos >= ekskulEl.offsetTop) activeKey = 'section-ekskul';
+          if (pengajarEl && scrollPos >= pengajarEl.offsetTop) activeKey = 'section-pengajar';
+          if (prestasiEl && scrollPos >= prestasiEl.offsetTop) activeKey = 'section-prestasi'; 
+          if (galeriEl && scrollPos >= galeriEl.offsetTop) activeKey = 'section-galeri';
+          if (testimoniEl && scrollPos >= testimoniEl.offsetTop) activeKey = 'section-testimoni';
+          if (faqEl && scrollPos >= faqEl.offsetTop) activeKey = 'section-faq';
+          if (kontakEl && scrollPos >= kontakEl.offsetTop) activeKey = 'section-kontak';
+
+          const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150;
+          if (isBottom) {
+            if (kontakEl) activeKey = 'section-kontak';
+            else if (faqEl) activeKey = 'section-faq'; 
+            else if (testimoniEl) activeKey = 'section-testimoni';
+            else if (galeriEl) activeKey = 'section-galeri';
+            else if (prestasiEl) activeKey = 'section-prestasi'; 
+            else if (pengajarEl) activeKey = 'section-pengajar';
+            else if (ekskulEl) activeKey = 'section-ekskul';
+          }
+
+          const matchedMenu = menuItems.find(item => {
+            const key = item.sectionKey || item.section_key;
+            return key === activeKey;
+          });
+
+          if (matchedMenu) {
+            const cleanUrl = getCleanUrl(matchedMenu);
+            if (activePathRef.current !== cleanUrl) {
+              activePathRef.current = cleanUrl;
+              setActivePath(cleanUrl);
+              window.history.replaceState(null, '', cleanUrl);
+            }
+          } else if (activeKey === 'section-ekskul') {
+            const targetUrl = '/ekstrakurikuler';
+            if (activePathRef.current !== targetUrl) {
+              activePathRef.current = targetUrl;
+              setActivePath(targetUrl);
+              window.history.replaceState(null, '', targetUrl);
+            }
+          } else if (activeKey === 'section-pengajar') {
+            const targetUrl = '/tenagapengajar';
+            if (activePathRef.current !== targetUrl) {
+              activePathRef.current = targetUrl;
+              setActivePath(targetUrl);
+              window.history.replaceState(null, '', targetUrl);
+            }
+          } else if (activeKey === 'section-prestasi') {
+            const targetUrl = '/prestasi';
+            if (activePathRef.current !== targetUrl) {
+              activePathRef.current = targetUrl;
+              setActivePath(targetUrl);
+              window.history.replaceState(null, '', targetUrl);
+            }
+          } else if (activeKey === 'section-testimoni') {
+            const targetUrl = '/testimoni';
+            if (activePathRef.current !== targetUrl) {
+              activePathRef.current = targetUrl;
+              setActivePath(targetUrl);
+              window.history.replaceState(null, '', targetUrl);
+            }
+          } else if (activeKey === 'section-faq') {
+            const targetUrl = '/faq';
+            if (activePathRef.current !== targetUrl) {
+              activePathRef.current = targetUrl;
+              setActivePath(targetUrl);
+              window.history.replaceState(null, '', targetUrl);
+            }
+          }
+
+          ticking = false;
+        });
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScrollSpy, { passive: true });
+    return () => window.removeEventListener('scroll', handleScrollSpy);
+  }, [menuItems, getCleanUrl, location.pathname]);
 
   // 5. Automatic IntersectionObserver
   useEffect(() => {
@@ -152,18 +313,63 @@ const Navbar = () => {
     setDropdownOpen(null);
 
     const targetUrl = getCleanUrl(item);
-    const sectionKey = item.sectionKey || item.section_key;
+    const itemTitle = (item.title || '').toLowerCase().trim();
+
+    if (targetUrl === '/download' || targetUrl.includes('download') || itemTitle.includes('download')) {
+      navigate('/download');
+      return;
+    }
+    
+    const sectionMap = {
+      '/profil': 'section-profil',
+      '/berita': 'section-berita',
+      '/program': 'section-program',
+      '/jurusan': 'section-program',
+      '/ekstrakurikuler': 'section-ekskul',
+      '/ekskul': 'section-ekskul',
+      '/tenagapengajar': 'section-pengajar',
+      '/guru': 'section-pengajar', 
+      '/pengajar': 'section-pengajar',
+      '/karya': 'section-prestasi',      
+      '/prestasi': 'section-prestasi',  
+      '/achievement': 'section-prestasi',
+      '/galeri': 'section-galeri',
+      '/testimoni': 'section-testimoni',
+      '/faq': 'section-faq',
+      '/kontak': 'section-kontak',
+      '/': 'section-hero'
+    };
+
+    const sectionKey = sectionMap[targetUrl];
+    const onLanding = !!document.getElementById('section-hero');
+
+    if (!onLanding) {
+      if (sectionKey) {
+        sessionStorage.setItem('scrollToSection', sectionKey);
+        navigate('/');
+      } else {
+        navigate(targetUrl);
+      }
+      return;
+    }
 
     if (sectionKey) {
       const element = document.getElementById(sectionKey);
       if (element) {
-        element.scrollIntoView({ behavior: 'smooth' });
-        window.history.pushState(null, '', targetUrl);
+        isManualScrolling.current = true;
+        activePathRef.current = targetUrl;
         setActivePath(targetUrl);
+        window.history.replaceState(null, '', targetUrl);
+
+        element.scrollIntoView({ behavior: 'smooth' });
+
+        setTimeout(() => {
+          isManualScrolling.current = false;
+        }, 800);
       } else {
         navigate(targetUrl);
       }
-    } else if (targetUrl) {
+    } else {
       navigate(targetUrl);
     }
   };
@@ -173,28 +379,53 @@ const Navbar = () => {
     setDropdownOpen(prev => (prev === menuId ? null : menuId));
   };
 
-  // 7. Logika Check Active Menu
   const checkIsActive = (menu) => {
-    const currentPath = activePath;
     const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
     const menuUrl = getCleanUrl(menu);
 
-    if (menuTitle.includes('beranda') || menuTitle.includes('home') || menuUrl === '/') {
-      return currentPath === '/';
+    if (location.pathname === '/download' && (menuUrl.includes('download') || menuTitle.includes('download'))) {
+      return true;
+    }
+    
+    const isDropdownArea = [
+      '/ekstrakurikuler', '/ekskul', '/tenagapengajar', 
+      '/guru', '/karya', '/prestasi', '/achievement'
+    ].includes(activePath);
+    
+    if (isDropdownArea) {
+      if (menuTitle.includes('jurusan') || menuTitle.includes('program') || menuTitle.includes('berita')) {
+        return false;
+      }
     }
 
-    if (menuUrl && menuUrl !== '/') {
-      return currentPath === menuUrl;
+    if (location.pathname.includes('/detail-kurikulum')) {
+      return menuTitle.includes('jurusan') || menuTitle.includes('program') || menuUrl.includes('jurusan');
     }
 
-    return false;
+    if (location.pathname.startsWith('/berita')) {
+      return menuTitle.includes('berita') || menuUrl.includes('berita');
+    }
+
+    return activePath === menuUrl;
+  };
+
+  // Fungsi Logout khusus Viewer
+  const handleLogout = () => {
+    localStorage.clear();
+    setUser(null);
+    setProfileDropdownOpen(false);
+    navigate('/');
   };
 
   return (
     <nav className={`viewer-navbar ${isScrolled ? 'navbar-scrolled' : ''}`}>
       <div className="navbar-container">
         {/* Logo Sekolah */}
-        <Link to="/" className="navbar-logo">
+        <div 
+          className="navbar-logo" 
+          onClick={() => navigate('/')}
+          style={{ cursor: 'pointer' }}
+        >
           <img 
             src={logoSekolah} 
             alt="Logo Sekolah" 
@@ -205,7 +436,7 @@ const Navbar = () => {
             <span className="brand-title">SMKN COMPRENG</span>
             <span className="brand-subtitle">The School of SESCO Model</span>
           </div>
-        </Link>
+        </div>
 
         {/* Toggle Mobile */}
         <button 
@@ -221,28 +452,30 @@ const Navbar = () => {
           {mainMenus.map((menu) => {
             const subMenus = getSubMenus(menu.id);
             const hasChildren = subMenus.length > 0 || menu.type === 'dropdown';
-
             if (hasChildren) {
-              const isDropdownActive = dropdownOpen === menu.id;
+              const isDropdownOpenState = dropdownOpen === menu.id;
+              const isAnyChildActive = subMenus.some(sub => checkIsActive(sub));
+
               return (
-                <li 
-                  key={menu.id} 
-                  ref={dropdownRef}
-                  className="nav-item dropdown"
-                >
+                <li key={menu.id} ref={dropdownRef} className="nav-item dropdown">
                   <button 
-                    className={`dropdown-btn ${isDropdownActive ? 'active-pill' : ''}`}
+                    className={`dropdown-btn ${isAnyChildActive ? 'active' : ''} ${isDropdownOpenState ? 'active-pill' : ''}`}
                     onClick={(e) => handleDropdownToggle(menu.id, e)}
                   >
                     {menu.title}
-                    <span className="arrow">{isDropdownActive ? '▲' : '▾'}</span>
+                    <span className="nav-dot" aria-hidden="true"></span>
+                    <span className="arrow" aria-hidden="true">▾</span>
                   </button>
-                  <ul className={`dropdown-menu ${isDropdownActive ? 'show' : ''}`}>
-                    {subMenus.map((sub) => (
-                      <li key={sub.id} onClick={() => handleNavClick(sub)}>
-                        <span className="dropdown-link">{sub.title}</span>
-                      </li>
-                    ))}
+                  <ul className={`dropdown-menu ${isDropdownOpenState ? 'show' : ''}`}>
+                    {subMenus.map((sub) => {
+                      return (
+                        <li key={sub.id} onClick={() => handleNavClick(sub)}>
+                          <span className="dropdown-link">
+                            {sub.title}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </li>
               );
@@ -252,18 +485,68 @@ const Navbar = () => {
 
             return (
               <li key={menu.id} className="nav-item" onClick={() => handleNavClick(menu)}>
-                <span className={`nav-link ${isActive ? 'active' : ''}`}>
+                <span
+                  className={`nav-link ${isActive ? 'active' : ''}`}
+                  aria-current={isActive ? 'page' : undefined}
+                >
                   {menu.title}
+                  <span className="nav-dot" aria-hidden="true"></span>
                 </span>
               </li>
             );
           })}
 
-          {/* Tombol CMS Login */}
-          <li className="nav-item btn-login-wrapper">
-            <Link to="/login" className="btn-cms-login">
-              Login
-            </Link>
+          {/* ===== Pengkondisian Tombol Login / Profil Viewer ===== */}
+          <li className={user ? 'nv-user' : 'nav-item btn-login-wrapper'} ref={profileRef}>
+            {user ? (
+              <>
+                <button
+                  type="button"
+                  className="nv-user__trigger"
+                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
+                  aria-haspopup="true"
+                  aria-expanded={profileDropdownOpen}
+                >
+                  <span className="nv-user__text">
+                    <span className="nv-user__name">{user.username || 'Viewer'}</span>
+                    <span className="nv-user__email">{user.email}</span>
+                  </span>
+                  <span className="nv-user__avatar-wrap">
+                    <span className="nv-user__avatar">
+                      {(user.username || 'V').charAt(0).toUpperCase()}
+                    </span>
+                    <span className="nv-user__dot" aria-hidden="true"></span>
+                  </span>
+                </button>
+
+                {profileDropdownOpen && (
+                  <div className="nv-user__menu" role="menu">
+                    <div className="nv-user__menu-head">
+                      <span className="nv-user__menu-avatar">
+                        {(user.username || 'V').charAt(0).toUpperCase()}
+                      </span>
+                      <span className="nv-user__menu-info">
+                        <p className="nv-user__menu-name">{user.username || 'Viewer'}</p>
+                        <p className="nv-user__menu-email">{user.email}</p>
+                      </span>
+                    </div>
+                    <div className="nv-user__divider"></div>
+                    <button type="button" className="nv-user__logout" onClick={handleLogout}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                      </svg>
+                      Logout
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <Link to="/login" className="btn-cms-login">
+                Login
+              </Link>
+            )}
           </li>
         </ul>
       </div>

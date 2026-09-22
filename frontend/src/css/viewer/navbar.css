@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
+
 /* ==========================================
    NAVBAR BASE STYLES
    ========================================== */
@@ -6,39 +8,41 @@
   top: 0;
   left: 0;
   width: 100%;
-  background: #0f172a;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  /* Memakai token nav-* universal supaya konsisten di ke-4 tema (system/light/dark/custom) */
+  background-color: var(--compreng-nav-bg, var(--compreng-nav-bg, #0f172a));
+  border-bottom: 1px solid var(--compreng-nav-border, rgba(255, 255, 255, 0.08));
   z-index: 1000;
   transition: background-color 0.3s ease, box-shadow 0.3s ease;
+  font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
 .viewer-navbar.navbar-scrolled {
-  background: #0b1120;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  background-color: var(--compreng-nav-bg, #0b1120);
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.4);
 }
 
 .navbar-container {
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 0.65rem 1.5rem;
+  padding: 0.9rem 1.9rem; 
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 /* ==========================================
-   BRAND & LOGO
+   BRAND & LOGO (SMKN COMPRENG KECIL & LEBIH TIPIS)
    ========================================== */
 .navbar-logo {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
   text-decoration: none;
   z-index: 1002;
 }
 
 .logo-img {
-  height: 32px;
+  height: 28px; /* Ukuran logo disesuaikan */
   width: auto;
   object-fit: contain;
 }
@@ -49,25 +53,29 @@
 }
 
 .brand-title {
-  font-weight: 700;
-  font-size: 1.2rem;
-  color: #ffffff;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-weight: 500; 
+  font-size: 0.80rem; /* Ukuran diperkecil agar ramping */
+  color: var(--compreng-nav-text, #f8fafc);
   letter-spacing: 0.3px;
-  line-height: 1.75;
+  line-height: 1.2;
 }
 
 .brand-subtitle {
-  font-size: 0.62rem;
-  color: #94a3b8;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  font-size: 0.58rem;
+  color: var(--compreng-nav-text-muted, #94a3b8);
+  font-weight: 400;
 }
 
 /* ==========================================
-   DESKTOP NAVIGATION LINKS (JARAK DIPERKETAT)
+   DESKTOP NAVIGATION LINKS (PROPORSIONAL & RAMPING)
    ========================================== */
 .navbar-menu {
   display: flex;
   align-items: center;
-  gap: 0.4rem; /* Jarak antar item menu diperdekat agar presisi */
+  gap: 0.35rem;
+  margin-left: 2.25rem; /* jarak aman dari logo & brand */
   list-style: none;
   margin: 0;
   padding: 0;
@@ -75,19 +83,20 @@
 
 .nav-link,
 .dropdown-btn {
+  font-family: 'Plus Jakarta Sans', sans-serif;
   background: none;
   border: none;
-  color: #cbd5e1;
+  color: var(--compreng-nav-text-muted, #94a3b8);
   font-weight: 500;
-  font-size: 0.83rem;
+  font-size: 0.8125rem; /* 13px - Ukuran font pas, tidak terlalu besar/kecil */
   cursor: pointer;
-  padding: 0.4rem 0.65rem; /* Padding horizontal disesuaikan */
+  padding: 0.35rem 0.6rem;
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 4px;
   position: relative;
   transition: color 0.2s ease, background-color 0.2s ease;
-  border-radius: 20px;
+  border-radius: 16px;
   box-sizing: border-box;
 }
 
@@ -95,55 +104,71 @@
 .dropdown-btn:hover,
 .dropdown-btn.active-pill {
   background-color: rgba(255, 255, 255, 0.08);
-  color: #ffffff;
+  color: var(--compreng-nav-text, #f8fafc);
 }
 
-/* GARIS BAWAH MEMANJANG KETIKA HOVER / AKTIF */
-.nav-link::after,
-.dropdown-btn::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 50%;
-  width: 0%;
-  height: 2px;
-  background-color: #38bdf8;
-  border-radius: 2px;
-  transform: translateX(-50%);
-  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.nav-link.active::after,
-.nav-link:hover::after,
-.dropdown-btn:hover::after,
-.dropdown-btn.active-pill::after {
-  width: 75%;
-}
-
-.navbar-menu:hover .nav-link.active:not(:hover)::after {
-  width: 0%;
-}
-
+/* ==========================================
+   MENU AKTIF: PIL + BULETAN (menggantikan garis bawah)
+   Warna final diatur lewat token tema di theme.css
+   (--compreng-nav-accent / --compreng-nav-text).
+   ========================================== */
 .nav-link:hover,
-.dropdown-btn:hover,
-.nav-link.active {
-  color: #ffffff;
+.dropdown-btn:hover {
+  color: var(--compreng-nav-text, #f8fafc);
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
-.navbar-menu:hover .nav-link.active:not(:hover) {
-  color: #cbd5e1;
+.nav-link.active,
+.dropdown-btn.active {
+  color: var(--compreng-nav-accent, #38bdf8);
+  background-color: rgba(56, 189, 248, 0.16);
+}
+
+/* Buletan: mati (tersembunyi & tidak makan tempat) -> menyala saat aktif */
+.nav-dot {
+  flex: 0 0 auto;
+  display: inline-block;
+  width: 0;
+  height: 7px;
+  margin-left: 0;
+  border-radius: 50%;
+  background: var(--compreng-nav-accent, #38bdf8);
+  opacity: 0;
+  transform: scale(0.3);
+  pointer-events: none;
+  transition:
+    width 0.28s ease,
+    margin-left 0.28s ease,
+    opacity 0.2s ease,
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    box-shadow 0.28s ease;
+}
+
+.nav-link.active .nav-dot,
+.dropdown-btn.active .nav-dot {
+  width: 7px;
+  margin-left: 9px;
+  opacity: 1;
+  transform: scale(1);
+  box-shadow:
+    0 0 0 3px rgba(56, 189, 248, 0.22),
+    0 0 12px 1px rgba(56, 189, 248, 0.6);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nav-dot { transition: none; }
 }
 
 .arrow {
   display: inline-block;
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   line-height: 1;
-  width: 10px;
+  width: 8px;
   text-align: center;
 }
 
 /* ==========================================
-   DROPDOWN MENU "LAINNYA" (POSISI DI TENGAH)
+   DROPDOWN MENU "LAINNYA"
    ========================================== */
 .dropdown {
   position: relative;
@@ -151,18 +176,17 @@
 
 .dropdown-menu {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + 0.4rem);
   left: 50%;
   transform: translateX(-50%) translateY(-6px);
   background-color: #1a2332;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  width: 165px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
-  border-radius: 12px;
+  width: 155px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+  border-radius: 8px;
   list-style: none;
-  padding: 0.4rem 0;
+  padding: 0.35rem 0;
   z-index: 1001;
-  
   display: none;
   opacity: 0;
   transition: opacity 0.2s ease, transform 0.2s ease;
@@ -175,7 +199,7 @@
 }
 
 .dropdown-menu li {
-  padding: 0.45rem 1rem; /* Jarak vertikal submenu dibuat seimbang */
+  padding: 0.4rem 0.85rem;
   cursor: pointer;
   transition: background-color 0.15s ease;
 }
@@ -185,8 +209,9 @@
 }
 
 .dropdown-link {
-  color: #cbd5e1;
-  font-size: 0.8rem;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  color: var(--compreng-nav-text-muted, #94a3b8);
+  font-size: 0.78rem;
   font-weight: 500;
   display: block;
   text-decoration: none;
@@ -194,28 +219,22 @@
 }
 
 .dropdown-menu li:hover .dropdown-link {
-  color: #ffffff;
+  color: var(--compreng-nav-text, #f8fafc);
 }
 
 /* ==========================================
    TOMBOL LOGIN CMS
    ========================================== */
 .btn-cms-login {
-  background-color: #6366f1;
-  color: #ffffff;
-  padding: 0.4rem 1.15rem;
-  margin-left: 0.5rem; /* Memberikan sedikit ruang pisah dari navigasi */
-  border-radius: 9999px;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 0.82rem;
-  transition: all 0.2s ease;
-  display: inline-block;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: var(--compreng-accent, var(--compreng-accent, #2563eb));
+  color: var(--compreng-accent-text, var(--compreng-nav-text, #f8fafc));
+  /* ... sisanya biarkan sama ... */
 }
 
 .btn-cms-login:hover {
-  background-color: #4f46e5;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4);
+  background-color: var(--compreng-accent-hover, var(--compreng-accent, #2563eb));
+  box-shadow: 0 4px 12px var(--compreng-shadow, rgba(99, 102, 241, 0.4));
 }
 
 .mobile-toggle {
@@ -227,14 +246,15 @@
    ========================================== */
 @media (max-width: 1024px) {
   .navbar-container {
-    padding: 0.65rem 1.2rem;
+    padding: 0.5rem 1.2rem;
   }
   .navbar-menu {
-    gap: 0.2rem;
+    gap: 0.15rem;
+    margin-left: 1rem;
   }
   .nav-link, .dropdown-btn {
-    font-size: 0.8rem;
-    padding: 0.35rem 0.45rem;
+    font-size: 0.78rem;
+    padding: 0.3rem 0.45rem;
   }
 }
 
@@ -243,8 +263,8 @@
     display: block;
     background: none;
     border: none;
-    color: #ffffff;
-    font-size: 1.5rem;
+    color: var(--compreng-nav-text, #f8fafc);
+    font-size: 1.3rem;
     cursor: pointer;
     z-index: 1002;
     padding: 0.2rem;
@@ -254,16 +274,16 @@
     position: fixed;
     top: 0;
     right: -100%;
-    width: 260px;
+    width: 250px;
     height: 100vh;
-    background-color: #0f172a;
+    background-color: var(--compreng-nav-bg, #0f172a);
     border-left: 1px solid rgba(255, 255, 255, 0.1);
     box-shadow: -10px 0 25px rgba(0, 0, 0, 0.5);
     flex-direction: column;
     align-items: flex-start;
     justify-content: flex-start;
     padding: 4.5rem 1.2rem 2rem 1.2rem;
-    gap: 1rem;
+    gap: 0.8rem;
     transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     overflow-y: auto;
   }
@@ -279,13 +299,9 @@
   .nav-link, .dropdown-btn {
     width: 100%;
     justify-content: space-between;
-    font-size: 0.9rem;
-    padding: 0.55rem 0;
+    font-size: 0.85rem;
+    padding: 0.5rem 0;
     border-radius: 0;
-  }
-
-  .nav-link::after, .dropdown-btn::after {
-    display: none;
   }
 
   .dropdown-menu {
@@ -295,8 +311,8 @@
     background-color: rgba(255, 255, 255, 0.03);
     border: none;
     border-radius: 8px;
-    margin-top: 0.4rem;
-    padding: 0.4rem 0;
+    margin-top: 0.3rem;
+    padding: 0.3rem 0;
     width: 100%;
   }
 
@@ -305,12 +321,12 @@
   }
 
   .dropdown-menu li {
-    padding: 0.45rem 0.8rem;
+    padding: 0.4rem 0.8rem;
   }
 
   .btn-login-wrapper {
     width: 100%;
-    margin-top: 0.8rem;
+    margin-top: 0.6rem;
   }
 
   .btn-cms-login {
@@ -318,13 +334,13 @@
     text-align: center;
     width: 100%;
     margin-left: 0;
-    padding: 0.65rem 0;
+    padding: 0.6rem 0;
   }
 }
 
 @media (max-width: 480px) {
   .brand-title {
-    font-size: 0.82rem;
+    font-size: 0.8rem;
   }
 
   .brand-subtitle {
@@ -332,10 +348,285 @@
   }
 
   .logo-img {
-    height: 28px;
+    height: 24px;
   }
 
   .navbar-menu {
     width: 80%;
+  }
+}
+
+/* 1. Tambahkan ke root CSS agar scroll halaman otomatis smooth */
+html {
+  scroll-behavior: smooth;
+}
+
+/* 2. Transisi halus warna menu (pil & teks) */
+.nav-link,
+.dropdown-btn {
+  transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+/* =========================================================
+   PROFIL VIEWER DI NAVBAR  (pakai class baru: .nv-user*)
+   Latar benar-benar TRANSPARAN. Kartu putih hanya saat diklik.
+   ========================================================= */
+nav.viewer-navbar li.nv-user {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 0.6rem;
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Trigger + seluruh isinya: tanpa latar, border, dan bayangan */
+nav.viewer-navbar li.nv-user > button.nv-user__trigger,
+nav.viewer-navbar li.nv-user > button.nv-user__trigger > span,
+nav.viewer-navbar li.nv-user > button.nv-user__trigger span span {
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  transition: background-color 0.2s ease;
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Teks nama & email */
+nav.viewer-navbar li.nv-user .nv-user__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  text-align: right;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff !important;
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__email {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85) !important;
+  opacity: 1;
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Avatar: satu-satunya elemen yang boleh punya latar */
+nav.viewer-navbar li.nv-user .nv-user__avatar-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger .nv-user__avatar-wrap .nv-user__avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 92%, white 8%),
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 78%, black 22%)
+  ) !important;
+  color: #ffffff !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+  text-transform: uppercase;
+  border: 2px solid color-mix(in srgb, var(--compreng-nav-bg, #0f172a) 60%, white 40%);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 35%, transparent),
+    0 4px 10px -2px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger:hover .nv-user__avatar-wrap .nv-user__avatar {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 45%, transparent),
+    0 6px 14px -2px rgba(0, 0, 0, 0.4);
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger .nv-user__avatar-wrap .nv-user__dot {
+  --dot: #22c55e;
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #22c55e !important;
+  border: 2px solid var(--compreng-nav-bg, #0f172a);
+  animation: comprengDotPulse 2.4s ease-in-out infinite;
+}
+
+/* Kartu dropdown (muncul saat diklik) — ikut warna tema aktif, bukan putih mati */
+nav.viewer-navbar li.nv-user .nv-user__menu {
+  position: absolute;
+  top: calc(100% + 14px);
+  right: 0;
+  width: 232px;
+  padding: 8px;
+  background-color: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #eef1f5);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.35), 0 4px 12px -4px rgba(15, 23, 42, 0.18);
+  z-index: 1200;
+  transform-origin: top right;
+  animation: nvUserMenuIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes nvUserMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 12px 8px;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 92%, white 8%),
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 78%, black 22%)
+  );
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 25%, transparent);
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-name {
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--compreng-text, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-email {
+  margin: 2px 0 0 0;
+  font-size: 11.5px;
+  color: var(--compreng-text-secondary, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__divider {
+  height: 1px;
+  background-color: var(--compreng-border, #eef1f5);
+  margin: 2px 4px 6px 4px;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__logout {
+  --dot: #ef4444;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 10px;
+  background-color: transparent;
+  border: none;
+  border-radius: 10px;
+  color: #ef4444;
+  font-family: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__logout:hover {
+  background-color: color-mix(in srgb, #ef4444 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ef4444 30%, transparent);
+  transform: translateX(1px);
+}
+
+/* Mobile: profil mengikuti lebar menu */
+@media (max-width: 868px) {
+  nav.viewer-navbar li.nv-user {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.6rem;
+  }
+  nav.viewer-navbar li.nv-user > button.nv-user__trigger {
+    width: 100%;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+  nav.viewer-navbar li.nv-user .nv-user__text {
+    align-items: flex-start;
+    text-align: left;
+  }
+  nav.viewer-navbar li.nv-user .nv-user__menu {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+
+/* Mobile: menu berubah jadi drawer, jarak ke logo tidak diperlukan */
+@media (max-width: 868px) {
+  .viewer-navbar .navbar-menu {
+    margin-left: 0;
+    gap: 0.8rem;
   }
 }

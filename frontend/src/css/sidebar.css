@@ -5,8 +5,8 @@
    ========================================= */
 .dashboard-sidebar {
   width: 260px;
-  background-color: var(--compreng-surface, #ffffff);
-  border-right: 1px solid var(--compreng-border, #e2e8f0);
+  background-color: var(--compreng-surface, var(--compreng-surface, #ffffff));
+  border-right: 1px solid var(--compreng-border, var(--compreng-border, #e2e8f0));
   display: flex;
   flex-direction: column;
   transition: width 0.3s ease; 
@@ -316,44 +316,51 @@
   right: 16px;
   background: var(--compreng-surface);
   border: 1px solid var(--compreng-border);
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  border-radius: 14px;
+  box-shadow: 0 16px 36px -12px var(--compreng-shadow, rgba(0,0,0,0.18)), 0 4px 10px rgba(0,0,0,0.05);
   overflow: hidden;
   z-index: 50;
   min-width: 200px;
+  padding: 6px;
+  animation: dropdownFadeIn 0.15s ease;
 }
 
 .sidebar-user-popup-header {
   padding: 12px;
-  border-bottom: 1px solid var(--compreng-border);
+  margin-bottom: 4px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--compreng-accent) 8%, transparent);
 }
 
 .sidebar-popup-action {
   width: 100%;
-  padding: 10px 12px;
+  padding: 9px 12px;
   display: flex;
   align-items: center;
   gap: 10px;
   border: none;
+  border-radius: 9px;
   background: transparent;
   color: var(--compreng-text-secondary);
   font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .sidebar-popup-action:hover {
-  background: var(--compreng-surface-soft);
-  color: var(--compreng-text);
+  background: color-mix(in srgb, var(--compreng-accent) 10%, transparent);
+  color: var(--compreng-accent);
 }
 
 .sidebar-popup-action.danger {
-  color: #dc2626;
+  color: #ef4444;
   font-weight: 500;
 }
 
 .sidebar-popup-action.danger:hover {
-  background: #fef2f2;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
 }
 
 /* =========================================
