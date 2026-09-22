@@ -15,13 +15,12 @@ model User {
   password     String       @db.VarChar(255)
   fullName     String?      @map("full_name") @db.VarChar(200)
   avatar       String?      @db.VarChar(255)
-  role         String?      @default("editor") @db.VarChar(50)
+  role         String?      @default("viewer") @db.VarChar(50)
   isActive     Int?         @default(1) @map("is_active")
   lastLogin    DateTime?    @map("last_login") @db.Timestamp(6)
   createdAt    DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt    DateTime?    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   auditLogs    AuditLog[]
-  news         News[]       @relation("NewsAuthor")
   testimonials Testimonial?
 
   @@map("users")
@@ -38,49 +37,21 @@ model Setting {
 }
 
 model News {
-  id              Int           @id @default(autoincrement())
-  category        String?       @db.VarChar(100)
-  tags            Json?
-  title           String        @db.VarChar(255)
-  slug            String        @unique @db.VarChar(255)
-  excerpt         String?
-  content         String?
-  image           String?       @db.VarChar(255)
-  author          String?       @default("Admin") @db.VarChar(100)
-  publishedAt     DateTime?     @map("published_at") @db.Timestamp(6)
-  status          String?       @default("draft") @db.VarChar(50)
-  isFeatured      Int?          @default(0) @map("is_featured")
-  metaTitle       String?       @map("meta_title") @db.VarChar(255)
-  metaDescription String?       @map("meta_description") @db.VarChar(255)
-  viewCount       Int?          @default(0) @map("view_count")
-  createdAt       DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt       DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  authorId        Int?          @map("author_id")
-  authorUser      User?         @relation("NewsAuthor", fields: [authorId], references: [id], onUpdate: NoAction, map: "fk_news_author")
-  comments        NewsComment[]
+  id          Int       @id @default(autoincrement())
+  category    String?   @db.VarChar(100)
+  tags        Json?
+  title       String    @db.VarChar(255)
+  slug        String    @unique @db.VarChar(255)
+  excerpt     String?
+  content     String?
+  image       String?
+  author      String?   @default("Admin") @db.VarChar(100)
+  publishedAt DateTime? @map("published_at") @db.Timestamp(6)
+  status      String?   @default("published") @db.VarChar(50)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
 
-  @@index([publishedAt], map: "idx_news_published")
-  @@index([status], map: "idx_news_status")
   @@map("news")
-}
-
-model NewsComment {
-  id         Int           @id @default(autoincrement())
-  newsId     Int           @map("news_id")
-  parentId   Int?          @map("parent_id")
-  name       String        @db.VarChar(200)
-  email      String?       @db.VarChar(200)
-  avatar     String?       @db.VarChar(255)
-  comment    String
-  isApproved Int?          @default(0) @map("is_approved")
-  createdAt  DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt  DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  news       News          @relation(fields: [newsId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_news_fk")
-  parent     NewsComment?  @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_parent_fk")
-  replies    NewsComment[] @relation("CommentReplies")
-
-  @@index([isApproved], map: "idx_comments_approved")
-  @@map("news_comments")
 }
 
 model Program {
@@ -114,15 +85,14 @@ model AuditLog {
 }
 
 model Extracurricular {
-  id          Int       @id @default(autoincrement())
-  title       String    @db.VarChar(200)
+  id          Int      @id @default(autoincrement())
+  title       String
   description String?
-  icon        String?   @default("star") @db.VarChar(50)
-  iconColor   String?   @default("#14b8a6") @map("icon_color") @db.VarChar(7)
-  sortOrder   Int?      @default(0) @map("sort_order")
-  show        Int?      @default(1)
-  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  icon        String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  show        Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("extracurriculars")
 }
@@ -143,7 +113,7 @@ model Faq {
 model Gallery {
   id         Int       @id @default(autoincrement())
   category   String?   @db.VarChar(100)
-  image      String    @db.VarChar(255)
+  image      String
   caption    String?   @db.VarChar(255)
   isFeatured Int?      @default(0) @map("is_featured")
   sortOrder  Int?      @default(0) @map("sort_order")
@@ -164,8 +134,8 @@ model Page {
   status          String?    @default("draft") @db.VarChar(50)
   metaTitle       String?    @map("meta_title") @db.VarChar(255)
   metaDescription String?    @map("meta_description") @db.VarChar(255)
-  createdAt       DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt       DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
   menuItems       MenuItem[]
 
   @@map("pages")
@@ -174,19 +144,20 @@ model Page {
 model MenuItem {
   id         Int        @id @default(autoincrement())
   parentId   Int?       @map("parent_id")
-  title      String     @db.VarChar(200)
-  url        String     @db.VarChar(255)
+  title      String     @db.VarChar(255)
+  url        String?    @db.VarChar(255)
   target     String?    @default("_self") @db.VarChar(50)
-  icon       String?    @db.VarChar(50)
-  sectionKey String?    @map("section_key") @db.VarChar(100)
+  icon       String?    @db.VarChar(255)
+  sectionKey String?    @map("section_key") @db.VarChar(255)
   sortOrder  Int?       @default(0) @map("sort_order")
   status     Int?       @default(1)
-  type       String?    @default("custom") @db.VarChar(20)
+  type       String?    @default("section") @db.VarChar(50)
   pageId     Int?       @map("page_id")
-  createdAt  DateTime?  @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt  DateTime?  @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  page       Page?      @relation(fields: [pageId], references: [id], onUpdate: NoAction, map: "menu_items_page_fk")
-  parent     MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "menu_items_parent_fk")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  is_public  Boolean    @default(true)
+  page       Page?      @relation(fields: [pageId], references: [id], map: "menu_items_page_fk")
+  parent     MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade, map: "menu_items_parent_fk")
   children   MenuItem[] @relation("MenuHierarchy")
 
   @@map("menu_items")
@@ -260,7 +231,7 @@ model Download {
 model achievements {
   id           Int       @id @default(autoincrement())
   student_name String    @db.VarChar(200)
-  photo        String?   @db.VarChar(255)
+  photo        String?
   class_name   String?   @db.VarChar(100)
   achievement  String    @db.VarChar(255)
   level        String?   @default("Kota") @db.VarChar(50)
@@ -292,4 +263,21 @@ model program_unggulan_custom {
   image_icon String
   created_at DateTime @default(now())
   updated_at DateTime @default(now())
+}
+
+model footer_setting {
+  id             Int      @id @default(autoincrement())
+  school_name    String
+  description    String
+  address        String
+  phone          String
+  email          String
+  facebook_url   String?
+  instagram_url  String?
+  maps_embed_url String?
+  created_at     DateTime @default(now())
+  updated_at     DateTime
+  tiktok_url     String?
+  twitter_url    String?
+  youtube_url    String?
 }

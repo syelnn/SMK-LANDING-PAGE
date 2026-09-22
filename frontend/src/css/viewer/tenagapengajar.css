@@ -1,0 +1,153 @@
+/* css/viewer/tenagapengajar.css */
+
+/* 1. KUNCI PERBAIKAN WARNA LATAR GELAP */
+/* Kita bungkus seluruh komponen dengan background putih penuh */
+.tp-wrapper-light {
+  background-color: var(--compreng-surface, #ffffff);
+  width: 100%;
+  /* Format padding: atas(120px) kiri-kanan(0) bawah(80px) */
+  padding: 120px 0 80px; 
+}
+
+/* 2. STYLING HEADER & CONTAINER */
+.section-container { 
+  padding: 0 20px; 
+  max-width: 1200px; 
+  margin: 0 auto; 
+  font-family: 'Plus Jakarta Sans', 'Inter', sans-serif;
+}
+.section-header {
+  text-align: center;
+  margin-bottom: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.section-tag {
+  font-size: 12px;
+  font-weight: 800;
+  color: #d97706;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  padding: 6px 14px;
+  border-radius: 20px;
+  display: inline-block;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 32px; 
+  font-weight: 900;
+  color: var(--compreng-text, #0f172a);
+  margin: 0 0 12px 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+.section-title span {
+  color: #16a34a;
+}
+.section-desc {
+  font-size: 16px;
+  color: var(--compreng-text-secondary, #475569);
+  max-width: 650px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* =========================================
+   3. STYLING TENAGA PENGAJAR (LIGHT THEME & SLIDER)
+   ========================================= */
+
+/* Wadah Horizontal Scroll untuk Staf - HILANGKAN SCROLLBAR */
+.staff-scroll-container {
+  display: flex;
+  gap: 24px;
+  overflow-x: auto;
+  padding: 10px 5px 30px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: none; /* Firefox */
+}
+.staff-scroll-container::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Desain Kartu Terang */
+.teacher-card-light {
+  position: relative;
+  background: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 20px;
+  padding: 35px 25px;
+  min-width: 260px;
+  max-width: 300px;
+  flex: 0 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  scroll-snap-align: start;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.teacher-card-light:hover {
+  transform: translateY(-5px);
+  border-color: var(--compreng-border, #e2e8f0);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+/* Wrapper khusus untuk Principal agar di tengah */
+.principal-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 40px;
+}
+
+/* Kartu Kepala Sekolah sedikit lebih besar */
+.principal-card {
+  min-width: 320px;
+  padding: 45px 35px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  box-shadow: 0 15px 35px -5px rgba(15, 23, 42, 0.08);
+}
+
+/* Foto Profil (Tanpa Bingkai Tebal) */
+.teacher-photo-light {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  background-color: var(--compreng-bg, #f8fafc); /* Tidak lagi warna merah melainkan keabuan */
+  margin-bottom: 20px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+}
+.principal-card .teacher-photo-light {
+  width: 140px;
+  height: 140px;
+}
+.teacher-photo-light img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* Tipografi Kartu */
+.teacher-name-light {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--compreng-text, #0f172a);
+  margin: 0 0 8px 0;
+  line-height: 1.3;
+}
+.teacher-role-light {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--compreng-text-secondary, #475569);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.highlight-role {
+  color: var(--compreng-accent, #2563eb); /* Biru terang khusus Kepala Sekolah */
+}

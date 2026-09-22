@@ -211,7 +211,7 @@ export default function ManagePengajar() {
         {filterRole && (userRole === 'admin') && (
            <button 
              onClick={() => handleDeleteRoleBatch(filterRole)}
-             style={{ background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
+             style={{ background: 'var(--compreng-surface-soft, #f1f5f9)', color: '#dc2626', border: '1px solid #fecaca', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
            >
              <Trash2 size={14} /> Hapus Mapel Ini
            </button>
@@ -244,7 +244,7 @@ export default function ManagePengajar() {
                       {item.photo ? (
                         <img src={item.photo} alt="Foto" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
                       ) : (
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--compreng-green)', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--compreng-green)', color: 'var(--compreng-accent-text, #ffffff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
                           {item.name.charAt(0).toUpperCase()}
                         </div>
                       )}

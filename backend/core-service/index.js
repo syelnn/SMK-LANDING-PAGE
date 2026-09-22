@@ -4,17 +4,23 @@ const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
 const { Pool } = require('pg');
 const { PrismaPg } = require('@prisma/adapter-pg');
-const { verifyToken, checkRole } = require('./middleware/authMiddleware');
 
 const connectionString = process.env.DATABASE_URL;
 const pool = new Pool({ connectionString });
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+const { verifyToken, checkRole } = require('./middleware/authMiddleware')(prisma);
+
 const app = express();
 const PORT = process.env.PORT || 5003;
 
-app.use(cors());
+app.disable('x-powered-by');
+app.use(cors({
+  origin: (process.env.CORS_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173').split(',').map((x) => x.trim()),
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 
 // Tes rute utama core-service

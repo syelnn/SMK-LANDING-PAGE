@@ -1,207 +1,163 @@
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-// Cukup panggil PrismaClient standar
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+
+const { verifyToken, checkRole } = require('./middleware/authMiddleware')(prisma);
+const onlyAdmin = [verifyToken, checkRole(['admin'])];
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-app.use(cors());
-app.use(express.json());
-// Route dasar pengecekan server
+const ROLES = ['admin', 'editor', 'viewer'];
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '8h';
+const PASSWORD_RULE = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+const EMAIL_RULE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const DUMMY_HASH = bcrypt.hashSync('dummy-password', 12); // anti timing-attack saat user tidak ada
+
+// Field aman untuk dikirim ke client (TIDAK PERNAH kirim hash password)
+const SAFE_USER = {
+  id: true, username: true, email: true, fullName: true, role: true,
+  isActive: true, lastLogin: true, createdAt: true,
+};
+
+// ===== Middleware global =====
+app.disable('x-powered-by');
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(cors({
+  origin: (process.env.CORS_ORIGIN || 'http://localhost:5173,http://127.0.0.1:5173').split(',').map((s) => s.trim()),
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
+app.use(express.json({ limit: '100kb' }));
+
+// Batasi percobaan brute-force (hanya percobaan GAGAL yang dihitung)
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  message: { success: false, message: 'Terlalu banyak percobaan. Coba lagi dalam 15 menit.' },
+});
+
+const signToken = (user) =>
+  jwt.sign({ id: user.id, username: user.username, role: user.role }, process.env.JWT_SECRET, {
+    algorithm: 'HS256',
+    expiresIn: JWT_EXPIRES_IN,
+  });
+
+const toClientUser = (u) => ({ id: u.id, username: u.username, fullName: u.fullName, email: u.email, role: u.role });
+
+const parseId = (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  if (!Number.isInteger(id)) { res.status(400).json({ success: false, message: 'ID tidak valid' }); return null; }
+  return id;
+};
+
 app.get('/', (req, res) => {
   res.json({ status: 'success', message: 'Auth Service siap melayani!' });
 });
 
-// Route Login Utama
-app.post('/api/auth/login', async (req, res) => {
+// ===== LOGIN =====
+app.post('/api/auth/login', authLimiter, async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const username = String(req.body.username || '').trim();
+    const password = String(req.body.password || '');
+    if (!username || !password) return res.status(400).json({ message: 'Username dan password wajib diisi!' });
 
-    // 1. Cari user di database berdasarkan username
-    const user = await prisma.user.findUnique({
-      where: { username: username }
-    });
+    const user = await prisma.user.findUnique({ where: { username } });
 
-    // Jika user tidak ditemukan
-    if (!user) {
-      return res.status(404).json({ message: 'Username tidak ditemukan!' });
+    // Selalu jalankan bcrypt supaya waktu respon sama (tidak bisa menebak username)
+    const isPasswordValid = await bcrypt.compare(password, user ? user.password : DUMMY_HASH);
+    if (!user || !isPasswordValid) {
+      return res.status(401).json({ message: 'Username atau password salah!' });
     }
 
-    // 2. CEK STATUS KEAKTIFAN AKUN (Tambah baris ini)
     if (user.isActive === 0 || user.isActive === false) {
       return res.status(403).json({ message: 'Akun Anda telah dinonaktifkan. Silakan hubungi Administrator.' });
     }
 
-    // 3. Cek kecocokan password (Bcrypt Node.js vs Bcrypt PHP)
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    
-    // Jika password salah
-    if (!isPasswordValid) {
-      return res.status(401).json({ message: 'Password yang dimasukkan salah!' });
-    }
+    prisma.user.update({ where: { id: user.id }, data: { lastLogin: new Date() } }).catch(() => {});
 
-    // 4. Buat JWT Token (Berisi ID, Username, dan Role)
-    const token = jwt.sign(
-      { 
-        id: user.id, 
-        username: user.username, 
-        role: user.role 
-      }, 
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-
-    // 5. Kirim respons sukses beserta token ke Frontend
     res.json({
       status: 'success',
       message: 'Login berhasil!',
-      data: {
-        token: token,
-        user: {
-          id: user.id,
-          username: user.username,
-          fullName: user.full_name,
-          role: user.role
-        }
-      }
+      data: { token: signToken(user), user: toClientUser(user) },
     });
-
   } catch (error) {
     console.error('Error saat login:', error);
     res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
   }
 });
-// Route Register Utama dengan Auto-Login
-app.post('/api/auth/register', async (req, res) => {
+
+// ===== CEK SESI (dipakai frontend untuk memvalidasi token ke server) =====
+app.get('/api/auth/me', verifyToken, (req, res) => {
+  res.json({ success: true, data: toClientUser(req.user) });
+});
+
+// ===== REGISTER =====
+app.post('/api/auth/register', authLimiter, async (req, res) => {
   try {
-    const { full_name, username, email, password } = req.body;
+    const fullName = String(req.body.full_name || '').trim();
+    const username = String(req.body.username || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const password = String(req.body.password || '');
 
-    // 1. Cek apakah username sudah dipakai
-    const existingUser = await prisma.user.findUnique({ where: { username } });
-    
-    if (existingUser) return res.status(400).json({ message: 'Username sudah terdaftar!' });
+    if (!fullName || !username || !email) return res.status(400).json({ message: 'Semua data wajib diisi!' });
+    if (!/^[a-zA-Z0-9_.-]{3,50}$/.test(username)) return res.status(400).json({ message: 'Username 3-50 karakter (huruf, angka, _ . -).' });
+    if (!EMAIL_RULE.test(email)) return res.status(400).json({ message: 'Format email tidak valid!' });
+    if (!PASSWORD_RULE.test(password)) return res.status(400).json({ message: 'Password minimal 8 karakter, wajib huruf besar, angka & simbol!' });
 
-    // 2. Hash password sebelum disimpan
-    const hashedPassword = await bcrypt.hash(password, 12);
+    const existing = await prisma.user.findFirst({ where: { OR: [{ username }, { email }] }, select: { username: true } });
+    if (existing) return res.status(400).json({ message: 'Username atau email sudah terdaftar!' });
 
-    // 3. Simpan ke database (Gunakan camelCase sesuai schema.prisma)
     const newUser = await prisma.user.create({
       data: {
-        fullName: full_name,
-        username: username,
-        email: email,
-        password: hashedPassword,
-        role: 'viewer', 
-        isActive: 1          
-      }
+        fullName, username, email,
+        password: await bcrypt.hash(password, 12),
+        role: 'viewer', // register publik SELALU viewer
+        isActive: 1,
+      },
     });
 
-    // 4. AUTO LOGIN: Langsung buatkan Token JWT
-    const token = jwt.sign(
-      { id: newUser.id, username: newUser.username, role: newUser.role },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
-    );
-
-    // 5. Kirim balasan sukses + token
     res.json({
       status: 'success',
       message: 'Registrasi dan Login berhasil!',
-      data: { token, user: { role: newUser.role } }
+      data: { token: signToken(newUser), user: toClientUser(newUser) },
     });
-
   } catch (error) {
     console.error('Error saat register:', error);
     res.status(500).json({ message: 'Terjadi kesalahan pada server.' });
   }
 });
 
-// API untuk mengambil semua daftar pengguna (Khusus Admin)
-app.get('/api/users', async (req, res) => {
+// ===== LUPA PASSWORD =====
+// Wajib username + email cocok. Akun admin/editor TIDAK boleh reset mandiri (harus lewat Admin).
+// Catatan: untuk keamanan penuh, ganti dengan OTP/link reset via email.
+app.post('/api/auth/forgot-password', authLimiter, async (req, res) => {
   try {
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        username: true,
-        email: true,
-        fullName: true,
-        role: true,
-        isActive: true,    // <--- WAJIB ADA AGAR STATUS MUNCUL
-        lastLogin: true,   // <--- WAJIB ADA AGAR TERAKHIR LOGIN MUNCUL
-        createdAt: true    // <--- Untuk tanggal pembuatan user jika lastLogin kosong
-      }
-    });
-    res.json({ success: true, data: users });
-  } catch (error) {
-    console.error('Gagal memuat users:', error);
-    res.status(500).json({ success: false, message: 'Gagal memuat data pengguna' });
-  }
-});
+    const username = String(req.body.username || '').trim();
+    const email = String(req.body.email || '').trim().toLowerCase();
+    const newPassword = String(req.body.newPassword || '');
 
-// API untuk mengubah role pengguna
-app.put('/api/users/:id/role', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { role } = req.body;
-
-    const updatedUser = await prisma.user.update({
-      where: { id: parseInt(id) },
-      data: { role: role }
-    });
-
-    res.json({ success: true, message: 'Role berhasil diubah', data: updatedUser });
-  } catch (error) {
-    res.status(500).json({ success: false, message: 'Gagal mengubah role' });
-  }
-});
-
-// API untuk Admin mereset password pengguna
-app.put('/api/users/:id/reset-password', async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { password } = req.body;
-
-    // Enkripsi password baru sebelum disimpan ke database
-    const hashedPassword = await bcrypt.hash(password, 12);
-
-    const updatedUser = await prisma.user.update({
-      where: { id: parseInt(id) },
-      data: { password: hashedPassword }
-    });
-
-    res.json({ success: true, message: 'Password pengguna berhasil direset!', data: updatedUser });
-  } catch (error) {
-    console.error('Error saat reset password:', error);
-    res.status(500).json({ success: false, message: 'Gagal mereset password' });
-  }
-});
-
-// API untuk Lupa Password (Langsung Ganti Tanpa OTP)
-app.post('/api/auth/forgot-password', async (req, res) => {
-  try {
-    const { username, newPassword } = req.body;
-
-    // 1. Cek apakah username terdaftar di database
-    const user = await prisma.user.findUnique({ where: { username } });
-    if (!user) {
-      return res.status(404).json({ success: false, message: 'Username tidak ditemukan di database!' });
+    if (!PASSWORD_RULE.test(newPassword)) {
+      return res.status(400).json({ success: false, message: 'Password minimal 8 karakter, wajib huruf besar, angka & simbol!' });
     }
 
-    // 2. Enkripsi password baru
-    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    const user = await prisma.user.findUnique({ where: { username } });
+    const ok = user && user.email.toLowerCase() === email && String(user.role).toLowerCase() === 'viewer';
+    if (!ok) {
+      return res.status(400).json({ success: false, message: 'Data tidak cocok, atau akun ini harus direset oleh Administrator.' });
+    }
 
-    // 3. Update password user tersebut
-    await prisma.user.update({
-      where: { username },
-      data: { password: hashedPassword }
-    });
-
+    await prisma.user.update({ where: { id: user.id }, data: { password: await bcrypt.hash(newPassword, 12) } });
     res.json({ success: true, message: 'Password berhasil diubah! Silakan login kembali.' });
   } catch (error) {
     console.error('Error saat lupa password:', error);
@@ -209,39 +165,76 @@ app.post('/api/auth/forgot-password', async (req, res) => {
   }
 });
 
-// API untuk menghapus pengguna berdasarkan ID
-app.delete('/api/users/:id', async (req, res) => {
+// ===== MANAJEMEN USER (KHUSUS ADMIN) =====
+app.get('/api/users', ...onlyAdmin, async (req, res) => {
   try {
-    const { id } = req.params;
-    await prisma.user.delete({
-      where: { id: parseInt(id) }
-    });
+    const users = await prisma.user.findMany({ select: SAFE_USER, orderBy: { id: 'asc' } });
+    res.json({ success: true, data: users });
+  } catch (error) {
+    console.error('Gagal memuat users:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data pengguna' });
+  }
+});
+
+app.put('/api/users/:id/role', ...onlyAdmin, async (req, res) => {
+  try {
+    const id = parseId(req, res); if (id === null) return;
+    const role = String(req.body.role || '').toLowerCase();
+    if (!ROLES.includes(role)) return res.status(400).json({ success: false, message: 'Role tidak valid' });
+    if (id === req.user.id && role !== req.user.role) return res.status(400).json({ success: false, message: 'Tidak dapat mengubah role akun sendiri' });
+
+    const data = await prisma.user.update({ where: { id }, data: { role }, select: SAFE_USER });
+    res.json({ success: true, message: 'Role berhasil diubah', data });
+  } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan' });
+    res.status(500).json({ success: false, message: 'Gagal mengubah role' });
+  }
+});
+
+app.put('/api/users/:id/reset-password', ...onlyAdmin, async (req, res) => {
+  try {
+    const id = parseId(req, res); if (id === null) return;
+    const password = String(req.body.password || '');
+    if (!PASSWORD_RULE.test(password)) return res.status(400).json({ success: false, message: 'Password minimal 8 karakter, wajib huruf besar, angka & simbol!' });
+
+    await prisma.user.update({ where: { id }, data: { password: await bcrypt.hash(password, 12) } });
+    res.json({ success: true, message: 'Password pengguna berhasil direset!' });
+  } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan' });
+    console.error('Error saat reset password:', error);
+    res.status(500).json({ success: false, message: 'Gagal mereset password' });
+  }
+});
+
+app.put('/api/users/:id/status', ...onlyAdmin, async (req, res) => {
+  try {
+    const id = parseId(req, res); if (id === null) return;
+    const isActive = Number(req.body.is_active) === 1 ? 1 : 0;
+    if (id === req.user.id && isActive === 0) return res.status(400).json({ success: false, message: 'Tidak dapat menonaktifkan akun sendiri' });
+
+    const data = await prisma.user.update({ where: { id }, data: { isActive }, select: SAFE_USER });
+    res.json({ success: true, message: 'Status keaktifan pengguna diperbarui', data });
+  } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan' });
+    console.error('Gagal update status:', error);
+    res.status(500).json({ success: false, message: 'Gagal mengubah status pengguna' });
+  }
+});
+
+app.delete('/api/users/:id', ...onlyAdmin, async (req, res) => {
+  try {
+    const id = parseId(req, res); if (id === null) return;
+    if (id === req.user.id) return res.status(400).json({ success: false, message: 'Tidak dapat menghapus akun sendiri' });
+
+    await prisma.user.delete({ where: { id } });
     res.json({ success: true, message: 'Pengguna berhasil dihapus' });
   } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Pengguna tidak ditemukan' });
     console.error('Error saat menghapus user:', error);
     res.status(500).json({ success: false, message: 'Gagal menghapus pengguna' });
   }
 });
 
-// Endpoint untuk mengubah status keaktifan user (Aktif/Nonaktif)
-app.put('/api/users/:id/status', async (req, res) => {
-  try {
-    const { is_active } = req.body;
-    const updatedUser = await prisma.user.update({
-      where: { id: parseInt(req.params.id) },
-      data: { isActive: Number(is_active) } // Ubah jadi 1 (aktif) atau 0 (nonaktif)
-    });
-    res.json({ success: true, message: 'Status keaktifan pengguna diperbarui', data: updatedUser });
-  } catch (error) {
-    console.error("Gagal update status:", error);
-    res.status(500).json({ success: false, message: 'Gagal mengubah status pengguna' });
-  }
-});
-
-
-
-
-// Menyalakan server
 app.listen(PORT, () => {
   console.log(`🚀 Auth Service berjalan di http://localhost:${PORT}`);
 });

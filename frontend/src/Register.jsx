@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import { Eye, EyeOff, CheckCircle, User, Calendar, Key } from 'lucide-react';
+import { saveSession } from './utils/auth';
 import './App.css'; 
 
 export default function Register() {
@@ -16,6 +17,11 @@ export default function Register() {
   const [registerTime, setRegisterTime] = useState('');
 
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Halaman tujuan setelah daftar (mis. "/testimoni/tulis"); default ke beranda
+  const from = location.state?.from;
+  const nextPath = from || '/';
 
   const isPasswordValid = formData.password === '' || (
     formData.password.length >= 8 &&
@@ -41,8 +47,8 @@ export default function Register() {
         password: formData.password
       });
 
-      localStorage.setItem('token', response.data.data.token);
-      localStorage.setItem('role', response.data.data.user.role);
+      saveSession({ token: response.data.data.token, user: response.data.data.user });
+      localStorage.setItem('fullName', formData.fullName);
       
       const now = new Date();
       setRegisterTime(now.toLocaleString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }));
@@ -59,10 +65,10 @@ export default function Register() {
     if (isSuccess && countdown > 0) {
       interval = setInterval(() => setCountdown((prev) => prev - 1), 1000);
     } else if (isSuccess && countdown === 0) {
-      navigate('/admin');
+      navigate(nextPath, { replace: true });
     }
     return () => clearInterval(interval);
-  }, [isSuccess, countdown, navigate]);
+  }, [isSuccess, countdown, navigate, nextPath]);
 
   const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
@@ -109,8 +115,8 @@ export default function Register() {
             </div>
           </div>
 
-          <button className="auth-button success-btn" disabled>
-            Mulai login dengan akun ini ({countdown})
+          <button className="auth-button success-btn" onClick={() => navigate(nextPath, { replace: true })}>
+            {from ? 'Lanjut menulis testimoni' : 'Ke beranda'} ({countdown})
           </button>
         </div>
       </div>
@@ -179,7 +185,7 @@ export default function Register() {
         </form>
 
         <p className="footer-text">
-          Sudah punya akun? <Link to="/login" className="auth-link">Login di sini</Link>
+          Sudah punya akun? <Link to="/login" state={location.state} className="auth-link">Login di sini</Link>
         </p>
         <p className="back-home">
           <Link to="/">← KEMBALI KE BERANDA</Link>

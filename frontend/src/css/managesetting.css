@@ -381,3 +381,237 @@
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
+
+/* =========================================
+   BENTO THEME CARDS
+   ========================================= */
+.bento-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 10px;
+}
+
+.bento-card {
+  background: var(--compreng-surface);
+  border: 2px solid var(--compreng-border);
+  border-radius: 16px;
+  padding: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+}
+
+.bento-card:hover {
+  border-color: var(--compreng-border, #e2e8f0);
+  transform: translateY(-2px);
+}
+
+.bento-card.active {
+  border-color: var(--compreng-accent, #2563eb);
+  background: var(--compreng-surface-soft, #f1f5f9); /* Background biru sangat soft jika aktif */
+}
+
+/* Mengubah warna jika mode gelap aktif */
+[data-theme='dark'] .bento-card.active {
+  background: var(--compreng-accent-hover, #1d4ed8);
+}
+
+.bento-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.bento-card h4 {
+  margin: 0 0 6px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--compreng-text);
+}
+
+.bento-card p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--compreng-text-secondary);
+  line-height: 1.4;
+}
+
+/* =========================================
+   SHADCN STYLE THEME SELECTOR
+   ========================================= */
+.shadcn-theme-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 24px;
+  margin-top: 16px;
+}
+
+.shadcn-theme-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.shadcn-theme-box {
+  position: relative;
+  width: 160px;
+  height: 104px;
+  border: 2px solid var(--compreng-border);
+  border-radius: 10px;
+  background-color: var(--compreng-surface-soft); /* Warna abu-abu background luar */
+  padding: 8px;
+  transition: all 0.2s ease;
+}
+
+/* Warna border aktif (Hitam di Light Mode, Putih di Dark Mode) */
+.shadcn-theme-box.active {
+  border-color: var(--compreng-text); 
+}
+
+/* Icon Checklist Shadcn (muncul saat aktif) */
+.shadcn-check-icon {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: var(--compreng-text);
+  color: var(--compreng-bg);
+  border-radius: 50%;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.shadcn-theme-label {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--compreng-text);
+}
+
+/* =========================================
+   MOCKUP UI (WIREFRAME MINI)
+   ========================================= */
+.mock-ui {
+  width: 100%;
+  height: 100%;
+  border-radius: 6px;
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.mock-sidebar {
+  width: 30%;
+  height: 100%;
+  border-radius: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mock-line {
+  height: 6px;
+  border-radius: 3px;
+  width: 100%;
+}
+
+.mock-line.short { width: 60%; }
+.mock-line.circle { width: 14px; height: 14px; border-radius: 50%; }
+
+.mock-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mock-header {
+  height: 14px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0 4px;
+}
+
+.mock-card-container {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+}
+
+.mock-card {
+  flex: 1;
+  border-radius: 4px;
+}
+
+/* =========================================
+   ANIMASI SPINNER LOADING (LUCIDE)
+   ========================================= */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* =========================================
+   MODERN TOAST NOTIFICATION CARD
+   ========================================= */
+.modern-toast-card {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  background-color: var(--compreng-surface, var(--compreng-surface, #ffffff));
+  border: 1px solid var(--compreng-border, var(--compreng-border, #e2e8f0));
+  border-radius: 12px;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.2);
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 24px;
+  z-index: 999999;
+  animation: slideInUpToast 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  min-width: 250px;
+}
+
+/* Garis aksen hijau/merah di sebelah kiri kartu */
+.modern-toast-card.success {
+  border-left: 6px solid #16a34a;
+}
+.modern-toast-card.error {
+  border-left: 6px solid #dc2626;
+}
+
+.modern-toast-content h4 {
+  margin: 0 0 4px 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--compreng-text, var(--compreng-text, #0f172a));
+}
+
+.modern-toast-content p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--compreng-text-secondary, var(--compreng-text-secondary, #475569));
+  line-height: 1.4;
+}
+
+@keyframes slideInUpToast {
+  0% { transform: translateY(100px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}

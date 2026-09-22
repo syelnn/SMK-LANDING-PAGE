@@ -240,7 +240,10 @@ export default function Galeri() {
     }
   };
 
-  const albumKeys = Object.keys(groupedGalleries).filter(key => key.toLowerCase().includes(searchTerm.toLowerCase()));
+  // Urutkan abjad secara paten agar saat album diedit, posisinya tidak melompat ke bawah
+  const albumKeys = Object.keys(groupedGalleries)
+    .filter(key => key.toLowerCase().includes(searchTerm.toLowerCase()))
+    .sort((a, b) => a.localeCompare(b));
   const currentAlbumPhotos = selectedAlbum ? (groupedGalleries[selectedAlbum] || []).filter(p => (p.caption || '').toLowerCase().includes(searchTerm.toLowerCase())) : [];
 
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat Galeri...</div>;
