@@ -74,7 +74,8 @@
 .navbar-menu {
   display: flex;
   align-items: center;
-  gap: 0.2rem;
+  gap: 0.35rem;
+  margin-left: 2.25rem; /* jarak aman dari logo & brand */
   list-style: none;
   margin: 0;
   padding: 0;
@@ -249,6 +250,7 @@
   }
   .navbar-menu {
     gap: 0.15rem;
+    margin-left: 1rem;
   }
   .nav-link, .dropdown-btn {
     font-size: 0.78rem;
@@ -363,4 +365,203 @@ html {
 .nav-link,
 .dropdown-btn {
   transition: color 0.3s ease, background-color 0.3s ease;
+}
+
+/* =========================================================
+   PROFIL VIEWER DI NAVBAR  (pakai class baru: .nv-user*)
+   Latar benar-benar TRANSPARAN. Kartu putih hanya saat diklik.
+   ========================================================= */
+nav.viewer-navbar li.nv-user {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-left: 0.6rem;
+  background: none !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Trigger + seluruh isinya: tanpa latar, border, dan bayangan */
+nav.viewer-navbar li.nv-user > button.nv-user__trigger,
+nav.viewer-navbar li.nv-user > button.nv-user__trigger > span,
+nav.viewer-navbar li.nv-user > button.nv-user__trigger span span {
+  background: none !important;
+  background-color: transparent !important;
+  background-image: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 6px;
+  border-radius: 10px;
+  cursor: pointer;
+  outline: none;
+  font-family: inherit;
+  transition: background-color 0.2s ease;
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Teks nama & email */
+nav.viewer-navbar li.nv-user .nv-user__text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.25;
+  text-align: right;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #ffffff !important;
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__email {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.85) !important;
+  opacity: 1;
+  max-width: 170px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Avatar: satu-satunya elemen yang boleh punya latar */
+nav.viewer-navbar li.nv-user .nv-user__avatar-wrap {
+  position: relative;
+  display: inline-flex;
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger .nv-user__avatar-wrap .nv-user__avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #14532d !important;
+  background-color: #14532d !important;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger .nv-user__avatar-wrap .nv-user__dot {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #22c55e !important;
+  background-color: #22c55e !important;
+  border: 2px solid var(--compreng-nav-bg, #0f172a) !important;
+}
+
+/* Kartu dropdown (muncul saat diklik) */
+nav.viewer-navbar li.nv-user .nv-user__menu {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  width: 220px;
+  padding: 12px;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  z-index: 1200;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-head {
+  padding: 2px 6px 6px 6px;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: #0f172a;
+  word-break: break-word;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-email {
+  margin: 2px 0 0 0;
+  font-size: 11px;
+  color: #64748b;
+  word-break: break-word;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__divider {
+  height: 1px;
+  background-color: #f1f5f9;
+  margin: 8px 0;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__logout {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background-color: transparent;
+  border: none;
+  border-radius: 8px;
+  color: #ef4444;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__logout:hover {
+  background-color: #fef2f2;
+}
+
+/* Mobile: profil mengikuti lebar menu */
+@media (max-width: 868px) {
+  nav.viewer-navbar li.nv-user {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 0.6rem;
+  }
+  nav.viewer-navbar li.nv-user > button.nv-user__trigger {
+    width: 100%;
+    justify-content: space-between;
+    padding: 6px 0;
+  }
+  nav.viewer-navbar li.nv-user .nv-user__text {
+    align-items: flex-start;
+    text-align: left;
+  }
+  nav.viewer-navbar li.nv-user .nv-user__menu {
+    position: static;
+    width: 100%;
+    margin-top: 8px;
+  }
+}
+
+/* Mobile: menu berubah jadi drawer, jarak ke logo tidak diperlukan */
+@media (max-width: 868px) {
+  .viewer-navbar .navbar-menu {
+    margin-left: 0;
+    gap: 0.8rem;
+  }
 }
