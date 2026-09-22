@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-const KEYS = ['token', 'role', 'userId', 'username', 'fullName'];
+const KEYS = ['token', 'role', 'userId', 'username', 'fullName', 'email'];
 const LEGACY_KEYS = ['user', 'name', 'email', 'userEmail']; // sisa key lama
 
 export const decodeToken = (token) => {
@@ -29,7 +29,8 @@ export const getSession = () => {
   return {
     token,
     id: payload.id,
-    username: payload.username || '',
+    username: payload.username || localStorage.getItem('username') || '',
+    email: localStorage.getItem('email') || '',
     role: String(payload.role || localStorage.getItem('role') || '').toLowerCase(),
     name: localStorage.getItem('fullName') || payload.username || '',
   };
@@ -45,11 +46,15 @@ export const saveSession = ({ token, user = {} }) => {
   const id = user.id ?? payload.id;
   if (id != null) localStorage.setItem('userId', String(id));
 
+  // Data ASLI dari server (bukan hasil rekayasa/tebakan) -> dipakai di semua tampilan profil
   const username = user.username || payload.username;
   if (username) localStorage.setItem('username', username);
 
   const fullName = user.fullName || user.full_name;
   if (fullName) localStorage.setItem('fullName', fullName);
+
+  const email = user.email;
+  if (email) localStorage.setItem('email', email);
 };
 
 export const clearSession = () => [...KEYS, ...LEGACY_KEYS].forEach((k) => localStorage.removeItem(k));
@@ -94,6 +99,7 @@ export const verifySession = async () => {
     localStorage.setItem('userId', String(user.id));
     if (user.username) localStorage.setItem('username', user.username);
     if (user.fullName) localStorage.setItem('fullName', user.fullName);
+    if (user.email) localStorage.setItem('email', user.email);
 
     return { ok: true, user: { ...user, role: String(user.role || 'viewer').toLowerCase() } };
   } catch (err) {

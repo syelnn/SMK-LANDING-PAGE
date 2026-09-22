@@ -447,92 +447,157 @@ nav.viewer-navbar li.nv-user .nv-user__avatar-wrap {
 }
 
 nav.viewer-navbar li.nv-user > button.nv-user__trigger .nv-user__avatar-wrap .nv-user__avatar {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: #14532d !important;
-  background-color: #14532d !important;
-  color: #ffffff;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 92%, white 8%),
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 78%, black 22%)
+  ) !important;
+  color: #ffffff !important;
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 14px;
   font-weight: 700;
+  letter-spacing: 0.2px;
   text-transform: uppercase;
-  border: 1.5px solid rgba(255, 255, 255, 0.35) !important;
+  border: 2px solid color-mix(in srgb, var(--compreng-nav-bg, #0f172a) 60%, white 40%);
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 35%, transparent),
+    0 4px 10px -2px rgba(0, 0, 0, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+nav.viewer-navbar li.nv-user > button.nv-user__trigger:hover .nv-user__avatar-wrap .nv-user__avatar {
+  transform: translateY(-1px) scale(1.04);
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 45%, transparent),
+    0 6px 14px -2px rgba(0, 0, 0, 0.4);
 }
 
 nav.viewer-navbar li.nv-user > button.nv-user__trigger .nv-user__avatar-wrap .nv-user__dot {
+  --dot: #22c55e;
   position: absolute;
-  right: 0;
-  bottom: 0;
-  width: 9px;
-  height: 9px;
+  right: -1px;
+  bottom: -1px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   background: #22c55e !important;
-  background-color: #22c55e !important;
-  border: 2px solid var(--compreng-nav-bg, #0f172a) !important;
+  border: 2px solid var(--compreng-nav-bg, #0f172a);
+  animation: comprengDotPulse 2.4s ease-in-out infinite;
 }
 
-/* Kartu dropdown (muncul saat diklik) */
+/* Kartu dropdown (muncul saat diklik) — ikut warna tema aktif, bukan putih mati */
 nav.viewer-navbar li.nv-user .nv-user__menu {
   position: absolute;
-  top: calc(100% + 12px);
+  top: calc(100% + 14px);
   right: 0;
-  width: 220px;
-  padding: 12px;
-  background-color: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  width: 232px;
+  padding: 8px;
+  background-color: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #eef1f5);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px -12px rgba(15, 23, 42, 0.35), 0 4px 12px -4px rgba(15, 23, 42, 0.18);
   z-index: 1200;
+  transform-origin: top right;
+  animation: nvUserMenuIn 0.16s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@keyframes nvUserMenuIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 nav.viewer-navbar li.nv-user .nv-user__menu-head {
-  padding: 2px 6px 6px 6px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 12px 8px;
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-avatar {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 92%, white 8%),
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 78%, black 22%)
+  );
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 25%, transparent);
+}
+
+nav.viewer-navbar li.nv-user .nv-user__menu-info {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 
 nav.viewer-navbar li.nv-user .nv-user__menu-name {
   margin: 0;
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
-  color: #0f172a;
-  word-break: break-word;
+  color: var(--compreng-text, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 nav.viewer-navbar li.nv-user .nv-user__menu-email {
   margin: 2px 0 0 0;
-  font-size: 11px;
-  color: #64748b;
-  word-break: break-word;
+  font-size: 11.5px;
+  color: var(--compreng-text-secondary, #64748b);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 nav.viewer-navbar li.nv-user .nv-user__divider {
   height: 1px;
-  background-color: #f1f5f9;
-  margin: 8px 0;
+  background-color: var(--compreng-border, #eef1f5);
+  margin: 2px 4px 6px 4px;
 }
 
 nav.viewer-navbar li.nv-user .nv-user__logout {
+  --dot: #ef4444;
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 9px 10px;
   background-color: transparent;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   color: #ef4444;
   font-family: inherit;
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
 }
 
 nav.viewer-navbar li.nv-user .nv-user__logout:hover {
-  background-color: #fef2f2;
+  background-color: color-mix(in srgb, #ef4444 12%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, #ef4444 30%, transparent);
+  transform: translateX(1px);
 }
 
 /* Mobile: profil mengikuti lebar menu */

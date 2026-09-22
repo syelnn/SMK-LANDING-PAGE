@@ -27,28 +27,20 @@ const Navbar = () => {
   const activePathRef = useRef(location.pathname);
   const [activePath, setActivePath] = useState(location.pathname);
 
-  // Synchronize status Login User dari LocalStorage (Mendukung key: fullName, username, token, role)
+  // Synchronize status Login User dari LocalStorage. Data yang dipakai SELALU data asli
+  // hasil login (disimpan oleh saveSession di utils/auth.js) -> username & email TIDAK
+  // pernah direka-reka (bukan lagi dari nama lengkap / "nama@gmail.com" palsu).
   const syncUserSession = useCallback(() => {
     const token = localStorage.getItem('token');
-    const storedUserRaw = localStorage.getItem('user');
-    const name = localStorage.getItem('fullName') || localStorage.getItem('username') || localStorage.getItem('name');
+    const username = localStorage.getItem('username');
+    const email = localStorage.getItem('email');
     const role = localStorage.getItem('role');
 
-    if (token && (storedUserRaw || name)) {
-      let userData = null;
-
-      if (storedUserRaw) {
-        try {
-          userData = JSON.parse(storedUserRaw);
-        } catch (e) {
-          userData = { username: storedUserRaw };
-        }
-      }
-
+    if (token && username) {
       setUser({
-        username: userData?.username || userData?.name || name || 'Viewer',
-        email: userData?.email || localStorage.getItem('email') || `${(userData?.username || name || 'viewer').toLowerCase()}@gmail.com`,
-        role: userData?.role || role || 'viewer'
+        username,
+        email: email || 'Email tidak tersedia',
+        role: role || 'viewer'
       });
     } else {
       setUser(null);
@@ -491,8 +483,13 @@ const Navbar = () => {
                 {profileDropdownOpen && (
                   <div className="nv-user__menu" role="menu">
                     <div className="nv-user__menu-head">
-                      <p className="nv-user__menu-name">{user.username || 'Viewer'}</p>
-                      <p className="nv-user__menu-email">{user.email}</p>
+                      <span className="nv-user__menu-avatar">
+                        {(user.username || 'V').charAt(0).toUpperCase()}
+                      </span>
+                      <span className="nv-user__menu-info">
+                        <p className="nv-user__menu-name">{user.username || 'Viewer'}</p>
+                        <p className="nv-user__menu-email">{user.email}</p>
+                      </span>
                     </div>
                     <div className="nv-user__divider"></div>
                     <button type="button" className="nv-user__logout" onClick={handleLogout}>

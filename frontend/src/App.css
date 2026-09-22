@@ -34,29 +34,31 @@ body, html, #root {
    2. GLOBAL AUTHENTICATION STYLES
    ========================================= */
 /* ... (Bagian Login/Register tetap sama) ... */
-.auth-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: #f4f7f6; padding: 20px; }
-.auth-card { background-color: white; padding: 40px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); width: 100%; max-width: 400px; text-align: center; }
-.auth-logo { width: 80px; margin-bottom: 15px; border-radius: 50%; }
-.auth-title { margin: 15px 0 5px 0; font-size: 22px; font-weight: bold; color: #1a1a1a; }
+.auth-container { display: flex; justify-content: center; align-items: center; min-height: 100vh; background-color: var(--compreng-bg, #f4f7f6); padding: 20px; }
+.auth-card { background-color: var(--compreng-surface, #ffffff); padding: 40px; border-radius: 16px; box-shadow: 0 4px 20px var(--compreng-shadow, rgba(0,0,0,0.05)); border: 1px solid var(--compreng-border, transparent); width: 100%; max-width: 400px; text-align: center; }
+/* Logo sudah transparan (bg dihapus) -> jangan dikasih background/circle putih lagi supaya tetap nyatu di tema dark */
+.auth-logo { width: 80px; height: 80px; object-fit: contain; margin-bottom: 15px; background: transparent; border-radius: 0; }
+.auth-title { margin: 15px 0 5px 0; font-size: 22px; font-weight: bold; color: var(--compreng-text, #1a1a1a); }
 .auth-title.login-title { margin: 0 0 5px 0; }
-.auth-subtitle { margin: 0 0 25px 0; font-size: 13px; color: #6b7280; }
+.auth-subtitle { margin: 0 0 25px 0; font-size: 13px; color: var(--compreng-text-secondary, #6b7280); }
 .form-group { text-align: left; margin-bottom: 15px; }
-.form-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; color: #6b7280; margin-bottom: 8px; text-transform: uppercase; }
+.form-label { display: flex; justify-content: space-between; font-size: 11px; font-weight: bold; color: var(--compreng-text-secondary, #6b7280); margin-bottom: 8px; text-transform: uppercase; }
 .input-wrapper { position: relative; }
-.form-input { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid transparent; background-color: #f3f4f6; font-size: 14px; box-sizing: border-box; outline: none; color: #1a1a1a; }
-.form-input.error { border: 1px solid #ef4444; background-color: #fef2f2; }
-.eye-icon { position: absolute; right: 15px; top: 10px; cursor: pointer; color: #9ca3af; display: flex; align-items: center; }
-.error-message { color: white; background-color: #ef4444; padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; }
-.error-message.login-error { background-color: transparent; color: red; font-size: 13px; padding: 0; }
+.form-input { width: 100%; padding: 12px 15px; border-radius: 8px; border: 1px solid var(--compreng-border, transparent); background-color: var(--compreng-surface-soft, #f3f4f6); font-size: 14px; box-sizing: border-box; outline: none; color: var(--compreng-text, #1a1a1a); }
+.form-input.error { border: 1px solid #ef4444; background-color: #fef2f2; color: #1a1a1a; }
+.eye-icon { position: absolute; right: 15px; top: 10px; cursor: pointer; color: var(--compreng-text-secondary, #9ca3af); display: flex; align-items: center; }
+/* Alert error (salah username/password saat login, password kurang aman saat register) -> selalu merah & jelas di semua tema */
+.error-message { color: #ffffff; background-color: #ef4444; padding: 8px; border-radius: 6px; font-size: 12px; margin-bottom: 15px; }
+.error-message.login-error { background-color: rgba(239, 68, 68, 0.12); color: #ef4444; font-size: 13px; padding: 8px 10px; border-radius: 6px; font-weight: 600; }
 .field-error-text { font-size: 11px; color: #ef4444; margin-top: 5px; font-weight: bold; }
-.auth-button { width: 100%; padding: 14px; border-radius: 8px; border: none; background-color: #2563eb; color: white; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
-.auth-button.success-btn { background-color: #2563eb; margin-top: 25px; }
-.auth-link { color: #2563eb; text-decoration: none; font-weight: bold; }
+.auth-button { width: 100%; padding: 14px; border-radius: 8px; border: none; background-color: var(--compreng-accent, #2563eb); color: var(--compreng-accent-text, #ffffff); font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+.auth-button.success-btn { background-color: var(--compreng-accent, #2563eb); margin-top: 25px; }
+.auth-link { color: var(--compreng-accent, #2563eb); text-decoration: none; font-weight: bold; }
 .forgot-password { font-size: 10px; }
-.footer-text { font-size: 13px; color: #6b7280; margin-top: 25px; }
+.footer-text { font-size: 13px; color: var(--compreng-text-secondary, #6b7280); margin-top: 25px; }
 .back-home { font-size: 11px; margin-top: 10px; }
-.back-home a { color: #9ca3af; text-decoration: none; }
-.success-box { background-color: #fafafa; border-radius: 12px; padding: 20px; text-align: left; margin-top: 20px; border: 1px solid #f3f4f6; }
+.back-home a { color: var(--compreng-text-secondary, #9ca3af); text-decoration: none; }
+.success-box { background-color: var(--compreng-surface-soft, #fafafa); border-radius: 12px; padding: 20px; text-align: left; margin-top: 20px; border: 1px solid var(--compreng-border, #f3f4f6); }
 .success-row { display: flex; align-items: center; border-bottom: 1px dashed #e5e7eb; padding-bottom: 12px; margin-bottom: 12px; }
 .success-row.last { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
 .success-icon-box { width: 42px; height: 42px; background-color: #ffffff; border: 1px solid #f3f4f6; border-radius: 10px; display: flex; justify-content: center; align-items: center; margin-right: 15px; }

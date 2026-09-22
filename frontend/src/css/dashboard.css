@@ -173,33 +173,41 @@
   flex-shrink: 0;
 }
 
-/* Dropdown Menu User Profil */
+/* Dropdown Menu User Profil (modern & lembut di mata) */
 .topbar-dropdown {
   position: absolute;
   right: 0;
-  top: calc(100% + 15px);
-  width: 220px; /* Lebar pas seperti Shadcn */
+  top: calc(100% + 12px);
+  width: 240px;
   background: var(--compreng-surface);
   border: 1px solid var(--compreng-border);
-  border-radius: 8px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-  padding: 4px; /* Padding luar dipertipis */
+  border-radius: 14px;
+  box-shadow: 0 16px 36px -12px var(--compreng-shadow, rgba(0,0,0,0.18)), 0 4px 10px rgba(0,0,0,0.05);
+  padding: 6px;
   z-index: 50;
+  overflow: hidden;
+  animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .topbar-dropdown-header {
-  padding: 12px 14px;
-  border-bottom: 1px solid var(--compreng-border);
-  margin-bottom: 4px;
+  padding: 12px 12px;
+  margin: 2px 2px 6px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--compreng-accent) 8%, transparent);
   display: flex;
   flex-direction: column;
-  gap: 2px; /* Jarak sangat rapat antara nama dan email */
+  gap: 2px;
 }
 
 .topbar-dropdown-name {
   margin: 0;
   font-size: 14px;
-  font-weight: 600; /* Teks nama lebih tebal */
+  font-weight: 600;
   color: var(--compreng-text);
   line-height: 1.2;
 }
@@ -207,38 +215,41 @@
 .topbar-dropdown-email {
   margin: 0;
   font-size: 12px;
-  color: var(--compreng-text-muted); /* Teks email lebih kecil & redup */
+  color: var(--compreng-text-muted);
   line-height: 1.2;
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* Terpotong rapi jika email terlalu panjang */
+  text-overflow: ellipsis;
 }
 
 .topbar-dropdown-item {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 8px; /* Jarak ikon dan teks */
-  padding: 8px 12px; /* Padding atas bawah dipertipis */
+  gap: 10px;
+  padding: 9px 12px;
   background: transparent;
   border: none;
-  color: var(--compreng-text);
-  font-size: 13px; /* Font size diturunkan sedikit */
+  color: var(--compreng-text-secondary, var(--compreng-text));
+  font-size: 13px;
+  font-weight: 500;
   cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.2s;
+  border-radius: 9px;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .topbar-dropdown-item:hover {
-  background: var(--compreng-surface-soft);
+  background: color-mix(in srgb, var(--compreng-accent) 10%, transparent);
+  color: var(--compreng-accent);
 }
 
 .topbar-dropdown-item.danger {
-  color: #dc2626;
+  color: #ef4444;
 }
 
 .topbar-dropdown-item.danger:hover {
-  background: var(--compreng-surface-soft, #f1f5f9);
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
 }
 
 /* =========================================

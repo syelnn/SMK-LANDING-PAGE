@@ -306,19 +306,16 @@ const DashboardLayout = () => {
 
   const getExactUser = () => {
     const token = localStorage.getItem('token');
-    
-    // Fallback dari LocalStorage jika token tidak valid
-    let storedUserRaw = localStorage.getItem('user');
-    let parsedUser = {};
-    try {
-      if (storedUserRaw) parsedUser = JSON.parse(storedUserRaw);
-    } catch (e) {}
 
-    let exactName = localStorage.getItem('username') || localStorage.getItem('name') || parsedUser.name || parsedUser.username || 'User';
-    let exactEmail = localStorage.getItem('email') || localStorage.getItem('userEmail') || parsedUser.email || '-';
-    let exactRole = localStorage.getItem('role') || parsedUser.role || 'VIEWER';
+    // Data ASLI hasil login/register (disimpan oleh saveSession di utils/auth.js).
+    // Username & email di sini SELALU nilai asli dari database lewat backend,
+    // tidak pernah direka-reka (mis. "namadepan@gmail.com").
+    let exactUsername = localStorage.getItem('username') || 'user';
+    let exactEmail = localStorage.getItem('email') || '';
+    let exactRole = localStorage.getItem('role') || 'viewer';
 
-    // Coba decode payload JWT
+    // JWT hanya berisi { id, username, role } (lihat auth-service), jadi hanya dipakai
+    // sebagai fallback role/username kalau localStorage kosong -> BUKAN sumber email.
     if (token && token.split('.').length === 3) {
       try {
         const base64Url = token.split('.')[1];
@@ -326,8 +323,7 @@ const DashboardLayout = () => {
         const jsonPayload = decodeURIComponent(window.atob(base64).split('').map(c => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2)).join(''));
         const decoded = JSON.parse(jsonPayload);
 
-        exactName = decoded.name || decoded.nama_lengkap || decoded.full_name || decoded.username || exactName;
-        exactEmail = decoded.email || decoded.userEmail || decoded.mail || (decoded.username && decoded.username.includes('@') ? decoded.username : exactEmail);
+        if (!localStorage.getItem('username') && decoded.username) exactUsername = decoded.username;
         exactRole = localStorage.getItem('role') || decoded.role || exactRole;
       } catch (e) {
         console.error("Token JWT tidak valid atau rusak", e);
@@ -335,10 +331,10 @@ const DashboardLayout = () => {
     }
 
     return {
-      name: exactName,
-      email: exactEmail !== '-' ? exactEmail : (exactName.includes('@') ? exactName : `${exactName.toLowerCase().replace(/\s+/g, '')}@gmail.com`),
+      name: exactUsername,
+      email: exactEmail || 'Email tidak tersedia',
       role: (exactRole || 'VIEWER').toUpperCase(),
-      initial: exactName ? exactName.charAt(0).toUpperCase() : 'U'
+      initial: exactUsername ? exactUsername.charAt(0).toUpperCase() : 'U'
     };
   };
   

@@ -134,7 +134,7 @@ export default function Sidebar({
 
           const filteredData = resData.data.filter(m => {
             const titleLower = m.title.toLowerCase();
-            if (titleLower.includes('profil') || titleLower.includes('kontak')) {
+            if (titleLower.includes('profil') || titleLower.includes('kontak') || titleLower.includes('lainnya')) {
               return false;
             }
             return true;
@@ -186,14 +186,12 @@ export default function Sidebar({
   const userRole = (userData?.role || 'VIEWER').toUpperCase();
   const allowedMenus = activeMenuList.filter(item => item.roles ? item.roles.map(r => r.toUpperCase()).includes(userRole) : true);
 
-  const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const rawName = userData?.name || savedUser?.name || savedUser?.username || 'user';
-  const cleanedName = rawName.toLowerCase().replace(/\s+/g, '');
+  // Data profil di footer sidebar SELALU ikut data asli yang dikirim DashboardLayout
+  // (userData berasal dari getExactUser() di App.jsx, sumbernya localStorage hasil login
+  // asli / verifikasi server) -> tidak ada lagi email rekaan seperti "nama@gmail.com".
+  const userEmail = userData?.email || 'Email tidak tersedia';
 
-  const userEmail = (userData?.email && userData.email !== '-' && userData.email !== '')
-    ? userData.email
-    : (savedUser?.email || localStorage.getItem('email') || `${cleanedName}@gmail.com`);
-    
+
   return (
     <div className={`dashboard-sidebar ${isMobileMenuOpen ? 'mobile-open' : ''} ${!isSidebarVisible ? 'sidebar-mini' : ''}`}>
       

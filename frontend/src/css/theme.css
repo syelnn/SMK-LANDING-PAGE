@@ -399,9 +399,18 @@ input, select, textarea, input[type="file"] {
   border: 1px solid var(--compreng-border, #e2e8f0) !important;
 }
 
-button[class*="active"], .tab-btn.active {
+.ekskul-tab-btn.active, .radio-tab.active, .tab-btn.active, [role="tab"].active,
+.ms-toggle-btn.active, .toggle-btn.active {
   background-color: var(--compreng-accent, #2563eb) !important;
   color: var(--compreng-accent-text, #ffffff) !important;
+}
+
+/* Tombol akun di footer sidebar admin: pil transparan senada aksen (sama
+   seperti item menu aktif lainnya), BUKAN kotak solid warna surface — supaya
+   konsisten di System/Custom (dulu jadi kotak hijau muda mencolok). */
+.dashboard-sidebar .sidebar-user-btn.active,
+.dashboard-sidebar .sidebar-user-btn:hover {
+  background-color: color-mix(in srgb, var(--dot, var(--compreng-accent)) 12%, transparent) !important;
 }
 
 /* ==========================================================================
@@ -860,12 +869,22 @@ img, video, iframe { background-color: transparent !important; }
    sehingga logo transparan tampil dengan kotak berwarna di belakangnya. */
 [class*="-img"]:not(svg):not([class*="logo"]):not([class*="graphic"]),
 [class*="-image"]:not(svg):not([class*="logo"]):not([class*="graphic"]),
-[class*="thumb"]:not(svg), [class*="avatar"]:not(svg) {
+[class*="thumb"]:not(svg), [class*="avatar"]:not(svg):not([class*="user-avatar"]) {
   background-color: var(--compreng-surface-soft) !important;
   border-color: var(--compreng-border) !important;
 }
 [class*="logo"] img, img[class*="logo"], img[class*="graphic"] {
   background: transparent !important;
+}
+
+/* [FIX] Kotak inisial profil (sidebar-user-avatar) BUKAN thumbnail foto, jadi tidak boleh
+   ikut ketimpa jadi --compreng-surface-soft (nyaris putih di tema Light/System -> inisial
+   "hilang"). Kunci lagi di sini (paling bawah file = menang cascade) supaya selalu kontras
+   tinggi: kotak gelap/terang mengikuti teks tema, huruf inisial mengikuti latar tema. */
+.sidebar-user-avatar {
+  background-color: var(--compreng-text) !important;
+  color: var(--compreng-bg) !important;
+  border-color: transparent !important;
 }
 
 /* --- 7.12 MODAL: konsisten di semua tema -------------------------------- */

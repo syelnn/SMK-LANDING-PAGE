@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
 import { saveSession, homeFor } from './utils/auth';
+import logoSekolah from './assets/logo1.png';
 import './App.css';
 
 export default function Login() {
@@ -46,7 +47,7 @@ export default function Login() {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <img src="https://yt3.googleusercontent.com/ytc/AIdro_kgxgSlJ__b2JUfQ_stLFyVrcgM8-5y1n27pRHQUodzkA=s900-c-k-c0x00ffffff-no-rj" alt="Logo" className="auth-logo" />
+        <img src={logoSekolah} alt="Logo" className="auth-logo" />
         <h2 className="auth-title login-title">Selamat Datang</h2>
         <p className="auth-subtitle">
           {isTestimoniFlow
