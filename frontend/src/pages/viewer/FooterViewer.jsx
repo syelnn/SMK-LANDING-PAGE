@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapPin, Phone, Mail } from 'lucide-react';
+import { FaFacebookF, FaInstagram, FaTiktok, FaXTwitter, FaYoutube } from 'react-icons/fa6';
 import axios from 'axios';
 import { SettingsContext } from '../../context/SettingsContext';
 import { resolveContact, normalizeUrl, toMapEmbedSrc } from '../../utils/contact';
@@ -8,20 +9,7 @@ import '../../css/viewer/footerviewer.css';
 
 const API_URL = 'http://localhost:5002';
 
-const WebsiteFavicon = ({ url, title }) => {
-  if (!url) return null;
-  const faviconUrl = `https://www.google.com/s2/favicons?domain=${url}&sz=64`;
 
-  return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className="footer-social-icon" title={title}>
-      <img
-        src={faviconUrl}
-        alt={title || 'Icon Website'}
-        onError={(e) => { e.target.style.display = 'none'; }}
-      />
-    </a>
-  );
-};
 
 const FooterViewer = () => {
   const { settings } = useContext(SettingsContext);
@@ -100,19 +88,39 @@ const FooterViewer = () => {
     <footer className="footer-container" id="section-kontak">
       <div className="footer-content">
 
-        {/* KOLOM 1: NAMA SEKOLAH & SOSIAL MEDIA */}
-        <div className="footer-column brand-column">
-          <h3 className="footer-title-main">{schoolName}</h3>
-          <p className="footer-desc">{description}</p>
+      {/* KOLOM 1: NAMA SEKOLAH & SOSIAL MEDIA */}
+          <div className="footer-column brand-column">
+            <h3 className="footer-title-main">{schoolName}</h3>
+            <p className="footer-desc">{description}</p>
 
-          <div className="footer-socials">
-            {facebookUrl && <WebsiteFavicon url={facebookUrl} title="Facebook" />}
-            {instagramUrl && <WebsiteFavicon url={instagramUrl} title="Instagram" />}
-            {tiktokUrl && <WebsiteFavicon url={tiktokUrl} title="TikTok" />}
-            {twitterUrl && <WebsiteFavicon url={twitterUrl} title="X (Twitter)" />}
-            {youtubeUrl && <WebsiteFavicon url={youtubeUrl} title="YouTube" />}
+            <div className="footer-socials">
+              {facebookUrl && (
+                <a href={facebookUrl} target="_blank" rel="noopener noreferrer" className="footer-social-icon" title="Facebook">
+                  <FaFacebookF size={18} />
+                </a>
+              )}
+              {instagramUrl && (
+                <a href={instagramUrl} target="_blank" rel="noopener noreferrer" className="footer-social-icon" title="Instagram">
+                  <FaInstagram size={18} />
+                </a>
+              )}
+              {tiktokUrl && (
+                <a href={tiktokUrl} target="_blank" rel="noopener noreferrer" className="footer-social-icon" title="TikTok">
+                  <FaTiktok size={18} />
+                </a>
+              )}
+              {twitterUrl && (
+                <a href={twitterUrl} target="_blank" rel="noopener noreferrer" className="footer-social-icon" title="X (Twitter)">
+                  <FaXTwitter size={18} />
+                </a>
+              )}
+              {youtubeUrl && (
+                <a href={youtubeUrl} target="_blank" rel="noopener noreferrer" className="footer-social-icon" title="YouTube">
+                  <FaYoutube size={18} />
+                </a>
+              )}
+            </div>
           </div>
-        </div>
 
         {/* KOLOM 2: TAUTAN CEPAT */}
         <div className="footer-column">

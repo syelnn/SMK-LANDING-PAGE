@@ -256,3 +256,38 @@
   line-height: 1.5;
   margin: 0;
 }
+
+/* =========================================
+   RESPONSIVE DESIGN (TABLET & MOBILE)
+   ========================================= */
+@media (max-width: 768px) {
+  .vp-container {
+    padding: 56px 18px;
+  }
+  .vp-title {
+    font-size: 24px;
+  }
+  .vp-desc {
+    font-size: 14px;
+  }
+  .vp-divider {
+    margin: 30px 0;
+  }
+  .vp-jurusan-grid,
+  .vp-program-grid {
+    gap: 16px;
+  }
+  .vp-jurusan-card,
+  .vp-program-card {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .vp-container {
+    padding: 44px 14px;
+  }
+  .vp-title {
+    font-size: 21px;
+  }
+}

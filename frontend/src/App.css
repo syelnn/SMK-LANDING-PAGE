@@ -10,6 +10,16 @@
   font-family: 'Plus Jakarta Sans', sans-serif;
 }
 
+html {
+  /* PENTING: mencegah Chrome/HP otomatis "membesarkan" sebagian teks
+     (text autosizing) saat layar sempit atau saat halaman di-zoom.
+     Inilah penyebab utama font terlihat berantakan/tidak konsisten
+     di HP maupun saat di-zoom, padahal di layar lebar normal terlihat rapi. */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body, html, #root {
   margin: 0 !important;
   padding: 0 !important;
