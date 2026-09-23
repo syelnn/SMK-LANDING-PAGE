@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'; 
-import { useNavigate, useLocation } from 'react-router-dom'; // <-- Tambahkan useLocation
+import { useNavigate, useLocation } from 'react-router-dom'; 
 import Navbar from '../../components/Navbar';
 import '../../css/viewer/landing.css';
 import TenagaPengajarViewer from './TenagaPengajar';
@@ -59,8 +59,8 @@ const LandingPage = () => {
       '/jurusan': 'section-program',
       '/ekstrakurikuler': 'section-ekskul', 
       '/ekskul': 'section-ekskul',
-      '/tenagapengajar': 'section-pengajar', // <-- Tambahkan baris ini
-      '/guru': 'section-pengajar',           // <-- Tambahkan baris ini
+      '/tenagapengajar': 'section-pengajar', 
+      '/guru': 'section-pengajar',         
       '/pengajar': 'section-pengajar',
       '/karya': 'section-prestasi',       
       '/prestasi': 'section-prestasi',     
@@ -218,7 +218,7 @@ const LandingPage = () => {
 
     {/* 9. KONTAK & FOOTER SECTION */}
       <div id="section-kontak">
-        <FooterViewer /> {/* <-- 2. Dipanggil di sini */}
+        <FooterViewer /> 
       </div>
 
 

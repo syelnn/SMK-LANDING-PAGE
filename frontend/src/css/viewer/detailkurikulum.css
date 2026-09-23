@@ -214,6 +214,17 @@
 
 /* Responsif untuk Mobile */
 @media (max-width: 768px) {
+  .dk-wrapper { padding: 100px 18px 50px 18px; }
   .dk-title { font-size: 32px; }
   .dk-body-row { gap: 30px; }
+  .dk-header { margin-bottom: 40px; }
+  .dk-icon-box { width: 64px; height: 64px; margin-bottom: 18px; }
+  .dk-subtitle { font-size: 15px; }
+}
+
+@media (max-width: 420px) {
+  .dk-wrapper { padding: 92px 14px 40px 14px; }
+  .dk-title { font-size: 25px; }
+  .dk-back-link { margin-bottom: 26px; }
+  .dk-career-card { padding: 30px 22px; }
 }

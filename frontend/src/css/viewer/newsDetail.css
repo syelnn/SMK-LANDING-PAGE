@@ -328,6 +328,12 @@
 }
 
 /* Responsif */
+@media (max-width: 1024px) {
+  .vnd-other-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
+
 @media (max-width: 768px) {
   .vnd-main-content {
     padding-top: 80px !important;
@@ -348,5 +354,21 @@
 
   .vnd-other-grid {
     grid-template-columns: 1fr !important;
+  }
+
+  .vnd-article-container {
+    padding: 0 18px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .vnd-title {
+    font-size: 21px !important;
+  }
+  .vnd-content p {
+    font-size: 15px !important;
+  }
+  .vnd-banner-wrapper img {
+    max-height: 220px !important;
   }
 }
