@@ -21,11 +21,7 @@ model User {
   createdAt   DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt   DateTime?    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
   auditLogs   AuditLog[]
-<<<<<<< HEAD
-
-=======
->>>>>>> viewer
-  testimonial Testimonial?
+  testimonials Testimonial[]
 
   @@map("users")
 }
@@ -190,9 +186,10 @@ model Testimonial {
   show      Int?      @default(0)
   createdAt DateTime? @default(now()) @map("created_at")
   updatedAt DateTime? @default(now()) @updatedAt @map("updated_at")
-  userId    Int?      @unique @map("user_id")
+  userId    Int?      @map("user_id")
   user      User?     @relation(fields: [userId], references: [id])
 
+  @@index([userId])
   @@map("testimonials")
 }
 

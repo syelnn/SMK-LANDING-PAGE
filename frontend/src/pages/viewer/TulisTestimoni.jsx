@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Camera, Check, Loader2, Send, Trash2 } from 'lucide-react';
+import { ArrowLeft, Camera, Check, Loader2, Send, Trash2, X } from 'lucide-react';
 import { getSession, clearSession, isStaff } from '../../utils/auth';
 import logoSekolah from '../../assets/logo1.png';
 import '../../css/viewer/tulisTestimoni.css';
@@ -9,6 +9,8 @@ import '../../css/viewer/tulisTestimoni.css';
 const API = 'http://localhost:5002';
 const MIN_QUOTE = 20;
 const MAX_QUOTE = 400;
+const MAX_TESTIMONIAL_PER_USER = 2;
+const COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 jam, harus sama dengan backend
 
 const ROLES = [
   { key: 'siswa', label: 'Siswa', base: 'Siswa', hint: 'Contoh: Kelas XI RPL' },
@@ -33,6 +35,18 @@ const buildRole = (roleKey, detail) => {
 };
 
 const authHeader = (token) => ({ Authorization: `Bearer ${token}` });
+
+// Ubah data URL (hasil crop di kanvas) jadi Blob asli, supaya bisa dikirim sebagai file
+// multipart ke backend (bukan base64) dan backend yang upload ke Cloudinary.
+const dataUrlToBlob = (dataUrl) => {
+  const [header, base64] = dataUrl.split(',');
+  const mimeMatch = header.match(/:(.*?);/);
+  const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg';
+  const binary = atob(base64);
+  const arr = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) arr[i] = binary.charCodeAt(i);
+  return new Blob([arr], { type: mime });
+};
 
 // Foto dipotong persegi & diperkecil di browser supaya ringan disimpan (~30 KB)
 const toSquareDataUrl = (file, size = 320) =>
@@ -81,13 +95,26 @@ function Sample({ name, role, quote, photo }) {
   );
 }
 
+// Format sisa waktu cooldown jadi "HH:MM:SS"
+const formatCountdown = (ms) => {
+  if (ms <= 0) return '00:00:00';
+  const totalSeconds = Math.floor(ms / 1000);
+  const h = Math.floor(totalSeconds / 3600);
+  const m = Math.floor((totalSeconds % 3600) / 60);
+  const s = totalSeconds % 60;
+  const pad = (n) => String(n).padStart(2, '0');
+  return `${pad(h)}:${pad(m)}:${pad(s)}`;
+};
+
 export default function TulisTestimoni() {
   const navigate = useNavigate();
   const session = useMemo(() => getSession(), []);
 
   const [checking, setChecking] = useState(true);
-  const [existing, setExisting] = useState(null); // testimoni milik user ini (jika sudah pernah kirim)
+  // Meta status kirim testimoni milik user ini: { items, count, maxAllowed, remaining, limitReached, cooldownActive, nextAllowedAt, canSubmit }
+  const [status, setStatus] = useState(null);
   const [justSent, setJustSent] = useState(false);
+  const [now, setNow] = useState(() => Date.now());
 
   const [roleKey, setRoleKey] = useState('');
   const [detail, setDetail] = useState('');
@@ -109,7 +136,7 @@ export default function TulisTestimoni() {
     navigate('/');
   };
 
-  // Penjaga halaman + cek apakah user sudah pernah kirim
+  // Penjaga halaman + cek status testimoni user
   useEffect(() => {
     if (!session) {
       clearSession();
@@ -124,10 +151,10 @@ export default function TulisTestimoni() {
     let alive = true;
     axios
       .get(`${API}/api/testimonials/mine`, { headers: authHeader(session.token) })
-      .then((res) => alive && setExisting(res.data?.data || null))
+      .then((res) => alive && setStatus(res.data?.data || null))
       .catch((err) => {
-        const status = err.response?.status;
-        if (status === 401 || status === 403) {
+        const httpStatus = err.response?.status;
+        if (httpStatus === 401 || httpStatus === 403) {
           clearSession();
           toLogin();
         }
@@ -140,12 +167,22 @@ export default function TulisTestimoni() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Jalankan detik penghitung mundur cooldown selama masih aktif
+  useEffect(() => {
+    if (!status?.cooldownActive) return;
+    const id = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(id);
+  }, [status?.cooldownActive]);
+
   if (!session) return null;
 
+  const latest = status?.items?.[0] || null; // testimoni terakhir dikirim, untuk kartu preview status
   const selectedRole = ROLES.find((r) => r.key === roleKey);
   const roleText = buildRole(roleKey, detail);
-  const firstName = ((existing?.name || name || session.name).trim().split(' ')[0]) || 'kamu';
+  const firstName = ((latest?.name || name || session.name).trim().split(' ')[0]) || 'kamu';
   const quoteLen = quote.trim().length;
+
+  const msLeft = status?.nextAllowedAt ? new Date(status.nextAllowedAt).getTime() - now : 0;
 
   const pickStarter = (text) => {
     setQuote(text);
@@ -187,34 +224,71 @@ export default function TulisTestimoni() {
 
     setSending(true);
     try {
+      // Foto (kalau ada) dikirim sebagai file asli via FormData -> backend upload ke
+      // Cloudinary, hanya URL hasilnya yang disimpan ke database (bukan base64).
+      const fd = new FormData();
+      fd.append('name', cleanName);
+      fd.append('role', roleText);
+      fd.append('quote', cleanQuote);
+      fd.append('photo', photo ? dataUrlToBlob(photo) : '', photo ? 'testimoni.jpg' : undefined);
+
       const res = await axios.post(
         `${API}/api/testimonials`,
-        { name: cleanName, role: roleText, quote: cleanQuote, photo },
+        fd,
         { headers: authHeader(session.token) }
       );
-      setExisting(res.data.data);
+      const created = res.data.data;
+      // Susun ulang status lokal: testimoni baru + testimoni lama
+      setStatus((prev) => {
+        const items = [created, ...(prev?.items || [])];
+        const count = items.length;
+        const limitReached = count >= MAX_TESTIMONIAL_PER_USER;
+        const nextAllowedAt = new Date(new Date(created.createdAt).getTime() + COOLDOWN_MS);
+        return {
+          items,
+          count,
+          maxAllowed: MAX_TESTIMONIAL_PER_USER,
+          remaining: Math.max(0, MAX_TESTIMONIAL_PER_USER - count),
+          limitReached,
+          cooldownActive: !limitReached,
+          nextAllowedAt,
+          canSubmit: false
+        };
+      });
       setJustSent(true);
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(goHome, 1800);
     } catch (err) {
-      const status = err.response?.status;
-      if (status === 401 || status === 403) {
+      const httpStatus = err.response?.status;
+      if (httpStatus === 401 || httpStatus === 403) {
         clearSession();
         return toLogin();
       }
-      // Ternyata sudah pernah kirim (mis. dari tab lain) -> tampilkan statusnya
-      if (status === 400 && err.response?.data?.data) {
-        setExisting(err.response.data.data);
+      // Batas 2x tercapai atau masih dalam masa cooldown 24 jam -> tampilkan statusnya
+      const payload = err.response?.data;
+      if (payload?.limitReached || payload?.cooldown) {
+        setStatus((prev) => ({
+          ...(prev || {}),
+          items: payload.data || prev?.items || [],
+          count: (payload.data || prev?.items || []).length,
+          maxAllowed: MAX_TESTIMONIAL_PER_USER,
+          limitReached: !!payload.limitReached,
+          cooldownActive: !!payload.cooldown,
+          nextAllowedAt: payload.nextAllowedAt || prev?.nextAllowedAt || null,
+          canSubmit: false
+        }));
         return;
       }
-      setError(err.response?.data?.message || 'Testimoni belum terkirim. Coba lagi sebentar lagi.');
+      setError(payload?.message || 'Testimoni belum terkirim. Coba lagi sebentar lagi.');
     } finally {
       setSending(false);
     }
   };
 
-  const shown = existing || { name, role: roleText, quote, photo };
-  const isLive = Number(existing?.show) === 1;
+  const shown = latest || { name, role: roleText, quote, photo };
+  const isLive = Number(latest?.show) === 1;
+  const limitReached = !!status?.limitReached;
+  const cooldownActive = !!status?.cooldownActive && msLeft > 0;
 
   return (
     <div className="tw-shell">
@@ -249,8 +323,28 @@ export default function TulisTestimoni() {
             <div className="tw-loading">
               <Loader2 size={20} className="tw-spin" /> Memeriksa akunmu…
             </div>
-          ) : existing ? (
-            /* ---------- SUDAH KIRIM: tampilkan status validasi ---------- */
+          ) : limitReached ? (
+            /* ---------- BATAS 2X TERCAPAI ---------- */
+            <div className="tw-done">
+              <div className="tw-tick" style={{ background: '#f2b8b8' }}><X size={28} strokeWidth={3} /></div>
+              <h2 className="tw-done-heading">Kamu sudah mencapai batas mengirim testimoni</h2>
+              <div className="tw-done-copy">
+                Setiap akun hanya bisa mengirim testimoni maksimal {MAX_TESTIMONIAL_PER_USER}x. Terima kasih sudah berbagi cerita, {firstName}.
+              </div>
+
+              {latest && (
+                <div className="tw-sample-inline">
+                  <div className="tw-caption">Testimoni terakhir kamu</div>
+                  <Sample name={latest.name || ''} role={latest.role || ''} quote={latest.quote || ''} photo={latest.photo || ''} />
+                </div>
+              )}
+
+              <button type="button" className="tw-go" onClick={goHome}>
+                Kembali ke beranda
+              </button>
+            </div>
+          ) : cooldownActive ? (
+            /* ---------- SUDAH KIRIM, MASIH DALAM JEDA 24 JAM ---------- */
             <div className="tw-done">
               <div className="tw-tick"><Check size={28} strokeWidth={3} /></div>
               <h2 className="tw-done-heading">
@@ -268,9 +362,16 @@ export default function TulisTestimoni() {
                 <li className={isLive ? 'is-done' : ''}>Tampil di halaman depan</li>
               </ol>
 
-              <div className="tw-sample-inline">
-                <Sample name={existing.name || ''} role={existing.role || ''} quote={existing.quote || ''} photo={existing.photo || ''} />
+              <div className="tw-cooldown-box">
+                Kamu bisa mengirim testimoni berikutnya ({status?.remaining ?? 0} kesempatan tersisa) dalam
+                <div className="tw-cooldown-timer">{formatCountdown(msLeft)}</div>
               </div>
+
+              {latest && (
+                <div className="tw-sample-inline">
+                  <Sample name={latest.name || ''} role={latest.role || ''} quote={latest.quote || ''} photo={latest.photo || ''} />
+                </div>
+              )}
 
               <button type="button" className="tw-go" onClick={goHome}>
                 {isLive ? 'Lihat di halaman depan' : 'Kembali ke beranda'}
@@ -407,6 +508,13 @@ export default function TulisTestimoni() {
               </button>
               <div className="tw-fine">
                 Testimoni baru tampil di halaman depan setelah disetujui tim sekolah.
+                {status && (
+                  <>
+                    <br />
+                    Kesempatan kirim tersisa: {status.remaining ?? MAX_TESTIMONIAL_PER_USER}/{MAX_TESTIMONIAL_PER_USER}.
+                    Setelah mengirim, kamu perlu menunggu 24 jam sebelum bisa mengirim lagi.
+                  </>
+                )}
               </div>
             </form>
           )}

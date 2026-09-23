@@ -341,6 +341,29 @@
   color: var(--compreng-text-secondary, #475569);
 }
 
+/* ---------------- KOTAK HITUNG MUNDUR COOLDOWN 24 JAM ---------------- */
+.tw-cooldown-box {
+  margin: 18px 0;
+  padding: 16px 20px;
+  width: 100%;
+  max-width: 340px;
+  text-align: center;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--compreng-text-secondary, #475569);
+  background: var(--compreng-surface-soft, #f4f6f5);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 14px;
+}
+.tw-cooldown-timer {
+  margin-top: 6px;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+  color: var(--compreng-text, #06231D);
+}
+
 .tw-loading {
   display: flex;
   align-items: center;

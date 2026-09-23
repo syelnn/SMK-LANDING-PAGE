@@ -3,9 +3,13 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const { PrismaClient } = require('@prisma/client');
+const { deleteFromStorageByUrl, detectRemoteFileSize } = require('./services/cloudinaryStorage');
+const { generateDatabaseDump, getDatabaseSummary } = require('./services/dbExport');
 
 const prisma = new PrismaClient();
 const { verifyToken, optionalAuth, checkRole } = require('./middleware/authMiddleware')(prisma);
+const { uploadSingleSafe, resolveImage } = require('./middleware/imageUpload'); // <== BARU (Fase 2)
+const { uploadSingleSafeFile, resolveDownloadFile } = require('./middleware/fileUpload'); // <== khusus berkas Downloads (bukan gambar)
 const requireStaff = [verifyToken, checkRole(['admin', 'editor'])]; // khusus admin/editor
 const requireAdmin = [verifyToken, checkRole(['admin'])];           // khusus admin (footer, menu, settings)
 
@@ -25,7 +29,8 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-// Tambahkan limit 50mb agar gambar Base64 tidak error 413
+// Limit 50mb ini sekarang jarang kepakai (gambar sudah lewat multer/multipart),
+// tapi dibiarkan sebagai jaring pengaman untuk payload JSON teks yang besar (mis. content berita panjang)
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
@@ -40,9 +45,7 @@ app.get('/', (req, res) => {
 app.get('/api/jurusan', async (req, res) => {
   try {
     const data = await prisma.jurusanCustom.findMany({
-      orderBy: {
-        id: 'asc' // <--- Tambahkan ini agar urutannya mengunci pada ID awal
-      }
+      orderBy: { id: 'asc' }
     });
     res.json({ success: true, data });
   } catch (error) {
@@ -53,32 +56,54 @@ app.get('/api/jurusan', async (req, res) => {
 // API EDIT (PUT) JURUSAN & PROGRAM
 // ===================================
 
-app.put('/api/jurusan/:id', ...requireStaff, async (req, res) => {
+app.put('/api/jurusan/:id', ...requireStaff, uploadSingleSafe('imageIcon'), resolveImage('imageIcon', 'jurusan'), async (req, res) => {
   try {
     const { title, slug, desc, imageIcon, subjects, career } = req.body;
+
+    // Ambil gambar LAMA dulu sebelum ditimpa, supaya nanti bisa dihapus dari Cloudinary
+    const current = await prisma.jurusanCustom.findUnique({ where: { id: parseInt(req.params.id) } });
+    const oldImageIcon = current?.imageIcon;
+
     const updated = await prisma.jurusanCustom.update({
       where: { id: parseInt(req.params.id) },
       data: { title, slug, desc, imageIcon, subjects, career }
     });
+
+    // Gambar diganti (URL baru beda dari lama) -> hapus file lama di Cloudinary
+    if (oldImageIcon && oldImageIcon !== imageIcon) {
+      await deleteFromStorageByUrl(oldImageIcon);
+    }
+
     res.json({ success: true, message: 'Jurusan diupdate', data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Gagal update jurusan' });
   }
 });
 
-app.put('/api/program/:id', ...requireStaff, async (req, res) => {
+app.put('/api/program/:id', ...requireStaff, uploadSingleSafe('imageIcon'), resolveImage('imageIcon', 'programs'), async (req, res) => {
   try {
     const { title, desc, badge, imageIcon } = req.body;
+
+    // Ambil gambar LAMA dulu sebelum ditimpa, supaya nanti bisa dihapus dari Cloudinary
+    const current = await prisma.programUnggulanCustom.findUnique({ where: { id: parseInt(req.params.id) } });
+    const oldImageIcon = current?.imageIcon;
+
     const updated = await prisma.programUnggulanCustom.update({
       where: { id: parseInt(req.params.id) },
       data: { title, desc, badge, imageIcon }
     });
+
+    // Gambar diganti (URL baru beda dari lama) -> hapus file lama di Cloudinary
+    if (oldImageIcon && oldImageIcon !== imageIcon) {
+      await deleteFromStorageByUrl(oldImageIcon);
+    }
+
     res.json({ success: true, message: 'Program diupdate', data: updated });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Gagal update program' });
   }
 });
-app.post('/api/jurusan', ...requireStaff, async (req, res) => {
+app.post('/api/jurusan', ...requireStaff, uploadSingleSafe('imageIcon'), resolveImage('imageIcon', 'jurusan'), async (req, res) => {
   try {
     const { title, slug, desc, imageIcon, subjects, career } = req.body;
     const newData = await prisma.jurusanCustom.create({
@@ -92,7 +117,13 @@ app.post('/api/jurusan', ...requireStaff, async (req, res) => {
 
 app.delete('/api/jurusan/:id', ...requireStaff, async (req, res) => {
   try {
-    await prisma.jurusanCustom.delete({ where: { id: parseInt(req.params.id) } });
+    const deleted = await prisma.jurusanCustom.delete({ where: { id: parseInt(req.params.id) } });
+
+    // Data di database sudah hilang, sekarang bersihkan file fisiknya juga di Cloudinary
+    if (deleted?.imageIcon) {
+      await deleteFromStorageByUrl(deleted.imageIcon);
+    }
+
     res.json({ success: true, message: 'Jurusan dihapus' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Gagal menghapus jurusan' });
@@ -106,9 +137,7 @@ app.delete('/api/jurusan/:id', ...requireStaff, async (req, res) => {
 app.get('/api/program', async (req, res) => {
   try {
     const data = await prisma.programUnggulanCustom.findMany({
-      orderBy: {
-        id: 'asc' // <--- Tambahkan ini juga
-      }
+      orderBy: { id: 'asc' }
     });
     res.json({ success: true, data });
   } catch (error) {
@@ -116,7 +145,7 @@ app.get('/api/program', async (req, res) => {
   }
 });
 
-app.post('/api/program', ...requireStaff, async (req, res) => {
+app.post('/api/program', ...requireStaff, uploadSingleSafe('imageIcon'), resolveImage('imageIcon', 'programs'), async (req, res) => {
   try {
     const { title, desc, badge, imageIcon } = req.body;
     const newData = await prisma.programUnggulanCustom.create({
@@ -131,7 +160,13 @@ app.post('/api/program', ...requireStaff, async (req, res) => {
 
 app.delete('/api/program/:id', ...requireStaff, async (req, res) => {
   try {
-    await prisma.programUnggulanCustom.delete({ where: { id: parseInt(req.params.id) } });
+    const deleted = await prisma.programUnggulanCustom.delete({ where: { id: parseInt(req.params.id) } });
+
+    // Data di database sudah hilang, sekarang bersihkan file fisiknya juga di Cloudinary
+    if (deleted?.imageIcon) {
+      await deleteFromStorageByUrl(deleted.imageIcon);
+    }
+
     res.json({ success: true, message: 'Program dihapus' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Gagal menghapus program' });
@@ -145,7 +180,7 @@ app.delete('/api/program/:id', ...requireStaff, async (req, res) => {
 app.get('/api/teacher', async (req, res) => {
   try {
     const data = await prisma.teacher.findMany({
-      orderBy: { sortOrder: 'asc' } // Gunakan camelCase sortOrder
+      orderBy: { sortOrder: 'asc' }
     });
     res.json({ success: true, data });
   } catch (error) {
@@ -155,16 +190,16 @@ app.get('/api/teacher', async (req, res) => {
 });
 
 // 2. Tambah guru baru (POST)
-app.post('/api/teacher', ...requireStaff, async (req, res) => {
+app.post('/api/teacher', ...requireStaff, uploadSingleSafe('photo'), resolveImage('photo', 'teachers'), async (req, res) => {
   try {
     const { name, role, photo, sort_order, show } = req.body;
     const newData = await prisma.teacher.create({
-      data: { 
-        name, 
-        role, 
-        photo, 
-        sortOrder: Number(sort_order), // Gunakan camelCase sortOrder
-        show: Number(show) 
+      data: {
+        name,
+        role,
+        photo,
+        sortOrder: Number(sort_order),
+        show: Number(show)
       }
     });
     res.json({ success: true, message: 'Guru berhasil ditambah', data: newData });
@@ -175,19 +210,30 @@ app.post('/api/teacher', ...requireStaff, async (req, res) => {
 });
 
 // 3. Edit / Update data guru (PUT)
-app.put('/api/teacher/:id', ...requireStaff, async (req, res) => {
+app.put('/api/teacher/:id', ...requireStaff, uploadSingleSafe('photo'), resolveImage('photo', 'teachers'), async (req, res) => {
   try {
     const { name, role, photo, sort_order, show } = req.body;
+
+    // Ambil foto LAMA dulu sebelum ditimpa, supaya nanti bisa dihapus dari Cloudinary
+    const current = await prisma.teacher.findUnique({ where: { id: parseInt(req.params.id) } });
+    const oldPhoto = current?.photo;
+
     const updated = await prisma.teacher.update({
       where: { id: parseInt(req.params.id) },
-      data: { 
-        name, 
-        role, 
-        photo, 
-        sortOrder: Number(sort_order), // Gunakan camelCase sortOrder
-        show: Number(show) 
+      data: {
+        name,
+        role,
+        photo,
+        sortOrder: Number(sort_order),
+        show: Number(show)
       }
     });
+
+    // Foto diganti (URL baru beda dari lama) -> hapus file lama di Cloudinary
+    if (oldPhoto && oldPhoto !== photo) {
+      await deleteFromStorageByUrl(oldPhoto);
+    }
+
     res.json({ success: true, message: 'Data guru diupdate', data: updated });
   } catch (error) {
     console.error("Error Update Guru:", error);
@@ -198,9 +244,15 @@ app.put('/api/teacher/:id', ...requireStaff, async (req, res) => {
 // 4. Hapus guru (DELETE)
 app.delete('/api/teacher/:id', ...requireStaff, async (req, res) => {
   try {
-    await prisma.teacher.delete({ 
-      where: { id: parseInt(req.params.id) } 
+    const deleted = await prisma.teacher.delete({
+      where: { id: parseInt(req.params.id) }
     });
+
+    // Data di database sudah hilang, sekarang bersihkan file fisiknya juga di Cloudinary
+    if (deleted?.photo) {
+      await deleteFromStorageByUrl(deleted.photo);
+    }
+
     res.json({ success: true, message: 'Guru dihapus' });
   } catch (error) {
     console.error("Error Hapus Guru:", error);
@@ -223,7 +275,7 @@ app.get('/api/extracurriculars', async (req, res) => {
 });
 
 // 2. Tambah ekstrakurikuler baru (POST)
-app.post('/api/extracurriculars', ...requireStaff, async (req, res) => {
+app.post('/api/extracurriculars', ...requireStaff, uploadSingleSafe('icon'), resolveImage('icon', 'extracurriculars'), async (req, res) => {
   try {
     const { title, description, icon, show } = req.body;
 
@@ -246,16 +298,16 @@ app.post('/api/extracurriculars', ...requireStaff, async (req, res) => {
     return res.status(201).json({ success: true, data: newEkskul });
   } catch (error) {
     console.error("Error Tambah Ekstrakurikuler Detail:", error);
-    return res.status(500).json({ 
-      success: false, 
+    return res.status(500).json({
+      success: false,
       message: 'Gagal menambah ekstrakurikuler',
-      error: error.message 
+      error: error.message
     });
   }
 });
 
 // 3. Update ekstrakurikuler (PUT) - Dengan Auto-Shift Reorder
-app.put('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
+app.put('/api/extracurriculars/:id', ...requireStaff, uploadSingleSafe('icon'), resolveImage('icon', 'extracurriculars'), async (req, res) => {
   try {
     const { id } = req.params;
     const { title, description, icon, show, sortOrder, sort_order } = req.body;
@@ -263,7 +315,6 @@ app.put('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
     const targetId = Number(id);
     const targetOrder = Number(sortOrder ?? sort_order);
 
-    // Ambil data lama
     const currentItem = await prisma.extracurricular.findUnique({
       where: { id: targetId }
     });
@@ -272,13 +323,14 @@ app.put('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan' });
     }
 
-    // Jika sortOrder diubah, lakukan penggeseran (re-order) otomatis
+    // Ambil icon LAMA dulu sebelum ditimpa, supaya nanti bisa dihapus dari Cloudinary
+    const oldIcon = currentItem.icon;
+
     if (targetOrder && targetOrder !== currentItem.sortOrder) {
       const oldOrder = currentItem.sortOrder;
       const newOrder = targetOrder;
 
       if (oldOrder < newOrder) {
-        // Turun posisi (misal: 2 -> 4), data di antaranya (3, 4) geser naik (-1)
         await prisma.extracurricular.updateMany({
           where: {
             sortOrder: { gt: oldOrder, lte: newOrder },
@@ -287,7 +339,6 @@ app.put('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
           data: { sortOrder: { decrement: 1 } }
         });
       } else {
-        // Naik posisi (misal: 4 -> 2), data di antaranya (2, 3) geser turun (+1)
         await prisma.extracurricular.updateMany({
           where: {
             sortOrder: { gte: newOrder, lt: oldOrder },
@@ -309,6 +360,11 @@ app.put('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
       }
     });
 
+    // Icon diganti (URL/nilai baru beda dari lama) -> hapus file lama di Cloudinary biar tidak numpuk kuota
+    if (oldIcon && oldIcon !== updated.icon) {
+      await deleteFromStorageByUrl(oldIcon);
+    }
+
     return res.json({ success: true, data: updated });
   } catch (error) {
     console.error("Error Update Ekstrakurikuler:", error);
@@ -329,12 +385,15 @@ app.delete('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan' });
     }
 
-    // Hapus data
-    await prisma.extracurricular.delete({ 
-      where: { id: targetId } 
+    await prisma.extracurricular.delete({
+      where: { id: targetId }
     });
 
-    // Geser urutan di atasnya agar tidak berlubang
+    // Data di database sudah hilang, sekarang bersihkan file fisiknya juga di Cloudinary
+    if (targetItem.icon) {
+      await deleteFromStorageByUrl(targetItem.icon);
+    }
+
     await prisma.extracurricular.updateMany({
       where: {
         sortOrder: { gt: targetItem.sortOrder }
@@ -349,11 +408,12 @@ app.delete('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
   }
 });
 
-// khusus testimoni 
-// 1. KIRIM TESTIMONI (Viewer yang sudah login, maksimal 1x kirim)
-//    - userId diambil dari TOKEN (bukan dari body) supaya tidak bisa dipalsukan
-//    - show SELALU 0 -> tidak tampil di halaman viewer sampai admin/editor menyetujui
-app.post('/api/testimonials', verifyToken, async (req, res) => {
+// khusus testimoni
+// 1. KIRIM TESTIMONI (Viewer yang sudah login, maksimal 2x kirim, jeda 24 jam antar kirim)
+const MAX_TESTIMONIAL_PER_USER = 2;
+const TESTIMONIAL_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 jam
+
+app.post('/api/testimonials', verifyToken, uploadSingleSafe('photo'), resolveImage('photo', 'testimonials'), async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
     const name = String(req.body.name || '').trim();
@@ -370,18 +430,38 @@ app.post('/api/testimonials', verifyToken, async (req, res) => {
     if (quote.length > 500 || name.length > 100 || role.length > 200) {
       return res.status(400).json({ success: false, message: 'Teks terlalu panjang.' });
     }
+    // Catatan: photo sekarang berupa URL storage (pendek), jadi cek ukuran ini praktis tidak akan pernah kena lagi.
     if (photo.length > 400 * 1024) {
       return res.status(400).json({ success: false, message: 'Ukuran foto terlalu besar.' });
     }
 
-    // Cek apakah user ini sudah pernah mengirim testimoni sebelumnya
-    const existingTestimonial = await prisma.testimonial.findUnique({ where: { userId } });
-    if (existingTestimonial) {
+    const myTestimonials = await prisma.testimonial.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    if (myTestimonials.length >= MAX_TESTIMONIAL_PER_USER) {
       return res.status(400).json({
         success: false,
-        message: 'Anda hanya dapat mengirim 1 testimoni saja!',
-        data: existingTestimonial
+        limitReached: true,
+        message: 'Kamu sudah mencapai batas mengirim testimoni',
+        data: myTestimonials
       });
+    }
+
+    const last = myTestimonials[0];
+    if (last) {
+      const nextAllowedAt = new Date(new Date(last.createdAt).getTime() + TESTIMONIAL_COOLDOWN_MS);
+      const now = new Date();
+      if (now < nextAllowedAt) {
+        return res.status(429).json({
+          success: false,
+          cooldown: true,
+          message: 'Kamu baru bisa mengirim testimoni lagi setelah 24 jam dari pengiriman terakhir.',
+          nextAllowedAt,
+          data: myTestimonials
+        });
+      }
     }
 
     const newTestimonial = await prisma.testimonial.create({
@@ -390,26 +470,48 @@ app.post('/api/testimonials', verifyToken, async (req, res) => {
 
     res.json({ success: true, message: 'Testimoni berhasil dikirim dan menunggu persetujuan admin!', data: newTestimonial });
   } catch (error) {
-    // P2002 = pelanggaran unique (double klik / kirim dari 2 tab bersamaan)
-    if (error.code === 'P2002') {
-      return res.status(400).json({ success: false, message: 'Anda hanya dapat mengirim 1 testimoni saja!' });
-    }
     console.error('Error kirim testimoni:', error);
     res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server.' });
   }
 });
 
-// 1b. CEK TESTIMONI MILIK SAYA (untuk menampilkan status: menunggu / sudah tampil)
+// 1b. CEK TESTIMONI MILIK SAYA
 app.get('/api/testimonials/mine', verifyToken, async (req, res) => {
   try {
-    const data = await prisma.testimonial.findUnique({ where: { userId: parseInt(req.user.id) } });
-    res.json({ success: true, data: data || null });
+    const userId = parseInt(req.user.id);
+    const items = await prisma.testimonial.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    const count = items.length;
+    const limitReached = count >= MAX_TESTIMONIAL_PER_USER;
+
+    let nextAllowedAt = null;
+    if (items[0]) {
+      nextAllowedAt = new Date(new Date(items[0].createdAt).getTime() + TESTIMONIAL_COOLDOWN_MS);
+    }
+    const cooldownActive = !limitReached && !!nextAllowedAt && new Date() < nextAllowedAt;
+    const canSubmit = !limitReached && !cooldownActive;
+
+    res.json({
+      success: true,
+      data: {
+        items,
+        count,
+        maxAllowed: MAX_TESTIMONIAL_PER_USER,
+        remaining: Math.max(0, MAX_TESTIMONIAL_PER_USER - count),
+        limitReached,
+        cooldownActive,
+        nextAllowedAt,
+        canSubmit
+      }
+    });
   } catch (error) {
     console.error('Error cek testimoni saya:', error);
     res.status(500).json({ success: false, message: 'Gagal memuat testimoni Anda' });
   }
 });
-
 // 2. AMBIL TESTIMONI UNTUK LANDING PAGE (Hanya yang show = 1)
 app.get('/api/testimonials/public', async (req, res) => {
   try {
@@ -435,11 +537,11 @@ app.get('/api/testimonials', ...requireStaff, async (req, res) => {
   }
 });
 
-// 4. TOGGLE STATUS SHOW (Admin/Editor menyetujui atau menyembunyikan testimoni)
+// 4. TOGGLE STATUS SHOW
 app.put('/api/testimonials/:id/toggle-show', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
-    const { show } = req.body; // Nilai 0 atau 1
+    const { show } = req.body;
 
     const updated = await prisma.testimonial.update({
       where: { id: parseInt(id) },
@@ -456,9 +558,12 @@ app.put('/api/testimonials/:id/toggle-show', ...requireStaff, async (req, res) =
 app.delete('/api/testimonials/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.testimonial.delete({
-      where: { id: parseInt(id) }
-    });
+    const deleted = await prisma.testimonial.delete({ where: { id: parseInt(id) } });
+
+    if (deleted?.photo) {
+      await deleteFromStorageByUrl(deleted.photo);
+    }
+
     res.json({ success: true, message: 'Testimoni berhasil dihapus' });
   } catch (error) {
     res.status(500).json({ success: false, message: 'Gagal menghapus testimoni' });
@@ -466,18 +571,17 @@ app.delete('/api/testimonials/:id', ...requireStaff, async (req, res) => {
 });
 
 // TAMBAH TESTIMONI KHUSUS ADMIN
-app.post('/api/testimonials/admin', ...requireStaff, async (req, res) => {
+app.post('/api/testimonials/admin', ...requireStaff, uploadSingleSafe('photo'), resolveImage('photo', 'testimonials'), async (req, res) => {
   try {
-    // PASTIKAN 'photo' ADA DI DALAM KURUNG KURAWAL INI
-    const { name, role, quote, show, photo } = req.body; 
-    
+    const { name, role, quote, show, photo } = req.body;
+
     const newTestimonial = await prisma.testimonial.create({
-      data: { 
-        name, 
-        role, 
-        quote, 
+      data: {
+        name,
+        role,
+        quote,
         show: parseInt(show),
-        photo: photo || '' // PASTIKAN BARIS INI ADA UNTUK MENYIMPAN FOTO
+        photo: photo || ''
       }
     });
     res.json({ success: true, message: 'Testimoni berhasil ditambahkan', data: newTestimonial });
@@ -488,21 +592,24 @@ app.post('/api/testimonials/admin', ...requireStaff, async (req, res) => {
 });
 
 // EDIT / UPDATE TESTIMONI (Full Update)
-app.put('/api/testimonials/:id', ...requireStaff, async (req, res) => {
+app.put('/api/testimonials/:id', ...requireStaff, uploadSingleSafe('photo'), resolveImage('photo', 'testimonials'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, role, quote, show, photo } = req.body; // <-- photo ditambahkan di sini
-    
+    const { name, role, quote, show, photo } = req.body;
+
+    // Ambil foto lama dulu sebelum ditimpa
+    const current = await prisma.testimonial.findUnique({ where: { id: parseInt(id) } });
+    const oldPhoto = current?.photo;
+
     const updated = await prisma.testimonial.update({
       where: { id: parseInt(id) },
-      data: { 
-        name, 
-        role, 
-        quote, 
-        show: parseInt(show),
-        photo: photo || null // <-- simpan photo ke database
-      }
+      data: { name, role, quote, show: parseInt(show), photo: photo || null }
     });
+
+    if (oldPhoto && oldPhoto !== photo) {
+      await deleteFromStorageByUrl(oldPhoto);
+    }
+
     res.json({ success: true, message: 'Testimoni diperbarui', data: updated });
   } catch (error) {
     console.error(error);
@@ -513,17 +620,14 @@ app.put('/api/testimonials/:id', ...requireStaff, async (req, res) => {
 
 // API FAQ (PERTANYAAN)
 
-// GET ALL FAQ (Disesuaikan agar Admin dapat melihat semua data)
 app.get('/api/faqs', staffIfAdminQuery, async (req, res) => {
   try {
     const isAdmin = req.query.admin === 'true';
-    
-    // Jika admin, tampilkan semua. Jika publik, hanya yang show: 1
     const whereCondition = isAdmin ? {} : { show: 1 };
 
     const data = await prisma.faq.findMany({
       where: whereCondition,
-      orderBy: { sortOrder: 'asc' } 
+      orderBy: { sortOrder: 'asc' }
     });
 
     res.json({ success: true, data });
@@ -534,7 +638,6 @@ app.get('/api/faqs', staffIfAdminQuery, async (req, res) => {
 });
 
 
-// 2. Tambah FAQ baru (POST)
 app.post('/api/faqs', ...requireStaff, async (req, res) => {
   try {
     const { question, answer, category, show } = req.body;
@@ -543,7 +646,6 @@ app.post('/api/faqs', ...requireStaff, async (req, res) => {
       return res.status(400).json({ success: false, message: 'Pertanyaan dan jawaban wajib diisi' });
     }
 
-    // Ambil total data untuk menentukan urutan terakhir
     const totalCount = await prisma.faq.count();
 
     const newFaq = await prisma.faq.create({
@@ -558,17 +660,14 @@ app.post('/api/faqs', ...requireStaff, async (req, res) => {
 
     return res.status(201).json({ success: true, data: newFaq, message: 'FAQ berhasil ditambahkan' });
   } catch (error) {
-    // Menampilkan detail error Prisma di terminal VS Code backend
     console.error("Error Detail Tambah FAQ:", error);
-    
-    return res.status(500).json({ 
-      success: false, 
-      message: 'Gagal menambah FAQ', 
-      error: error.message 
+    return res.status(500).json({
+      success: false,
+      message: 'Gagal menambah FAQ',
+      error: error.message
     });
   }
 });
-// 3. Update FAQ (PUT) - Mengikuti pola re-order Ekstrakurikuler Anda
 app.put('/api/faqs/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
@@ -585,7 +684,6 @@ app.put('/api/faqs/:id', ...requireStaff, async (req, res) => {
       return res.status(404).json({ success: false, message: 'FAQ tidak ditemukan' });
     }
 
-    // Auto-shift reorder jika posisi diubah
     if (targetOrder && targetOrder !== currentItem.sortOrder) {
       const oldOrder = currentItem.sortOrder;
       const newOrder = targetOrder;
@@ -627,7 +725,6 @@ app.put('/api/faqs/:id', ...requireStaff, async (req, res) => {
   }
 });
 
-// 4. Hapus FAQ (DELETE) - Auto-reorder setelah hapus
 app.delete('/api/faqs/:id', ...requireStaff, async (req, res) => {
   try {
     const targetId = Number(req.params.id);
@@ -661,11 +758,10 @@ app.delete('/api/faqs/:id', ...requireStaff, async (req, res) => {
 // CRUD GALERI SEKOLAH
 // ==========================================
 
-// 1. GET - Tampilkan Semua Galeri
 app.get('/api/galleries', async (req, res) => {
   try {
-    const galleries = await prisma.gallery.findMany({ // <-- Pakai prisma.gallery
-      orderBy: { sortOrder: 'asc' } // <-- Pakai sortOrder
+    const galleries = await prisma.gallery.findMany({
+      orderBy: { sortOrder: 'asc' }
     });
     res.json({ success: true, data: galleries });
   } catch (error) {
@@ -674,8 +770,7 @@ app.get('/api/galleries', async (req, res) => {
   }
 });
 
-// 2. POST - Tambah Foto Baru
-app.post('/api/galleries', ...requireStaff, async (req, res) => {
+app.post('/api/galleries', ...requireStaff, uploadSingleSafe('image'), resolveImage('image', 'galleries'), async (req, res) => {
   try {
     const { category, image, caption, is_featured, sort_order, show } = req.body;
     const newGallery = await prisma.gallery.create({
@@ -683,8 +778,8 @@ app.post('/api/galleries', ...requireStaff, async (req, res) => {
         category,
         image,
         caption,
-        isFeatured: Number(is_featured), // <-- Disesuaikan dengan skema
-        sortOrder: Number(sort_order),   // <-- Disesuaikan dengan skema
+        isFeatured: Number(is_featured),
+        sortOrder: Number(sort_order),
         show: Number(show)
       }
     });
@@ -695,23 +790,25 @@ app.post('/api/galleries', ...requireStaff, async (req, res) => {
   }
 });
 
-// 3. PUT - Edit Foto
-app.put('/api/galleries/:id', ...requireStaff, async (req, res) => {
+app.put('/api/galleries/:id', ...requireStaff, uploadSingleSafe('image'), resolveImage('image', 'galleries'), async (req, res) => {
   try {
     const { id } = req.params;
     const { category, image, caption, is_featured, sort_order, show } = req.body;
-    
+
+    // Ambil URL gambar LAMA dulu sebelum ditimpa, supaya nanti bisa dihapus dari Cloudinary
+    const current = await prisma.gallery.findUnique({ where: { id: Number(id) } });
+    const oldImageUrl = current?.image;
+
     const updatedGallery = await prisma.gallery.update({
       where: { id: Number(id) },
-      data: { 
-        category, 
-        image, 
-        caption, 
-        isFeatured: Number(is_featured), 
-        sortOrder: Number(sort_order), 
-        show: Number(show) 
-      }
+      data: { category, image, caption, isFeatured: Number(is_featured), sortOrder: Number(sort_order), show: Number(show) }
     });
+
+    // Gambar diganti (URL baru beda dari lama) -> hapus file lama di Cloudinary biar tidak numpuk kuota
+    if (oldImageUrl && oldImageUrl !== image) {
+      await deleteFromStorageByUrl(oldImageUrl);
+    }
+
     res.json({ success: true, message: 'Foto berhasil diperbarui', data: updatedGallery });
   } catch (error) {
     console.error('Error PUT Galleries:', error);
@@ -719,13 +816,16 @@ app.put('/api/galleries/:id', ...requireStaff, async (req, res) => {
   }
 });
 
-// 4. DELETE - Hapus Foto
 app.delete('/api/galleries/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.gallery.delete({
-      where: { id: Number(id) }
-    });
+    const deleted = await prisma.gallery.delete({ where: { id: Number(id) } });
+
+    // Data di database sudah hilang, sekarang bersihkan file fisiknya juga di Cloudinary
+    if (deleted?.image) {
+      await deleteFromStorageByUrl(deleted.image);
+    }
+
     res.json({ success: true, message: 'Foto berhasil dihapus' });
   } catch (error) {
     console.error('Error DELETE Galleries:', error);
@@ -733,12 +833,10 @@ app.delete('/api/galleries/:id', ...requireStaff, async (req, res) => {
   }
 });
 
-
 // ==========================
 // API BERITA (NEWS)
 // ==========================
 
-// 1. Ambil semua berita (GET)
 app.get('/api/news', async (req, res) => {
   try {
     const data = await prisma.news.findMany({
@@ -751,12 +849,11 @@ app.get('/api/news', async (req, res) => {
   }
 });
 
-// 2. Ambil detail berita berdasarkan slug ATAU id (GET)
 app.get('/api/news/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
     const isNumber = !isNaN(slug);
-    
+
     const news = await prisma.news.findUnique({
       where: isNumber ? { id: Number(slug) } : { slug: slug }
     });
@@ -772,16 +869,14 @@ app.get('/api/news/:slug', async (req, res) => {
   }
 });
 
-// 3. Tambah berita baru (POST)
-app.post('/api/news', ...requireStaff, async (req, res) => {
+app.post('/api/news', ...requireStaff, uploadSingleSafe('image'), resolveImage('image', 'news'), async (req, res) => {
   try {
     const { title, slug, category, tags, excerpt, content, image, author, status } = req.body;
 
     const generatedSlug = slug || title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    // Pastikan tags berupa array/json
-    const formattedTags = Array.isArray(tags) 
-      ? tags 
+    const formattedTags = Array.isArray(tags)
+      ? tags
       : (typeof tags === 'string' && tags ? tags.split(',').map(t => t.trim()) : []);
 
     const newNews = await prisma.news.create({
@@ -806,18 +901,20 @@ app.post('/api/news', ...requireStaff, async (req, res) => {
   }
 });
 
-// 4. Update / Edit berita (PUT)
-app.put('/api/news/:id', ...requireStaff, async (req, res) => {
+app.put('/api/news/:id', ...requireStaff, uploadSingleSafe('image'), resolveImage('image', 'news'), async (req, res) => {
   try {
     const { id } = req.params;
     const { title, slug, category, tags, excerpt, content, image, author, status } = req.body;
 
     const generatedSlug = slug || title?.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
 
-    // Pastikan tags berupa array/json
-    const formattedTags = Array.isArray(tags) 
-      ? tags 
+    const formattedTags = Array.isArray(tags)
+      ? tags
       : (typeof tags === 'string' && tags ? tags.split(',').map(t => t.trim()) : []);
+
+    // Ambil gambar LAMA dulu sebelum ditimpa, supaya nanti bisa dihapus dari Cloudinary
+    const current = await prisma.news.findUnique({ where: { id: Number(id) } });
+    const oldImage = current?.image;
 
     const updated = await prisma.news.update({
       where: { id: Number(id) },
@@ -835,6 +932,11 @@ app.put('/api/news/:id', ...requireStaff, async (req, res) => {
       }
     });
 
+    // Gambar diganti (URL baru beda dari lama) -> hapus file lama di Cloudinary
+    if (oldImage && oldImage !== image) {
+      await deleteFromStorageByUrl(oldImage);
+    }
+
     res.json({ success: true, message: 'Berita berhasil diperbarui', data: updated });
   } catch (error) {
     console.error('Error PUT News:', error);
@@ -842,13 +944,18 @@ app.put('/api/news/:id', ...requireStaff, async (req, res) => {
   }
 });
 
-// 5. Hapus berita (DELETE)
 app.delete('/api/news/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
-    await prisma.news.delete({
+    const deleted = await prisma.news.delete({
       where: { id: Number(id) }
     });
+
+    // Data di database sudah hilang, sekarang bersihkan file fisiknya juga di Cloudinary
+    if (deleted?.image) {
+      await deleteFromStorageByUrl(deleted.image);
+    }
+
     res.json({ success: true, message: 'Berita berhasil dihapus' });
   } catch (error) {
     console.error('Error DELETE News:', error);
@@ -861,7 +968,6 @@ app.delete('/api/news/:id', ...requireStaff, async (req, res) => {
 // API FOOTER SETTING
 // ==========================
 
-// 1. Ambil data footer (GET)
 app.get('/api/footer', async (req, res) => {
   try {
     const footer = await prisma.footerSetting.findFirst();
@@ -872,51 +978,30 @@ app.get('/api/footer', async (req, res) => {
   }
 });
 
-// 2. Update data footer (PUT)
 app.put('/api/footer', ...requireAdmin, async (req, res) => {
   try {
-    const { 
-      schoolName, 
-      description, 
-      address, 
-      phone, 
-      email, 
-      facebookUrl, 
-      instagramUrl, 
-      mapsEmbedUrl 
+    const {
+      schoolName,
+      description,
+      address,
+      phone,
+      email,
+      facebookUrl,
+      instagramUrl,
+      mapsEmbedUrl
     } = req.body;
 
     const existingFooter = await prisma.footerSetting.findFirst();
 
     let updatedFooter;
     if (existingFooter) {
-      // Jika data sudah ada, lakukan update
       updatedFooter = await prisma.footerSetting.update({
         where: { id: existingFooter.id },
-        data: {
-          schoolName,
-          description,
-          address,
-          phone,
-          email,
-          facebookUrl,
-          instagramUrl,
-          mapsEmbedUrl
-        }
+        data: { schoolName, description, address, phone, email, facebookUrl, instagramUrl, mapsEmbedUrl }
       });
     } else {
-      // Jika belum ada data sama sekali, buat data baru
       updatedFooter = await prisma.footerSetting.create({
-        data: {
-          schoolName,
-          description,
-          address,
-          phone,
-          email,
-          facebookUrl,
-          instagramUrl,
-          mapsEmbedUrl
-        }
+        data: { schoolName, description, address, phone, email, facebookUrl, instagramUrl, mapsEmbedUrl }
       });
     }
 
@@ -928,55 +1013,9 @@ app.put('/api/footer', ...requireAdmin, async (req, res) => {
 });
 
 // ==========================================
-// API MENU ITEMS (Untuk Navigasi Dashboard)
-// ==========================================
-
-// 1. GET - Ambil Semua Menu Navigasi
-app.get('/api/menu-items', async (req, res) => {
-  try {
-    const menuItems = await prisma.menuItem.findMany({
-      orderBy: { sortOrder: 'asc' },
-      include: { page: true } // Mengambil relasi halaman jika ada (pageId)
-    });
-    res.json({ success: true, data: menuItems });
-  } catch (error) {
-    console.error('Error GET Menu Items:', error);
-    res.status(500).json({ success: false, message: 'Gagal memuat menu' });
-  }
-});
-
-// 2. POST - Tambah Menu Baru
-app.post('/api/menu-items', ...requireAdmin, async (req, res) => {
-  try {
-    const { parent_id, parentId, title, url, target, icon, section_key, sectionKey, sort_order, sortOrder, status, type, page_id, pageId } = req.body;
-    
-    const newMenu = await prisma.menuItem.create({
-      data: {
-        parentId: parentId || parent_id ? Number(parentId || parent_id) : null,
-        title,
-        url: url || '#',
-        target: target || '_self',
-        icon: icon || null,
-        sectionKey: sectionKey || section_key || null,
-        sortOrder: sortOrder || sort_order ? Number(sortOrder || sort_order) : 0,
-        status: status || 'active',
-        type: type || 'custom',
-        pageId: pageId || page_id ? Number(pageId || page_id) : null
-      }
-    });
-    res.status(201).json({ success: true, message: 'Menu berhasil ditambahkan', data: newMenu });
-  } catch (error) {
-    console.error('Error POST Menu Item:', error);
-    res.status(500).json({ success: false, message: 'Gagal menambah menu' });
-  }
-});
-
-
-// ==========================================
 // API MENU ITEMS (Untuk Navigasi & Sidebar)
 // ==========================================
 
-// 1. GET - Ambil Semua Menu Item (Aktif & Terurut)
 app.get('/api/menu-items', async (req, res) => {
   try {
     const menuItems = await prisma.menuItem.findMany({
@@ -991,7 +1030,6 @@ app.get('/api/menu-items', async (req, res) => {
   }
 });
 
-// 2. POST - Tambah Menu Item Baru
 app.post('/api/menu-items', ...requireAdmin, async (req, res) => {
   try {
     const { title, url, target, icon, sectionKey, sortOrder, status, type, pageId, parentId } = req.body;
@@ -1018,7 +1056,6 @@ app.post('/api/menu-items', ...requireAdmin, async (req, res) => {
   }
 });
 
-// 3. PUT - Update Menu Item
 app.put('/api/menu-items/:id', ...requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1047,7 +1084,6 @@ app.put('/api/menu-items/:id', ...requireAdmin, async (req, res) => {
   }
 });
 
-// 4. DELETE - Hapus Menu Item
 app.delete('/api/menu-items/:id', ...requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -1060,25 +1096,18 @@ app.delete('/api/menu-items/:id', ...requireAdmin, async (req, res) => {
 });
 
 
-
 // API KARYA PRESTASI
-// GET: Ambil semua data achievements (Karya & Prestasi)
 app.get('/api/achievements', async (req, res) => {
   try {
     const data = await prisma.achievements.findMany({
-      where: {
-        show: 1,
-      },
+      where: { show: 1 },
       orderBy: [
         { sort_order: 'asc' },
         { id: 'desc' },
       ],
     });
 
-    res.json({
-      success: true,
-      data: data,
-    });
+    res.json({ success: true, data: data });
   } catch (error) {
     console.error('Error fetching achievements:', error);
     res.status(500).json({
@@ -1089,11 +1118,7 @@ app.get('/api/achievements', async (req, res) => {
   }
 });
 
-// Middleware agar Express bisa membaca JSON dari request body
-app.use(express.json());
-
-// POST: Tambah Prestasi Baru
-app.post('/api/achievements', ...requireStaff, async (req, res) => {
+app.post('/api/achievements', ...requireStaff, uploadSingleSafe('photo'), resolveImage('photo', 'achievements'), async (req, res) => {
   try {
     const { student_name, class_name, achievement, level, year, photo, sort_order } = req.body;
 
@@ -1104,7 +1129,7 @@ app.post('/api/achievements', ...requireStaff, async (req, res) => {
         achievement: String(achievement),
         level: String(level || 'Nasional'),
         year: parseInt(year, 10) || new Date().getFullYear(),
-        photo: photo ? String(photo) : null, // <= TAMBAHKAN FIELD PHOTO DI SINI
+        photo: photo ? String(photo) : null,
         show: 1,
         sort_order: parseInt(sort_order, 10) || 0
       },
@@ -1125,8 +1150,7 @@ app.post('/api/achievements', ...requireStaff, async (req, res) => {
   }
 });
 
-// PUT: Update data achievement
-app.put('/api/achievements/:id', ...requireStaff, async (req, res) => {
+app.put('/api/achievements/:id', ...requireStaff, uploadSingleSafe('photo'), resolveImage('photo', 'achievements'), async (req, res) => {
   try {
     const { id } = req.params;
     const { student_name, class_name, achievement, level, year, sort_order, photo } = req.body;
@@ -1147,24 +1171,17 @@ app.put('/api/achievements/:id', ...requireStaff, async (req, res) => {
     if (oldOrder !== newOrder) {
       if (oldOrder < newOrder) {
         await prisma.achievements.updateMany({
-          where: {
-            sort_order: { gt: oldOrder, lte: newOrder },
-            id: { not: targetId },
-          },
+          where: { sort_order: { gt: oldOrder, lte: newOrder }, id: { not: targetId } },
           data: { sort_order: { decrement: 1 } },
         });
       } else {
         await prisma.achievements.updateMany({
-          where: {
-            sort_order: { gte: newOrder, lt: oldOrder },
-            id: { not: targetId },
-          },
+          where: { sort_order: { gte: newOrder, lt: oldOrder }, id: { not: targetId } },
           data: { sort_order: { increment: 1 } },
         });
       }
     }
 
-    // Update data utama
     const updatedAchievement = await prisma.achievements.update({
       where: { id: targetId },
       data: {
@@ -1173,10 +1190,15 @@ app.put('/api/achievements/:id', ...requireStaff, async (req, res) => {
         achievement: String(achievement),
         level: String(level),
         year: parseInt(year, 10),
-        photo: photo ? String(photo) : null, // <= TAMBAHKAN FIELD PHOTO DI SINI
+        photo: photo ? String(photo) : null,
         sort_order: newOrder,
       },
     });
+
+        // currentItem sudah diambil di atas (untuk logika sort_order) -> tinggal dipakai ulang di sini
+    if (currentItem.photo && currentItem.photo !== photo) {
+      await deleteFromStorageByUrl(currentItem.photo);
+    }
 
     res.json({
       success: true,
@@ -1193,26 +1215,19 @@ app.put('/api/achievements/:id', ...requireStaff, async (req, res) => {
   }
 });
 
-// DELETE: Hapus data achievement berdasarkan ID
 app.delete('/api/achievements/:id', ...requireStaff, async (req, res) => {
   try {
     const { id } = req.params;
+    const deleted = await prisma.achievements.delete({ where: { id: parseInt(id) } });
 
-    await prisma.achievements.delete({
-      where: { id: parseInt(id) },
-    });
+    if (deleted?.photo) {
+      await deleteFromStorageByUrl(deleted.photo);
+    }
 
-    res.json({
-      success: true,
-      message: 'Berhasil menghapus data prestasi',
-    });
+    res.json({ success: true, message: 'Berhasil menghapus data prestasi' });
   } catch (error) {
     console.error('Error deleting achievement:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Gagal menghapus data prestasi',
-      error: error.message,
-    });
+    res.status(500).json({ success: false, message: 'Gagal menghapus data prestasi', error: error.message });
   }
 });
 
@@ -1232,10 +1247,10 @@ app.get('/api/settings', async (req, res) => {
 
 app.put('/api/settings/bulk-update', ...requireAdmin, async (req, res) => {
   try {
-    const updates = req.body; 
+    const updates = req.body;
     for (const [key, value] of Object.entries(updates)) {
       const existing = await prisma.setting.findFirst({ where: { key: key } });
-      
+
       if (existing) {
         await prisma.setting.update({
           where: { id: existing.id },
@@ -1254,38 +1269,73 @@ app.put('/api/settings/bulk-update', ...requireAdmin, async (req, res) => {
   }
 });
 
+// BARU (Fase 3.4): upload gambar khusus untuk setting bertipe gambar (mis. logo, favicon)
+// Frontend kirim FormData field 'image' (file ATAU url teks) ke /api/settings/upload-image/<key>
+app.post('/api/settings/upload-image/:key', ...requireAdmin, uploadSingleSafe('image'), resolveImage('image', 'settings'), async (req, res) => {
+  try {
+    const { key } = req.params;
+    const { image } = req.body;
+    const existing = await prisma.setting.findFirst({ where: { key } });
+    const oldImageUrl = existing?.value;
+
+    const saved = existing
+      ? await prisma.setting.update({ where: { id: existing.id }, data: { value: image } })
+      : await prisma.setting.create({ data: { key, value: image } });
+
+    // Hapus gambar lama (mis. logo/favicon versi sebelumnya) kalau memang diganti
+    if (oldImageUrl && oldImageUrl !== image) {
+      await deleteFromStorageByUrl(oldImageUrl);
+    }
+
+    res.json({ success: true, message: 'Gambar pengaturan diperbarui', data: saved });
+  } catch (error) {
+    console.error('Error upload settings image:', error);
+    res.status(500).json({ success: false, message: 'Gagal upload gambar pengaturan' });
+  }
+});
 
 // ==========================================
 // API DOWNLOADS (PRISMA ORM)
 // ==========================================
 
-// 1. GET ALL DOWNLOADS
+// Downloads TIDAK lewat Cloudinary (bukan gambar, berupa dokumen/berkas) -> link disimpan apa adanya,
+// termasuk boleh dari Google Drive. Yang dilakukan cuma menormalkan link "view" Drive
+// menjadi link direct-download, supaya tombol "Unduh" di frontend langsung mengunduh filenya.
+function normalizeDriveUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  const patterns = [
+    /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
+    /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
+    /drive\.google\.com\/uc\?(?:export=[a-z]+&)?id=([a-zA-Z0-9_-]+)/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m && m[1]) {
+      return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+    }
+  }
+  return url;
+}
+
 app.get('/api/downloads', optionalAuth, async (req, res) => {
   try {
     const isStaff = ['admin', 'editor'].includes(req.user?.role);
     const downloads = await prisma.download.findMany({
-      where: isStaff ? {} : { show: 1 }, // tamu hanya melihat file yang ditampilkan
+      where: isStaff ? {} : { show: 1 },
       orderBy: [
-        { sortOrder: 'asc' }, // Menggunakan sortOrder (bukan sort_order)
+        { sortOrder: 'asc' },
         { id: 'desc' }
       ]
     });
 
-    res.status(200).json({
-      success: true,
-      data: downloads
-    });
+    res.status(200).json({ success: true, data: downloads });
   } catch (error) {
     console.error("Error GET Downloads:", error.message);
-    res.status(500).json({ 
-      success: false, 
-      message: error.message 
-    });
+    res.status(500).json({ success: false, message: error.message });
   }
 });
 
-// 2. POST DOWNLOAD (Tambah Data Baru)
-app.post('/api/downloads', ...requireStaff, async (req, res) => {
+app.post('/api/downloads', ...requireStaff, uploadSingleSafeFile('file'), resolveDownloadFile('downloads'), async (req, res) => {
   const { title, category, description, url, file_size, fileSize, sort_order, sortOrder, show } = req.body;
 
   if (!title || !url) {
@@ -1293,55 +1343,70 @@ app.post('/api/downloads', ...requireStaff, async (req, res) => {
   }
 
   try {
+    const finalUrl = normalizeDriveUrl(url);
+
+    // Kalau admin isi Link URL manual (bukan upload file, yang sudah otomatis dapat fileSize
+    // dari resolveDownloadFile) dan belum isi ukuran -> coba deteksi otomatis dari header berkas,
+    // termasuk link Google Drive.
+    let finalFileSize = fileSize || file_size || '';
+    if (!finalFileSize) {
+      finalFileSize = await detectRemoteFileSize(finalUrl);
+    }
+
     const newDownload = await prisma.download.create({
       data: {
         title,
         category: category || 'Lainnya',
         description: description || '',
-        url,
-        fileSize: fileSize || file_size || '', // Menangani fileSize / file_size
-        sortOrder: Number(sortOrder ?? sort_order ?? 1), // Menangani sortOrder / sort_order
+        url: finalUrl,
+        fileSize: finalFileSize,
+        sortOrder: Number(sortOrder ?? sort_order ?? 1),
         show: Number(show ?? 1)
       }
     });
 
-    res.status(201).json({ 
-      success: true, 
-      message: 'Berkas berhasil ditambahkan', 
-      data: newDownload 
-    });
+    res.status(201).json({ success: true, message: 'Berkas berhasil ditambahkan', data: newDownload });
   } catch (err) {
     console.error('Error POST download:', err.message);
     res.status(500).json({ success: false, message: 'Gagal menambah data: ' + err.message });
   }
 });
 
-// 3. PUT DOWNLOAD (Edit Data)
-app.put('/api/downloads/:id', ...requireStaff, async (req, res) => {
+app.put('/api/downloads/:id', ...requireStaff, uploadSingleSafeFile('file'), resolveDownloadFile('downloads'), async (req, res) => {
   const { id } = req.params;
   const { title, category, description, url, file_size, fileSize, sort_order, sortOrder, show } = req.body;
 
   try {
+    // Ambil URL berkas LAMA dulu sebelum ditimpa, supaya nanti bisa dihapus dari Cloudinary
+    // kalau memang berkasnya diganti (link Google Drive lama tidak ikut terhapus, aman).
+    const current = await prisma.download.findUnique({ where: { id: Number(id) } });
+    const oldUrl = current?.url;
+
+    const finalUrl = normalizeDriveUrl(url);
+
+    let finalFileSize = fileSize || file_size || '';
+    if (!finalFileSize) {
+      finalFileSize = await detectRemoteFileSize(finalUrl);
+    }
+
     const updatedDownload = await prisma.download.update({
-      where: { 
-        id: Number(id)
-      },
+      where: { id: Number(id) },
       data: {
         title,
         category,
         description,
-        url,
-        fileSize: fileSize || file_size || '',
+        url: finalUrl,
+        fileSize: finalFileSize,
         sortOrder: Number(sortOrder ?? sort_order ?? 1),
         show: Number(show ?? 1)
       }
     });
 
-    res.json({ 
-      success: true, 
-      message: 'Berkas berhasil diperbarui', 
-      data: updatedDownload 
-    });
+    if (oldUrl && oldUrl !== finalUrl) {
+      await deleteFromStorageByUrl(oldUrl);
+    }
+
+    res.json({ success: true, message: 'Berkas berhasil diperbarui', data: updatedDownload });
   } catch (err) {
     console.error('Error PUT download:', err.message);
     if (err.code === 'P2025') {
@@ -1351,16 +1416,17 @@ app.put('/api/downloads/:id', ...requireStaff, async (req, res) => {
   }
 });
 
-// 4. DELETE DOWNLOAD (Hapus Data)
 app.delete('/api/downloads/:id', ...requireStaff, async (req, res) => {
   const { id } = req.params;
 
   try {
-    await prisma.download.delete({
-      where: { 
-        id: Number(id)
-      }
-    });
+    const deleted = await prisma.download.delete({ where: { id: Number(id) } });
+
+    // Data di database sudah hilang, sekarang bersihkan file fisiknya juga di Cloudinary
+    // (kalau memang berkas hasil upload kita; link Google Drive dibiarkan, bukan milik kita)
+    if (deleted?.url) {
+      await deleteFromStorageByUrl(deleted.url);
+    }
 
     res.json({ success: true, message: 'Berkas berhasil dihapus' });
   } catch (err) {
@@ -1372,6 +1438,33 @@ app.delete('/api/downloads/:id', ...requireStaff, async (req, res) => {
   }
 });
 
+
+// ==========================================
+// DATABASE BACKUP / EXPORT (KHUSUS ADMIN)
+// ==========================================
+app.get('/api/database/summary', ...requireAdmin, async (req, res) => {
+  try {
+    const summary = await getDatabaseSummary(prisma);
+    res.json({ success: true, data: summary });
+  } catch (error) {
+    console.error('Error GET Database Summary:', error);
+    res.status(500).json({ success: false, message: 'Gagal mengambil ringkasan database' });
+  }
+});
+
+app.get('/api/database/export', ...requireAdmin, async (req, res) => {
+  try {
+    const sql = await generateDatabaseDump(prisma);
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `backup-database-${stamp}.sql`;
+    res.setHeader('Content-Type', 'application/sql; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.status(200).send(sql);
+  } catch (error) {
+    console.error('Error GET Database Export:', error);
+    res.status(500).json({ success: false, message: 'Gagal membuat file backup database' });
+  }
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);

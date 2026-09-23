@@ -13,6 +13,7 @@ const TestimonialPage = () => {
   const [editId, setEditId] = useState(null);
   const [adminFormData, setAdminFormData] = useState({ name: '', role: '', quote: '', show: 1, photo: '' });
   const [adminPhotoMode, setAdminPhotoMode] = useState('url');
+  const [selectedAdminFile, setSelectedAdminFile] = useState(null);
   
   // State Pencarian & Smart Dropdown
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,10 +51,13 @@ const TestimonialPage = () => {
     }
   };
 
+  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
   const handleFileUpload = (e, formType) => {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) return alert("Ukuran file terlalu besar! Maksimal 2MB.");
+
+    if (formType === 'admin') setSelectedAdminFile(file);
 
     const reader = new FileReader();
     reader.readAsDataURL(file);
@@ -105,6 +109,7 @@ const TestimonialPage = () => {
     setModalMode('add');
     setAdminFormData({ name: '', role: '', quote: '', show: 1, photo: '' });
     setAdminPhotoMode('url');
+    setSelectedAdminFile(null);
     setIsModalOpen(true);
   };
 
@@ -114,16 +119,26 @@ const TestimonialPage = () => {
     setEditId(t.id);
     setAdminFormData({ name: t.name, role: t.role, quote: t.quote, show: t.show, photo: t.photo || '' });
     setAdminPhotoMode(t.photo && t.photo.length > 200 ? 'upload' : 'url');
+    setSelectedAdminFile(null);
     setIsModalOpen(true);
   };
 
   const handleAdminSubmit = async (e) => {
     e.preventDefault();
     try {
+      // File asli dikirim via FormData -> backend upload ke Cloudinary,
+      // hanya URL hasilnya yang disimpan ke database (bukan base64).
+      const fd = new FormData();
+      fd.append('name', adminFormData.name || '');
+      fd.append('role', adminFormData.role || '');
+      fd.append('quote', adminFormData.quote || '');
+      fd.append('show', adminFormData.show);
+      fd.append('photo', adminPhotoMode === 'upload' && selectedAdminFile ? selectedAdminFile : (adminFormData.photo || ''));
+
       if (modalMode === 'add') {
-        await axios.post('http://localhost:5002/api/testimonials/admin', adminFormData, authHeaders());
+        await axios.post('http://localhost:5002/api/testimonials/admin', fd, authHeaders());
       } else {
-        await axios.put(`http://localhost:5002/api/testimonials/${editId}`, adminFormData, authHeaders());
+        await axios.put(`http://localhost:5002/api/testimonials/${editId}`, fd, authHeaders());
       }
       setIsModalOpen(false);
       fetchData();

@@ -22,6 +22,7 @@ const AchievementSection = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [imageTab, setImageTab] = useState('url');
+  const [selectedFile, setSelectedFile] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeMenuId, setActiveMenuId] = useState(null);
 
@@ -72,6 +73,7 @@ const AchievementSection = () => {
     setIsEditing(false);
     setSelectedId(null);
     setImageTab('url');
+    setSelectedFile(null);
     setFormData({
       student_name: '',
       class_name: '',
@@ -89,6 +91,7 @@ const AchievementSection = () => {
     setIsEditing(true);
     setSelectedId(item.id);
     setImageTab(item.photo?.startsWith('data:') || !item.photo?.startsWith('http') ? 'upload' : 'url');
+    setSelectedFile(null);
     setFormData({
       student_name: item.student_name || '',
       class_name: item.class_name || '',
@@ -118,9 +121,11 @@ const AchievementSection = () => {
     }
   };
 
+  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({ ...prev, photo: reader.result }));
@@ -133,18 +138,23 @@ const AchievementSection = () => {
     e.preventDefault();
     setSubmitting(true);
 
-    const payload = {
-      ...formData,
-      year: parseInt(formData.year, 10) || new Date().getFullYear(),
-      sort_order: parseInt(formData.sort_order, 10) || 1,
-      show: parseInt(formData.show, 10)
-    };
+    // File asli dikirim via FormData -> backend upload ke Cloudinary,
+    // hanya URL hasilnya yang disimpan ke database (bukan base64).
+    const fd = new FormData();
+    fd.append('student_name', formData.student_name || '');
+    fd.append('class_name', formData.class_name || '');
+    fd.append('achievement', formData.achievement || '');
+    fd.append('level', formData.level || '');
+    fd.append('year', parseInt(formData.year, 10) || new Date().getFullYear());
+    fd.append('sort_order', parseInt(formData.sort_order, 10) || 1);
+    fd.append('show', parseInt(formData.show, 10));
+    fd.append('photo', imageTab === 'upload' && selectedFile ? selectedFile : (formData.photo || ''));
 
     try {
       if (isEditing) {
-        await axios.put(`${API_URL}/${selectedId}`, payload);
+        await axios.put(`${API_URL}/${selectedId}`, fd);
       } else {
-        await axios.post(API_URL, payload);
+        await axios.post(API_URL, fd);
       }
       fetchAchievements();
       handleCloseModal();

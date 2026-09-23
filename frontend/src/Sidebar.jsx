@@ -105,7 +105,8 @@ export default function Sidebar({
       subItems: [
         { title: 'Profile & Identitas', url: '/admin/settings/profile' },
         { title: 'Tema & Tampilan', url: '/admin/settings/appearance' },
-        { title: 'Kontak & Maps', url: '/admin/settings/contact' }
+        { title: 'Kontak & Maps', url: '/admin/settings/contact' },
+        { title: 'Database', url: '/admin/settings/database' }
       ]
     }
   ];

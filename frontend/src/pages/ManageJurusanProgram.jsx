@@ -17,12 +17,14 @@ export default function ManageJurusanProgram() {
   const [showModalJurusan, setShowModalJurusan] = useState(false);
   const [editIdJurusan, setEditIdJurusan] = useState(null);
   const [imageTypeJurusan, setImageTypeJurusan] = useState('url');
+  const [selectedFileJurusan, setSelectedFileJurusan] = useState(null);
   const [newJurusan, setNewJurusan] = useState({ title: '', slug: '', desc: '', imageIcon: '', subjects: '', career: '' });
 
   // State Modal Program
   const [showModalProgram, setShowModalProgram] = useState(false);
   const [editIdProgram, setEditIdProgram] = useState(null);
   const [imageTypeProgram, setImageTypeProgram] = useState('url');
+  const [selectedFileProgram, setSelectedFileProgram] = useState(null);
   const [newProgram, setNewProgram] = useState({ title: '', desc: '', badge: '', imageIcon: '' });
 
   // --- STATE DROPDOWN SMART POSITIONING ---
@@ -55,9 +57,11 @@ export default function ManageJurusanProgram() {
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [dropdownConfig.id]);
 
-  const handleFileUpload = (e, setFormState, formState) => {
+  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
+  const handleFileUpload = (e, setFormState, formState, setSelectedFileState) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFileState(file);
       const reader = new FileReader();
       reader.onloadend = () => { setFormState({ ...formState, imageIcon: reader.result }); };
       reader.readAsDataURL(file);
@@ -93,6 +97,7 @@ export default function ManageJurusanProgram() {
     setEditIdJurusan(null);
     setNewJurusan({ title: '', slug: '', desc: '', imageIcon: '', subjects: '', career: '' });
     setImageTypeJurusan('url');
+    setSelectedFileJurusan(null);
     setShowModalJurusan(true);
   };
 
@@ -101,14 +106,25 @@ export default function ManageJurusanProgram() {
     setEditIdJurusan(item.id);
     setNewJurusan({ ...item });
     setImageTypeJurusan(item.imageIcon && item.imageIcon.length > 200 ? 'file' : 'url'); 
+    setSelectedFileJurusan(null);
     setShowModalJurusan(true);
   };
 
   const handleSubmitJurusan = async (e) => {
     e.preventDefault();
     try {
-      if (editIdJurusan) await axios.put(`${API_URL}/jurusan/${editIdJurusan}`, newJurusan);
-      else await axios.post(`${API_URL}/jurusan`, newJurusan);
+      // File asli dikirim via FormData -> backend upload ke Cloudinary,
+      // hanya URL hasilnya yang disimpan ke database (bukan base64).
+      const fd = new FormData();
+      fd.append('title', newJurusan.title || '');
+      fd.append('slug', newJurusan.slug || '');
+      fd.append('desc', newJurusan.desc || '');
+      fd.append('subjects', newJurusan.subjects || '');
+      fd.append('career', newJurusan.career || '');
+      fd.append('imageIcon', imageTypeJurusan === 'file' && selectedFileJurusan ? selectedFileJurusan : (newJurusan.imageIcon || ''));
+
+      if (editIdJurusan) await axios.put(`${API_URL}/jurusan/${editIdJurusan}`, fd);
+      else await axios.post(`${API_URL}/jurusan`, fd);
       setShowModalJurusan(false); fetchData();
     } catch (error) { alert(`Gagal menyimpan jurusan: ${error.response?.data?.message || error.message}`); }
   };
@@ -125,6 +141,7 @@ export default function ManageJurusanProgram() {
     setEditIdProgram(null);
     setNewProgram({ title: '', desc: '', badge: '', imageIcon: '' });
     setImageTypeProgram('url');
+    setSelectedFileProgram(null);
     setShowModalProgram(true);
   };
 
@@ -133,14 +150,23 @@ export default function ManageJurusanProgram() {
     setEditIdProgram(item.id);
     setNewProgram({ ...item });
     setImageTypeProgram(item.imageIcon && item.imageIcon.length > 200 ? 'file' : 'url');
+    setSelectedFileProgram(null);
     setShowModalProgram(true);
   };
 
   const handleSubmitProgram = async (e) => {
     e.preventDefault();
     try {
-      if (editIdProgram) await axios.put(`${API_URL}/program/${editIdProgram}`, newProgram);
-      else await axios.post(`${API_URL}/program`, newProgram);
+      // File asli dikirim via FormData -> backend upload ke Cloudinary,
+      // hanya URL hasilnya yang disimpan ke database (bukan base64).
+      const fd = new FormData();
+      fd.append('title', newProgram.title || '');
+      fd.append('desc', newProgram.desc || '');
+      fd.append('badge', newProgram.badge || '');
+      fd.append('imageIcon', imageTypeProgram === 'file' && selectedFileProgram ? selectedFileProgram : (newProgram.imageIcon || ''));
+
+      if (editIdProgram) await axios.put(`${API_URL}/program/${editIdProgram}`, fd);
+      else await axios.post(`${API_URL}/program`, fd);
       setShowModalProgram(false); fetchData();
     } catch (error) { alert(`Gagal menyimpan program: ${error.response?.data?.message || error.message}`); }
   };
@@ -374,7 +400,7 @@ export default function ManageJurusanProgram() {
                 {imageTypeJurusan === 'url' ? (
                   <input type="text" placeholder="https://contoh.com/ikon.png" className="input-modern" value={newJurusan.imageIcon} onChange={e => setNewJurusan({...newJurusan, imageIcon: e.target.value})} />
                 ) : (
-                  <input type="file" accept="image/*" className="input-modern file-style" onChange={e => handleFileUpload(e, setNewJurusan, newJurusan)} />
+                  <input type="file" accept="image/*" className="input-modern file-style" onChange={e => handleFileUpload(e, setNewJurusan, newJurusan, setSelectedFileJurusan)} />
                 )}
 
                 {/* --- PREVIEW GAMBAR JURUSAN --- */}
@@ -444,7 +470,7 @@ export default function ManageJurusanProgram() {
                 {imageTypeProgram === 'url' ? (
                   <input type="text" placeholder="https://contoh.com/foto.jpg" className="input-modern" value={newProgram.imageIcon} onChange={e => setNewProgram({...newProgram, imageIcon: e.target.value})} />
                 ) : (
-                  <input type="file" accept="image/*" className="input-modern file-style" onChange={e => handleFileUpload(e, setNewProgram, newProgram)} />
+                  <input type="file" accept="image/*" className="input-modern file-style" onChange={e => handleFileUpload(e, setNewProgram, newProgram, setSelectedFileProgram)} />
                 )}
 
                 {/* --- PREVIEW GAMBAR PROGRAM --- */}

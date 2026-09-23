@@ -5,6 +5,7 @@ import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom'
 import { Check, Loader2, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 import { SettingsContext } from '../context/SettingsContext';
 import ThemePreview from '../components/ThemePreview';
+import DatabaseBackupPanel from '../components/DatabaseBackupPanel';
 import {
   API_URL, FONT_OPTIONS, ensureFont, normalizeFont, normalizeMode,
   PRESETS, DEFAULT_CUSTOM, CUSTOM_FIELD_MAP, THEME_KEYS, resolveCustom, presetToCustom,
@@ -133,6 +134,7 @@ export default function ManageSettings() {
   const [toastMessage, setToastMessage] = useState(null);
   const [logoMode, setLogoMode] = useState('url');
   const [profileMode, setProfileMode] = useState('url');
+  const [pendingImageFiles, setPendingImageFiles] = useState({}); // { school_logo: File, school_profile_image: File }
   const [footerSeed, setFooterSeed] = useState(null); // data footer lama (null = belum dimuat)
   const [formData, setFormData] = useState(() => buildForm(settings, {}));
   const touchedTheme = useRef(false); // true = admin sedang mengubah tema (belum disimpan)
@@ -176,10 +178,13 @@ export default function ManageSettings() {
   };
   const handleChange = (e) => setField(e.target.name, e.target.value);
 
+  // File asli disimpan di pendingImageFiles (dikirim ke backend saat submit),
+  // base64 cuma dipakai untuk pratinjau di browser.
   const handleFileChange = (e, fieldName) => {
     const file = e.target.files[0];
     if (!file) return;
     if (file.size > 2 * 1024 * 1024) return showToast('Ukuran file terlalu besar! Maksimal 2MB.', 'error');
+    setPendingImageFiles((prev) => ({ ...prev, [fieldName]: file }));
     const reader = new FileReader();
     reader.onloadend = () => setField(fieldName, reader.result);
     reader.readAsDataURL(file);
@@ -203,7 +208,17 @@ export default function ManageSettings() {
     e.preventDefault();
     setIsSaving(true);
     try {
-      const f = formData;
+      const f = { ...formData };
+
+      // Upload gambar (logo/hero) yang dipilih ke Cloudinary dulu lewat endpoint khusus
+      // -> yang tersimpan di tabel settings cuma URL hasilnya (bukan base64).
+      for (const [key, file] of Object.entries(pendingImageFiles)) {
+        const imgFd = new FormData();
+        imgFd.append('image', file);
+        const res = await axios.post(`${API_URL}/api/settings/upload-image/${key}`, imgFd);
+        f[key] = res.data?.data?.value || f[key];
+      }
+
       const payload = {
         ...f,
         contact_phone: f.contact_phone.trim(),
@@ -218,17 +233,20 @@ export default function ManageSettings() {
         contact_configured: '1',
       };
       await saveSettings(payload); // langsung berlaku di seluruh website
+      setFormData(payload);
+      setPendingImageFiles({});
       touchedTheme.current = false;
       showToast('Pengaturan tersimpan dan langsung tampil di website.', 'success');
     } catch (error) {
       // Preview tetap tampil supaya admin bisa memperbaiki & mencoba lagi
-      showToast(`Gagal menyimpan: ${error.message}`, 'error');
+      showToast(`Gagal menyimpan: ${error.response?.data?.message || error.message}`, 'error');
     } finally {
       setIsSaving(false);
     }
   };
 
   const isAppearance = location.pathname.endsWith('/appearance');
+  const isDatabase = location.pathname.endsWith('/database');
   const resolved = resolveCustom(formData);
   const mapSrc = useDebounced(toMapEmbedSrc(formData.contact_map_embed_url, formData.contact_address));
 
@@ -245,6 +263,7 @@ export default function ManageSettings() {
           <NavLink to="/admin/settings/profile" className={({ isActive }) => `ms-nav-link ${isActive ? 'active' : ''}`}>Profile</NavLink>
           <NavLink to="/admin/settings/appearance" className={({ isActive }) => `ms-nav-link ${isActive ? 'active' : ''}`}>Appearance</NavLink>
           <NavLink to="/admin/settings/contact" className={({ isActive }) => `ms-nav-link ${isActive ? 'active' : ''}`}>Contact & Maps</NavLink>
+          <NavLink to="/admin/settings/database" className={({ isActive }) => `ms-nav-link ${isActive ? 'active' : ''}`}>Database</NavLink>
         </div>
 
         {/* CONTENT AREA ROUTING */}
@@ -464,8 +483,10 @@ export default function ManageSettings() {
                   <p className="ms-helper-text" style={{ marginTop: '-12px' }}>Kosongkan kolom untuk menyembunyikan ikon sosial media tersebut di footer.</p>
                 </div>
               } />
+              <Route path="database" element={<DatabaseBackupPanel />} />
             </Routes>
 
+            {!isDatabase && (
             <div className="ms-submit-area">
               <button type="submit" className="btn-modern-primary" disabled={isSaving}>
                 {isSaving ? (<><Loader2 className="animate-spin" size={18} />Menyimpan Perubahan...</>) : 'Simpan Pengaturan'}
@@ -474,6 +495,7 @@ export default function ManageSettings() {
                 <button type="button" className="ms-ghost-btn" onClick={discardTheme} disabled={isSaving}>Batalkan perubahan</button>
               )}
             </div>
+            )}
           </form>
         </div>
       </div>
