@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2, Edit, Link as LinkIcon, MoreHorizontal, Search, FileText, Download, X } from 'lucide-react';
+import { Plus, Trash2, Edit, Link as LinkIcon, Upload, MoreHorizontal, Search, FileText, Download, X } from 'lucide-react';
 import '../css/DownloadPage.css';
 import '../App.css';
 
@@ -20,6 +20,10 @@ export default function DownloadPage() {
     sort_order: 1,
     show: 1
   });
+
+  // 'url' = tempel link (boleh Google Drive), 'file' = upload berkas langsung (backend yang simpan ke Cloudinary)
+  const [sourceType, setSourceType] = useState('url');
+  const [selectedFile, setSelectedFile] = useState(null);
 
   // State Dropdown & Search
   const [dropdownConfig, setDropdownConfig] = useState({ id: null, right: null, top: null, bottom: null });
@@ -95,8 +99,10 @@ export default function DownloadPage() {
   };
 
   const handleOpenModal = (item = null) => {
+    setSelectedFile(null);
     if (item) {
       setEditId(item.id);
+      setSourceType('url'); // saat edit, default tampilkan sebagai link (berkas lama tidak perlu diupload ulang)
       setFormData({
         title: item.title || '',
         category: item.category || 'Kalender Akademik',
@@ -108,6 +114,7 @@ export default function DownloadPage() {
       });
     } else {
       setEditId(null);
+      setSourceType('url');
       const maxSortOrder = downloads.length > 0 ? Math.max(...downloads.map(d => d.sort_order ?? d.sortOrder ?? 0)) : 0;
       setFormData({
         title: '',
@@ -122,11 +129,23 @@ export default function DownloadPage() {
     setShowModal(true);
   };
 
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+      setFormData((prev) => ({ ...prev, file_size: '' })); // biar diisi otomatis oleh backend sesuai ukuran asli
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    if (!formData.url) {
+
+    if (sourceType === 'url' && !formData.url) {
       alert('Silakan masukkan Link URL berkas terlebih dahulu!');
+      return;
+    }
+    if (sourceType === 'file' && !selectedFile && !editId) {
+      alert('Silakan pilih berkas yang akan diupload terlebih dahulu!');
       return;
     }
 
@@ -134,19 +153,25 @@ export default function DownloadPage() {
       const url = editId ? `${API_URL}/${editId}` : API_URL;
       const method = editId ? 'PUT' : 'POST';
 
-      const payload = {
-        ...formData,
-        sortOrder: Number(formData.sort_order),
-        fileSize: formData.file_size,
-        show: Number(formData.show)
-      };
+      // Berkas asli dikirim apa adanya via FormData -> backend yang upload ke Cloudinary
+      // dan cuma URL hasil upload yang disimpan ke database (bukan base64).
+      // Kalau admin pilih tab Link URL, dikirim sebagai teks biasa (boleh link Google Drive).
+      const fd = new FormData();
+      fd.append('title', formData.title);
+      fd.append('category', formData.category);
+      fd.append('description', formData.description || '');
+      fd.append('sort_order', Number(formData.sort_order));
+      fd.append('sortOrder', Number(formData.sort_order));
+      fd.append('show', Number(formData.show));
+      fd.append('file_size', formData.file_size || '');
 
-      const res = await fetch(url, {
-        method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
+      if (sourceType === 'file' && selectedFile) {
+        fd.append('file', selectedFile);
+      } else {
+        fd.append('url', formData.url || '');
+      }
 
+      const res = await fetch(url, { method, body: fd });
       const resData = await res.json();
 
       if (res.ok) {
@@ -427,20 +452,57 @@ export default function DownloadPage() {
                 </div>
               </div>
 
-              {/* Link URL Berkas Input Direct */}
+              {/* Sumber Berkas: Link URL (boleh Google Drive) ATAU Upload Berkas Langsung */}
               <div className="form-group-modern">
-                <label style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <LinkIcon size={15} color="#2563eb" /> Link URL Berkas
-                </label>
-                <input 
-                  type="url" 
-                  name="url"
-                  placeholder="https://drive.google.com/file/... atau https://contoh.com/berkas.pdf" 
-                  className="input-modern" 
-                  value={formData.url} 
-                  onChange={handleChange} 
-                  required
-                />
+                <label>Sumber Berkas</label>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={() => setSourceType('url')}
+                    className={sourceType === 'url' ? 'btn-modern-primary' : 'btn-modern-secondary'}
+                    style={{ flex: 1, padding: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  >
+                    <LinkIcon size={14} /> Link URL
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSourceType('file')}
+                    className={sourceType === 'file' ? 'btn-modern-primary' : 'btn-modern-secondary'}
+                    style={{ flex: 1, padding: '8px', fontSize: '13px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
+                  >
+                    <Upload size={14} /> Upload Berkas
+                  </button>
+                </div>
+
+                {sourceType === 'url' ? (
+                  <input
+                    type="url"
+                    name="url"
+                    placeholder="https://drive.google.com/file/... atau https://contoh.com/berkas.pdf"
+                    className="input-modern"
+                    value={formData.url}
+                    onChange={handleChange}
+                    required={sourceType === 'url'}
+                  />
+                ) : (
+                  <>
+                    <input
+                      type="file"
+                      className="input-modern"
+                      onChange={handleFileChange}
+                    />
+                    {editId && !selectedFile && (
+                      <small style={{ color: 'var(--compreng-text-muted)' }}>
+                        Kosongkan kalau tidak ingin mengganti berkas yang sudah ada.
+                      </small>
+                    )}
+                    {selectedFile && (
+                      <small style={{ color: 'var(--compreng-text-secondary)' }}>
+                        Terpilih: {selectedFile.name}
+                      </small>
+                    )}
+                  </>
+                )}
               </div>
 
               <div className="form-group-modern">
@@ -448,10 +510,11 @@ export default function DownloadPage() {
                 <input 
                   type="text" 
                   name="file_size"
-                  placeholder="Contoh: 1.2 MB" 
+                  placeholder="Contoh: 1.2 MB (otomatis terisi kalau upload berkas)" 
                   className="input-modern" 
                   value={formData.file_size} 
                   onChange={handleChange} 
+                  disabled={sourceType === 'file' && !!selectedFile}
                 />
               </div>
 

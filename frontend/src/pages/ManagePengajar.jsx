@@ -15,6 +15,7 @@ export default function ManagePengajar() {
   const [showModal, setShowModal] = useState(false);
   const [editId, setEditId] = useState(null);
   const [imageType, setImageType] = useState('url');
+  const [selectedFile, setSelectedFile] = useState(null);
   const [formData, setFormData] = useState({ 
     name: '', role: '', photo: '', sort_order: 1, show: 1 
   });
@@ -55,10 +56,12 @@ export default function ManagePengajar() {
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [dropdownConfig.id]);
 
+  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 2 * 1024 * 1024) return alert("Ukuran file terlalu besar! Maksimal 2MB.");
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => setFormData({ ...formData, photo: reader.result });
       reader.readAsDataURL(file);
@@ -92,6 +95,7 @@ export default function ManagePengajar() {
     const maxSortOrder = teachers.length > 0 ? Math.max(...teachers.map(t => t.sort_order ?? t.sortOrder ?? 0)) : 0;
     setFormData({ name: '', role: '', photo: '', sort_order: maxSortOrder + 1, show: 1 });
     setImageType('url');
+    setSelectedFile(null);
     setIsCustomRole(false); 
     setShowModal(true);
   };
@@ -101,6 +105,7 @@ export default function ManagePengajar() {
     setEditId(item.id);
     setFormData({ ...item, sort_order: item.sort_order ?? item.sortOrder ?? 0 });
     setImageType(item.photo && item.photo.length > 200 ? 'file' : 'url');
+    setSelectedFile(null);
     setIsCustomRole(false); 
     setShowModal(true);
   };
@@ -108,10 +113,19 @@ export default function ManagePengajar() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      // File asli dikirim via FormData -> backend upload ke Cloudinary,
+      // hanya URL hasilnya yang disimpan ke database (bukan base64).
+      const fd = new FormData();
+      fd.append('name', formData.name || '');
+      fd.append('role', formData.role || '');
+      fd.append('sort_order', formData.sort_order);
+      fd.append('show', formData.show);
+      fd.append('photo', imageType === 'file' && selectedFile ? selectedFile : (formData.photo || ''));
+
       if (editId) {
-        await axios.put(`${API_URL}/teacher/${editId}`, formData);
+        await axios.put(`${API_URL}/teacher/${editId}`, fd);
       } else {
-        await axios.post(`${API_URL}/teacher`, formData);
+        await axios.post(`${API_URL}/teacher`, fd);
       }
       setShowModal(false);
       fetchData();

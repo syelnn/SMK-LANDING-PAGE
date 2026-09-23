@@ -16,6 +16,7 @@ export default function ManageNews() {
   const [openMenuId, setOpenMenuId] = useState(null);
   const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
   const [imageMode, setImageMode] = useState('file');
+  const [selectedFile, setSelectedFile] = useState(null);
 
   const [formData, setFormData] = useState({
     title: '',
@@ -74,9 +75,11 @@ export default function ManageNews() {
     }
   };
 
+  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      setSelectedFile(file);
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData((prev) => ({ ...prev, image: reader.result }));
@@ -88,6 +91,7 @@ export default function ManageNews() {
   const handleOpenAdd = () => {
     setEditId(null);
     setImageMode('file');
+    setSelectedFile(null);
     setFormData({
       title: '',
       category: 'Kegiatan',
@@ -104,6 +108,7 @@ const handleOpenEdit = (item) => {
     const itemId = item.id || item._id;
     setEditId(itemId);
     setImageMode(item.image?.startsWith('data:') || !item.image?.startsWith('http') ? 'file' : 'url');
+    setSelectedFile(null);
 
     // Memastikan format tags selalu aman saat di-load ke input teks
     let formattedTags = '';
@@ -137,18 +142,25 @@ const handleOpenEdit = (item) => {
     e.preventDefault();
     setSubmitting(true);
 
-    const payload = {
-      ...formData,
-      author: 'Admin',
-      tags: formData.tags ? formData.tags.split(',').map((t) => t.trim()).filter(Boolean) : []
-    };
+    // File asli dikirim via FormData -> backend upload ke Cloudinary,
+    // hanya URL hasilnya yang disimpan ke database (bukan base64).
+    const fd = new FormData();
+    fd.append('title', formData.title || '');
+    fd.append('category', formData.category || '');
+    fd.append('excerpt', formData.excerpt || '');
+    fd.append('content', formData.content || '');
+    fd.append('author', 'Admin');
+    fd.append('status', formData.status || 'published');
+    const tagsArr = formData.tags ? formData.tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
+    fd.append('tags', tagsArr.join(','));
+    fd.append('image', imageMode === 'file' && selectedFile ? selectedFile : (formData.image || ''));
 
     try {
       if (editId) {
-        await axios.put(`${API_URL}/${editId}`, payload);
+        await axios.put(`${API_URL}/${editId}`, fd);
         showNotification('Berita berhasil diperbarui!', 'success');
       } else {
-        await axios.post(API_URL, payload);
+        await axios.post(API_URL, fd);
         showNotification('Berita berhasil ditambahkan!', 'success');
       }
       setShowModal(false);

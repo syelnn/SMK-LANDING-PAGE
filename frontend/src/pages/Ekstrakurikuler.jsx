@@ -195,15 +195,6 @@ export default function Ekstrakurikuler() {
     setShowModal(true);
   };
 
-  const convertFileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -215,25 +206,24 @@ export default function Ekstrakurikuler() {
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
-      let iconValue = formData.icon;
+      // File asli dikirim apa adanya via FormData -> backend yang unduh/upload ke Cloudinary
+      // dan cuma URL hasil upload yang disimpan ke database (bukan base64).
+      const fd = new FormData();
+      fd.append('title', formData.title);
+      fd.append('description', formData.description || '');
+      fd.append('sort_order', Number(formData.sort_order));
+      fd.append('sortOrder', Number(formData.sort_order));
+      fd.append('show', Number(formData.show));
 
       if (logoType === 'file' && selectedFile) {
-        iconValue = await convertFileToBase64(selectedFile);
+        fd.append('icon', selectedFile);
+      } else {
+        fd.append('icon', formData.icon || '');
       }
-
-      const payload = {
-        title: formData.title,
-        description: formData.description,
-        icon: iconValue,
-        sort_order: Number(formData.sort_order),
-        sortOrder: Number(formData.sort_order),
-        show: Number(formData.show)
-      };
 
       const response = await fetch(url, {
         method: method,
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: fd
       });
 
       const result = await response.json();

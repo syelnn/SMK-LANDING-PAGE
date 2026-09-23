@@ -133,15 +133,6 @@ export default function Galeri() {
     }
   };
 
-  const convertFileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -149,11 +140,22 @@ export default function Galeri() {
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
-      let imgValue = formData.image;
-      if (logoType === 'file' && selectedFile) imgValue = await convertFileToBase64(selectedFile);
+      // File asli dikirim apa adanya via FormData -> backend yang upload ke Cloudinary
+      // dan cuma URL hasil upload yang disimpan ke database (bukan base64).
+      const fd = new FormData();
+      fd.append('category', formData.category || '');
+      fd.append('caption', formData.caption || '');
+      fd.append('is_featured', Number(formData.is_featured));
+      fd.append('sort_order', formData.sort_order);
+      fd.append('show', formData.show);
 
-      const payload = { ...formData, image: imgValue, is_featured: Number(formData.is_featured) };
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+      if (logoType === 'file' && selectedFile) {
+        fd.append('image', selectedFile);
+      } else {
+        fd.append('image', formData.image || '');
+      }
+
+      const res = await fetch(url, { method, body: fd });
       const result = await res.json();
 
       if (result.success) { 
