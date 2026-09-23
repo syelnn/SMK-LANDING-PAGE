@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import logoSekolah from '../assets/logo1.png'; 
 import '../css/viewer/navbar.css'; 
+import { getSession, clearSession } from '../utils/auth';
 
 const Navbar = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -27,20 +28,18 @@ const Navbar = () => {
   const activePathRef = useRef(location.pathname);
   const [activePath, setActivePath] = useState(location.pathname);
 
-  // Synchronize status Login User dari LocalStorage
+  
   const syncUserSession = useCallback(() => {
-    const token = localStorage.getItem('token');
-    const username = localStorage.getItem('username');
-    const email = localStorage.getItem('email');
-    const role = localStorage.getItem('role');
+    const session = getSession();
 
-    if (token && username) {
+    if (session) {
       setUser({
-        username,
-        email: email || 'Email tidak tersedia',
-        role: role || 'viewer'
+        username: session.username || session.name || 'Viewer',
+        email: session.email || 'Email tidak tersedia',
+        role: session.role || 'viewer'
       });
     } else {
+      if (localStorage.getItem('token')) clearSession(); // token ada tapi rusak/kedaluwarsa -> bersihkan
       setUser(null);
     }
   }, []);
@@ -48,6 +47,16 @@ const Navbar = () => {
   useEffect(() => {
     syncUserSession();
   }, [location.pathname, syncUserSession]);
+
+  // token invalid) supaya Navbar langsung update tanpa perlu pindah halaman/refresh dulu.
+  useEffect(() => {
+    window.addEventListener('auth:expired', syncUserSession);
+    window.addEventListener('storage', syncUserSession); // sinkron antar-tab juga
+    return () => {
+      window.removeEventListener('auth:expired', syncUserSession);
+      window.removeEventListener('storage', syncUserSession);
+    };
+  }, [syncUserSession]);
 
   useEffect(() => {
     setActivePath(location.pathname);
@@ -411,7 +420,7 @@ const Navbar = () => {
 
   // Fungsi Logout khusus Viewer
   const handleLogout = () => {
-    localStorage.clear();
+    clearSession();
     setUser(null);
     setProfileDropdownOpen(false);
     navigate('/');
@@ -531,6 +540,27 @@ const Navbar = () => {
                       </span>
                     </div>
                     <div className="nv-user__divider"></div>
+
+                    {/* Menu khusus Admin & Editor -> dashboard admin */}
+                    {(user.role === 'admin' || user.role === 'editor') && (
+                      <button
+                        type="button"
+                        className="nv-user__admin-link"
+                        onClick={() => {
+                          setProfileDropdownOpen(false);
+                          navigate('/admin/dashboard');
+                        }}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                          <rect x="3" y="3" width="7" height="7"></rect>
+                          <rect x="14" y="3" width="7" height="7"></rect>
+                          <rect x="14" y="14" width="7" height="7"></rect>
+                          <rect x="3" y="14" width="7" height="7"></rect>
+                        </svg>
+                        {user.role === 'admin' ? 'Ke Halaman Admin' : 'Ke Halaman Editor'}
+                      </button>
+                    )}
+
                     <button type="button" className="nv-user__logout" onClick={handleLogout}>
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

@@ -243,3 +243,24 @@
 @media (prefers-reduced-motion: reduce) {
   .tt-cta-go, .tt-cta-go:hover { transition: none; transform: none; }
 }
+
+@media (max-width: 768px) {
+  .tampilan-testimoni-wrapper {
+    padding: 70px 16px;
+  }
+  .tt-header {
+    margin-bottom: 40px;
+  }
+  .tt-title {
+    font-size: 26px;
+  }
+  .tt-subtitle {
+    font-size: 14px;
+  }
+  .tt-grid {
+    gap: 20px;
+  }
+  .tt-card {
+    padding: 26px 22px;
+  }
+}
