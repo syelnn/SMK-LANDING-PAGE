@@ -1,0 +1,413 @@
+/* src/css/auth.css
+   Form login / register / lupa-password.
+   Semua warna memakai token --compreng-* sehingga otomatis benar di 4 tema:
+   Light, Dark, System, dan Custom.
+
+   PENTING (akar masalah tampilan jelek sebelumnya):
+   theme.css punya selector "rakus" berbasis nama class, misalnya
+     [class*="-item"]   -> mengecat latar surface   (dulu kena .check-item  => strip putih)
+     [class*="badge"]   -> mengecat latar badge      (dulu kena .verify-envelope-badge / .forgot-icon-badge
+                                                       => ikon amplop & kunci tidak terlihat)
+     [class*="status"]  -> latar + border badge      (dulu kena .label-status & .password-match-status)
+     [class*="-wrapper"], [class*="-icon"] svg, dst.
+   Karena itu semua class baru di file ini sengaja diberi prefix "au-" / "ap-" dan
+   TIDAK mengandung kata: item, badge, status, stat, wrapper, card, box, panel, icon,
+   tag, avatar, image, line, hero. Jangan ubah nama class tanpa cek daftar itu. */
+
+.auth-container {
+  --au-ok: color-mix(in srgb, #16a34a 82%, var(--compreng-text, #0f172a));
+  --au-bad: color-mix(in srgb, #dc2626 82%, var(--compreng-text, #0f172a));
+  --au-warn: color-mix(in srgb, #d97706 82%, var(--compreng-text, #0f172a));
+  --au-muted: var(--compreng-text-secondary, #64748b);
+  --au-line-soft: color-mix(in srgb, var(--compreng-text, #0f172a) 14%, transparent);
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100dvh;
+  background-color: var(--compreng-bg, #f4f7f6);
+  padding: clamp(16px, 4vw, 32px);
+}
+
+.auth-card {
+  background-color: var(--compreng-surface, #ffffff);
+  padding: clamp(24px, 5vw, 40px);
+  border-radius: 18px;
+  box-shadow: 0 10px 40px var(--compreng-shadow, rgba(0, 0, 0, 0.08));
+  border: 1px solid var(--compreng-border, transparent);
+  width: 100%;
+  max-width: 440px;
+  text-align: center;
+}
+
+.auth-logo {
+  width: clamp(48px, 10vw, 64px);
+  height: clamp(48px, 10vw, 64px);
+  object-fit: contain;
+  margin: 0 auto 12px;
+  display: block;
+}
+
+.auth-title {
+  font-size: clamp(20px, 4vw, 24px);
+  font-weight: 800;
+  color: var(--compreng-text, #111827);
+  margin: 0 0 6px;
+}
+
+.auth-subtitle {
+  font-size: clamp(12.5px, 2.5vw, 13.5px);
+  color: var(--compreng-text-secondary, #6b7280);
+  margin: 0 0 22px;
+  line-height: 1.5;
+}
+
+.auth-form { text-align: left; }
+.form-group { text-align: left; margin-bottom: 16px; }
+
+.auth-link { color: var(--compreng-accent, #2563eb); text-decoration: none; font-weight: 600; }
+.auth-link:hover { text-decoration: underline; }
+
+/* ============ LABEL + BARIS AKSI (mis. "Lupa password?") ============ */
+.auth-container .au-row {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin: 0 0 7px !important;
+}
+.auth-container .au-row label {
+  display: block !important;
+  margin: 0 !important;
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+.auth-container .au-row .auth-link { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.03em; }
+.auth-container .au-opt { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--au-muted) !important; }
+
+/* ============ INPUT ============ */
+.auth-container .auth-card .auth-form input.form-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 12px 14px !important;
+  min-height: 46px;
+  font-size: 14px;
+  border-radius: 12px !important;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+.auth-container .auth-card .auth-form .au-field input.form-input { padding-right: 46px !important; }
+
+.auth-container .auth-card .auth-form input.form-input.is-ok {
+  border-color: var(--au-ok) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--au-ok) 16%, transparent) !important;
+}
+.auth-container .auth-card .auth-form input.form-input.is-bad {
+  border-color: var(--au-bad) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--au-bad) 16%, transparent) !important;
+}
+
+/* Kolom input + ikon di ujung kanan (mata / spinner / centang) */
+.auth-container .au-field { position: relative; display: block; background: transparent !important; }
+.auth-container .au-end {
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--au-muted) !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+}
+.auth-container .au-end svg { color: inherit !important; stroke: currentColor !important; opacity: 1 !important; }
+.auth-container button.au-end { cursor: pointer; transition: background-color 0.15s ease, color 0.15s ease; }
+.auth-container button.au-end:hover { color: var(--compreng-text, #0f172a) !important; background: var(--au-line-soft) !important; }
+.auth-container button.au-end:focus-visible { outline: 2px solid var(--compreng-accent, #2563eb); outline-offset: 1px; }
+.auth-container span.au-end { pointer-events: none; }
+.auth-container .au-end.is-ok { color: var(--au-ok) !important; }
+.auth-container .au-end.is-bad { color: var(--au-bad) !important; }
+
+@keyframes au-spin { to { transform: rotate(360deg); } }
+.au-spin { animation: au-spin 0.8s linear infinite; }
+
+/* ============ PESAN DI BAWAH FIELD ============ */
+.auth-container .au-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  margin: 8px 2px 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--au-muted) !important;
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+.auth-container .au-msg svg { flex: 0 0 auto; margin-top: 1px; color: inherit !important; stroke: currentColor !important; }
+.auth-container .au-msg.is-ok { color: var(--au-ok) !important; }
+.auth-container .au-msg.is-bad { color: var(--au-bad) !important; }
+
+/* ============ ALERT: teks merah di tengah, TANPA kotak ============ */
+.auth-container .au-alert,
+.auth-container .au-notice {
+  margin: 0 0 18px !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  text-align: center !important;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.auth-container .au-alert { color: var(--au-bad) !important; }
+.auth-container .au-notice { color: var(--au-ok) !important; }
+
+/* ============ KEKUATAN PASSWORD + CHECKLIST ============ */
+.auth-container .au-meter { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.auth-container .au-meter-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--au-line-soft);
+}
+.auth-container .au-meter-fill {
+  height: 100%;
+  border-radius: inherit;
+  background: var(--au-bad);
+  transition: width 0.25s ease, background-color 0.25s ease;
+}
+.auth-container .au-meter-fill.is-mid { background: var(--au-warn); }
+.auth-container .au-meter-fill.is-strong { background: var(--au-ok); }
+.auth-container .au-meter-text { min-width: 46px; text-align: right; font-size: 11.5px; font-weight: 700; color: var(--au-bad) !important; }
+.auth-container .au-meter-text.is-mid { color: var(--au-warn) !important; }
+.auth-container .au-meter-text.is-strong { color: var(--au-ok) !important; }
+
+.auth-container .au-rules {
+  margin-top: 10px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--compreng-border, #e5e7eb);
+  background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 65%, transparent);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 9px 14px;
+}
+.auth-container .au-rule {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 0 !important;
+  margin: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--au-muted) !important;
+  transition: color 0.15s ease;
+}
+.auth-container .au-rule.is-ok { color: var(--au-ok) !important; font-weight: 700; }
+.auth-container .au-dot {
+  flex: 0 0 16px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid color-mix(in srgb, var(--compreng-text, #0f172a) 35%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  color: var(--compreng-bg, #ffffff) !important; /* lawan dari `span {color: ... !important}` di theme.css */
+  transition: all 0.15s ease;
+}
+.auth-container .au-rule.is-ok .au-dot { background: var(--au-ok); border-color: var(--au-ok); }
+.auth-container .au-dot svg { color: inherit !important; stroke: currentColor !important; }
+
+/* ============ TOMBOL ============ */
+.auth-button {
+  width: 100%;
+  padding: 13px;
+  border-radius: 999px;
+  border: none;
+  background-color: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #ffffff);
+  font-size: 14.5px;
+  font-weight: 700;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: filter 0.15s ease, transform 0.05s ease;
+}
+.auth-button:hover:not(:disabled) { filter: brightness(1.06); }
+.auth-button:active:not(:disabled) { transform: translateY(1px); }
+.auth-button:disabled { opacity: 0.65; cursor: not-allowed; }
+
+.footer-text, .back-home {
+  font-size: 13px;
+  color: var(--compreng-text-secondary, #6b7280);
+  margin-top: 16px;
+}
+.back-home { margin-top: 10px; font-size: 12px; }
+.back-link-flex { display: inline-flex; align-items: center; gap: 6px; }
+
+.auth-container .au-resend { margin: -6px 0 16px; text-align: center; font-size: 12.5px; color: var(--au-muted) !important; }
+.auth-container .au-linkbtn {
+  background: none !important;
+  border: 0 !important;
+  padding: 0 !important;
+  box-shadow: none !important;
+  color: var(--compreng-accent, #2563eb) !important;
+  font-weight: 700;
+  font-size: 12.5px;
+  cursor: pointer;
+}
+.auth-container .au-linkbtn:hover:not(:disabled) { text-decoration: underline; }
+.auth-container .au-linkbtn:disabled { color: var(--au-muted) !important; cursor: not-allowed; text-decoration: none; }
+
+/* ============ IKON BULAT (amplop verifikasi & kunci reset password) ============
+   Latar = tint aksen tema, ikon = warna aksen => selalu kontras di Light/Dark/System/Custom. */
+.auth-container .au-mark-row { display: flex; justify-content: center; margin-bottom: 14px; }
+.auth-container .au-mark {
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 14%, var(--compreng-surface, #ffffff)) !important;
+  border: 1.5px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 38%, transparent) !important;
+  color: var(--compreng-accent, #2563eb) !important;
+  box-shadow: none !important;
+}
+.auth-container .au-mark svg { width: 34px; height: 34px; color: inherit !important; stroke: currentColor !important; opacity: 1 !important; }
+
+/* ============ INDIKATOR LANGKAH & OTP ============ */
+.otp-input { letter-spacing: 10px; text-align: center; font-size: 20px; font-weight: 700; }
+.auth-container .auth-form input.form-input.otp-input { text-align: center; font-size: 20px; }
+.step-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 18px; }
+.step-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--au-line-soft); transition: all 0.2s ease; }
+.step-dot.active { background: var(--compreng-accent, #2563eb); width: 24px; border-radius: 4px; }
+
+/* ============ PEMILIH FOTO PROFIL (Register) ============ */
+.auth-container .ap {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--compreng-border, #e5e7eb);
+  background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 60%, transparent);
+}
+.auth-container .ap-pic {
+  position: relative;
+  flex: 0 0 68px;
+  width: 68px;
+  height: 68px;
+  padding: 0 !important;
+  border-radius: 50%;
+  border: 2px solid var(--compreng-border, #e5e7eb) !important;
+  background: var(--compreng-surface, #ffffff) !important;
+  color: var(--au-muted) !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: visible;
+  box-shadow: none !important;
+}
+.auth-container .ap-pic img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.auth-container .ap-pic svg { color: inherit !important; stroke: currentColor !important; }
+.auth-container .ap-initial { font-size: 24px; font-weight: 800; color: var(--compreng-accent, #2563eb) !important; }
+.auth-container .ap-cam {
+  position: absolute;
+  right: -2px;
+  bottom: -2px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--compreng-accent, #2563eb) !important;
+  border: 2px solid var(--compreng-surface, #ffffff) !important;
+  color: var(--compreng-accent-text, #ffffff) !important;
+}
+.auth-container .ap-cam svg { color: inherit !important; stroke: currentColor !important; }
+
+.auth-container .ap-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+.auth-container .ap-tabs {
+  display: inline-flex;
+  align-self: flex-start;
+  padding: 3px;
+  gap: 2px;
+  border-radius: 999px;
+  background: var(--au-line-soft);
+}
+.auth-container .ap-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px !important;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background: transparent !important;
+  color: var(--au-muted) !important;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: none !important;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.auth-container .ap-tab svg { color: inherit !important; stroke: currentColor !important; }
+.auth-container .ap-tab.is-on {
+  background: var(--compreng-surface, #ffffff) !important;
+  color: var(--compreng-accent, #2563eb) !important;
+  box-shadow: 0 1px 4px var(--compreng-shadow, rgba(0, 0, 0, 0.12)) !important;
+}
+.auth-container .ap-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  width: 100%;
+  padding: 9px 12px !important;
+  border-radius: 10px !important;
+  border: 1.5px dashed var(--compreng-border, #cbd5e1) !important;
+  background: transparent !important;
+  color: var(--compreng-text, #0f172a) !important;
+  font-size: 12.5px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: none !important;
+  overflow: hidden;
+}
+.auth-container .ap-drop:hover { border-color: var(--compreng-accent, #2563eb) !important; }
+.auth-container .ap-drop span { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: inherit !important; }
+.auth-container .ap-drop small { font-size: 11px; font-weight: 500; color: var(--au-muted) !important; }
+.auth-container .auth-form input.form-input.ap-url { min-height: 40px; padding: 9px 12px !important; font-size: 13px; }
+.auth-container .ap-clear { align-self: flex-start; background: none !important; border: 0 !important; padding: 0 !important; color: var(--au-muted) !important; font-size: 11.5px; font-weight: 600; cursor: pointer; text-decoration: underline; box-shadow: none !important; }
+.auth-container .ap-clear:hover { color: var(--au-bad) !important; }
+.auth-container .ap-file { display: none !important; }
+
+/* ============ RESPONSIVE ============ */
+@media (max-width: 420px) {
+  .auth-card { max-width: 100%; border-radius: 14px; }
+  .auth-container .au-rules { grid-template-columns: 1fr; }
+  .auth-container .ap { flex-direction: column; text-align: center; }
+  .auth-container .ap-body { width: 100%; align-items: center; }
+  .auth-container .ap-tabs, .auth-container .ap-clear { align-self: center; }
+}
+@media (min-width: 1400px) {
+  .auth-card { max-width: 460px; }
+}

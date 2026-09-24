@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Camera, Check, Loader2, Send, Trash2, X } from 'lucide-react';
-import { getSession, clearSession, isStaff } from '../../utils/auth';
+import { getSession, clearSession, isStaff, verifySession, notifyProfileUpdated, AUTH_API } from '../../utils/auth';
 import logoSekolah from '../../assets/logo1.png';
 import '../../css/viewer/tulisTestimoni.css';
 
@@ -120,7 +120,12 @@ export default function TulisTestimoni() {
   const [detail, setDetail] = useState('');
   const [name, setName] = useState(session?.name || '');
   const [quote, setQuote] = useState('');
-  const [photo, setPhoto] = useState('');
+  // FOTO: secara default memakai foto profil akun (kalau ada). Bisa diganti khusus untuk testimoni ini,
+  // atau dihapus. photoChoice: null = otomatis (profil kalau ada), 'profile' | 'custom' | 'none'.
+  const [profileAvatar, setProfileAvatar] = useState(session?.avatar || '');
+  const [photoChoice, setPhotoChoice] = useState(null);
+  const [customPhoto, setCustomPhoto] = useState(''); // data URL hasil crop (foto yang diunggah)
+  const [saveAsProfile, setSaveAsProfile] = useState(null); // null = otomatis (true kalau belum punya foto profil)
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
 
@@ -149,6 +154,8 @@ export default function TulisTestimoni() {
     }
 
     let alive = true;
+    // Ambil foto profil terbaru dari server (bisa berubah sejak login)
+    verifySession().then((r) => { if (alive && r.ok) setProfileAvatar(r.user.avatar || ''); });
     axios
       .get(`${API}/api/testimonials/mine`, { headers: authHeader(session.token) })
       .then((res) => alive && setStatus(res.data?.data || null))
@@ -182,6 +189,10 @@ export default function TulisTestimoni() {
   const firstName = ((latest?.name || name || session.name).trim().split(' ')[0]) || 'kamu';
   const quoteLen = quote.trim().length;
 
+  const effectivePhoto = photoChoice ?? (profileAvatar ? 'profile' : 'none');
+  const photo = effectivePhoto === 'custom' ? customPhoto : effectivePhoto === 'profile' ? profileAvatar : '';
+  const shouldSaveAsProfile = saveAsProfile ?? !profileAvatar;
+
   const msLeft = status?.nextAllowedAt ? new Date(status.nextAllowedAt).getTime() - now : 0;
 
   const pickStarter = (text) => {
@@ -202,7 +213,8 @@ export default function TulisTestimoni() {
     if (!file.type.startsWith('image/')) return setError('File harus berupa gambar (JPG, PNG, atau WebP).');
     try {
       setError('');
-      setPhoto(await toSquareDataUrl(file));
+      setCustomPhoto(await toSquareDataUrl(file));
+      setPhotoChoice('custom');
     } catch {
       setError('Foto tidak bisa dibaca. Coba pilih foto lain.');
     }
@@ -230,7 +242,11 @@ export default function TulisTestimoni() {
       fd.append('name', cleanName);
       fd.append('role', roleText);
       fd.append('quote', cleanQuote);
-      fd.append('photo', photo ? dataUrlToBlob(photo) : '', photo ? 'testimoni.jpg' : undefined);
+      // 'custom'  -> file baru dikirim (backend upload ke Cloudinary)
+      // 'profile' -> backend menyalin foto profil akun ke folder testimoni
+      // 'none'    -> tanpa foto (kartu memakai huruf inisial)
+      if (effectivePhoto === 'custom' && customPhoto) fd.append('photo', dataUrlToBlob(customPhoto), 'testimoni.jpg');
+      else if (effectivePhoto === 'profile') fd.append('use_profile_photo', '1');
 
       const res = await axios.post(
         `${API}/api/testimonials`,
@@ -238,6 +254,21 @@ export default function TulisTestimoni() {
         { headers: authHeader(session.token) }
       );
       const created = res.data.data;
+
+      // Foto yang diunggah di sini boleh sekalian dijadikan foto profil akun (best-effort)
+      if (effectivePhoto === 'custom' && customPhoto && shouldSaveAsProfile) {
+        try {
+          const pfd = new FormData();
+          pfd.append('avatar', dataUrlToBlob(customPhoto), 'profil.jpg');
+          const up = await axios.post(`${AUTH_API}/profile/avatar`, pfd, { headers: authHeader(session.token) });
+          const newAvatar = up.data?.data?.avatar;
+          if (newAvatar) {
+            localStorage.setItem('avatar', newAvatar);
+            setProfileAvatar(newAvatar);
+            notifyProfileUpdated();
+          }
+        } catch { /* foto profil gagal disimpan tidak boleh menggagalkan testimoni */ }
+      }
       // Susun ulang status lokal: testimoni baru + testimoni lama
       setStatus((prev) => {
         const items = [created, ...(prev?.items || [])];
@@ -476,7 +507,7 @@ export default function TulisTestimoni() {
                 </div>
                 <div className="tw-photo">
                   {photo ? (
-                    <img src={photo} alt="" className="tw-face tw-face-lg" />
+                    <img src={photo} alt="" className="tw-face tw-face-lg" referrerPolicy="no-referrer" />
                   ) : (
                     <div className="tw-initial tw-face-lg">{(name.trim().charAt(0) || '?').toUpperCase()}</div>
                   )}
@@ -484,15 +515,36 @@ export default function TulisTestimoni() {
                     <button type="button" className="tw-ghost" onClick={() => fileRef.current?.click()}>
                       <Camera size={16} /> {photo ? 'Ganti foto' : 'Tambah foto'}
                     </button>
+                    {profileAvatar && effectivePhoto !== 'profile' && (
+                      <button type="button" className="tw-ghost" onClick={() => setPhotoChoice('profile')}>
+                        <Check size={16} /> Pakai foto profil
+                      </button>
+                    )}
                     {photo && (
-                      <button type="button" className="tw-ghost tw-ghost-danger" onClick={() => setPhoto('')}>
+                      <button type="button" className="tw-ghost tw-ghost-danger" onClick={() => setPhotoChoice('none')}>
                         <Trash2 size={16} /> Hapus
                       </button>
                     )}
                   </div>
                   <input ref={fileRef} type="file" accept="image/*" className="tw-file" onChange={handlePhoto} tabIndex={-1} />
                 </div>
-                <div className="tw-hint">Tanpa foto, kartumu memakai huruf pertama namamu.</div>
+
+                {effectivePhoto === 'custom' && (
+                  <label className="tw-check">
+                    <input
+                      type="checkbox"
+                      checked={shouldSaveAsProfile}
+                      onChange={(e) => setSaveAsProfile(e.target.checked)}
+                    />
+                    <span>{profileAvatar ? 'Ganti juga foto profil akunku dengan foto ini' : 'Jadikan juga foto profil akunku'}</span>
+                  </label>
+                )}
+
+                <div className="tw-hint">
+                  {effectivePhoto === 'profile' && 'Memakai foto profil akunmu. Kamu bisa menggantinya khusus untuk testimoni ini.'}
+                  {effectivePhoto === 'custom' && (shouldSaveAsProfile ? 'Foto ini dipakai di testimoni dan menjadi foto profilmu.' : 'Foto ini hanya dipakai di testimoni, foto profilmu tidak berubah.')}
+                  {effectivePhoto === 'none' && 'Tanpa foto, kartumu memakai huruf pertama namamu.'}
+                </div>
               </div>
 
               {/* Contoh untuk layar kecil (di desktop tampil di panel kiri) */}
