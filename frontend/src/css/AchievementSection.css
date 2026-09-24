@@ -208,25 +208,18 @@
 
 /* Action Dropdown Fix */
 .dropdown-action-wrapper {
-  position: relative;
-  display: flex;
-  justify-content: center;
-}
-
-.btn-more-action {
   background: transparent;
   border: none;
-  color: var(--compreng-text-secondary, #475569);
   cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  transition: all 0.2s ease;
+  padding: 0px;
+  border-radius: 0px;
+  color: var(--compreng-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
 }
 
-.btn-more-action:hover {
-  color: var(--compreng-text, #0f172a);
-  background-color: var(--compreng-surface-soft, #f1f5f9);
-}
 
 .action-dropdown-menu {
   position: absolute;

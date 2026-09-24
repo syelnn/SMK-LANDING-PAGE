@@ -45,7 +45,7 @@ const FaqPage = () => {
   // Menutup dropdown otomatis jika klik di luar menu
   useEffect(() => {
     const handleClickOutside = (e) => {
-      if (!e.target.closest('.dropdown-action-wrapper')) {
+      if (!e.target.closest('.faq-dropdown-wrapper')) {
         setActiveDropdown(null);
       }
     };
@@ -219,10 +219,10 @@ const FaqPage = () => {
                   </td>
                   <td>
                     {/* MENU DROPDOWN AKSI */}
-                    <div className="dropdown-action-wrapper">
+                    <div className="faq-dropdown-wrapper">
                       <button 
                         type="button" 
-                        className="btn-more-action" 
+                        className="btn-action-more" 
                         onClick={(e) => {
                           e.stopPropagation();
                           setActiveDropdown(activeDropdown === faq.id ? null : faq.id);

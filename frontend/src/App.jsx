@@ -33,7 +33,6 @@ import DetailNews from './pages/DetailNews';
 import ManageSettings from './pages/ManageSettings';
 import ManageUsers from './pages/ManageUsers';
 import ForgotPassword from './pages/ForgotPassword'; 
-import DetailKurikulum from './pages/DetailKurikulum';
 import ManageJurusanProgram from './pages/ManageJurusanProgram';
 import ManagePengajar from './pages/ManagePengajar';
 import ProfilSekolah from './pages/ProfilSekolah';
@@ -551,7 +550,6 @@ const DashboardLayout = () => {
               <Route path="testimoni" element={<TestimonialPage />} />
               <Route path="galeri" element={<Galeri />} />
               <Route path="faq" element={<FaqPage />} />
-              <Route path="kurikulum/:slug" element={<DetailKurikulum />} />
               <Route path="downloads" element={<DownloadPage />} />
              
 

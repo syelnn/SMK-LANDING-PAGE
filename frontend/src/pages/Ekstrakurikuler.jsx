@@ -292,22 +292,20 @@ export default function Ekstrakurikuler() {
         )}
       </div>
 
+      {/* TOOLBAR (SEARCH) — di luar table card, selaras dengan pola halaman lain */}
+      <div className="ekskul-search-wrapper">
+        <Search size={16} className="ekskul-search-icon" />
+        <input
+          type="text"
+          placeholder="Cari nama atau deskripsi ekstrakurikuler..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="ekskul-search-input"
+        />
+      </div>
+
       {/* TABLE CARD */}
       <div className="ekskul-table-card">
-        {/* SEARCH BAR */}
-        <div className="ekskul-search-wrapper">
-          <div className="ekskul-search-input-box">
-            <Search size={16} className="ekskul-search-icon" />
-            <input 
-              type="text" 
-              placeholder="Cari nama atau deskripsi ekstrakurikuler..." 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="ekskul-search-input"
-            />
-          </div>
-        </div>
-
         {/* TABLE CONTENT */}
         <div className="ekskul-table-responsive">
           <table className="ekskul-table">

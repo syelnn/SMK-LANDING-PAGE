@@ -5,7 +5,7 @@ import {
   Users, School, Newspaper, BookOpen, Activity, 
   GraduationCap, Trophy, MessageSquare, HelpCircle, 
   Image as ImageIcon, MapPin, LayoutDashboard, Settings,
-  X, ChevronDown, ChevronRight, Download, LogOut, ChevronsUpDown,
+  X, ChevronRight, Download, LogOut, ChevronsUpDown,
   Handshake
 } from 'lucide-react';
 import logoSekolah from './assets/logo1.png';
@@ -172,7 +172,8 @@ export default function Sidebar({
               subItems: m.title === 'Pengaturan Website' ? [
                 { title: 'Profile & Identitas', url: '/admin/settings/profile' },
                 { title: 'Tema & Tampilan', url: '/admin/settings/appearance' },
-                { title: 'Kontak & Maps', url: '/admin/settings/contact' }
+                { title: 'Kontak & Maps', url: '/admin/settings/contact' },
+                { title: 'Database', url: '/admin/settings/database' }
               ] : []
             };
           });
@@ -245,30 +246,34 @@ export default function Sidebar({
                   return (
                     <li key={index} style={{ display: 'flex', flexDirection: 'column', marginBottom: '4px' }}>
                       <button 
-                        onClick={() => hasSubItems ? toggleDropdown(menu.iconKey) : handleMenuClick(menu)}
+                        onClick={() => (hasSubItems && isSidebarVisible) ? toggleDropdown(menu.iconKey) : handleMenuClick(menu)}
                         className={`sidebar-link ${isActive && !hasSubItems ? 'active' : ''}`}
+                        title={!isSidebarVisible ? menu.title : undefined}
                       >
                         <div className="sidebar-link-inner">
                           <span className="sidebar-link-icon">{ICON_MAP[menu.iconKey] || <LayoutDashboard size={16} />}</span>
                           <span className="sidebar-link-text">{menu.title}</span>
                         </div>
                         {hasSubItems && (
-                          isDropdownOpen 
-                            ? <ChevronDown size={16} className="sidebar-dropdown-icon" /> 
-                            : <ChevronRight size={16} className="sidebar-dropdown-icon" />
+                          <ChevronRight 
+                            size={16} 
+                            className={`sidebar-dropdown-icon ${isDropdownOpen ? 'open' : ''}`} 
+                          />
                         )}
                       </button>
 
-                      {hasSubItems && isDropdownOpen && (
-                        <div className="sidebar-sub-menu">
-                          {menu.subItems.map((sub, sIdx) => {
-                            const isSubActive = location.pathname === sub.url || location.pathname.startsWith(sub.url);
-                            return (
-                              <NavLink key={sIdx} to={sub.url} className={`sidebar-sub-link ${isSubActive ? 'active' : ''}`}>
-                                {sub.title}
-                              </NavLink>
-                            );
-                          })}
+                      {hasSubItems && (
+                        <div className={`sidebar-sub-menu ${isDropdownOpen ? 'open' : ''}`}>
+                          <div className="sidebar-sub-menu-inner">
+                            {menu.subItems.map((sub, sIdx) => {
+                              const isSubActive = location.pathname === sub.url || location.pathname.startsWith(sub.url);
+                              return (
+                                <NavLink key={sIdx} to={sub.url} className={`sidebar-sub-link ${isSubActive ? 'active' : ''}`}>
+                                  {sub.title}
+                                </NavLink>
+                              );
+                            })}
+                          </div>
                         </div>
                       )}
                     </li>

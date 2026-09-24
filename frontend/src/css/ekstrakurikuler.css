@@ -66,38 +66,41 @@
   overflow: hidden;
 }
 
-/* SEARCH INPUT BAR */
+/* SEARCH INPUT BAR — selaras dengan pola toolbar di halaman lain
+   (Galeri/Testimoni/Pengajar): wrapper tunggal, di luar table card,
+   background & border ikut token tema, ring aksen saat fokus. */
 .ekskul-search-wrapper {
-  padding: 16px 20px;
-}
-
-.ekskul-search-input-box {
   position: relative;
-  max-width: 300px;
-  display: flex;
-  align-items: center;
+  width: 280px;
+  max-width: 100%;
+  margin-bottom: 16px;
 }
 
 .ekskul-search-icon {
   position: absolute;
   left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--compreng-text-secondary, #475569);
+  pointer-events: none;
 }
 
 .ekskul-search-input {
   width: 100%;
-  padding: 8px 12px 8px 38px;
+  padding: 8px 12px 8px 36px;
   border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 8px;
-  font-size: 14px;
-  color: var(--compreng-text-secondary, #475569);
+  font-size: 13px;
+  color: var(--compreng-text, #0f172a);
   outline: none;
   background-color: var(--compreng-surface, #ffffff);
-  transition: border-color 0.2s;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .ekskul-search-input:focus {
-  border-color: var(--compreng-border, #e2e8f0);
+  border-color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-accent, #2563eb) 18%, transparent);
 }
 
 .ekskul-search-input::placeholder {
@@ -470,8 +473,8 @@
     justify-content: center;
   }
 
-  .ekskul-search-input-box {
-    max-width: 100%;
+  .ekskul-search-wrapper {
+    width: 100%;
   }
 
   .ekskul-table th,
