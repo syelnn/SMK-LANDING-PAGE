@@ -42,6 +42,7 @@ import TestimonialPage from './pages/TestimonialPage';
 import Galeri from './pages/Galeri';
 import FaqPage from "./pages/FaqPage";
 import AchievementSection from './pages/AchievementSection';
+import ManageIndustryPartners from './pages/ManageIndustryPartners';
 
 import './css/dashboard.css'; // MENGIMPOR CSS DASHBOARD 
 import './css/theme.css';
@@ -508,6 +509,7 @@ const DashboardLayout = () => {
               <Route path="ekstrakurikuler" element={<Ekstrakurikuler />} />
               <Route path="pengajar" element={<ManagePengajar />} />
               <Route path="prestasi" element={<AchievementSection />} />
+              <Route path="mitra-industri" element={<ManageIndustryPartners />} />
               <Route path="testimoni" element={<TestimonialPage />} />
               <Route path="galeri" element={<Galeri />} />
               <Route path="faq" element={<FaqPage />} />

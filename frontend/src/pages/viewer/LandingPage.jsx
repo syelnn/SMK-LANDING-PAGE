@@ -8,6 +8,7 @@ import TampilanGalery from './TampilanGalery';
 import Testimoni from './Testimoni';
 import FaqViewer from './FaqViewer';
 import FooterViewer from './FooterViewer';
+import IndustryPartnersViewer from './IndustryPartnersViewer';
 
 
 // Import Foto dari folder Assets
@@ -215,8 +216,11 @@ const LandingPage = () => {
     <div id="section-faq">
       <FaqViewer />
     </div>
-
-    {/* 9. KONTAK & FOOTER SECTION */}
+{/* 9. MITRA INDUSTRI SECTION */}
+<div id="section-mitra-industri">
+  <IndustryPartnersViewer />
+</div>
+    {/* 10. KONTAK & FOOTER SECTION */}
       <div id="section-kontak">
         <FooterViewer /> 
       </div>

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
-import { Plus, Trash2, Edit, Image as ImageIcon, Link as LinkIcon, X, MoreHorizontal, ExternalLink } from 'lucide-react';
+import { Plus, Trash2, Edit, X, MoreHorizontal, ExternalLink } from 'lucide-react';
+import ImageUploader from '../components/ImageUploader';
 import '../css/managejurusanprogram.css';
 import '../App.css';
 
@@ -57,15 +58,18 @@ export default function ManageJurusanProgram() {
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [dropdownConfig.id]);
 
-  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
-  const handleFileUpload = (e, setFormState, formState, setSelectedFileState) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFileState(file);
-      const reader = new FileReader();
-      reader.onloadend = () => { setFormState({ ...formState, imageIcon: reader.result }); };
-      reader.readAsDataURL(file);
-    }
+  // Callback dari <ImageUploader>: file asli/hasil edit disimpan di state (dikirim ke backend),
+  // URL-nya dipakai untuk pratinjau.
+  const handleJurusanImageChange = ({ file, url }) => {
+    setSelectedFileJurusan(file);
+    setImageTypeJurusan(file ? 'file' : 'url');
+    setNewJurusan((prev) => ({ ...prev, imageIcon: url }));
+  };
+
+  const handleProgramImageChange = ({ file, url }) => {
+    setSelectedFileProgram(file);
+    setImageTypeProgram(file ? 'file' : 'url');
+    setNewProgram((prev) => ({ ...prev, imageIcon: url }));
   };
 
   // --- SMART DROPDOWN LOGIC ---
@@ -393,38 +397,15 @@ export default function ManageJurusanProgram() {
               </div>
               <div className="form-group-modern upload-section">
                 <label>Ikon / Gambar Jurusan</label>
-                <div className="radio-tabs">
-                  <div className={`radio-tab ${imageTypeJurusan === 'url' ? 'active' : ''}`} onClick={() => setImageTypeJurusan('url')}><LinkIcon size={16}/> Link URL</div>
-                  <div className={`radio-tab ${imageTypeJurusan === 'file' ? 'active' : ''}`} onClick={() => setImageTypeJurusan('file')}><ImageIcon size={16}/> Upload Foto</div>
-                </div>
-                {imageTypeJurusan === 'url' ? (
-                  <input type="text" placeholder="https://contoh.com/ikon.png" className="input-modern" value={newJurusan.imageIcon} onChange={e => setNewJurusan({...newJurusan, imageIcon: e.target.value})} />
-                ) : (
-                  <input type="file" accept="image/*" className="input-modern file-style" onChange={e => handleFileUpload(e, setNewJurusan, newJurusan, setSelectedFileJurusan)} />
-                )}
-
-                {/* --- PREVIEW GAMBAR JURUSAN --- */}
-                {newJurusan.imageIcon && (
-                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU IKON:</span>
-                    <img 
-                      src={newJurusan.imageIcon} 
-                      alt="Preview Jurusan" 
-                      style={{ 
-                        width: '80px', 
-                        height: '80px', 
-                        objectFit: 'contain', 
-                        borderRadius: '8px', 
-                        border: '1px solid var(--compreng-border)',
-                        background: 'var(--compreng-bg)',
-                        padding: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                      }} 
-                      onError={(e) => { e.target.style.display = 'none'; }} 
-                      onLoad={(e) => { e.target.style.display = 'block'; }} 
-                    />
-                  </div>
-                )}
+                <ImageUploader
+                  value={newJurusan.imageIcon}
+                  onChange={handleJurusanImageChange}
+                  aspect={1}
+                  maxSizeMB={2}
+                  previewLabel="PRATINJAU IKON"
+                  urlPlaceholder="https://contoh.com/ikon.png"
+                  editorTitle="Edit Ikon Jurusan"
+                />
               </div>
               <div className="modal-actions-modern">
                 <button type="button" onClick={() => setShowModalJurusan(false)} className="btn-modern-secondary">Batal</button>
@@ -458,43 +439,15 @@ export default function ManageJurusanProgram() {
               </div>
               <div className="form-group-modern upload-section">
                 <label>Ikon / Gambar Program</label>
-                <div className="radio-tabs">
-                  <div className={`radio-tab ${imageTypeProgram === 'url' ? 'active' : ''}`} onClick={() => setImageTypeProgram('url')}>
-                    <LinkIcon size={16} style={{ marginRight: '6px' }} /> Link URL
-                  </div>
-                  <div className={`radio-tab ${imageTypeProgram === 'file' ? 'active' : ''}`} onClick={() => setImageTypeProgram('file')}>
-                    <ImageIcon size={16} style={{ marginRight: '6px' }} /> Upload Foto
-                  </div>
-                </div>
-                
-                {imageTypeProgram === 'url' ? (
-                  <input type="text" placeholder="https://contoh.com/foto.jpg" className="input-modern" value={newProgram.imageIcon} onChange={e => setNewProgram({...newProgram, imageIcon: e.target.value})} />
-                ) : (
-                  <input type="file" accept="image/*" className="input-modern file-style" onChange={e => handleFileUpload(e, setNewProgram, newProgram, setSelectedFileProgram)} />
-                )}
-
-                {/* --- PREVIEW GAMBAR PROGRAM --- */}
-                {newProgram.imageIcon && (
-                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU IKON:</span>
-                    <img 
-                      src={newProgram.imageIcon} 
-                      alt="Preview Program" 
-                      style={{ 
-                        width: '80px', 
-                        height: '80px', 
-                        objectFit: 'contain', 
-                        borderRadius: '8px', 
-                        border: '1px solid var(--compreng-border)',
-                        background: 'var(--compreng-bg)',
-                        padding: '8px',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                      }} 
-                      onError={(e) => { e.target.style.display = 'none'; }} 
-                      onLoad={(e) => { e.target.style.display = 'block'; }} 
-                    />
-                  </div>
-                )}
+                <ImageUploader
+                  value={newProgram.imageIcon}
+                  onChange={handleProgramImageChange}
+                  aspect={1}
+                  maxSizeMB={2}
+                  previewLabel="PRATINJAU IKON"
+                  urlPlaceholder="https://contoh.com/foto.jpg"
+                  editorTitle="Edit Ikon Program"
+                />
               </div>
               
               <div className="modal-actions-modern" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>

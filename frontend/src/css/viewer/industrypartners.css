@@ -1,0 +1,159 @@
+/* src/css/viewer/industrypartners.css */
+
+
+.ipv-wrapper {
+  width: 100%;
+  /* pakai --compreng-surface (bukan --compreng-bg): section ini harus
+     tetap beda warna dari section umum di atas/bawahnya (lihat gambar acuan —
+     ada garis batas warna yang jelas), bukan menyatu rata jadi satu warna polos.
+     --compreng-surface pada dasarnya sedikit lebih "putih/cerah" dibanding
+     --compreng-bg pada hampir semua tema, jadi bedanya tetap kelihatan di
+     tema apa pun, sekaligus tetap ikut ganti kalau adminnya ganti tema. */
+  background-color: var(--compreng-surface, #f8fafc) !important;
+  padding: 70px 20px;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Selector id + class dipakai KHUSUS untuk background supaya spesifisitasnya
+   pasti menang atas aturan wildcard global "[class*='-wrapper']" di theme.css
+   (yang juga memaksa !important) — apa pun urutan file CSS-nya nanti dimuat. */
+#section-mitra-industri.ipv-wrapper {
+  background-color: var(--compreng-surface, #f8fafc) !important;
+}
+
+.ipv-container {
+  width: 100%;
+  max-width: 1150px;
+  margin: 0 auto;
+  text-align: center;
+  background: transparent;
+}
+
+/* Class ".ipv-container" mengandung kata "-container", jadi ikut kena aturan
+   wildcard lain di theme.css ("[class*='-container'] { background-color:
+   var(--compreng-bg) !important; }"). Kalau dibiarkan, munculnya kotak
+   persegi selebar 1150px dengan warna --compreng-bg DI ATAS latar
+   --compreng-surface milik .ipv-wrapper — jadi keliatan seperti "kotak"
+   lagi walau logo-nya sendiri sudah transparan. Dikunci transparan total
+   pakai ID yang sama supaya latar section benar-benar rata satu warna. */
+#section-mitra-industri .ipv-container {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* Judul Section (ukuran, letter-spacing, & warna disamakan PERSIS dengan
+   gambar acuan: abu-abu kebiruan netral #64748b, bukan warna aksen tema).
+   Warna sengaja dikunci tetap (tidak ikut token aksen/tema) karena label
+   "bekerja sama dengan industri" di kebanyakan desain memang netral supaya
+   tidak bentrok dengan logo-logo mitra yang juga sudah berwarna abu-abu.
+   !important WAJIB: theme.css punya aturan global "h1, h2, h3..." yang
+   memaksa semua tag <h2> (termasuk judul ini) memakai --compreng-text (warna
+   teks utama). Tanpa !important, warna di bawah ini akan selalu kalah. */
+.ipv-title,
+#section-mitra-industri .ipv-title {
+  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #64748b !important;
+  letter-spacing: 0.12em; /* Jarak antar huruf kapital */
+  text-transform: uppercase;
+  margin-bottom: 50px;
+}
+
+/* Di tema Dark, #64748b kontrasnya kurang di atas latar nyaris hitam —
+   dinaikkan sedikit supaya tetap terbaca tanpa mengubah nuansa abu-abu netral. */
+[data-theme='dark'] .ipv-title,
+[data-theme='dark'] #section-mitra-industri .ipv-title {
+  color: #a1a1aa !important;
+}
+
+/* Flex Grid Logo */
+.ipv-logo-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 32px 40px; /* Jarak antar logo vertikal dan horizontal */
+}
+
+/* Pembungkus Kotak Logo. */
+.ipv-logo-grid .ipv-logo-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 155px;
+  height: 60px;
+  padding: 6px 12px;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  transition: transform 0.3s ease;
+  cursor: pointer;
+}
+
+/* [PERBAIKAN SPESIFISITAS] Percobaan sebelumnya (dua class biasa) TERNYATA MASIH KALAH.
+   Aturan wildcard di theme.css:
+     [class*="-item"]:not(svg):not(li):not([class*="tag"]):not([class*="badge"])
+       :not([class*="footer"]):not([class*="contact"]):not([class*="nav"])
+       :not([class*="menu"]):not([class*="dropdown"]):not([class*="social"]) { ... !important }
+   punya SATU attribute-selector + DELAPAN :not([class*="..."]) — dan tiap :not() beratribut
+   ikut MENAMBAH bobot spesifisitas sebesar 1 class. Total bobotnya setara ~9 class selector,
+   jauh di atas ".ipv-logo-grid .ipv-logo-item" (cuma 2 class) yang saya pakai sebelumnya —
+   makanya kotak putihnya masih nongol walau sudah dikasih !important.
+   Solusi pasti menang: pakai ID (#section-mitra-industri yang sudah ada di JSX). SATU ID
+   spesifisitasnya SELALU lebih tinggi dari kombinasi class sebanyak apa pun, di tema apa pun,
+   berapa pun urutan file CSS-nya nanti dimuat. */
+#section-mitra-industri .ipv-logo-item {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.ipv-logo-item:hover {
+  transform: translateY(-2px);
+}
+
+/* Pengaturan Gambar Logo & Efek Grayscale/Warna */
+.ipv-logo-item img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  
+  /* Efek Default: Gambar berwarna abu-abu & transparan lembut */
+  filter: grayscale(100%) opacity(0.55);
+  transition: filter 0.3s ease, opacity 0.3s ease;
+}
+
+/* Efek saat Kursor Mengarah (Hover): Logo Berwarna Asli (Grayscale Hilang) */
+.ipv-logo-item:hover img {
+  filter: grayscale(0%) opacity(1);
+}
+
+/* Responsive untuk Tampilan Mobile / Tablet */
+@media (max-width: 768px) {
+  .ipv-wrapper {
+    padding: 40px 16px;
+  }
+
+  .ipv-title {
+    font-size: 16px;
+    margin-bottom: 30px;
+    letter-spacing: 0.08em;
+  }
+
+  .ipv-logo-grid {
+    gap: 20px 24px;
+  }
+
+  .ipv-logo-grid .ipv-logo-item {
+    width: 120px;
+    height: 48px;
+  }
+}

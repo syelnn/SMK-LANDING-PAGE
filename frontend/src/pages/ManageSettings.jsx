@@ -6,6 +6,7 @@ import { Check, Loader2, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
 import { SettingsContext } from '../context/SettingsContext';
 import ThemePreview from '../components/ThemePreview';
 import DatabaseBackupPanel from '../components/DatabaseBackupPanel';
+import ImageUploader from '../components/ImageUploader';
 import {
   API_URL, FONT_OPTIONS, ensureFont, normalizeFont, normalizeMode,
   PRESETS, DEFAULT_CUSTOM, CUSTOM_FIELD_MAP, THEME_KEYS, resolveCustom, presetToCustom,
@@ -132,8 +133,6 @@ export default function ManageSettings() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [toastMessage, setToastMessage] = useState(null);
-  const [logoMode, setLogoMode] = useState('url');
-  const [profileMode, setProfileMode] = useState('url');
   const [pendingImageFiles, setPendingImageFiles] = useState({}); // { school_logo: File, school_profile_image: File }
   const [footerSeed, setFooterSeed] = useState(null); // data footer lama (null = belum dimuat)
   const [formData, setFormData] = useState(() => buildForm(settings, {}));
@@ -178,16 +177,16 @@ export default function ManageSettings() {
   };
   const handleChange = (e) => setField(e.target.name, e.target.value);
 
-  // File asli disimpan di pendingImageFiles (dikirim ke backend saat submit),
-  // base64 cuma dipakai untuk pratinjau di browser.
-  const handleFileChange = (e, fieldName) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) return showToast('Ukuran file terlalu besar! Maksimal 2MB.', 'error');
-    setPendingImageFiles((prev) => ({ ...prev, [fieldName]: file }));
-    const reader = new FileReader();
-    reader.onloadend = () => setField(fieldName, reader.result);
-    reader.readAsDataURL(file);
+  // Callback dari <ImageUploader>: file asli/hasil edit disimpan di pendingImageFiles
+  // (dikirim ke backend saat submit), URL-nya dipakai untuk pratinjau.
+  const handleImageChange = (fieldName, { file, url }) => {
+    setPendingImageFiles((prev) => {
+      const next = { ...prev };
+      if (file) next[fieldName] = file;
+      else delete next[fieldName];
+      return next;
+    });
+    setField(fieldName, url);
   };
 
   const copyPreset = (key) => {
@@ -293,35 +292,29 @@ export default function ManageSettings() {
 
                   <div className="ms-grid">
                     <div className="ms-input-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <label className="ms-label">Logo Sekolah (Icon)</label>
-                        <div className="ms-toggle-row">
-                          <button type="button" onClick={() => setLogoMode('url')} className={`ms-toggle-btn ${logoMode === 'url' ? 'active' : ''}`}>URL</button>
-                          <button type="button" onClick={() => setLogoMode('file')} className={`ms-toggle-btn ${logoMode === 'file' ? 'active' : ''}`}>Upload</button>
-                        </div>
-                      </div>
-                      {logoMode === 'url' ? (
-                        <input type="text" name="school_logo" value={formData.school_logo} onChange={handleChange} className="ms-input" style={{ marginTop: '8px' }} />
-                      ) : (
-                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'school_logo')} className="ms-input" style={{ padding: '7px', marginTop: '8px' }} />
-                      )}
-                      {formData.school_logo && <img src={formData.school_logo} alt="Preview Logo" className="ms-preview-img" />}
+                      <label className="ms-label">Logo Sekolah (Icon)</label>
+                      <ImageUploader
+                        value={formData.school_logo}
+                        onChange={(r) => handleImageChange('school_logo', r)}
+                        aspect={1}
+                        maxSizeMB={2}
+                        previewLabel="PRATINJAU LOGO"
+                        urlPlaceholder="/src/assets/logo1.png atau https://..."
+                        editorTitle="Edit Logo Sekolah"
+                      />
                     </div>
 
                     <div className="ms-input-group">
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <label className="ms-label">Foto Utama / Hero</label>
-                        <div className="ms-toggle-row">
-                          <button type="button" onClick={() => setProfileMode('url')} className={`ms-toggle-btn ${profileMode === 'url' ? 'active' : ''}`}>URL</button>
-                          <button type="button" onClick={() => setProfileMode('file')} className={`ms-toggle-btn ${profileMode === 'file' ? 'active' : ''}`}>Upload</button>
-                        </div>
-                      </div>
-                      {profileMode === 'url' ? (
-                        <input type="text" name="school_profile_image" value={formData.school_profile_image} onChange={handleChange} className="ms-input" style={{ marginTop: '8px' }} />
-                      ) : (
-                        <input type="file" accept="image/*" onChange={(e) => handleFileChange(e, 'school_profile_image')} className="ms-input" style={{ padding: '7px', marginTop: '8px' }} />
-                      )}
-                      {formData.school_profile_image && <img src={formData.school_profile_image} alt="Preview Profil" className="ms-preview-img hero" />}
+                      <label className="ms-label">Foto Utama / Hero</label>
+                      <ImageUploader
+                        value={formData.school_profile_image}
+                        onChange={(r) => handleImageChange('school_profile_image', r)}
+                        aspect={4 / 3}
+                        maxSizeMB={2}
+                        previewLabel="PRATINJAU FOTO"
+                        urlPlaceholder="/src/assets/visi.jpg atau https://..."
+                        editorTitle="Edit Foto Utama / Profil"
+                      />
                     </div>
                   </div>
 

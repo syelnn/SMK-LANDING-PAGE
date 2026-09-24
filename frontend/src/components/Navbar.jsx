@@ -165,7 +165,7 @@ const Navbar = () => {
     const validLandingPaths = [
       '', '/', '/profil', '/berita', '/program', '/jurusan', 
       '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', 
-      '/pengajar', '/karya', '/prestasi', '/achievement', '/galeri', '/testimoni', '/faq', '/kontak'
+      '/pengajar', '/karya', '/prestasi', '/achievement', '/galeri', '/testimoni', '/faq', '/mitra-industri', '/mitraindustri', '/kontak'
     ];
     if (!validLandingPaths.includes(location.pathname)) return;
 
@@ -188,6 +188,7 @@ const Navbar = () => {
           const galeriEl = document.getElementById('section-galeri');
           const testimoniEl = document.getElementById('section-testimoni');
           const faqEl = document.getElementById('section-faq');
+          const mitraEl = document.getElementById('section-mitra-industri');
           const kontakEl = document.getElementById('section-kontak');
 
           let activeKey = 'section-hero';
@@ -202,6 +203,7 @@ const Navbar = () => {
           if (galeriEl && scrollPos >= galeriEl.offsetTop) activeKey = 'section-galeri';
           if (testimoniEl && scrollPos >= testimoniEl.offsetTop) activeKey = 'section-testimoni';
           if (faqEl && scrollPos >= faqEl.offsetTop) activeKey = 'section-faq';
+          if (mitraEl && scrollPos >= mitraEl.offsetTop) activeKey = 'section-mitra-industri';
           if (kontakEl && scrollPos >= kontakEl.offsetTop) activeKey = 'section-kontak';
 
           const isBottom = Math.ceil(window.innerHeight + window.scrollY) >= document.documentElement.scrollHeight - 150;
@@ -262,7 +264,15 @@ const Navbar = () => {
               setActivePath(targetUrl);
               window.history.replaceState(null, '', targetUrl);
             }
+          }  else if (activeKey === 'section-mitra-industri') {
+            const targetUrl = '/mitra-industri';
+            if (activePathRef.current !== targetUrl) {
+              activePathRef.current = targetUrl;
+              setActivePath(targetUrl);
+              window.history.replaceState(null, '', targetUrl);
+            }
           }
+        
 
           ticking = false;
         });
@@ -345,6 +355,8 @@ const Navbar = () => {
       '/galeri': 'section-galeri',
       '/testimoni': 'section-testimoni',
       '/faq': 'section-faq',
+   '/mitra-industri': 'section-mitra-industri',
+      '/mitraindustri': 'section-mitra-industri',
       '/kontak': 'section-kontak',
       '/': 'section-hero'
     };
@@ -398,7 +410,7 @@ const Navbar = () => {
     
     const isDropdownArea = [
       '/ekstrakurikuler', '/ekskul', '/tenagapengajar', 
-      '/guru', '/karya', '/prestasi', '/achievement'
+      '/guru', '/karya', '/prestasi', '/achievement', '/mitra-industri', '/mitraindustri'
     ].includes(activePath);
     
     if (isDropdownArea) {

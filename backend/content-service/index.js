@@ -408,6 +408,105 @@ app.delete('/api/extracurriculars/:id', ...requireStaff, async (req, res) => {
   }
 });
 
+
+// ==========================
+// API MITRA INDUSTRI (INDUSTRY PARTNERS)
+// Ditampilkan sebagai deretan logo di viewer, tepat di atas Footer
+// ==========================
+
+// Helper: kolom id BIGINT -> Prisma mengembalikan tipe BigInt, dan BigInt tidak bisa
+// langsung di-JSON.stringify (bikin request crash) -> selalu dikonversi ke Number dulu
+const serializePartner = (p) => ({ ...p, id: Number(p.id) });
+
+// Helper: field boolean yang datang lewat FormData selalu berupa string ('true'/'false'/'1'/'0')
+// -> dinormalisasi ke boolean asli sebelum disimpan ke Postgres
+const toBool = (val, fallback = true) => {
+  if (val === undefined || val === null || val === '') return fallback;
+  return val === true || val === 'true' || val === '1' || val === 1;
+};
+
+// 1. Ambil semua data mitra industri (GET) — dipakai admin & viewer (viewer filter is_active di frontend)
+app.get('/api/industry-partners', async (req, res) => {
+  try {
+    const data = await prisma.industryPartner.findMany({
+      orderBy: { id: 'asc' }
+    });
+    res.json({ success: true, data: data.map(serializePartner) });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data mitra industri' });
+  }
+});
+
+// 2. Tambah mitra industri baru (POST)
+app.post('/api/industry-partners', ...requireStaff, uploadSingleSafe('logo_url'), resolveImage('logo_url', 'industry-partners'), async (req, res) => {
+  try {
+    const { name, logo_url, is_active } = req.body;
+    const newData = await prisma.industryPartner.create({
+      data: {
+        name,
+        logoUrl: logo_url,
+        isActive: toBool(is_active, true)
+      }
+    });
+    res.json({ success: true, message: 'Mitra industri berhasil ditambah', data: serializePartner(newData) });
+  } catch (error) {
+    console.error("Error Tambah Mitra Industri:", error);
+    res.status(500).json({ success: false, message: 'Gagal menambah mitra industri' });
+  }
+});
+
+// 3. Edit / Update data mitra industri (PUT)
+app.put('/api/industry-partners/:id', ...requireStaff, uploadSingleSafe('logo_url'), resolveImage('logo_url', 'industry-partners'), async (req, res) => {
+  try {
+    const { name, logo_url, is_active } = req.body;
+    const partnerId = BigInt(req.params.id);
+
+    // Ambil logo LAMA dulu sebelum ditimpa, supaya nanti bisa dihapus dari Cloudinary
+    const current = await prisma.industryPartner.findUnique({ where: { id: partnerId } });
+    const oldLogo = current?.logoUrl;
+
+    const updated = await prisma.industryPartner.update({
+      where: { id: partnerId },
+      data: {
+        name,
+        logoUrl: logo_url,
+        isActive: toBool(is_active, current?.isActive ?? true)
+      }
+    });
+
+    // Logo diganti (URL baru beda dari lama) -> hapus file lama di Cloudinary
+    if (oldLogo && oldLogo !== logo_url) {
+      await deleteFromStorageByUrl(oldLogo);
+    }
+
+    res.json({ success: true, message: 'Data mitra industri diupdate', data: serializePartner(updated) });
+  } catch (error) {
+    console.error("Error Update Mitra Industri:", error);
+    res.status(500).json({ success: false, message: 'Gagal update mitra industri' });
+  }
+});
+
+// 4. Hapus mitra industri (DELETE)
+app.delete('/api/industry-partners/:id', ...requireStaff, async (req, res) => {
+  try {
+    const deleted = await prisma.industryPartner.delete({
+      where: { id: BigInt(req.params.id) }
+    });
+
+    // Data di database sudah hilang, sekarang bersihkan file fisiknya juga di Cloudinary
+    if (deleted?.logoUrl) {
+      await deleteFromStorageByUrl(deleted.logoUrl);
+    }
+
+    res.json({ success: true, message: 'Mitra industri dihapus' });
+  } catch (error) {
+    console.error("Error Hapus Mitra Industri:", error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus mitra industri' });
+  }
+});
+
+
 // khusus testimoni
 // 1. KIRIM TESTIMONI (Viewer yang sudah login, maksimal 2x kirim, jeda 24 jam antar kirim)
 const MAX_TESTIMONIAL_PER_USER = 2;
@@ -1465,6 +1564,9 @@ app.get('/api/database/export', ...requireAdmin, async (req, res) => {
     res.status(500).json({ success: false, message: 'Gagal membuat file backup database' });
   }
 });
+
+
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Edit3, Trash2, X, Loader2, CheckCircle, AlertCircle, Search, MoreHorizontal, Image as ImageIcon, Link as LinkIcon, Tag } from 'lucide-react';
+import { Plus, Edit3, Trash2, X, Loader2, CheckCircle, AlertCircle, Search, MoreHorizontal, Tag } from 'lucide-react';
+import ImageUploader from '../components/ImageUploader';
 import '../css/managenews.css';
 import '../App.css';
 
@@ -75,17 +76,12 @@ export default function ManageNews() {
     }
   };
 
-  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
+  // Callback dari <ImageUploader>: file asli/hasil edit disimpan di state (dikirim ke backend),
+  // URL-nya dipakai untuk pratinjau.
+  const handleImageChange = ({ file, url }) => {
+    setSelectedFile(file);
+    setImageMode(file ? 'file' : 'url');
+    setFormData((prev) => ({ ...prev, image: url }));
   };
 
   const handleOpenAdd = () => {
@@ -447,59 +443,14 @@ const handleOpenEdit = (item) => {
 
               <div className="form-group-modern upload-section">
                 <label>Gambar Banner</label>
-                <div className="radio-tabs">
-                  <div 
-                    className={`radio-tab ${imageMode === 'file' ? 'active' : ''}`} 
-                    onClick={() => setImageMode('file')}
-                  >
-                    <ImageIcon size={16}/> Upload Foto
-                  </div>
-                  <div 
-                    className={`radio-tab ${imageMode === 'url' ? 'active' : ''}`} 
-                    onClick={() => setImageMode('url')}
-                  >
-                    <LinkIcon size={16}/> Link URL
-                  </div>
-                </div>
-
-                {imageMode === 'file' ? (
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="input-modern file-style"
-                    onChange={handleFileChange}
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    name="image"
-                    className="input-modern"
-                    placeholder="https://..."
-                    value={formData.image}
-                    onChange={handleChange}
-                  />
-                )}
-
-                {formData.image && (
-                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-secondary, #475569)', fontWeight: '600' }}>PRATINJAU BANNER:</span>
-                    <img 
-                      src={formData.image} 
-                      alt="Preview Banner" 
-                      style={{ 
-                        width: '100%', 
-                        maxWidth: '320px', 
-                        height: '160px', 
-                        objectFit: 'cover', 
-                        borderRadius: '8px', 
-                        border: '2px solid #e2e8f0',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }} 
-                      onError={(e) => { e.target.style.display = 'none'; }} 
-                      onLoad={(e) => { e.target.style.display = 'block'; }} 
-                    />
-                  </div>
-                )}
+                <ImageUploader
+                  value={formData.image}
+                  onChange={handleImageChange}
+                  aspect={16 / 9}
+                  previewLabel="PRATINJAU BANNER"
+                  urlPlaceholder="https://..."
+                  editorTitle="Edit Gambar Banner"
+                />
               </div>
 
               <div className="form-group-modern">
