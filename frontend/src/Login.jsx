@@ -1,14 +1,22 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import axios from 'axios';
+import { Eye, EyeOff } from 'lucide-react';
 import { saveSession, homeFor } from './utils/auth';
 import logoSekolah from './assets/logo1.png';
 import './App.css';
+import './css/auth.css';
+
+const AUTH_API = 'http://localhost:5001/api/auth';
 
 export default function Login() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [unconfirmedEmail, setUnconfirmedEmail] = useState('');
+  const [resendMsg, setResendMsg] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -31,8 +39,11 @@ export default function Login() {
   const handleLogin = async (e) => {
     e.preventDefault();
     setErrorMsg('');
+    setUnconfirmedEmail('');
+    setResendMsg('');
+    setLoading(true);
     try {
-      const response = await axios.post('http://localhost:5001/api/auth/login', { username, password });
+      const response = await axios.post(`${AUTH_API}/login`, { username, password });
       const { token, user } = response.data.data;
       saveSession({ token, user });
 
@@ -40,7 +51,26 @@ export default function Login() {
       if (from) navigate(from, { replace: true });
       else navigate(homeFor(String(user.role || '').toLowerCase()), { replace: true });
     } catch (error) {
-      setErrorMsg(error.response?.data?.message || 'Gagal terhubung ke server.');
+      const data = error.response?.data;
+      if (data?.code === 'EMAIL_NOT_CONFIRMED') {
+        setErrorMsg(data.message);
+        setUnconfirmedEmail(data.email || '');
+      } else {
+        setErrorMsg(data?.message || 'Gagal terhubung ke server.');
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    if (!unconfirmedEmail) return;
+    setResendMsg('');
+    try {
+      await axios.post(`${AUTH_API}/resend-verification`, { email: unconfirmedEmail });
+      setResendMsg('Email verifikasi baru sudah dikirim. Cek inbox/spam.');
+    } catch (err) {
+      setResendMsg(err.response?.data?.message || 'Gagal mengirim ulang email.');
     }
   };
 
@@ -55,23 +85,65 @@ export default function Login() {
             : 'Masuk untuk memberi komentar dan menyukai konten'}
         </p>
 
-        {errorMsg && <p className="error-message login-error">{errorMsg}</p>}
+        {/* Alert: teks merah di tengah, tanpa kotak */}
+        {errorMsg && <div className="au-alert" role="alert">{errorMsg}</div>}
+        {unconfirmedEmail && (
+          <div className="au-resend">
+            {resendMsg ? resendMsg : (
+              <>
+                Belum menerima email?{' '}
+                <button type="button" className="au-linkbtn" onClick={handleResend}>Kirim ulang verifikasi</button>
+              </>
+            )}
+          </div>
+        )}
 
-        <form onSubmit={handleLogin}>
+        <form className="auth-form" onSubmit={handleLogin}>
           <div className="form-group">
-            <div className="form-label"><label>Username</label></div>
-            <input type="text" placeholder="Username Anda" className="form-input" required value={username} onChange={(e) => setUsername(e.target.value)} />
+            <div className="au-row"><label htmlFor="login-username">Username</label></div>
+            <input
+              id="login-username"
+              type="text"
+              placeholder="Username Anda"
+              className="form-input"
+              autoComplete="username"
+              required
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            />
           </div>
 
           <div className="form-group">
-            <div className="form-label">
-              <label>Password</label>
-              <Link to="/lupa-password" className="auth-link forgot-password">LUPA PASSWORD?</Link>
+            <div className="au-row">
+              <label htmlFor="login-password">Password</label>
+              <Link to="/lupa-password" className="auth-link forgot-password">Lupa password?</Link>
             </div>
-            <input type="password" placeholder="Ketik Sandi Anda" className="form-input" required value={password} onChange={(e) => setPassword(e.target.value)} />
+            <div className="au-field">
+              <input
+                id="login-password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Ketik Sandi Anda"
+                className="form-input"
+                autoComplete="current-password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <button
+                type="button"
+                className="au-end"
+                onClick={() => setShowPassword((v) => !v)}
+                aria-label={showPassword ? 'Sembunyikan password' : 'Tampilkan password'}
+                aria-pressed={showPassword}
+              >
+                {showPassword ? <EyeOff size={18} strokeWidth={1.75} /> : <Eye size={18} strokeWidth={1.75} />}
+              </button>
+            </div>
           </div>
 
-          <button type="submit" className="auth-button">Masuk</button>
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Memproses...' : 'Masuk'}
+          </button>
         </form>
 
         <p className="footer-text">

@@ -382,3 +382,43 @@
     display: block;
   }
 }
+
+/* =========================================
+   FOTO PROFIL (tombol footer + popup) — sinkron dengan topbar & navbar viewer
+   Inisial tetap ada di bawah foto sebagai cadangan kalau gambar gagal dimuat.
+   ========================================= */
+.sidebar-user-avatar { position: relative; }
+.sidebar-user-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+.sidebar-user-popup .sidebar-user-popup-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sidebar-user-popup .sidebar-popup-pic {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+.sidebar-user-popup .sidebar-popup-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar-user-popup .sidebar-popup-info .sidebar-user-name,
+.sidebar-user-popup .sidebar-popup-info .sidebar-user-email {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -284,8 +284,22 @@ export default function Sidebar({
             <div onClick={() => setIsUserMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
             <div className="sidebar-user-popup">
               <div className="sidebar-user-popup-header">
-                 <div className="sidebar-user-name">{userData?.name}</div>
-                 <div className="sidebar-user-email">{userEmail}</div>
+                 <div className="sidebar-user-avatar sidebar-popup-pic">
+                   {userData?.initial}
+                   {userData?.avatar && (
+                     <img
+                       src={userData.avatar}
+                       alt={userData?.name}
+                       className="sidebar-user-photo"
+                       referrerPolicy="no-referrer"
+                       onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                     />
+                   )}
+                 </div>
+                 <div className="sidebar-popup-info">
+                   <div className="sidebar-user-name">{userData?.name}</div>
+                   <div className="sidebar-user-email">{userEmail}</div>
+                 </div>
               </div>
               {userRole === 'ADMIN' && (
                 <div style={{ padding: '4px' }}>
@@ -310,6 +324,15 @@ export default function Sidebar({
         >
           <div className="sidebar-user-avatar">
             {userData?.initial}
+            {userData?.avatar && (
+              <img
+                src={userData.avatar}
+                alt={userData?.name}
+                className="sidebar-user-photo"
+                referrerPolicy="no-referrer"
+                onError={(e) => { e.currentTarget.style.display = 'none'; }}
+              />
+            )}
           </div>
           <div className="sidebar-user-text">
             <div className="sidebar-user-name">{userData?.name}</div>

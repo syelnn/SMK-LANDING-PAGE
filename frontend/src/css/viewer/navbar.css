@@ -656,3 +656,29 @@ nav.viewer-navbar li.nv-user .nv-user__logout:hover {
     gap: 0.8rem;
   }
 }
+
+/* =========================================
+   FOTO PROFIL NAVBAR VIEWER (tombol + dropdown)
+   ========================================= */
+nav.viewer-navbar li.nv-user .nv-user__avatar,
+nav.viewer-navbar li.nv-user .nv-user__menu-avatar {
+  position: relative;
+  overflow: hidden;
+}
+nav.viewer-navbar li.nv-user .nv-user__menu-avatar {
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 92%, white 8%),
+    color-mix(in srgb, var(--compreng-nav-accent, #38bdf8) 78%, black 22%)
+  ) !important;
+  color: #ffffff !important;
+}
+nav.viewer-navbar li.nv-user .nv-user__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
