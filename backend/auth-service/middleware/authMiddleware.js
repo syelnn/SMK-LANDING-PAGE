@@ -34,7 +34,7 @@ module.exports = (prisma) => {
 
     const user = await prisma.user.findUnique({
       where: { id },
-      select: { id: true, username: true, email: true, fullName: true, role: true, isActive: true },
+      select: { id: true, username: true, email: true, fullName: true, avatar: true, role: true, isActive: true },
     });
     if (!user) throw fail(401, 'USER_NOT_FOUND', 'Akun tidak ditemukan. Silakan login ulang.');
     if (user.isActive === 0 || user.isActive === false) {
@@ -46,6 +46,7 @@ module.exports = (prisma) => {
       username: user.username,
       email: user.email,
       fullName: user.fullName,
+      avatar: user.avatar,
       role: String(user.role || 'viewer').toLowerCase(), // role SELALU dari DB, bukan dari token
     };
   };

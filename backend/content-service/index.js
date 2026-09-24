@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const { PrismaClient } = require('@prisma/client');
-const { deleteFromStorageByUrl, detectRemoteFileSize } = require('./services/cloudinaryStorage');
+const { deleteFromStorageByUrl, detectRemoteFileSize, uploadFromExternalUrl } = require('./services/cloudinaryStorage');
 const { generateDatabaseDump, getDatabaseSummary } = require('./services/dbExport');
 
 const prisma = new PrismaClient();
@@ -512,7 +512,23 @@ app.delete('/api/industry-partners/:id', ...requireStaff, async (req, res) => {
 const MAX_TESTIMONIAL_PER_USER = 2;
 const TESTIMONIAL_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 jam
 
-app.post('/api/testimonials', verifyToken, uploadSingleSafe('photo'), resolveImage('photo', 'testimonials'), async (req, res) => {
+// Foto testimoni = foto profil user (dikirim frontend lewat flag use_profile_photo=1).
+// Foto profil SENGAJA DISALIN ke folder "testimonials" (bukan dipakai bersama URL-nya), karena kalau
+// dipakai bersama: ganti foto profil => foto lama dihapus dari Cloudinary => foto testimoni ikut
+// rusak; atau admin hapus testimoni => foto profil user ikut terhapus.
+// Kalau penyalinan gagal, testimoni tetap dikirim tanpa foto (kartu memakai huruf inisial).
+const useProfilePhoto = async (req, res, next) => {
+  try {
+    if (req.file || String(req.body?.use_profile_photo || '') !== '1') return next();
+    const me = await prisma.user.findUnique({ where: { id: parseInt(req.user.id) }, select: { avatar: true } });
+    if (me?.avatar) req.body.photo = await uploadFromExternalUrl(me.avatar, 'testimonials');
+  } catch (err) {
+    console.warn('Gagal menyalin foto profil untuk testimoni (diabaikan):', err.message);
+  }
+  next();
+};
+
+app.post('/api/testimonials', verifyToken, uploadSingleSafe('photo'), useProfilePhoto, resolveImage('photo', 'testimonials'), async (req, res) => {
   try {
     const userId = parseInt(req.user.id);
     const name = String(req.body.name || '').trim();

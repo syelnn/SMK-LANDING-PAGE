@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import logoSekolah from '../assets/logo1.png'; 
 import '../css/viewer/navbar.css'; 
-import { getSession, clearSession } from '../utils/auth';
+import { getSession, clearSession, verifySession } from '../utils/auth';
 
 const Navbar = () => {
   const [menuItems, setMenuItems] = useState([]);
@@ -36,7 +36,8 @@ const Navbar = () => {
       setUser({
         username: session.username || session.name || 'Viewer',
         email: session.email || 'Email tidak tersedia',
-        role: session.role || 'viewer'
+        role: session.role || 'viewer',
+        avatar: session.avatar || ''
       });
     } else {
       if (localStorage.getItem('token')) clearSession(); // token ada tapi rusak/kedaluwarsa -> bersihkan
@@ -46,14 +47,25 @@ const Navbar = () => {
 
   useEffect(() => {
     syncUserSession();
+
+    // Segarkan data profil (foto, nama) dari server supaya navbar tidak menampilkan data lama.
+    // verifySession memperbarui localStorage & memicu event 'auth:profile-updated' bila ada perubahan.
+    if (getSession()) {
+      verifySession().then((r) => {
+        if (r.ok) syncUserSession();
+        else if (r.reason === 'INVALID') { clearSession(); syncUserSession(); }
+      });
+    }
   }, [location.pathname, syncUserSession]);
 
   // token invalid) supaya Navbar langsung update tanpa perlu pindah halaman/refresh dulu.
   useEffect(() => {
     window.addEventListener('auth:expired', syncUserSession);
+    window.addEventListener('auth:profile-updated', syncUserSession);
     window.addEventListener('storage', syncUserSession); // sinkron antar-tab juga
     return () => {
       window.removeEventListener('auth:expired', syncUserSession);
+      window.removeEventListener('auth:profile-updated', syncUserSession);
       window.removeEventListener('storage', syncUserSession);
     };
   }, [syncUserSession]);
@@ -535,6 +547,15 @@ const Navbar = () => {
                   <span className="nv-user__avatar-wrap">
                     <span className="nv-user__avatar">
                       {(user.username || 'V').charAt(0).toUpperCase()}
+                      {user.avatar && (
+                        <img
+                          src={user.avatar}
+                          alt={user.username || 'Profil'}
+                          className="nv-user__photo"
+                          referrerPolicy="no-referrer"
+                          onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                        />
+                      )}
                     </span>
                     <span className="nv-user__dot" aria-hidden="true"></span>
                   </span>
@@ -545,6 +566,15 @@ const Navbar = () => {
                     <div className="nv-user__menu-head">
                       <span className="nv-user__menu-avatar">
                         {(user.username || 'V').charAt(0).toUpperCase()}
+                        {user.avatar && (
+                          <img
+                            src={user.avatar}
+                            alt={user.username || 'Profil'}
+                            className="nv-user__photo"
+                            referrerPolicy="no-referrer"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        )}
                       </span>
                       <span className="nv-user__menu-info">
                         <p className="nv-user__menu-name">{user.username || 'Viewer'}</p>

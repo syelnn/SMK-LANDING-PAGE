@@ -336,11 +336,24 @@ const DashboardLayout = () => {
     return {
       name: exactUsername,
       email: exactEmail || 'Email tidak tersedia',
+      avatar: localStorage.getItem('avatar') || '',
       role: (exactRole || 'VIEWER').toUpperCase(),
       initial: exactUsername ? exactUsername.charAt(0).toUpperCase() : 'U'
     };
   };
   
+  // Render ulang otomatis saat foto/nama profil berubah (edit user, verifikasi sesi, antar-tab)
+  const [, setProfileTick] = useState(0);
+  useEffect(() => {
+    const bump = () => setProfileTick((n) => n + 1);
+    window.addEventListener('auth:profile-updated', bump);
+    window.addEventListener('storage', bump);
+    return () => {
+      window.removeEventListener('auth:profile-updated', bump);
+      window.removeEventListener('storage', bump);
+    };
+  }, []);
+
   const userData = getExactUser();
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -449,7 +462,18 @@ const DashboardLayout = () => {
                   <span className="topbar-user-name">{userData.name}</span>
                   <span className="topbar-user-email">{userData.email}</span>
                 </div>
-                <div className="topbar-user-initial">{userData.initial}</div>
+                <div className="topbar-user-initial">
+                  {userData.initial}
+                  {userData.avatar && (
+                    <img
+                      src={userData.avatar}
+                      alt={userData.name}
+                      className="topbar-user-photo"
+                      referrerPolicy="no-referrer"
+                      onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                    />
+                  )}
+                </div>
               </button>
   
               {isTopUserMenuOpen && (
@@ -457,8 +481,22 @@ const DashboardLayout = () => {
                   <div onClick={() => setIsTopUserMenuOpen(false)} style={{ position: 'fixed', inset: 0, zIndex: 40 }}></div>
                   <div className="topbar-dropdown">
                     <div className="topbar-dropdown-header">
-                      <p className="topbar-dropdown-name">{userData.name}</p>
-                      <p className="topbar-dropdown-email">{userData.email}</p>
+                      <div className="topbar-user-initial topbar-dropdown-pic">
+                        {userData.initial}
+                        {userData.avatar && (
+                          <img
+                            src={userData.avatar}
+                            alt={userData.name}
+                            className="topbar-user-photo"
+                            referrerPolicy="no-referrer"
+                            onError={(e) => { e.currentTarget.style.display = 'none'; }}
+                          />
+                        )}
+                      </div>
+                      <div className="topbar-dropdown-info">
+                        <p className="topbar-dropdown-name">{userData.name}</p>
+                        <p className="topbar-dropdown-email">{userData.email}</p>
+                      </div>
                     </div>
                     
                     <button onClick={() => { setIsTopUserMenuOpen(false); navigate('/admin/users'); }} className="topbar-dropdown-item">

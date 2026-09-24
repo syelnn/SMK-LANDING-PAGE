@@ -104,11 +104,7 @@
 }
 
 .news-link {
-<<<<<<< HEAD
-  color: #2563eb;
-=======
   color: var(--compreng-accent, #2563eb);
->>>>>>> viewer
   font-size: 13px;
   font-weight: 600;
   text-decoration: none;
@@ -338,11 +334,7 @@
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   overflow: visible !important; 
-<<<<<<< HEAD
-  border: 1px solid #f1f5f9;
-=======
   border: 1px solid var(--compreng-border, #e2e8f0);
->>>>>>> viewer
 }
 
 .custom-table {
@@ -438,11 +430,7 @@ tr.row-featured {
   background: var(--compreng-surface, #ffffff);
   border-radius: 10px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
-<<<<<<< HEAD
-  border: 1px solid #e2e8f0;
-=======
   border: 1px solid var(--compreng-border, #e2e8f0);
->>>>>>> viewer
   padding: 6px;
   z-index: 9999;
   display: flex;
@@ -500,11 +488,7 @@ tr.row-featured {
 }
 
 .modal-content.modern-modal {
-<<<<<<< HEAD
-  background-color: #ffffff;
-=======
   background-color: var(--compreng-surface, #ffffff);
->>>>>>> viewer
   border-radius: 20px;
   width: 100%;
   max-width: 540px;
@@ -546,13 +530,8 @@ tr.row-featured {
 }
 
 .btn-close-modal:hover {
-<<<<<<< HEAD
-  background-color: #f1f5f9;
-  color: #0f172a;
-=======
   background-color: var(--compreng-surface-soft, #f1f5f9);
   color: var(--compreng-text, #0f172a);
->>>>>>> viewer
 }
 
 .form-modern-layout {
@@ -571,11 +550,7 @@ tr.row-featured {
 }
 
 .form-modern-layout::-webkit-scrollbar-thumb {
-<<<<<<< HEAD
-  background-color: #cbd5e1;
-=======
   background-color: var(--compreng-border, #e2e8f0);
->>>>>>> viewer
   border-radius: 20px;
 }
 
@@ -590,11 +565,7 @@ tr.row-featured {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-<<<<<<< HEAD
-  color: #475569;
-=======
   color: var(--compreng-text-secondary, #475569);
->>>>>>> viewer
 }
 
 .input-modern {
@@ -611,11 +582,7 @@ tr.row-featured {
 }
 
 .input-modern:focus {
-<<<<<<< HEAD
-  border-color: #0f172a;
-=======
   border-color: var(--compreng-border, #e2e8f0);
->>>>>>> viewer
   box-shadow: 0 0 0 3px rgba(15, 23, 42, 0.08);
 }
 
@@ -626,11 +593,7 @@ tr.row-featured {
 
 .radio-tabs {
   display: flex;
-<<<<<<< HEAD
-  background-color: #f1f5f9;
-=======
   background-color: var(--compreng-surface-soft, #f1f5f9);
->>>>>>> viewer
   padding: 4px;
   border-radius: 10px;
   gap: 4px;
@@ -655,13 +618,8 @@ tr.row-featured {
 }
 
 .radio-tab.active {
-<<<<<<< HEAD
-  background: #ffffff;
-  color: #0f172a;
-=======
   background: var(--compreng-surface, #ffffff);
   color: var(--compreng-text, #0f172a);
->>>>>>> viewer
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
@@ -672,24 +630,13 @@ tr.row-featured {
   gap: 10px;
   margin-top: 8px;
   padding-top: 12px;
-<<<<<<< HEAD
-  border-top: 1px solid #f1f5f9;
-=======
   border-top: 1px solid var(--compreng-border, #e2e8f0);
->>>>>>> viewer
 }
 
 .btn-modern-secondary {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-<<<<<<< HEAD
-  background-color: #f1f5f9;
-  color: #475569;
-  padding: 10px 20px;
-  border-radius: 10px;
-  font-weight: 600;
-=======
   background-color: var(--compreng-surface-soft, #f1f5f9);
   color: var(--compreng-text-secondary, #475569);
   padding: 10px 20px;
@@ -715,7 +662,6 @@ tr.row-featured {
   padding: 10px 24px;
   border-radius: 10px;
   font-weight: 600;
->>>>>>> viewer
   font-size: 13.5px;
   border: none;
   cursor: pointer;
@@ -723,34 +669,8 @@ tr.row-featured {
   box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
 }
 
-<<<<<<< HEAD
-.btn-modern-secondary:hover {
-  background-color: #e2e8f0;
-  color: #0f172a;
-}
-
-.btn-modern-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #0f172a;
-  color: #ffffff;
-  padding: 10px 24px;
-  border-radius: 10px;
-  font-weight: 600;
-  font-size: 13.5px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15);
-}
-
-.btn-modern-primary:hover {
-  background-color: #1e293b;
-=======
 .btn-modern-primary:hover {
   background-color: var(--compreng-nav-bg, #0f172a);
->>>>>>> viewer
   transform: translateY(-1px);
 }
 
@@ -767,11 +687,7 @@ tr.row-featured {
   gap: 10px;
   padding: 12px 20px;
   border-radius: 10px;
-<<<<<<< HEAD
-  background: #ffffff;
-=======
   background: var(--compreng-surface, #ffffff);
->>>>>>> viewer
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
   z-index: 99999;
   font-weight: 600;
@@ -836,13 +752,8 @@ tr.row-featured {
 }
 
 .badge-tag {
-<<<<<<< HEAD
-  background-color: #f1f5f9;
-  color: #475569;
-=======
   background-color: var(--compreng-surface-soft, #f1f5f9);
   color: var(--compreng-text-secondary, #475569);
->>>>>>> viewer
   padding: 2px 6px;
   border-radius: 4px;
   font-size: 11px;
@@ -850,11 +761,7 @@ tr.row-featured {
 }
 
 .badge-featured-label {
-<<<<<<< HEAD
-  background-color: #fef3c7;
-=======
   background-color: var(--compreng-surface-soft, #f1f5f9);
->>>>>>> viewer
   color: #b45309;
   border: 1px solid #fde68a;
   font-size: 10px;

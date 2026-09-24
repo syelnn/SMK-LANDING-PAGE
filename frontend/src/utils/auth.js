@@ -3,7 +3,7 @@
 
 import axios from 'axios';
 
-const KEYS = ['token', 'role', 'userId', 'username', 'fullName', 'email'];
+const KEYS = ['token', 'role', 'userId', 'username', 'fullName', 'email', 'avatar'];
 const LEGACY_KEYS = ['user', 'name', 'email', 'userEmail']; // sisa key lama
 
 export const decodeToken = (token) => {
@@ -33,6 +33,7 @@ export const getSession = () => {
     email: localStorage.getItem('email') || '',
     role: String(payload.role || localStorage.getItem('role') || '').toLowerCase(),
     name: localStorage.getItem('fullName') || payload.username || '',
+    avatar: localStorage.getItem('avatar') || '',
   };
 };
 
@@ -55,7 +56,14 @@ export const saveSession = ({ token, user = {} }) => {
 
   const email = user.email;
   if (email) localStorage.setItem('email', email);
+
+  // Foto profil (URL publik dari storage). Sebelumnya TIDAK pernah disimpan -> sidebar,
+  // topbar & navbar viewer selalu jatuh ke huruf inisial walau foto sudah terpasang.
+  if (user.avatar) localStorage.setItem('avatar', user.avatar);
 };
+
+// Kabari semua komponen profil (sidebar, topbar, navbar viewer) supaya render ulang
+export const notifyProfileUpdated = () => window.dispatchEvent(new Event('auth:profile-updated'));
 
 export const clearSession = () => [...KEYS, ...LEGACY_KEYS].forEach((k) => localStorage.removeItem(k));
 
@@ -94,12 +102,16 @@ export const verifySession = async () => {
     const user = res.data?.data;
     if (!user) return { ok: false, reason: 'INVALID' };
 
-    // Sinkronkan dengan data terbaru dari server (role bisa berubah di DB)
+    // Sinkronkan dengan data terbaru dari server (role/foto/nama bisa berubah di DB)
+    const before = ['role', 'username', 'fullName', 'email', 'avatar'].map((k) => localStorage.getItem(k) || '').join('|');
     localStorage.setItem('role', String(user.role || 'viewer').toLowerCase());
     localStorage.setItem('userId', String(user.id));
     if (user.username) localStorage.setItem('username', user.username);
     if (user.fullName) localStorage.setItem('fullName', user.fullName);
     if (user.email) localStorage.setItem('email', user.email);
+    if (user.avatar) localStorage.setItem('avatar', user.avatar); else localStorage.removeItem('avatar');
+    const after = ['role', 'username', 'fullName', 'email', 'avatar'].map((k) => localStorage.getItem(k) || '').join('|');
+    if (before !== after) notifyProfileUpdated();
 
     return { ok: true, user: { ...user, role: String(user.role || 'viewer').toLowerCase() } };
   } catch (err) {
