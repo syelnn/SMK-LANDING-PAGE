@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Trash2, Edit, Image as ImageIcon, X, MoreHorizontal, Search } from 'lucide-react';
+import { Plus, Trash2, Edit, Image as ImageIcon, X, MoreHorizontal, Search, Loader2 } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
 import '../css/manageindustrypartners.css';
 import '../App.css';
@@ -8,6 +8,7 @@ import '../App.css';
 export default function ManageIndustryPartners() {
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false); // true selama proses Simpan/Edit berjalan
   const userRole = localStorage.getItem('role');
 
   const API_URL = 'http://localhost:5002/api';
@@ -97,6 +98,8 @@ export default function ManageIndustryPartners() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return; // cegah klik ganda / kirim dobel
+    setSubmitting(true);
     try {
       // File asli dikirim via FormData -> backend upload ke Cloudinary,
       // hanya URL hasilnya yang disimpan ke database (bukan base64).
@@ -114,6 +117,8 @@ export default function ManageIndustryPartners() {
       fetchData();
     } catch (error) {
       alert(`Gagal menyimpan data: ${error.response?.data?.message || error.message}`);
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -135,12 +140,12 @@ export default function ManageIndustryPartners() {
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data mitra industri...</div>;
 
   return (
-    <div className="ip-wrapper">
+    <div className="ip-wrapper" id="admin-mitra-industri">
 
       <div className="ip-header-box">
         <div>
           <h2 className="ip-title">Mitra Industri</h2>
-          <p className="ip-subtitle">Kelola logo perusahaan/industri yang tampil di atas Footer website.</p>
+          <p className="ip-subtitle">Kelola logo perusahaan/industri.</p>
         </div>
         {(userRole === 'admin' || userRole === 'editor') && (
           <button className="btn-modern-primary" onClick={openAdd}>
@@ -265,10 +270,10 @@ export default function ManageIndustryPartners() {
           <div className="modal-content modern-modal">
             <div className="modal-header-modern">
               <h3>{editId ? 'Edit Mitra Industri' : 'Tambah Mitra Industri Baru'}</h3>
-              <button onClick={() => setShowModal(false)} className="btn-close-modal"><X size={20} /></button>
+              <button onClick={() => !submitting && setShowModal(false)} disabled={submitting} className="btn-close-modal"><X size={20} /></button>
             </div>
 
-            <form onSubmit={handleSubmit} className="form-modern-layout">
+            <form onSubmit={handleSubmit} className={`form-modern-layout${submitting ? ' ip-form-busy' : ''}`} aria-busy={submitting}>
               <div className="form-group-modern">
                 <label>NAMA PERUSAHAAN / INDUSTRI</label>
                 <input type="text" placeholder="Contoh: PT Telkom Indonesia" className="input-modern" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
@@ -297,8 +302,22 @@ export default function ManageIndustryPartners() {
               </div>
 
               <div className="modal-actions-modern" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
-                <button type="button" onClick={() => setShowModal(false)} className="btn-modern-secondary">Batal</button>
-                <button type="submit" className="btn-modern-primary">Simpan Data</button>
+                {submitting && (
+                  <span className="ip-saving-hint" role="status" aria-live="polite">
+                    {editId ? 'Sedang memperbarui data, mohon tunggu...' : 'Sedang menyimpan data, mohon tunggu...'}
+                  </span>
+                )}
+                <button type="button" onClick={() => setShowModal(false)} disabled={submitting} className="btn-modern-secondary">Batal</button>
+                <button type="submit" disabled={submitting} className="btn-modern-primary">
+                  {submitting ? (
+                    <>
+                      <Loader2 size={16} className="ip-spin" />
+                      {editId ? 'Memperbarui...' : 'Menyimpan...'}
+                    </>
+                  ) : (
+                    'Simpan Data'
+                  )}
+                </button>
               </div>
             </form>
           </div>
