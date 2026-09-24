@@ -282,6 +282,11 @@
   color: #dc2626;
 }
 
+.faq-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
 .btn-action-more {
   background: transparent;
   border: none;

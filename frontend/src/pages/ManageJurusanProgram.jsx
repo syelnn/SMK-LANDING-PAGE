@@ -331,9 +331,6 @@ export default function ManageJurusanProgram() {
               if (!item) return null;
               return (
                 <>
-                  <Link to={`/admin/kurikulum/${item.slug}`} className="mjp-dropdown-item">
-                    <ExternalLink size={14} color="var(--compreng-text-secondary)" /> Detail Kurikulum
-                  </Link>
                   {(userRole === 'admin' || userRole === 'editor') && (
                     <>
                       <button onClick={() => openEditJurusan(item)} className="mjp-dropdown-item">

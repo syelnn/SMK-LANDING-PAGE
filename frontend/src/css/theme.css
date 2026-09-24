@@ -790,11 +790,7 @@ label { font-weight: 600 !important; }
 /* Ikon dashboard: ikut warna teks utama, bukan abu-abu mati */
 .dash-stat-card svg, .dash-stat-header svg, .dash-chart-card svg,
 .sidebar-link svg, .sidebar-sub-link svg, .topbar svg,
-[class*="-icon"] svg, .dash-stat-header i, [class*="stat"] svg {
-  color: var(--compreng-text) !important;
-  stroke: currentColor;
-  opacity: 1 !important;
-}
+
 .sidebar-link svg, .sidebar-sub-link svg { color: inherit !important; }
 .dash-stat-value, .dash-title, .dash-chart-title { color: var(--compreng-text) !important; }
 .dash-stat-title, .dash-stat-desc, .dash-chart-subtitle { color: var(--compreng-text-secondary) !important; }
@@ -1305,18 +1301,19 @@ input[name*="Url"], input[name*="Link"], input[id*="url"], input[id*="link"] {
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
 }
-/* Tombol ikon aksi (titik tiga, edit, hapus) */
+/* Tombol ikon aksi (titik tiga, edit, hapus) — dibuat bersih/borderless
+   di semua halaman (Berita, Ekskul, Prestasi, FAQ, dst), konsisten dengan
+   tombol aksi galeri/testimoni/pengajar yang memang tanpa kotak border. */
 .btn-action, .btn-action-more, .btn-more-action, [class*="btn-icon"] {
   background-color: transparent !important;
-  border: 1px solid var(--compreng-border) !important;
-  border-radius: 10px !important;
+  border: none !important;
+  border-radius: 8px !important;
   color: var(--compreng-text-secondary) !important;
-  transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+  transition: background-color .18s ease, color .18s ease;
 }
 .btn-action:hover, .btn-action-more:hover, .btn-more-action:hover {
   background-color: var(--compreng-surface-soft) !important;
   color: var(--compreng-text) !important;
-  border-color: var(--compreng-accent) !important;
 }
 .action-dropdown-menu, .dropdown-action-menu {
   background-color: var(--compreng-surface) !important;

@@ -174,26 +174,49 @@
 
 .sidebar-dropdown-icon {
   flex-shrink: 0;
-  transition: transform 0.2s ease;
+  transition: transform 0.25s ease;
+}
+
+.sidebar-dropdown-icon.open {
+  transform: rotate(90deg);
 }
 
 .dashboard-sidebar.sidebar-mini .sidebar-dropdown-icon {
   display: none;
 }
 
-/* SUB MENU SETTINGS */
+/* SUB MENU SETTINGS — dianimasikan lewat grid-template-rows supaya buka/tutup
+   halus (bukan langsung muncul/hilang seperti display:none/flex). */
 .sidebar-sub-menu {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-left: 26px;
+  transition: grid-template-rows 0.25s ease;
+}
+
+.sidebar-sub-menu.open {
+  grid-template-rows: 1fr;
+}
+
+.sidebar-sub-menu-inner {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: 4px;
-  margin-left: 26px;
+  min-height: 0;
+  overflow: hidden;
   border-left: 1px solid var(--compreng-border);
   padding-left: 12px;
 }
 
+.sidebar-sub-menu.open .sidebar-sub-menu-inner {
+  padding-top: 4px;
+  padding-bottom: 2px;
+}
+
+/* Saat sidebar collapsed, submenu tidak ditampilkan (klik langsung
+   navigasi ke halaman utama menu, lihat Sidebar.jsx) */
 .dashboard-sidebar.sidebar-mini .sidebar-sub-menu {
-  display: none; 
+  grid-template-rows: 0fr !important;
 }
 
 .sidebar-sub-link {
