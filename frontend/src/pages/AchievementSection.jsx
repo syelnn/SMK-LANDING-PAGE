@@ -4,13 +4,12 @@ import {
   MoreHorizontal, 
   Edit3, 
   Trash2, 
-  Link as LinkIcon, 
-  Image as ImageIcon, 
   Plus, 
   Search, 
   X, 
   Loader2 
 } from 'lucide-react';
+import ImageUploader from '../components/ImageUploader';
 import '../css/AchievementSection.css';
 import '../App.css';
 
@@ -121,17 +120,12 @@ const AchievementSection = () => {
     }
   };
 
-  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, photo: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
+  // Callback dari <ImageUploader>: file asli/hasil edit disimpan di state (dikirim ke backend),
+  // URL-nya dipakai untuk pratinjau.
+  const handlePhotoChange = ({ file, url }) => {
+    setSelectedFile(file);
+    setImageTab(file ? 'upload' : 'url');
+    setFormData((prev) => ({ ...prev, photo: url }));
   };
 
   const handleSubmit = async (e) => {
@@ -436,61 +430,14 @@ const AchievementSection = () => {
 
               <div className="form-group-modern upload-section">
                 <label>Foto Siswa / Dokumentasi</label>
-                <div className="radio-tabs">
-                  <div
-                    className={`radio-tab ${imageTab === 'url' ? 'active' : ''}`}
-                    onClick={() => setImageTab('url')}
-                  >
-                    <LinkIcon size={16} /> Link URL
-                  </div>
-                  <div
-                    className={`radio-tab ${imageTab === 'upload' ? 'active' : ''}`}
-                    onClick={() => setImageTab('upload')}
-                  >
-                    <ImageIcon size={16} /> Upload Foto
-                  </div>
-                </div>
-
-                {imageTab === 'url' ? (
-                  <input
-                    type="text"
-                    name="photo"
-                    className="input-modern"
-                    placeholder="https://..."
-                    value={formData.photo}
-                    onChange={handleChange}
-                  />
-                ) : (
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="input-modern file-style"
-                    onChange={handleFileUpload}
-                  />
-                )}
-
-                {/* =======================================
-                    TAMBAHAN PREVIEW GAMBAR PRESTASI
-                    ======================================= */}
-                {formData.photo && (
-                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU FOTO:</span>
-                    <img 
-                      src={formData.photo} 
-                      alt="Preview Prestasi" 
-                      style={{ 
-                        width: '100px', 
-                        height: '100px', 
-                        objectFit: 'cover', 
-                        borderRadius: '8px', 
-                        border: '2px solid var(--compreng-surface)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }} 
-                      onError={(e) => { e.target.style.display = 'none'; }} 
-                      onLoad={(e) => { e.target.style.display = 'block'; }} 
-                    />
-                  </div>
-                )}
+                <ImageUploader
+                  value={formData.photo}
+                  onChange={handlePhotoChange}
+                  aspect={4 / 3}
+                  previewLabel="PRATINJAU FOTO"
+                  urlPlaceholder="https://..."
+                  editorTitle="Edit Foto Prestasi"
+                />
               </div>
 
               <div className="form-group-modern">

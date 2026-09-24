@@ -5,7 +5,8 @@ import {
   Users, School, Newspaper, BookOpen, Activity, 
   GraduationCap, Trophy, MessageSquare, HelpCircle, 
   Image as ImageIcon, MapPin, LayoutDashboard, Settings,
-  X, ChevronDown, ChevronRight, Download, LogOut, ChevronsUpDown 
+  X, ChevronDown, ChevronRight, Download, LogOut, ChevronsUpDown,
+  Handshake
 } from 'lucide-react';
 import logoSekolah from './assets/logo1.png';
 import './css/sidebar.css'; // MENGIMPOR CSS SIDEBAR BARU
@@ -33,7 +34,9 @@ const ICON_MAP = {
   image: <ImageIcon size={16} />,
   kontak: <MapPin size={16} />,
   'map-pin': <MapPin size={16} />,
-  download: <Download size={16} />
+  download: <Download size={16} />,
+  mitra: <Handshake size={16} />,
+  handshake: <Handshake size={16} />
 };
 
 // Pengaturan hak akses per nama menu
@@ -46,6 +49,7 @@ const MENU_ROLES = {
   'Ekstrakurikuler': ['ADMIN', 'EDITOR'],
   'Tenaga Pengajar': ['ADMIN'],
   'Karya & Prestasi': ['ADMIN', 'EDITOR'],
+  'Mitra Industri': ['ADMIN', 'EDITOR'],
   'Testimoni': ['ADMIN', 'EDITOR'],
   'Galeri': ['ADMIN', 'EDITOR'],
   'FAQ': ['ADMIN'],
@@ -91,6 +95,7 @@ export default function Sidebar({
     { title: 'Ekstrakurikuler', iconKey: 'ekskul', type: 'link', url: '/admin/ekstrakurikuler', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
     { title: 'Tenaga Pengajar', iconKey: 'pengajar', type: 'link', url: '/admin/pengajar', roles: ['ADMIN'], group: 'Pages' },
     { title: 'Karya & Prestasi', iconKey: 'prestasi', type: 'link', url: '/admin/prestasi', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
+    { title: 'Mitra Industri', iconKey: 'mitra', type: 'link', url: '/admin/mitra-industri', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
     { title: 'Testimoni', iconKey: 'testimoni', type: 'link', url: '/admin/testimoni', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
     { title: 'Galeri', iconKey: 'galeri', type: 'link', url: '/admin/galeri', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
     { title: 'FAQ', iconKey: 'faq', type: 'link', url: '/admin/faq', roles: ['ADMIN'], group: 'Other' },

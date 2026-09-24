@@ -89,32 +89,36 @@
   height: 38px;
   border-radius: 50%;
   /* backgroundnya transparan/kontras dengan warna tema */
-  background-color: rgba(255, 255, 255, 0.08); 
-  /* Mengikuti warna FONT FOOTER (bukan navbar) yang sedang aktif ygy */
-  color: var(--compreng-footer-text, var(--compreng-nav-text, #f8fafc)) !important;
-  fill: var(--compreng-footer-text, var(--compreng-nav-text, #f8fafc)) !important;
+  background-color: rgba(255, 255, 255, 0.08);
+  /* Warna default SELALU putih di semua tema (bukan ikut variabel tema) */
+  color: #ffffff !important;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid var(--compreng-border, rgba(255, 255, 255, 0.2));
-  transition: all 0.3s ease;
+  transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease;
   box-sizing: border-box;
   text-decoration: none;
 }
 
-.footer-social-icon:hover {
-  /* Saat di-hover menggunakan warna aksen tema */
+/* Ikon (svg dari react-icons) ikut currentColor milik .footer-social-icon (putih).
+   [FIX] Selector ditulis dengan konteks .footer-container di depan supaya
+   spesifisitasnya lebih tinggi daripada rule ikon global manapun (mis. rule
+   ikon dashboard admin yang polanya "class mengandung -icon"), jadi warna
+   ikon sosmed footer dijamin tetap putih tanpa perlu mengubah file lain. */
+.footer-container .footer-social-icon svg {
+  color: inherit !important;
+  fill: currentColor !important;
+  width: 18px;
+  height: 18px;
+}
+
+.footer-social-icon:hover,
+.footer-social-icon:focus-visible {
+  /* Saat di-hover/fokus, nyala mengikuti warna aksen tema aktif */
   background-color: var(--compreng-accent, #2563eb);
   border-color: var(--compreng-accent, #2563eb);
   color: #ffffff !important;
-  fill: #ffffff !important;
-  transform: translateY(-3px);
-}
-
-.footer-social-icon:hover {
-  background-color: var(--compreng-accent, #2563eb);
-  border-color: var(--compreng-accent, #2563eb);
-  color: #ffffff;
   transform: translateY(-3px);
 }
 

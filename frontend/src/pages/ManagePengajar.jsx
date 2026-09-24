@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Plus, Trash2, Edit, Image as ImageIcon, Link as LinkIcon, X, MoreHorizontal, Search, Filter, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Edit, X, MoreHorizontal, Search, Filter, ChevronDown } from 'lucide-react';
+import ImageUploader from '../components/ImageUploader';
 import '../css/managepengajar.css'; 
 import '../App.css'; 
 
@@ -56,16 +57,12 @@ export default function ManagePengajar() {
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [dropdownConfig.id]);
 
-  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      if (file.size > 2 * 1024 * 1024) return alert("Ukuran file terlalu besar! Maksimal 2MB.");
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => setFormData({ ...formData, photo: reader.result });
-      reader.readAsDataURL(file);
-    }
+  // Callback dari <ImageUploader>: file asli/hasil edit disimpan di state (dikirim ke backend),
+  // URL-nya dipakai untuk pratinjau.
+  const handlePhotoChange = ({ file, url }) => {
+    setSelectedFile(file);
+    setImageType(file ? 'file' : 'url');
+    setFormData((prev) => ({ ...prev, photo: url }));
   };
 
   const handleDropdownClick = (e, teacherId) => {
@@ -431,40 +428,16 @@ export default function ManagePengajar() {
 
               <div className="form-group-modern upload-section">
                 <label>FOTO PROFIL</label>
-                <div className="radio-tabs">
-                  <div className={`radio-tab ${imageType === 'url' ? 'active' : ''}`} onClick={() => setImageType('url')}>
-                    <LinkIcon size={16} style={{ marginRight: '6px' }} /> Link URL
-                  </div>
-                  <div className={`radio-tab ${imageType === 'file' ? 'active' : ''}`} onClick={() => setImageType('file')}>
-                    <ImageIcon size={16} style={{ marginRight: '6px' }} /> Upload Foto
-                  </div>
-                </div>
-                
-                {imageType === 'url' ? (
-                  <input type="text" placeholder="https://contoh.com/foto.jpg" className="input-modern" value={formData.photo} onChange={e => setFormData({...formData, photo: e.target.value})} />
-                ) : (
-                  <input type="file" accept="image/*" className="input-modern file-style" onChange={handleFileUpload} />
-                )}
-
-                {formData.photo && (
-                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU GAMBAR:</span>
-                    <img 
-                      src={formData.photo} 
-                      alt="Preview Profil" 
-                      style={{ 
-                        width: '100px', 
-                        height: '100px', 
-                        objectFit: 'cover', 
-                        borderRadius: '50%',
-                        border: '3px solid var(--compreng-surface)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }} 
-                      onError={(e) => { e.target.style.display = 'none'; }} 
-                      onLoad={(e) => { e.target.style.display = 'block'; }} 
-                    />
-                  </div>
-                )}
+                <ImageUploader
+                  value={formData.photo}
+                  onChange={handlePhotoChange}
+                  aspect={1}
+                  shape="round"
+                  maxSizeMB={2}
+                  previewLabel="PRATINJAU FOTO PROFIL"
+                  urlPlaceholder="https://contoh.com/foto.jpg"
+                  editorTitle="Edit Foto Profil"
+                />
               </div>
 
               <div className="modal-actions-modern" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>

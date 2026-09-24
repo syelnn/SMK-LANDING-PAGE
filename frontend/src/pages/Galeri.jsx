@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, ArrowLeft, Image as ImageIcon, Link as LinkIcon, MoreHorizontal, Star, FolderOpen, Search, Grid, List } from 'lucide-react';
+import { Plus, Edit, Trash2, X, ArrowLeft, MoreHorizontal, Star, FolderOpen, Search, Grid, List } from 'lucide-react';
+import ImageUploader from '../components/ImageUploader';
 import '../css/galeri.css'; 
 import '../App.css'; 
 
@@ -120,17 +121,12 @@ export default function Galeri() {
     setShowModal(true);
   };
 
-  // Fungsi baru agar file yang di-upload bisa langsung tampil di preview
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, image: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
+  // Callback dari <ImageUploader>: file asli/hasil edit disimpan di state (dikirim ke backend),
+  // URL-nya dipakai untuk pratinjau.
+  const handleImageChange = ({ file, url }) => {
+    setSelectedFile(file);
+    setLogoType(file ? 'file' : 'url');
+    setFormData((prev) => ({ ...prev, image: url }));
   };
 
   const handleSubmit = async (e) => {
@@ -555,44 +551,14 @@ export default function Galeri() {
 
               <div className="form-group-modern upload-section">
                 <label>PILIH FOTO</label>
-                <div className="radio-tabs">
-                  <div className={`radio-tab ${logoType === 'url' ? 'active' : ''}`} onClick={() => setLogoType('url')}>
-                    <LinkIcon size={16} style={{ marginRight: '6px' }} /> Link URL
-                  </div>
-                  <div className={`radio-tab ${logoType === 'file' ? 'active' : ''}`} onClick={() => setLogoType('file')}>
-                    <ImageIcon size={16} style={{ marginRight: '6px' }} /> Upload Foto
-                  </div>
-                </div>
-                
-                {logoType === 'url' ? (
-                  <input type="text" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} className="input-modern" placeholder="https://..." />
-                ) : (
-                  <input type="file" accept="image/*" onChange={handleFileChange} className="input-modern file-style" />
-                )}
-
-                {/* =======================================
-                    TAMBAHAN PREVIEW GAMBAR GALERI
-                    ======================================= */}
-                {formData.image && (
-                  <div style={{ marginTop: '12px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600' }}>PRATINJAU FOTO:</span>
-                    <img 
-                      src={formData.image} 
-                      alt="Preview Galeri" 
-                      style={{ 
-                        width: '100%', 
-                        maxWidth: '320px', 
-                        height: '180px', 
-                        objectFit: 'cover', 
-                        borderRadius: '8px', 
-                        border: '2px solid var(--compreng-surface)',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
-                      }} 
-                      onError={(e) => { e.target.style.display = 'none'; }} 
-                      onLoad={(e) => { e.target.style.display = 'block'; }} 
-                    />
-                  </div>
-                )}
+                <ImageUploader
+                  value={formData.image}
+                  onChange={handleImageChange}
+                  aspect={4 / 3}
+                  previewLabel="PRATINJAU FOTO"
+                  urlPlaceholder="https://..."
+                  editorTitle="Edit Foto Galeri"
+                />
               </div>
 
               <div className="modal-actions-modern">

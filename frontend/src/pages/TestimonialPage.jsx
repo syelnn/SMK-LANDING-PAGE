@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
-import { Pencil, Trash2, Eye, EyeOff, Plus, X, Link as LinkIcon, Image as ImageIcon, Search, MoreHorizontal } from 'lucide-react';
+import { Pencil, Trash2, Eye, EyeOff, Plus, X, Search, MoreHorizontal } from 'lucide-react';
+import ImageUploader from '../components/ImageUploader';
 import '../css/testimonialpage.css';
 import '../App.css'; // Wajib di-import agar class .modal-overlay, .modern-modal dll berfungsi persis seperti Jurusan
 
@@ -51,24 +52,12 @@ const TestimonialPage = () => {
     }
   };
 
-  // File asli disimpan di state (dikirim ke backend), base64 cuma dipakai untuk pratinjau di browser
-  const handleFileUpload = (e, formType) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 2 * 1024 * 1024) return alert("Ukuran file terlalu besar! Maksimal 2MB.");
-
-    if (formType === 'admin') setSelectedAdminFile(file);
-
-    const reader = new FileReader();
-    reader.readAsDataURL(file);
-    reader.onload = () => {
-      if (formType === 'viewer') {
-        setViewerFormData(prev => ({ ...prev, photo: reader.result }));
-      } else {
-        setAdminFormData(prev => ({ ...prev, photo: reader.result }));
-      }
-    };
-    reader.onerror = () => alert("Gagal memproses gambar!");
+  // Callback dari <ImageUploader>: file asli/hasil edit disimpan di state (dikirim ke backend),
+  // URL-nya dipakai untuk pratinjau.
+  const handleAdminPhotoChange = ({ file, url }) => {
+    setSelectedAdminFile(file);
+    setAdminPhotoMode(file ? 'upload' : 'url');
+    setAdminFormData((prev) => ({ ...prev, photo: url }));
   };
 
   const handleDropdownClick = (e, testiId) => {
@@ -341,26 +330,16 @@ const TestimonialPage = () => {
               {/* UPLOAD SECTION IDENTIK JURUSAN */}
               <div className="form-group-modern upload-section">
                 <label>Foto Profil (Opsional)</label>
-                <div className="radio-tabs">
-                  <div 
-                    className={`radio-tab ${adminPhotoMode === 'url' ? 'active' : ''}`} 
-                    onClick={() => setAdminPhotoMode('url')}
-                  >
-                    <LinkIcon size={16}/> Link URL
-                  </div>
-                  <div 
-                    className={`radio-tab ${adminPhotoMode === 'upload' ? 'active' : ''}`} 
-                    onClick={() => setAdminPhotoMode('upload')}
-                  >
-                    <ImageIcon size={16}/> Upload Foto
-                  </div>
-                </div>
-                
-                {adminPhotoMode === 'url' ? (
-                  <input type="text" placeholder="https://..." className="input-modern" value={adminFormData.photo || ''} onChange={e => setAdminFormData(prev => ({...prev, photo: e.target.value}))} />
-                ) : (
-                  <input type="file" accept="image/*" className="input-modern file-style" onChange={(e) => handleFileUpload(e, 'admin')} />
-                )}
+                <ImageUploader
+                  value={adminFormData.photo || ''}
+                  onChange={handleAdminPhotoChange}
+                  aspect={1}
+                  shape="round"
+                  maxSizeMB={2}
+                  previewLabel="PRATINJAU FOTO"
+                  urlPlaceholder="https://..."
+                  editorTitle="Edit Foto Profil"
+                />
               </div>
 
               <div className="form-group-modern">

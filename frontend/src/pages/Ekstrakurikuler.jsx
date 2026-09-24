@@ -12,12 +12,11 @@ import {
   Edit,
   Trash2,
   X,
-  Image as ImageIcon,
-  Link as LinkIcon,
   Search,
   MoreHorizontal
 } from 'lucide-react';
 
+import ImageUploader from '../components/ImageUploader';
 import '../css/ekstrakurikuler.css';
 
 const renderIcon = (iconValue) => {
@@ -152,17 +151,12 @@ export default function Ekstrakurikuler() {
     });
   };
 
-  // Fungsi membaca file gambar langsung untuk keperluan Preview Real-Time
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setSelectedFile(file);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({ ...prev, icon: reader.result }));
-      };
-      reader.readAsDataURL(file);
-    }
+  // Callback dari <ImageUploader>: file asli/hasil edit disimpan di state (dikirim ke backend),
+  // URL-nya dipakai untuk pratinjau.
+  const handleIconChange = ({ file, url }) => {
+    setSelectedFile(file);
+    setLogoType(file ? 'file' : 'url');
+    setFormData((prev) => ({ ...prev, icon: url }));
   };
 
   const handleOpenAdd = () => {
@@ -482,76 +476,25 @@ export default function Ekstrakurikuler() {
 
               <div className="ekskul-logo-box">
                 <label className="ekskul-form-label">Logo / Icon Ekstrakurikuler</label>
-                <div className="ekskul-tab-container">
-                  <button 
-                    type="button" 
-                    className={`ekskul-tab-btn ${logoType === 'url' ? 'active' : ''}`} 
-                    onClick={() => setLogoType('url')}
-                  >
-                    <LinkIcon size={14}/> Link URL
-                  </button>
-                  <button 
-                    type="button" 
-                    className={`ekskul-tab-btn ${logoType === 'file' ? 'active' : ''}`} 
-                    onClick={() => setLogoType('file')}
-                  >
-                    <ImageIcon size={14}/> Upload Foto
-                  </button>
-                </div>
-                
-                {logoType === 'url' ? (
-                  <input 
-                    type="text" 
-                    placeholder="https://contoh.com/foto.jpg (Atau ketik: shield, music, dsb)" 
-                    className="ekskul-form-input" 
-                    value={formData.icon} 
-                    onChange={e => setFormData({...formData, icon: e.target.value})} 
-                  />
-                ) : (
-                  <input 
-                    type="file" 
-                    accept="image/*" 
-                    className="ekskul-form-input" 
-                    onChange={handleFileChange} 
-                  />
-                )}
-
-                {/* =======================================
-                    TAMBAHAN PREVIEW GAMBAR EKSKUL
-                    ======================================= */}
-                {formData.icon && (
-                  <div style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11px', color: 'var(--compreng-text-muted)', fontWeight: '600', letterSpacing: '0.05em' }}>PRATINJAU LOGO / IKON:</span>
-                    
-                    {formData.icon.startsWith('http') || formData.icon.startsWith('data:image') || formData.icon.startsWith('/uploads') ? (
-                      <img 
-                        src={formData.icon} 
-                        alt="Preview Ekskul" 
-                        style={{ 
-                          width: '80px', 
-                          height: '80px', 
-                          objectFit: 'contain', 
-                          borderRadius: '8px', 
-                          border: '1px solid var(--compreng-border)',
-                          background: 'var(--compreng-bg)',
-                          padding: '8px',
-                          boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
-                        }} 
-                        onError={(e) => { e.target.style.display = 'none'; }} 
-                        onLoad={(e) => { e.target.style.display = 'block'; }} 
-                      />
-                    ) : (
-                      <div style={{ 
-                        width: '80px', height: '80px', borderRadius: '8px', 
-                        border: '1px solid var(--compreng-border)', background: 'var(--compreng-bg)', 
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        boxShadow: '0 4px 12px rgba(0,0,0,0.05)' 
-                      }}>
-                        {renderIcon(formData.icon)}
-                      </div>
-                    )}
-                  </div>
-                )}
+                <ImageUploader
+                  value={formData.icon}
+                  onChange={handleIconChange}
+                  aspect={1}
+                  defaultMode="url"
+                  previewLabel="PRATINJAU LOGO / IKON"
+                  urlPlaceholder="https://contoh.com/foto.jpg (Atau ketik: shield, music, dsb)"
+                  editorTitle="Edit Logo / Ikon"
+                  renderTextPreview={(val) => (
+                    <div style={{
+                      width: '80px', height: '80px', borderRadius: '8px',
+                      border: '1px solid var(--compreng-border)', background: 'var(--compreng-bg)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.05)'
+                    }}>
+                      {renderIcon(val)}
+                    </div>
+                  )}
+                />
               </div>
 
               <div className="ekskul-modal-actions">
