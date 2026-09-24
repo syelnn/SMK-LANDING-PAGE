@@ -1,4 +1,13 @@
-/* src/css/manageusers.css */
+/* src/css/manageusers.css
+   Kelola Pengguna — responsif (tabel di desktop, kartu di mobile), dialog modern & scrollable.
+   Semua warna lewat token tema (--compreng-*) sehingga otomatis ikut 4 tema:
+   light, dark, system, custom.
+
+   CATATAN PENTING: theme.css punya selector rakus berbasis substring
+   ([class*="modal"], [class*="avatar"], [class*="-item"], [class*="badge"], dll.).
+   Karena itu class di file ini sengaja memakai prefix `um-` / `mu-` TANPA kata
+   "modal", "avatar", "card", "btn", "status", "icon", "cancel" supaya tidak ikut
+   tertimpa (penyebab judul "Edit User" berkotak & inisial avatar hampir tak terlihat). */
 
 /* =========================================
    1. LAYOUT & HEADER
@@ -7,11 +16,10 @@
   width: 100%;
   max-width: 1200px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
-.mu-header {
-  margin-bottom: 24px;
-}
+.mu-header { margin-bottom: 24px; }
 
 .mu-title {
   font-size: 24px;
@@ -26,16 +34,29 @@
   margin: 0;
 }
 
-.mu-alert {
-  background-color: rgba(34, 197, 94, 0.15);
-  color: #16a34a;
+/* Notifikasi */
+.mu-wrapper .mu-alert {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 20px;
+  border-radius: 12px;
+  margin-bottom: 18px;
   font-size: 13px;
   font-weight: 600;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  color: #15803d;
+  background: color-mix(in srgb, #22c55e 14%, var(--compreng-surface, #fff));
+  border: 1px solid color-mix(in srgb, #22c55e 35%, transparent);
 }
+.mu-wrapper .mu-alert.is-error {
+  color: #dc2626;
+  background: color-mix(in srgb, #ef4444 12%, var(--compreng-surface, #fff));
+  border-color: color-mix(in srgb, #ef4444 35%, transparent);
+}
+[data-theme='dark'] .mu-wrapper .mu-alert { color: #4ade80; }
+[data-theme='dark'] .mu-wrapper .mu-alert.is-error { color: #f87171; }
+.mu-wrapper .mu-alert div { color: inherit !important; }
+.mu-wrapper .mu-alert svg { flex: 0 0 auto; }
 
 /* =========================================
    2. TOOLBAR (SEARCH & FILTER)
@@ -45,20 +66,13 @@
   justify-content: space-between;
   align-items: center;
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 12px;
   margin-bottom: 16px;
 }
 
-.mu-toolbar-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
+.mu-toolbar-group { display: flex; align-items: center; gap: 10px; }
 
-.mu-search-wrapper {
-  position: relative;
-  width: 280px;
-}
+.mu-search-wrapper { position: relative; width: 280px; }
 
 .mu-search-input {
   width: 100%;
@@ -93,28 +107,25 @@
 }
 
 /* =========================================
-   3. TABLE STYLES & HIDE SCROLLBAR
+   3. TABEL (desktop / tablet)
    ========================================= */
 .mu-table-card {
   background-color: var(--compreng-surface);
-  border-radius: 8px;
+  border-radius: 12px;
   border: 1px solid var(--compreng-border);
   overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  
-  /* Sembunyikan scrollbar bawaan tapi tetap bisa di-scroll */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.mu-table-card::-webkit-scrollbar {
-  display: none; /* Chrome, Safari and Opera */
-}
+.mu-table-card::-webkit-scrollbar { display: none; }
 
 .mu-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  min-width: 950px;
+  min-width: 900px;
 }
 
 .mu-th {
@@ -128,45 +139,62 @@
 }
 
 .mu-td {
-  padding: 14px 16px;
+  padding: 12px 16px;
   border-bottom: 1px solid var(--compreng-border);
   vertical-align: middle;
   color: var(--compreng-text);
   font-size: 13px;
 }
 
-.mu-tr {
-  transition: background 0.2s;
-}
+.mu-tr { transition: background 0.2s; }
+.mu-tr:hover { background: var(--compreng-surface-soft); }
 
-.mu-tr:hover {
-  background: var(--compreng-surface-soft);
+/* Foto / inisial pengguna (tabel, kartu mobile, dialog) */
+.mu-wrapper .mu-pic,
+.um-dialog .mu-pic {
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: var(--compreng-surface-soft) !important;
+  border: 1px solid var(--compreng-border) !important;
+}
+.mu-wrapper .mu-pic-init,
+.um-dialog .mu-pic-init {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  font-weight: 700;
+  background-color: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #fff) !important;
+  box-sizing: border-box;
 }
 
 /* =========================================
-   4. BADGES & ICONS
+   4. BADGE & ROLE
    ========================================= */
-.mu-badge-active {
+.mu-wrapper .mu-badge-active,
+.mu-wrapper .mu-badge-inactive {
   display: inline-flex;
-  background: rgba(34, 197, 94, 0.15);
-  color: #16a34a;
-  border: 1px solid rgba(34, 197, 94, 0.3);
+  align-items: center;
   padding: 2px 10px;
   border-radius: 20px;
   font-size: 11px;
   font-weight: 600;
+  white-space: nowrap;
 }
-
-.mu-badge-inactive {
-  display: inline-flex;
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
+.mu-wrapper .mu-badge-active {
+  background: color-mix(in srgb, #22c55e 16%, transparent) !important;
+  color: #15803d !important;
+  border: 1px solid color-mix(in srgb, #22c55e 38%, transparent) !important;
 }
+.mu-wrapper .mu-badge-inactive {
+  background: color-mix(in srgb, #ef4444 14%, transparent) !important;
+  color: #dc2626 !important;
+  border: 1px solid color-mix(in srgb, #ef4444 38%, transparent) !important;
+}
+[data-theme='dark'] .mu-wrapper .mu-badge-active { color: #4ade80 !important; }
+[data-theme='dark'] .mu-wrapper .mu-badge-inactive { color: #f87171 !important; }
 
 .mu-role-icon {
   display: inline-flex;
@@ -174,35 +202,34 @@
   gap: 8px;
   font-weight: 500;
   text-transform: capitalize;
+  color: var(--compreng-text);
 }
+.mu-role-icon svg { color: var(--compreng-text-secondary); }
+.mu-role-icon b { font-weight: 500; }
 
 /* =========================================
-   5. DROPDOWN ACTIONS (SHADCN STYLE)
+   5. DROPDOWN AKSI
    ========================================= */
 .mu-action-btn {
   background: transparent;
   border: none;
   cursor: pointer;
   padding: 6px;
-  border-radius: 6px;
+  border-radius: 8px;
   color: var(--compreng-text-secondary);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   transition: background 0.2s;
 }
-
-.mu-action-btn:hover {
-  background: var(--compreng-surface-soft);
-  color: var(--compreng-text);
-}
+.mu-action-btn:hover { background: var(--compreng-surface-soft); color: var(--compreng-text); }
 
 .mu-dropdown-menu {
   background: var(--compreng-surface);
   border: 1px solid var(--compreng-border);
-  border-radius: 6px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-  width: 170px;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px -8px var(--compreng-shadow, rgba(0, 0, 0, 0.2));
+  width: 180px;
   padding: 4px;
   z-index: 9999;
 }
@@ -212,29 +239,21 @@
   align-items: center;
   gap: 8px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 9px 10px;
   background: transparent;
   border: none;
   text-align: left;
   cursor: pointer;
-  border-radius: 4px;
-  font-size: 12px;
+  border-radius: 8px;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--compreng-text);
   transition: background 0.2s;
 }
-
-.mu-dropdown-item:hover {
-  background: var(--compreng-surface-soft);
-}
-
-.mu-dropdown-item.danger {
-  color: #dc2626;
-}
-
-.mu-dropdown-item.danger:hover {
-  background: var(--compreng-surface-soft, #f1f5f9);
-}
+.mu-dropdown-item svg { color: var(--compreng-text-secondary); }
+.mu-dropdown-item:hover { background: var(--compreng-surface-soft); }
+.mu-dropdown-item.danger,
+.mu-dropdown-item.danger svg { color: #dc2626; }
 
 /* =========================================
    6. PAGINATION
@@ -245,18 +264,10 @@
   align-items: center;
   margin-top: 16px;
   flex-wrap: wrap;
-  gap: 15px;
-  padding: 0 5px;
+  gap: 14px;
+  padding: 0 4px;
 }
-
-.mu-page-select-box {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 13px;
-  color: var(--compreng-text-secondary);
-}
-
+.mu-page-select-box { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--compreng-text-secondary); }
 .mu-page-select {
   padding: 4px 8px;
   border-radius: 6px;
@@ -267,24 +278,11 @@
   cursor: pointer;
   outline: none;
 }
-
-.mu-page-info {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  font-size: 13px;
-  color: var(--compreng-text);
-}
-
-.mu-page-btn-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
+.mu-page-info { display: flex; align-items: center; gap: 20px; font-size: 13px; color: var(--compreng-text); }
+.mu-page-btn-group { display: flex; align-items: center; gap: 4px; }
 .mu-page-btn {
   padding: 6px;
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid var(--compreng-border);
   background: var(--compreng-surface);
   color: var(--compreng-text);
@@ -294,111 +292,565 @@
   justify-content: center;
   transition: background 0.2s;
 }
+.mu-page-btn:hover:not(:disabled) { background: var(--compreng-surface-soft); }
+.mu-page-btn:disabled { color: var(--compreng-text-muted); cursor: not-allowed; opacity: 0.5; }
 
-.mu-page-btn:hover:not(:disabled) {
-  background: var(--compreng-surface-soft);
+/* =========================================
+   7. DAFTAR KARTU MOBILE (disembunyikan di desktop)
+   ========================================= */
+.mu-ulist { display: none; }
+.mu-urow {
+  background: var(--compreng-surface) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: 16px;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
-
-.mu-page-btn:disabled {
-  color: var(--compreng-text-muted);
-  cursor: not-allowed;
-  opacity: 0.5;
+.mu-urow-main { display: flex; align-items: center; gap: 12px; }
+.mu-urow-text { flex: 1; min-width: 0; }
+.mu-uname {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--compreng-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mu-umail {
+  margin-top: 2px;
+  font-size: 12px;
+  color: var(--compreng-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.mu-urow-foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--compreng-border);
+  font-size: 12px;
+}
+.mu-urow-time { margin-left: auto; font-size: 11.5px; color: var(--compreng-text-secondary); }
+.mu-uempty {
+  text-align: center;
+  padding: 28px 12px;
+  font-size: 13px;
+  color: var(--compreng-text-secondary);
+  border: 1px dashed var(--compreng-border);
+  border-radius: 16px;
 }
 
 /* =========================================
-   7. MODAL EDIT
+   8. DIALOG (Edit User & Reset Password) — gaya "Tambah Berita"
+   Header & footer tetap, isi (body) bisa di-scroll.
    ========================================= */
-.mu-modal-overlay {
+.um-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
+  z-index: 10000;
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 10000;
   padding: 20px;
+  box-sizing: border-box;
+  background: rgba(8, 12, 20, 0.58) !important;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  overscroll-behavior: contain;
+  animation: umFade 0.18s ease;
 }
 
-.mu-modal-content {
-  background: var(--compreng-surface);
+.um-dialog {
   width: 100%;
-  max-width: 420px;
-  border-radius: 12px;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
-  border: 1px solid var(--compreng-border);
-}
-
-.mu-modal-header {
-  padding: 20px 24px;
-  border-bottom: 1px solid var(--compreng-border);
+  max-width: 580px;
+  max-height: 90vh;
+  max-height: min(90dvh, 900px);
   display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 22px;
+  box-shadow: 0 30px 60px -24px var(--compreng-shadow, rgba(0, 0, 0, 0.4));
+  overflow: hidden;
+  animation: umPop 0.22s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.um-dialog.um-narrow { max-width: 480px; }
+
+.um-dialog .um-dialog-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
   justify-content: space-between;
-  align-items: center;
+  gap: 12px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
 }
-
-.mu-modal-title {
+.um-dialog .um-title {
   margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--compreng-text);
+  font-size: 1.15rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--compreng-text, #0f172a) !important;
 }
-
-.mu-modal-subtitle {
-  margin: 4px 0 0 0;
-  font-size: 12px;
-  color: var(--compreng-text-muted);
+.um-dialog .um-sub {
+  margin: 4px 0 0;
+  font-size: 0.8rem;
+  color: var(--compreng-text-secondary, #475569) !important;
 }
-
-.mu-modal-close {
-  background: transparent;
-  border: none;
-  color: var(--compreng-text-muted);
+.um-dialog .um-close {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px !important;
+  background: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-text, #0f172a) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
   cursor: pointer;
-  padding: 4px;
+  transition: transform 0.15s ease, background 0.15s ease;
 }
+.um-dialog .um-close:hover { transform: scale(1.06); }
 
-.mu-form {
-  padding: 24px;
+/* BODY — inilah yang membuat dialog bisa di-scroll */
+.um-dialog .um-dialog-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 20px 24px;
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
 
-.mu-form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.mu-form-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--compreng-text);
-}
-
-.mu-form-input, .mu-form-select {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid var(--compreng-border);
-  background: var(--compreng-bg);
-  color: var(--compreng-text);
-  font-size: 13px;
-  outline: none;
-}
-
-.mu-form-input:disabled {
-  background: var(--compreng-surface-soft);
-  color: var(--compreng-text-muted);
-  cursor: not-allowed;
-}
-
-.mu-modal-actions {
+.um-dialog .um-dialog-foot {
+  flex: 0 0 auto;
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   gap: 10px;
-  margin-top: 10px;
+  padding: 14px 24px calc(14px + env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--compreng-border, #e2e8f0) !important;
+  background: var(--compreng-surface, #ffffff);
+}
+
+/* Profil + foto */
+.um-dialog .um-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 7%, var(--compreng-surface-soft, #f1f5f9));
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+.um-dialog .um-profile-top { display: flex; align-items: center; gap: 16px; }
+/* Input file asli DIsembunyikan total (theme/App.css sempat memunculkannya = tombol upload ganda) */
+.um-dialog .um-file-off {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  border: 0 !important;
+  opacity: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  pointer-events: none !important;
+}
+.um-dialog .um-seg-row {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 12px;
+  background: var(--compreng-surface, #fff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+.um-dialog .um-seg {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px !important;
+  border: none !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  color: var(--compreng-text-secondary, #475569) !important;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.um-dialog .um-seg.um-seg-on {
+  background: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #fff) !important;
+}
+.um-dialog .um-drop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 16px 12px !important;
+  border: 1.5px dashed color-mix(in srgb, var(--compreng-accent, #2563eb) 55%, var(--compreng-border, #e2e8f0)) !important;
+  border-radius: 14px !important;
+  background: var(--compreng-surface, #fff) !important;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background-color 0.15s ease;
+}
+.um-dialog .um-drop:hover { background: color-mix(in srgb, var(--compreng-accent, #2563eb) 8%, var(--compreng-surface, #fff)) !important; }
+.um-dialog .um-drop-title {
+  max-width: 100%;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--compreng-text, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.um-dialog .um-drop-hint { font-size: 0.72rem; color: var(--compreng-text-secondary, #64748b); }
+.um-dialog .um-photo {
+  position: relative;
+  flex: 0 0 88px;
+  width: 88px;
+  height: 88px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50% !important;
+  background: var(--compreng-surface, #fff) !important;
+  color: var(--compreng-text-secondary, #64748b) !important;
+  border: 3px solid var(--compreng-surface, #fff) !important;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--compreng-accent, #2563eb) 45%, transparent);
+  cursor: pointer;
+  transition: transform 0.18s ease;
+}
+.um-dialog .um-photo:hover { transform: scale(1.03); }
+.um-dialog .um-photo img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+.um-dialog .um-photo-cam {
+  position: absolute;
+  right: -3px;
+  bottom: -3px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #fff);
+  border: 2px solid var(--compreng-surface, #fff);
+}
+.um-dialog .um-profile-text { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.um-dialog .um-profile-name {
+  max-width: 100%;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--compreng-text, #0f172a);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.um-dialog .um-profile-user {
+  max-width: 100%;
+  font-size: 0.8rem;
+  color: var(--compreng-text-secondary, #475569);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Form */
+.um-dialog .um-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.um-dialog .um-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.um-dialog .um-field label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+.um-dialog .um-control {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 14px;
+  border-radius: 12px !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-text, #0f172a) !important;
+  font-size: 0.875rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+}
+.um-dialog .um-control:focus {
+  border-color: var(--compreng-accent, #2563eb) !important;
+  background-color: var(--compreng-surface, #fff) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-accent, #2563eb) 22%, transparent);
+}
+.um-dialog .um-control:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  -webkit-text-fill-color: var(--compreng-text, #0f172a);
+}
+.um-dialog select.um-control { cursor: pointer; }
+.um-dialog .um-hint {
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: var(--compreng-text-secondary, #64748b);
+}
+
+.um-dialog .um-lockwrap { position: relative; display: flex; align-items: center; }
+.um-dialog .um-lockwrap .um-control { padding-right: 40px; }
+.um-dialog .um-lock {
+  position: absolute;
+  right: 14px;
+  color: var(--compreng-text-secondary, #64748b);
+  pointer-events: none;
+}
+.um-dialog .um-eye {
+  position: absolute;
+  right: 6px;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+  border-radius: 8px !important;
+  background: transparent !important;
+  color: var(--compreng-text-secondary, #64748b) !important;
+  cursor: pointer;
+}
+.um-dialog .um-eye:hover { color: var(--compreng-text, #0f172a) !important; }
+
+/* Pesan error & callout */
+.um-dialog .um-error {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #dc2626;
+  background: color-mix(in srgb, #ef4444 11%, var(--compreng-surface, #fff));
+  border: 1px solid color-mix(in srgb, #ef4444 32%, transparent);
+}
+[data-theme='dark'] .um-dialog .um-error { color: #f87171; }
+.um-dialog .um-error div { color: inherit !important; }
+.um-dialog .um-error svg { flex: 0 0 auto; margin-top: 1px; }
+
+.um-dialog .um-callout {
+  display: flex;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, #f59e0b 12%, var(--compreng-surface, #fff));
+  border: 1px solid color-mix(in srgb, #f59e0b 32%, transparent);
+  color: var(--compreng-text, #0f172a);
+}
+.um-dialog .um-callout.is-ok {
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 9%, var(--compreng-surface, #fff));
+  border-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 30%, transparent);
+}
+.um-dialog .um-callout svg { flex: 0 0 auto; margin-top: 1px; color: #d97706; }
+.um-dialog .um-callout.is-ok svg { color: var(--compreng-accent, #2563eb); }
+.um-dialog .um-callout p {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.55;
+  color: var(--compreng-text, #0f172a) !important;
+}
+
+.um-dialog .um-who {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--compreng-surface-soft, #f1f5f9);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+.um-dialog .um-who-text { min-width: 0; }
+
+/* OTP */
+.um-dialog .um-otp {
+  text-align: center;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 1.35rem;
+  font-weight: 700;
+  letter-spacing: 0.35em;
+  padding: 13px 10px 13px calc(10px + 0.35em);
+}
+.um-dialog .um-linkish {
+  align-self: flex-start;
+  padding: 2px 0;
+  border: none !important;
+  background: transparent !important;
+  color: var(--compreng-accent, #2563eb) !important;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.um-dialog .um-linkish:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* Kekuatan password */
+.um-dialog .um-meter { height: 6px; border-radius: 99px; background: var(--compreng-border, #e2e8f0); overflow: hidden; }
+.um-dialog .um-meter-fill { height: 100%; border-radius: 99px; transition: width 0.25s ease, background 0.25s ease; }
+.um-dialog .um-rules { display: flex; flex-wrap: wrap; gap: 6px 12px; }
+.um-dialog .um-rule {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--compreng-text-secondary, #64748b);
+  opacity: 0.75;
+}
+.um-dialog .um-rule.ok { color: #16a34a; opacity: 1; }
+[data-theme='dark'] .um-dialog .um-rule.ok { color: #4ade80; }
+
+/* Sukses */
+.um-dialog .um-done { text-align: center; padding: 14px 6px 6px; }
+.um-dialog .um-done-mark {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #16a34a;
+  background: color-mix(in srgb, #22c55e 16%, transparent);
+}
+.um-dialog .um-done h4 { margin: 0 0 6px; font-size: 1.05rem; font-weight: 800; }
+.um-dialog .um-done p { margin: 0; font-size: 0.85rem; }
+
+/* Tombol dialog (dikunci !important karena theme.css menimpa button[type=submit]) */
+.um-dialog .um-go,
+.um-dialog .um-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 10px 20px !important;
+  border-radius: 12px !important;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 700 !important;
+  cursor: pointer;
+  transition: transform 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+}
+.um-dialog .um-go {
+  background-color: var(--compreng-accent, #2563eb) !important;
+  color: var(--compreng-accent-text, #fff) !important;
+  border: 1px solid var(--compreng-accent, #2563eb) !important;
+  box-shadow: 0 10px 22px -12px var(--compreng-accent, #2563eb) !important;
+}
+.um-dialog .um-go:hover:not(:disabled) {
+  background-color: var(--compreng-accent-hover, #1d4ed8) !important;
+  border-color: var(--compreng-accent-hover, #1d4ed8) !important;
+  transform: translateY(-1px);
+}
+.um-dialog .um-ghost {
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-text, #0f172a) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  box-shadow: none !important;
+}
+.um-dialog .um-ghost:hover:not(:disabled) { background-color: var(--compreng-border, #e2e8f0) !important; }
+.um-dialog .um-ghost.um-small { min-height: 32px; padding: 6px 12px !important; font-size: 0.75rem; }
+.um-dialog .um-go:disabled,
+.um-dialog .um-ghost:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+.um-dialog .um-spin { animation: umSpin 0.8s linear infinite; }
+
+@keyframes umFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes umPop { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+@keyframes umSpin { to { transform: rotate(360deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .um-overlay, .um-dialog, .um-dialog .um-spin { animation: none !important; }
+}
+
+/* =========================================
+   9. RESPONSIVE
+   ========================================= */
+@media (max-width: 1024px) {
+  .mu-header { margin-bottom: 18px; }
+  .mu-title { font-size: 22px; }
+}
+
+@media (max-width: 768px) {
+  .mu-header { margin-bottom: 14px; }
+  .mu-title { font-size: 20px; }
+  .mu-subtitle { font-size: 13px; }
+
+  /* Toolbar: pencarian penuh, filter di bawahnya */
+  .mu-wrapper .mu-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+  .mu-wrapper .mu-toolbar .mu-search-wrapper { flex: 1 1 auto !important; width: 100% !important; max-width: 100% !important; }
+  .mu-wrapper .mu-toolbar .mu-toolbar-group { width: 100%; }
+  .mu-wrapper .mu-toolbar .mu-filter-select { width: 100%; }
+
+  /* Tabel diganti daftar kartu */
+  .mu-wrapper .mu-table-card { display: none; }
+  .mu-wrapper .mu-ulist { display: flex; flex-direction: column; gap: 10px; }
+
+  .mu-pagination-wrapper { flex-direction: column; align-items: stretch; gap: 12px; }
+  .mu-page-select-box { justify-content: space-between; }
+  .mu-page-info { justify-content: space-between; gap: 12px; }
+
+  /* Dialog jadi bottom-sheet di HP */
+  .um-overlay { padding: 0; align-items: flex-end; }
+  .um-dialog,
+  .um-dialog.um-narrow {
+    max-width: 100%;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-radius: 24px 24px 0 0;
+    border-bottom: none;
+    animation: umSheet 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+  .um-dialog .um-dialog-head { padding: 16px 18px 12px; }
+  .um-dialog .um-dialog-body { padding: 16px 18px; }
+  .um-dialog .um-dialog-foot { padding: 12px 18px calc(12px + env(safe-area-inset-bottom, 0px)); }
+  .um-dialog .um-dialog-foot .um-go,
+  .um-dialog .um-dialog-foot .um-ghost { flex: 1; }
+  .um-dialog .um-control { font-size: 16px; } /* cegah auto-zoom iOS */
+}
+
+@keyframes umSheet { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (max-width: 520px) {
+  .um-dialog .um-grid { grid-template-columns: 1fr; }
+  .um-dialog .um-profile-top { flex-direction: column; text-align: center; }
+  .um-dialog .um-profile-text { align-items: center; }
+  .um-dialog .um-otp { font-size: 1.15rem; letter-spacing: 0.25em; }
 }
 
 /* =========================================

@@ -493,3 +493,23 @@
   .tw-steps li { font-size: 12px; }
   .tw-photo { align-items: flex-start; flex-direction: column; }
 }
+
+/* Centang "jadikan foto profil juga" */
+.tw-shell .tw-check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 0 2px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--compreng-text, #06231d);
+  cursor: pointer;
+}
+.tw-shell .tw-check input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  margin: 0;
+  flex: 0 0 17px;
+  accent-color: var(--compreng-accent, #076653);
+  cursor: pointer;
+}

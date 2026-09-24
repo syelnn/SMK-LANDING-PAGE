@@ -517,3 +517,39 @@
     gap: 10px !important;
   }
 }
+
+/* =========================================
+   FOTO PROFIL TOPBAR (tombol + header dropdown)
+   ========================================= */
+.topbar-user-initial { position: relative; }
+.topbar-user-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  display: block;
+}
+.topbar-dropdown .topbar-dropdown-header {
+  flex-direction: row;
+  align-items: center;
+  gap: 12px;
+}
+.topbar-dropdown .topbar-dropdown-pic {
+  width: 42px;
+  height: 42px;
+  font-size: 16px;
+}
+.topbar-dropdown .topbar-dropdown-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.topbar-dropdown .topbar-dropdown-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
