@@ -215,3 +215,18 @@
 .mjp-dropdown-item.danger:hover {
   background: var(--compreng-surface-soft, #f1f5f9);
 }
+
+/* ==========================================
+   FIX: LATAR PUTIH DI HEADER (JUDUL + TOMBOL TAMBAH)
+   Class ".mjp-header-box" mengandung kata "-box", jadi ikut kena aturan wildcard
+   theme.css ([class*="-box"] { background-color: var(--compreng-surface) !important })
+   yang membuat blok judul & tombol jadi kotak putih di atas latar halaman.
+   Dikunci transparan pakai ID (#admin-jurusan) supaya spesifisitasnya pasti menang
+   di semua tema, sehingga warnanya ikut latar halaman/tema yang dipakai.
+   ========================================== */
+#admin-jurusan .mjp-header-box {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}

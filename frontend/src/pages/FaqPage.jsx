@@ -141,7 +141,7 @@ const FaqPage = () => {
   });
 
   return (
-    <div className="admin-container">
+    <div className="admin-container" id="admin-faq">
       {/* Header */}
       <div className="admin-page-header">
         <div>
