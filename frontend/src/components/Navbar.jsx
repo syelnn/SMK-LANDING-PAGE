@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 import logoSekolah from '../assets/logo1.png'; 
 import '../css/viewer/navbar.css'; 
 import { getSession, clearSession, verifySession } from '../utils/auth';
+import { SettingsContext } from '../context/SettingsContext';
 
 const Navbar = () => {
+  const { settings } = useContext(SettingsContext) || {};
   const [menuItems, setMenuItems] = useState([]);
   const [dropdownOpen, setDropdownOpen] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -460,14 +462,14 @@ const Navbar = () => {
           style={{ cursor: 'pointer' }}
         >
           <img 
-            src={logoSekolah} 
+            src={settings?.school_logo || logoSekolah} 
             alt="Logo Sekolah" 
             className="logo-img" 
             onError={(e) => { e.target.style.display = 'none'; }}
           />
           <div className="brand-text">
-            <span className="brand-title">SMKN COMPRENG</span>
-            <span className="brand-subtitle">The School of SESCO Model</span>
+            <span className="brand-title">{settings?.school_name || 'SMKN Compreng'}</span>
+            <span className="brand-subtitle">{settings?.site_tagline || 'The School of SESCO Model'}</span>
           </div>
         </div>
 

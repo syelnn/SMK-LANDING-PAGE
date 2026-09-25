@@ -68,12 +68,18 @@ export default function Sidebar({
   const location = useLocation();
   const { settings } = useContext(SettingsContext);
 
-  const [openDropdowns, setOpenDropdowns] = useState({ settings: true });
+  const [openDropdowns, setOpenDropdowns] = useState({});
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
   const toggleSidebar = () => setIsSidebarVisible(!isSidebarVisible);
   const toggleDropdown = (key) => setOpenDropdowns(prev => ({ ...prev, [key]: !prev[key] }));
   const toggleUserMenu = () => setIsUserMenuOpen(!isUserMenuOpen);
+
+  // Saat sidebar dikecilkan (mini) atau ditutup di mobile, langsung tutup semua
+  // dropdown (mis. "Pengaturan Website") supaya tidak ada sisa submenu/garis
+  // yang tertinggal ketika sidebar dibuka lagi.
+  useEffect(() => { if (!isSidebarVisible) setOpenDropdowns({}); }, [isSidebarVisible]);
+  useEffect(() => { if (!isMobileMenuOpen) setOpenDropdowns({}); }, [isMobileMenuOpen]);
 
   const handleLogout = () => {
     localStorage.clear();
@@ -212,8 +218,8 @@ export default function Sidebar({
             onError={(e) => { e.target.style.display = 'none'; }} 
           />
           <div className="sidebar-brand-text">
-            <h2 className="sidebar-brand-title">SMKN COMPRENG</h2>
-            <span className="sidebar-brand-subtitle">The High School</span>
+            <h2 className="sidebar-brand-title">{settings.school_name || 'SMKN Compreng'}</h2>
+            <span className="sidebar-brand-subtitle">{settings.site_tagline || 'The High School'}</span>
           </div>
         </div>
 

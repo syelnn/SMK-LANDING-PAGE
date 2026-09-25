@@ -1,6 +1,8 @@
-import React, { useEffect } from 'react'; 
+import React, { useEffect, useContext } from 'react'; 
 import { useNavigate, useLocation } from 'react-router-dom'; 
 import Navbar from '../../components/Navbar';
+import { SettingsContext } from '../../context/SettingsContext';
+import { buildHeroOverlay } from '../../utils/heroOverlay';
 import '../../css/viewer/landing.css';
 import TenagaPengajarViewer from './TenagaPengajar';
 import AchievementViewer from './AchievementViewer';
@@ -24,6 +26,11 @@ import EkstrakurikulerViewer from './EkstrakurikulerViewer';
 const LandingPage = () => {
   const navigate = useNavigate();
   const location = useLocation(); // <-- Inisialisasi useLocation
+  const { settings, isLoading } = useContext(SettingsContext) || {};
+
+  // Foto & lapisan transparan hero: diatur admin di Settings > Profile
+  const heroBg = settings?.hero_bg_image || (isLoading ? '' : bgSekolah);
+  const heroDesc = settings?.hero_description || 'Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.';
 
 // =========================================================================
   // PENJEMPUT SINYAL & SCROLL BERTAHAP (FIX FINAL)
@@ -100,7 +107,10 @@ const LandingPage = () => {
       <section 
         id="section-hero" 
         className="hero-section"
-        style={{ backgroundImage: `url(${bgSekolah})` }}
+        style={{
+          backgroundImage: heroBg ? `url(${heroBg})` : 'none',
+          '--hero-overlay-bg': buildHeroOverlay(settings),
+        }}
       >
         <div className="hero-overlay"></div>
 
@@ -109,7 +119,7 @@ const LandingPage = () => {
           <div className="hero-content">
             <div className="badge-akreditasi">
               <span className="green-dot"></span> 
-              <span className="shine-text">Terakreditasi A • Kurikulum Merdeka</span>
+              <span className="shine-text">{settings?.school_accreditation || 'Terakreditasi A • Kurikulum Merdeka'}</span>
               <i className="shine-spark shine-spark-1" aria-hidden="true"></i>
               <i className="shine-spark shine-spark-2" aria-hidden="true"></i>
               <i className="shine-spark shine-spark-3" aria-hidden="true"></i>
@@ -117,11 +127,11 @@ const LandingPage = () => {
 
             <h1 className="hero-title">
               Selamat Datang di <br />
-              <span className="brand-highlight">SMK NEGERI COMPRENG</span>
+              <span className="brand-highlight">{(settings?.school_name || 'SMK NEGERI COMPRENG').toUpperCase()}</span>
             </h1>
 
             <p className="hero-subtitle">
-              Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.
+              {heroDesc}
             </p>
 
             <div className="hero-buttons">
@@ -216,10 +226,10 @@ const LandingPage = () => {
     <div id="section-faq">
       <FaqViewer />
     </div>
-{/* 9. MITRA INDUSTRI SECTION */}
-<div id="section-mitra-industri">
-  <IndustryPartnersViewer />
-</div>
+    {/* 9. MITRA INDUSTRI SECTION */}
+    <div id="section-mitra-industri">
+      <IndustryPartnersViewer />
+    </div>
     {/* 10. KONTAK & FOOTER SECTION */}
       <div id="section-kontak">
         <FooterViewer /> 

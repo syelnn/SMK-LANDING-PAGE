@@ -2,11 +2,18 @@
 import React, { useState, useContext, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
-import { Check, Loader2, CheckCircle, XCircle, RotateCcw } from 'lucide-react';
+import {
+  Check, Loader2, CheckCircle, XCircle, RotateCcw,
+  School, Award, ImageIcon, Sparkles, Palette, SlidersHorizontal, FileText, Target, Monitor,
+} from 'lucide-react';
 import { SettingsContext } from '../context/SettingsContext';
 import ThemePreview from '../components/ThemePreview';
 import DatabaseBackupPanel from '../components/DatabaseBackupPanel';
 import ImageUploader from '../components/ImageUploader';
+import bgSekolah from '../assets/latar.webp';
+import {
+  HERO_DEFAULTS, HERO_OVERLAY_STYLES, HERO_OVERLAY_SWATCHES, buildHeroOverlay, normalizeHex,
+} from '../utils/heroOverlay';
 import {
   API_URL, FONT_OPTIONS, ensureFont, normalizeFont, normalizeMode,
   PRESETS, DEFAULT_CUSTOM, CUSTOM_FIELD_MAP, THEME_KEYS, resolveCustom, presetToCustom,
@@ -20,6 +27,7 @@ import '../css/appearance.css';
 /* ---------------------------------------------------------------------- */
 const DEFAULT_FORM = {
   school_name: 'SMKN Compreng',
+  site_tagline: 'The School of SESCO Model',
   school_accreditation: 'Terakreditasi A',
   school_logo: '/src/assets/logo1.png',
   school_profile_image: '/src/assets/visi.jpg',
@@ -27,6 +35,7 @@ const DEFAULT_FORM = {
   school_history: 'Sekolah ini berdedikasi mencetak lulusan siap kerja.',
   school_vision: 'Mewujudkan peserta didik yang berkarakter...',
   school_mission: '1. Meningkatkan kualitas pendidikan\n2. Menyiapkan lulusan siap kerja',
+  ...HERO_DEFAULTS, // foto hero + warna transparan
   theme_mode: 'system',
   font_family: 'default',
   ...DEFAULT_CUSTOM,
@@ -113,6 +122,54 @@ const ColorField = ({ name, label, value, resolved, auto, onChange }) => {
             <RotateCcw size={13} />
           </button>
         )}
+      </div>
+    </div>
+  );
+};
+
+/* ---- Komponen kecil untuk tab Profile ---- */
+const CardHead = ({ icon: Icon, title, desc, aside }) => (
+  <div className="pf-bhead">
+    <span className="pf-bicon"><Icon size={18} /></span>
+    <div className="pf-btitles">
+      <h4>{title}</h4>
+      {desc && <p>{desc}</p>}
+    </div>
+    {aside}
+  </div>
+);
+
+const Field = ({ label, hint, children }) => (
+  <div className="pf-field">
+    <label className="pf-label">{label}</label>
+    {children}
+    {hint && <p className="pf-hint">{hint}</p>}
+  </div>
+);
+
+/* ---------- Live preview: tampilan mini hero beranda ---------- */
+const HeroLivePreview = ({ data }) => {
+  const bg = data.hero_bg_image || bgSekolah;
+  const name = (data.school_name || 'SMK Negeri Compreng').toUpperCase();
+  return (
+    <div className="pf-live">
+      <div className="pf-live-bar">
+        <span className="pf-dots"><i /><i /><i /></span>
+        <span className="pf-live-url"><Monitor size={11} /> Preview beranda · langsung berubah saat diedit</span>
+      </div>
+      <div className="pf-live-screen" style={{ backgroundImage: `url(${bg})` }}>
+        <div className="pf-live-overlay" style={{ background: buildHeroOverlay(data) }} />
+        <div className="pf-live-nav">
+          {data.school_logo ? <img src={data.school_logo} alt="" /> : <span className="pf-live-logo-ph" />}
+          <b>{data.school_name || 'SMKN Compreng'}</b>
+          <span className="pf-live-links"><i /><i /><i /></span>
+        </div>
+        <div className="pf-live-body">
+          <span className="pf-live-badge"><em />{data.school_accreditation || 'Terakreditasi A'}</span>
+          <div className="pf-live-title">Selamat Datang di<strong>{name}</strong></div>
+          <p className="pf-live-copy">{data.hero_description || 'Deskripsi singkat sekolah tampil di sini.'}</p>
+          <div className="pf-live-btns"><span className="p1">Jelajahi Sekolah ➔</span><span className="p2">Hubungi Kami</span></div>
+        </div>
       </div>
     </div>
   );
@@ -246,8 +303,25 @@ export default function ManageSettings() {
 
   const isAppearance = location.pathname.endsWith('/appearance');
   const isDatabase = location.pathname.endsWith('/database');
+  const isProfile = location.pathname.endsWith('/profile');
   const resolved = resolveCustom(formData);
   const mapSrc = useDebounced(toMapEmbedSrc(formData.contact_map_embed_url, formData.contact_address));
+
+  // ---- Hero beranda: nilai turunan untuk kontrol warna transparan ----
+  const heroOpacity = formData.hero_overlay_opacity === '' || formData.hero_overlay_opacity == null
+    ? Number(HERO_DEFAULTS.hero_overlay_opacity)
+    : Number(formData.hero_overlay_opacity);
+  const heroColor = normalizeHex(formData.hero_overlay_color);
+  const overlayChanged =
+    heroColor !== HERO_DEFAULTS.hero_overlay_color ||
+    String(heroOpacity) !== HERO_DEFAULTS.hero_overlay_opacity ||
+    (formData.hero_overlay_style || 'left') !== HERO_DEFAULTS.hero_overlay_style;
+
+  const resetHeroOverlay = () => {
+    setField('hero_overlay_color', HERO_DEFAULTS.hero_overlay_color);
+    setField('hero_overlay_opacity', HERO_DEFAULTS.hero_overlay_opacity);
+    setField('hero_overlay_style', HERO_DEFAULTS.hero_overlay_style);
+  };
 
   return (
     <div className="ms-wrapper">
@@ -266,72 +340,179 @@ export default function ManageSettings() {
         </div>
 
         {/* CONTENT AREA ROUTING */}
-        <div className={`ms-content-area ${isAppearance ? 'wide' : ''}`}>
+        <div className={`ms-content-area ${isAppearance ? 'wide' : ''} ${isProfile ? 'profile' : ''}`}>
           <form onSubmit={handleSubmit} noValidate>
             <Routes>
               <Route path="/" element={<Navigate to="profile" replace />} />
 
-              {/* ============ TAB 1: IDENTITAS ============ */}
+              {/* ============ TAB 1: IDENTITAS + HERO ============ */}
               <Route path="profile" element={
-                <div>
-                  <div className="ms-section-header">
-                    <h3 className="ms-section-title">Profile</h3>
-                    <p className="ms-section-desc">This is how others will see the school on the site.</p>
+                <div className="pf">
+                  <div className="pf-intro">
+                    <span className="pf-pill"><Sparkles size={13} /> Identitas & Tampilan</span>
+                    <h3>Profile Sekolah</h3>
+                    <p>Atur bagaimana sekolah tampil di website — dari nama, logo, sampai foto sampul beranda.</p>
                   </div>
 
-                  <div className="ms-input-group">
-                    <label className="ms-label">Nama Sekolah</label>
-                    <input type="text" name="school_name" value={formData.school_name} onChange={handleChange} className="ms-input" />
-                    <p className="ms-helper-text">Ini adalah nama resmi sekolah yang akan muncul di navbar dan footer.</p>
-                  </div>
+                  {/* ============ IDENTITAS ============ */}
+                  <section className="pf-block">
+                    <CardHead icon={School} title="Identitas Sekolah" desc="Nama resmi, tagline navbar/sidebar, dan badge akreditasi hero — masing-masing terpisah supaya tidak tertukar." />
+                    <div className="pf-grid">
+                      <Field label="Nama Sekolah" hint="Muncul di navbar, sidebar admin, footer, dan judul hero.">
+                        <input type="text" name="school_name" value={formData.school_name} onChange={handleChange} className="pf-input" />
+                      </Field>
+                      <Field label="Tagline Navbar & Sidebar" hint="Teks kecil di bawah nama sekolah pada navbar (website) dan sidebar (dashboard admin).">
+                        <div className="pf-input-icon">
+                          <Monitor size={15} />
+                          <input type="text" name="site_tagline" value={formData.site_tagline} onChange={handleChange} className="pf-input" />
+                        </div>
+                      </Field>
+                      <Field label="Badge Akreditasi (Hero)" hint="Hanya tampil sebagai badge kecil di atas judul hero beranda, tidak memengaruhi navbar/sidebar.">
+                        <div className="pf-input-icon">
+                          <Award size={15} />
+                          <input type="text" name="school_accreditation" value={formData.school_accreditation} onChange={handleChange} className="pf-input" />
+                        </div>
+                      </Field>
+                    </div>
+                  </section>
 
-                  <div className="ms-input-group">
-                    <label className="ms-label">Akreditasi / Tagline</label>
-                    <input type="text" name="school_accreditation" value={formData.school_accreditation} onChange={handleChange} className="ms-input" />
-                  </div>
+                  {/* ============ LOGO & FOTO UTAMA ============ */}
+                  <section className="pf-block">
+                    <CardHead icon={ImageIcon} title="Logo & Foto Profil" desc="Logo dipakai di navbar. Foto utama dipakai di bagian Profil Sekolah." />
+                    <div className="pf-grid">
+                      <Field label="Logo Sekolah (Icon)">
+                        <ImageUploader
+                          value={formData.school_logo}
+                          onChange={(r) => handleImageChange('school_logo', r)}
+                          aspect={1}
+                          maxSizeMB={2}
+                          previewLabel="Logo"
+                          urlPlaceholder="/src/assets/logo1.png atau https://..."
+                          editorTitle="Edit Logo Sekolah"
+                          previewMaxWidth={220}
+                        />
+                      </Field>
+                      <Field label="Foto Utama / Profil">
+                        <ImageUploader
+                          value={formData.school_profile_image}
+                          onChange={(r) => handleImageChange('school_profile_image', r)}
+                          aspect={4 / 3}
+                          maxSizeMB={2}
+                          previewLabel="Foto profil"
+                          urlPlaceholder="/src/assets/visi.jpg atau https://..."
+                          editorTitle="Edit Foto Utama / Profil"
+                          previewMaxWidth={320}
+                        />
+                      </Field>
+                    </div>
+                  </section>
 
-                  <div className="ms-grid">
-                    <div className="ms-input-group">
-                      <label className="ms-label">Logo Sekolah (Icon)</label>
-                      <ImageUploader
-                        value={formData.school_logo}
-                        onChange={(r) => handleImageChange('school_logo', r)}
-                        aspect={1}
-                        maxSizeMB={2}
-                        previewLabel="PRATINJAU LOGO"
-                        urlPlaceholder="/src/assets/logo1.png atau https://..."
-                        editorTitle="Edit Logo Sekolah"
-                      />
+                  {/* ============ HERO BERANDA ============ */}
+                  <section className="pf-block pf-block-cover">
+                    <CardHead
+                      icon={Sparkles}
+                      title="Hero Beranda"
+                      desc="Ganti foto latar hero dan atur warna transparan di atasnya. Lihat hasilnya langsung di preview."
+                      aside={<span className="pf-live-chip"><i /> Live</span>}
+                    />
+
+                    <HeroLivePreview data={formData} />
+
+                    <div className="pf-media-grid">
+                      {/* --- Foto latar (CRUD) --- */}
+                      <div className="pf-well">
+                        <div className="pf-well-title"><ImageIcon size={15} /> Foto Latar Hero</div>
+                        <ImageUploader
+                          value={formData.hero_bg_image}
+                          onChange={(r) => handleImageChange('hero_bg_image', r)}
+                          aspect={16 / 9}
+                          aspectOptions={['free', '16:9', '4:3', 'full']}
+                          maxSizeMB={3}
+                          outputMaxWidth={1920}
+                          fit="cover"
+                          previewLabel="Foto hero"
+                          previewMaxWidth={420}
+                          urlPlaceholder="https://... (kosong = foto bawaan)"
+                          editorTitle="Edit Foto Latar Hero"
+                          uploadText="Pilih atau tarik foto hero ke sini"
+                        />
+                        {!formData.hero_bg_image && (
+                          <p className="pf-hint">Belum ada foto khusus — beranda memakai foto bawaan sekolah. Disarankan foto landscape minimal 1600px.</p>
+                        )}
+                      </div>
+
+                      {/* --- Warna transparan (overlay) --- */}
+                      <div className="pf-well">
+                        <div className="pf-well-title">
+                          <Palette size={15} /> Warna Transparan
+                          {overlayChanged && (
+                            <button type="button" className="pf-reset" onClick={resetHeroOverlay}><RotateCcw size={12} /> Reset</button>
+                          )}
+                        </div>
+
+                        <div className="pf-sub">Warna</div>
+                        <div className="pf-swatches">
+                          {HERO_OVERLAY_SWATCHES.map((s) => (
+                            <button
+                              key={s.color} type="button" title={s.label} aria-label={s.label}
+                              className={`pf-swatch ${heroColor === s.color ? 'on' : ''}`}
+                              style={{ background: s.color }}
+                              onClick={() => setField('hero_overlay_color', s.color)}
+                            />
+                          ))}
+                          <label className="pf-swatch pf-swatch-custom" title="Warna sendiri">
+                            <input type="color" value={heroColor} onChange={(e) => setField('hero_overlay_color', e.target.value)} />
+                          </label>
+                        </div>
+                        <input
+                          type="text" className="pf-input pf-mono" value={formData.hero_overlay_color || ''} spellCheck={false}
+                          placeholder="#0f172a" maxLength={7}
+                          onChange={(e) => setField('hero_overlay_color', e.target.value)}
+                          onBlur={(e) => setField('hero_overlay_color', normalizeHex(e.target.value))}
+                        />
+
+                        <div className="pf-sub pf-sub-row">
+                          <span><SlidersHorizontal size={13} /> Kekuatan warna</span>
+                          <b>{heroOpacity}%</b>
+                        </div>
+                        <input
+                          type="range" min="0" max="100" step="1" value={heroOpacity} className="pf-range"
+                          style={{ '--pf-fill': `${heroOpacity}%` }}
+                          onChange={(e) => setField('hero_overlay_opacity', e.target.value)}
+                          aria-label="Kekuatan warna transparan"
+                        />
+                        <div className="pf-range-legend"><span>Foto jelas</span><span>Foto gelap</span></div>
+
+                        <div className="pf-sub">Arah gradasi</div>
+                        <div className="pf-seg" role="radiogroup">
+                          {HERO_OVERLAY_STYLES.map((o) => (
+                            <button
+                              key={o.value} type="button" role="radio" aria-checked={(formData.hero_overlay_style || 'left') === o.value}
+                              className={(formData.hero_overlay_style || 'left') === o.value ? 'on' : ''}
+                              onClick={() => setField('hero_overlay_style', o.value)}
+                            >{o.label}</button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
 
-                    <div className="ms-input-group">
-                      <label className="ms-label">Foto Utama / Hero</label>
-                      <ImageUploader
-                        value={formData.school_profile_image}
-                        onChange={(r) => handleImageChange('school_profile_image', r)}
-                        aspect={4 / 3}
-                        maxSizeMB={2}
-                        previewLabel="PRATINJAU FOTO"
-                        urlPlaceholder="/src/assets/visi.jpg atau https://..."
-                        editorTitle="Edit Foto Utama / Profil"
-                      />
+                    <Field label="Deskripsi Singkat (Hero)" hint="Kalimat di bawah judul beranda.">
+                      <textarea name="hero_description" value={formData.hero_description} onChange={handleChange} className="pf-input pf-textarea" rows={3} />
+                    </Field>
+                  </section>
+
+                  {/* ============ VISI MISI ============ */}
+                  <section className="pf-block">
+                    <CardHead icon={Target} title="Visi & Misi" desc="Arah dan tujuan sekolah." />
+                    <div className="pf-grid">
+                      <Field label="Visi">
+                        <textarea name="school_vision" value={formData.school_vision} onChange={handleChange} className="pf-input pf-textarea tall" rows={5} />
+                      </Field>
+                      <Field label="Misi (gunakan titik koma ; atau baris baru)">
+                        <textarea name="school_mission" value={formData.school_mission} onChange={handleChange} className="pf-input pf-textarea tall" rows={5} />
+                      </Field>
                     </div>
-                  </div>
-
-                  <div className="ms-input-group">
-                    <label className="ms-label">Deskripsi Singkat (Hero Section)</label>
-                    <textarea name="hero_description" value={formData.hero_description} onChange={handleChange} className="ms-textarea" />
-                  </div>
-
-                  <div className="ms-input-group">
-                    <label className="ms-label">Sejarah / Deskripsi Lengkap Sekolah</label>
-                    <textarea name="school_history" value={formData.school_history} onChange={handleChange} className="ms-textarea tall" />
-                  </div>
-
-                  <div className="ms-grid">
-                    <div className="ms-input-group"><label className="ms-label">Visi</label><textarea name="school_vision" value={formData.school_vision} onChange={handleChange} className="ms-textarea" /></div>
-                    <div className="ms-input-group"><label className="ms-label">Misi (Gunakan titik koma ; )</label><textarea name="school_mission" value={formData.school_mission} onChange={handleChange} className="ms-textarea" /></div>
-                  </div>
+                  </section>
                 </div>
               } />
 
