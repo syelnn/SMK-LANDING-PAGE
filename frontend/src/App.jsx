@@ -25,7 +25,7 @@ import Register from './Register';
 import DownloadPage from './pages/DownloadPage';
 import Sidebar from './Sidebar';
 import CommandPalette from './components/CommandPalette';
-import { verifySession, clearSession } from './utils/auth';
+import { verifySession, clearSession, getSession, homeFor } from './utils/auth';
 
 // Import Halaman Admin
 import ManageNews from './pages/ManageNews';
@@ -300,6 +300,20 @@ const ProtectedRoute = ({ children, allowedRoles }) => {
       <NavLink to="/login">Kembali ke Login</NavLink>
     </div>
   );
+  return children;
+};
+
+// GUEST GUARD: mencegah user yang SUDAH LOGIN membuka /login (dan halaman guest lain).
+// Cek dilakukan lokal lewat getSession() (baca+decode token dari localStorage, sudah
+// termasuk cek kedaluwarsa) — cepat, tanpa perlu roundtrip ke server dulu.
+// Kalau ternyata token sudah tidak valid di server (mis. akun dinonaktifkan),
+// ProtectedRoute di /admin yang akan menendang balik ke /login (lihat verifySession).
+const GuestRoute = ({ children }) => {
+  const session = getSession();
+  if (session) {
+    // Arahkan sesuai role: staff (admin/editor) -> /admin, selain itu -> beranda "/"
+    return <Navigate to={homeFor(session.role)} replace />;
+  }
   return children;
 };
 
@@ -609,7 +623,7 @@ const MainApp = () => {
       <Route path="/testimoni/tulis" element={<TulisTestimoni />} />
 
     
-      <Route path="/login" element={<Login />} />
+      <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
       <Route path="/register" element={<Register />} />
       <Route path="/lupa-password" element={<ForgotPassword />} />
       <Route path="/dashboard/*" element={<Navigate to="/admin" replace />} />
