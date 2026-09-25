@@ -9,7 +9,8 @@
   border-right: 1px solid var(--compreng-border, var(--compreng-border, #e2e8f0));
   display: flex;
   flex-direction: column;
-  transition: width 0.3s ease; 
+  transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width;
   flex-shrink: 0;
   z-index: 50;
   overflow: visible; /* <--- UBAH JADI VISIBLE AGAR POPUP BISA KELUAR */
@@ -31,6 +32,7 @@
   padding: 0 20px;
   border-bottom: 1px solid var(--compreng-border);
   flex-shrink: 0;
+  transition: padding 0.32s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dashboard-sidebar.sidebar-mini .sidebar-header {
@@ -43,6 +45,11 @@
   align-items: center;
   gap: 12px;
   overflow: hidden;
+  transition: gap 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-brand-wrapper {
+  gap: 0;
 }
 
 .sidebar-logo-img {
@@ -57,11 +64,16 @@
   display: flex;
   flex-direction: column;
   white-space: nowrap;
-  transition: opacity 0.2s;
+  overflow: hidden;
+  opacity: 1;
+  max-width: 180px;
+  transition: opacity 0.2s ease, max-width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dashboard-sidebar.sidebar-mini .sidebar-brand-text {
-  display: none;
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
 }
 
 .sidebar-brand-title {
@@ -105,10 +117,16 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
   white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  max-height: 20px;
+  transition: opacity 0.2s ease, max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dashboard-sidebar.sidebar-mini .sidebar-group-label {
-  display: none;
+  opacity: 0;
+  max-height: 0;
+  margin-bottom: 0;
 }
 
 .sidebar-nav-list {
@@ -128,7 +146,7 @@
   border: none;
   cursor: pointer;
   color: var(--compreng-text-secondary);
-  transition: all 0.2s;
+  transition: background 0.2s, color 0.2s, padding 0.32s cubic-bezier(0.4, 0, 0.2, 1);
   margin-bottom: 4px;
   overflow: hidden;
 }
@@ -153,6 +171,14 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  transition: gap 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mini: hilangkan jarak ke teks yang sudah disembunyikan, supaya ikon benar-benar
+   presisi di tengah (sebelumnya gap tetap ada walau teksnya 0 lebar, jadi ikon
+   sedikit terdorong ke kiri — paling kelihatan pada menu yang punya panah dropdown). */
+.dashboard-sidebar.sidebar-mini .sidebar-link-inner {
+  gap: 0;
 }
 
 .sidebar-link-icon {
@@ -166,15 +192,21 @@
 .sidebar-link-text {
   font-size: 13.5px;
   white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  max-width: 180px;
+  transition: opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dashboard-sidebar.sidebar-mini .sidebar-link-text {
-  display: none;
+  opacity: 0;
+  max-width: 0;
 }
 
 .sidebar-dropdown-icon {
   flex-shrink: 0;
-  transition: transform 0.25s ease;
+  opacity: 1;
+  transition: transform 0.25s ease, opacity 0.18s ease;
 }
 
 .sidebar-dropdown-icon.open {
@@ -182,7 +214,13 @@
 }
 
 .dashboard-sidebar.sidebar-mini .sidebar-dropdown-icon {
-  display: none;
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  min-width: 0;
+  
+  /* Mengeluarkan elemen dari aliran flexbox sehingga tidak mengganggu center */
+  position: absolute;
 }
 
 /* SUB MENU SETTINGS — dianimasikan lewat grid-template-rows supaya buka/tutup
@@ -191,7 +229,7 @@
   display: grid;
   grid-template-rows: 0fr;
   margin-left: 26px;
-  transition: grid-template-rows 0.25s ease;
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .sidebar-sub-menu.open {
@@ -213,10 +251,11 @@
   padding-bottom: 2px;
 }
 
-/* Saat sidebar collapsed, submenu tidak ditampilkan (klik langsung
-   navigasi ke halaman utama menu, lihat Sidebar.jsx) */
+/* Saat sidebar mini: submenu langsung disembunyikan total (bukan cuma tinggi 0)
+   supaya tidak ada border/garis sisa yang kelihatan sedikit pun. Klik menu di
+   mode mini langsung navigasi ke halaman utama, lihat Sidebar.jsx. */
 .dashboard-sidebar.sidebar-mini .sidebar-sub-menu {
-  grid-template-rows: 0fr !important;
+  display: none !important;
 }
 
 .sidebar-sub-link {
@@ -246,6 +285,7 @@
   padding: 16px 12px;
   position: relative;
   flex-shrink: 0;
+  transition: padding 0.32s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dashboard-sidebar.sidebar-mini .sidebar-footer {
@@ -264,7 +304,7 @@
   background: transparent;
   border-radius: 8px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, padding 0.32s cubic-bezier(0.4, 0, 0.2, 1), gap 0.32s cubic-bezier(0.4, 0, 0.2, 1);
   text-align: left;
   overflow: hidden;
 }
@@ -272,6 +312,7 @@
 .dashboard-sidebar.sidebar-mini .sidebar-user-btn {
   justify-content: center;
   padding: 8px 0;
+  gap: 0;
 }
 
 .sidebar-user-btn:hover, .sidebar-user-btn.active {
@@ -297,10 +338,15 @@
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  opacity: 1;
+  max-width: 180px;
+  transition: opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .dashboard-sidebar.sidebar-mini .sidebar-user-text {
-  display: none;
+  opacity: 0;
+  max-width: 0;
+  flex: 0 0 0;
 }
 
 .sidebar-user-name {
@@ -323,10 +369,15 @@
 .sidebar-user-chevron {
   color: var(--compreng-text-muted);
   flex-shrink: 0;
+  opacity: 1;
+  transition: opacity 0.18s ease;
 }
 
 .dashboard-sidebar.sidebar-mini .sidebar-user-chevron {
-  display: none;
+  opacity: 0;
+  width: 0;
+  min-width: 0; /* sama seperti dropdown-icon: SVG butuh min-width:0 eksplisit */
+  pointer-events: none;
 }
 
 /* =========================================

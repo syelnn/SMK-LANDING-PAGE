@@ -65,6 +65,7 @@ export default function ImageUploader({
   previewLabel = 'PRATINJAU FOTO',
   fit,                           // 'cover' | 'contain' (default: contain, round = cover)
   outputMaxWidth = 1200,         // lebar maksimum hasil edit (px)
+  previewMaxWidth = 340,         // lebar maksimum kotak pratinjau (px)
   editorTitle = 'Edit Foto',
   uploadText = 'Pilih atau tarik foto ke sini',
   renderTextPreview,             // opsional: render pratinjau untuk nilai non-gambar (mis. nama ikon)
@@ -311,7 +312,7 @@ export default function ImageUploader({
             className={`iu-frame ${shape === 'round' ? 'round' : ''}`}
             style={shape === 'round'
               ? { aspectRatio: '1' }
-              : { aspectRatio: String(ratio), width: `min(100%, ${Math.round(Math.min(320, 200 * ratio))}px)` }}
+              : { aspectRatio: String(ratio), width: `min(100%, ${Math.round(Math.min(previewMaxWidth, 240 * ratio))}px)` }}
           >
             {broken ? (
               <span className="iu-frame-msg">Gambar tidak dapat dimuat</span>
