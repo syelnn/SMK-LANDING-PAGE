@@ -185,7 +185,7 @@ export default function ManageJurusanProgram() {
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data program...</div>;
 
   return (
-    <div className="mjp-wrapper">
+    <div className="mjp-wrapper" id="admin-jurusan">
       
       {/* ================= BAGIAN 1: JURUSAN ================= */}
       <div className="mjp-header-box">

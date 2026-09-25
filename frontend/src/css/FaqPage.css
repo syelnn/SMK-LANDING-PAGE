@@ -714,3 +714,32 @@
   border-top: 1px solid var(--compreng-border, #e2e8f0);
   background-color: var(--compreng-surface, #ffffff) !important;
 }
+
+/* ==========================================
+   FIX: KOTAK PUTIH DI TOMBOL TITIK TIGA (KOLOM AKSI) + ANIMASI MENU
+   - Pembungkus "faq-dropdown-wrapper" mengandung kata "-wrapper", jadi ikut
+     kena wildcard theme.css ([class*="-wrapper"] { background: var(--compreng-bg)
+     !important }) -> muncul kotak putih/krem di atas baris tabel. Dikunci transparan
+     pakai ID (#admin-faq) supaya spesifisitasnya menang di semua tema.
+   - Menu Edit/Delete muncul halus (fade + turun 5px), sama seperti menu di
+     halaman Jurusan & Program.
+   ========================================== */
+#admin-faq .faq-dropdown-wrapper {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes faq-menu-fade-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#admin-faq .action-dropdown-menu {
+  animation: faq-menu-fade-in 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-faq .action-dropdown-menu { animation: none; }
+}

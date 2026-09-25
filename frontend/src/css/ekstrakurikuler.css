@@ -483,3 +483,86 @@
     font-size: 13px;
   }
 }
+
+/* ==========================================
+   FIX: KOTAK PUTIH DI TOMBOL TITIK TIGA (KOLOM AKSI) + ANIMASI MENU
+   - Pembungkus "dropdown-action-wrapper" mengandung kata "-wrapper", jadi ikut
+     kena wildcard theme.css ([class*="-wrapper"] { background: var(--compreng-bg)
+     !important }) -> muncul kotak putih/krem di atas baris tabel. Dikunci transparan
+     pakai ID (#admin-ekskul) supaya spesifisitasnya menang di semua tema.
+   - Menu Edit/Delete muncul halus (fade + turun 5px), sama seperti menu di
+     halaman Jurusan & Program.
+   ========================================== */
+#admin-ekskul .dropdown-action-wrapper {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes ekskul-menu-fade-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#admin-ekskul .dropdown-action-menu {
+  animation: ekskul-menu-fade-in 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-ekskul .dropdown-action-menu { animation: none; }
+}
+
+/* ==========================================
+   FIX: WARNA FORM TAMBAH/EDIT EKSTRAKURIKULER SAMA DENGAN FORM HALAMAN LAIN
+   Akar masalah (aturan wildcard di theme.css):
+   - ".ekskul-logo-box" mengandung "-box" -> dipaksa warna permukaan (putih),
+     padahal kotak upload di form halaman lain (.upload-section) berwarna
+     latar tema (--compreng-bg, krem). Itu yang bikin kotak logo terlihat beda.
+   - ".ekskul-modal-body" mengandung "modal" -> ikut dipaksa jadi "kartu" sendiri
+     (border penuh + bayangan besar), sehingga di dalam modal muncul kotak lagi.
+     Di form Karya & Prestasi bagian isi ini polos menyatu dengan modal.
+   - Header & tombol tutup (X) disamakan dengan form Karya & Prestasi.
+   Dikunci pakai ID (#admin-ekskul) supaya menang di semua tema.
+   ========================================== */
+#admin-ekskul .ekskul-logo-box {
+  background-color: var(--compreng-bg, #f8fafc) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+/* Isi form polos & transparan (seperti form Karya & Prestasi): menyatu dengan
+   modal, sehingga bayangan header terlihat jatuh di atas area isi. */
+#admin-ekskul .ekskul-modal-body {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Header disamakan dengan header form Karya & Prestasi: latar permukaan tema,
+   border tipis, dan bayangan halus di bawahnya. */
+#admin-ekskul .ekskul-modal-header {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 25px 50px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.4)) !important;
+}
+
+/* Tombol tutup (X) disamakan dengan form Karya & Prestasi: kotak kecil
+   berlatar --compreng-surface-soft (mengikuti tema), bukan ikon polos. */
+#admin-ekskul .ekskul-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 10px !important;
+  color: var(--compreng-text, #0f172a) !important;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
