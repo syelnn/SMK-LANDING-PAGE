@@ -26,7 +26,7 @@ const PASSWORD_RULE = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>
 const EMAIL_RULE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_RULE = /^[a-zA-Z0-9_.-]{3,50}$/;
 // Panjang OTP HARUS sama dengan Supabase Dashboard > Auth > Email > "Email OTP Length"
-const OTP_LENGTH = Number(process.env.OTP_LENGTH || 8);
+const OTP_LENGTH = Number(process.env.OTP_LENGTH || 6);
 const RESET_OTP_COOLDOWN_MS = 30 * 1000;
 
 // Field aman untuk dikirim ke client (TIDAK PERNAH kirim hash password)
@@ -476,7 +476,7 @@ app.post('/api/users/:id/reset-password/confirm', ...onlyAdmin, authLimiter, asy
     const id = parseId(req, res); if (id === null) return;
     const otp = String(req.body.otp || '').replace(/\s+/g, '');
     const password = String(req.body.password || '');
-    if (!/^\d{6,10}$/.test(otp)) return res.status(400).json({ success: false, message: 'Kode OTP harus berupa angka.' });
+    if (!/^\d{4,10}$/.test(otp)) return res.status(400).json({ success: false, message: 'Kode OTP harus berupa angka.' });
     if (!PASSWORD_RULE.test(password)) return res.status(400).json({ success: false, message: 'Password minimal 8 karakter, wajib huruf besar, huruf kecil, angka & simbol!' });
 
     const target = await prisma.user.findUnique({ where: { id } });

@@ -21,7 +21,7 @@ const strengthLevel = (n) => (n <= 2 ? { cls: '', label: 'Lemah' } : n <= 4 ? { 
 
 // PENTING: Panjang kode OTP harus SAMA dengan yang dikonfigurasi di
 // Supabase Dashboard > Authentication > Sign In / Providers > Email > "Email OTP Length".
-const OTP_LENGTH = 8;
+const OTP_LENGTH = 6;
 
 // Alur 3 langkah, semuanya lewat Supabase Auth: (1) minta kode OTP ke email,
 // (2) verifikasi kode -> dapat sesi sementara, (3) pakai sesi itu untuk set password baru.
