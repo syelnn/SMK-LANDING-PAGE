@@ -439,3 +439,24 @@
   from { transform: rotate(0deg); }
   to { transform: rotate(360deg); }
 }
+
+/* css aksi */
+#admin-prestasi .dropdown-action-wrapper {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes prestasi-menu-fade-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#admin-prestasi .action-dropdown-menu {
+  animation: prestasi-menu-fade-in 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-prestasi .action-dropdown-menu { animation: none; }
+}
