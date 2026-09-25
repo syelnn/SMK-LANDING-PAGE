@@ -169,7 +169,7 @@ const TestimonialPage = () => {
   });
 
   return (
-    <div className="testi-wrapper">
+    <div className="testi-wrapper" id="admin-testimoni">
       {/* =========================================================
           Halaman ini KHUSUS admin/editor (dijaga juga oleh
           ProtectedRoute di App.jsx). Viewer TIDAK PERNAH melihat

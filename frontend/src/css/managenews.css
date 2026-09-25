@@ -772,3 +772,68 @@ tr.row-featured {
   letter-spacing: 0.3px;
   white-space: nowrap;
 }
+
+/* ==========================================
+   FIX: KOTAK PUTIH DI TOMBOL TITIK TIGA (KOLOM AKSI)
+   Pembungkus tombol memakai class "dropdown-action-wrapper". Karena namanya
+   mengandung kata "-wrapper", ia ikut terkena aturan wildcard di theme.css
+   ([class*="-wrapper"] { background-color: var(--compreng-bg) !important }),
+   sehingga muncul kotak berwarna latar halaman (krem/putih) di atas baris tabel
+   yang berwarna lain. Dikunci transparan pakai ID (#admin-berita) supaya
+   spesifisitasnya pasti menang, dan warnanya ikut baris tabel/tema yang dipakai.
+   Popup menu (.action-dropdown-menu) punya warna sendiri, jadi tidak terpengaruh.
+   ========================================== */
+#admin-berita .dropdown-action-wrapper {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* ==========================================
+   ANIMASI MUNCUL MENU AKSI (Edit / Delete)
+   Menu melebar halus dari pojok kanan-atas (tempat tombol titik tiga berada):
+   fade-in + turun sedikit + membesar tipis. Cuma CSS, tanpa ubah logika JSX.
+   Dimatikan otomatis bagi pengguna yang mengaktifkan "reduce motion".
+   ========================================== */
+@keyframes news-menu-pop {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes news-menu-item-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+#admin-berita .action-dropdown-menu {
+  transform-origin: top right;
+  animation: news-menu-pop 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+}
+
+/* Item muncul berurutan tipis-tipis biar terasa mengalir */
+#admin-berita .action-dropdown-menu .dropdown-item {
+  animation: news-menu-item-in 0.22s ease-out both;
+}
+#admin-berita .action-dropdown-menu .dropdown-item:nth-child(1) { animation-delay: 0.03s; }
+#admin-berita .action-dropdown-menu .dropdown-item:nth-child(2) { animation-delay: 0.07s; }
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-berita .action-dropdown-menu,
+  #admin-berita .action-dropdown-menu .dropdown-item {
+    animation: none;
+  }
+}

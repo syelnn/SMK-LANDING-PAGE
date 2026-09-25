@@ -247,7 +247,7 @@ export default function Galeri() {
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat Galeri...</div>;
 
   return (
-    <div className="galeri-wrapper">
+    <div className="galeri-wrapper" id="admin-galeri">
       
       <div className="galeri-header-box">
         <div>

@@ -275,7 +275,7 @@ export default function Ekstrakurikuler() {
   });
 
   return (
-    <div className="ekskul-container">
+    <div className="ekskul-container" id="admin-ekskul">
       {/* HEADER SECTION */}
       <div className="ekskul-header-wrapper">
         <div className="ekskul-header-text">

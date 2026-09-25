@@ -178,3 +178,11 @@
   color: var(--compreng-accent-text, #ffffff);
   border-color: var(--compreng-border, #e2e8f0);
 }
+
+
+#admin-testimoni .testi-header-box {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}

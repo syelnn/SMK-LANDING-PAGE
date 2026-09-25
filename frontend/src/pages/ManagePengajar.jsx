@@ -176,7 +176,7 @@ export default function ManagePengajar() {
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data pengajar...</div>;
 
   return (
-    <div className="mp-wrapper">
+    <div className="mp-wrapper" id="admin-pengajar">
       
       <div className="mp-header-box">
         <div>

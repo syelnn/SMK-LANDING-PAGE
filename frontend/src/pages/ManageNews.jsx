@@ -200,7 +200,7 @@ const handleOpenEdit = (item) => {
   });
 
   return (
-    <div className="admin-container">
+    <div className="admin-container" id="admin-berita">
       {toast.show && (
         <div className={`toast-notification ${toast.type}`}>
           {toast.type === 'success' ? <CheckCircle size={20} /> : <AlertCircle size={20} />}
