@@ -13,7 +13,7 @@ import '../App.css';
 const API_URL = 'http://localhost:5001/api';
 
 // Harus sama dengan "Email OTP Length" di Supabase Dashboard (backend juga mengirim nilainya).
-const DEFAULT_OTP_LENGTH = 8;
+const DEFAULT_OTP_LENGTH = 6;
 
 const PW_RULES = [
   { key: 'lower', label: 'Huruf kecil', test: (p) => /[a-z]/.test(p) },

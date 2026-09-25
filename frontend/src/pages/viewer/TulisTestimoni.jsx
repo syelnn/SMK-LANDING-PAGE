@@ -356,23 +356,42 @@ export default function TulisTestimoni() {
             </div>
           ) : limitReached ? (
             /* ---------- BATAS 2X TERCAPAI ---------- */
-            <div className="tw-done">
-              <div className="tw-tick" style={{ background: '#f2b8b8' }}><X size={28} strokeWidth={3} /></div>
-              <h2 className="tw-done-heading">Kamu sudah mencapai batas mengirim testimoni</h2>
-              <div className="tw-done-copy">
-                Setiap akun hanya bisa mengirim testimoni maksimal {MAX_TESTIMONIAL_PER_USER}x. Terima kasih sudah berbagi cerita, {firstName}.
-              </div>
-
-              {latest && (
-                <div className="tw-sample-inline">
-                  <div className="tw-caption">Testimoni terakhir kamu</div>
-                  <Sample name={latest.name || ''} role={latest.role || ''} quote={latest.quote || ''} photo={latest.photo || ''} />
+            <div className="tw-limit">
+              <div className="tw-limit-card">
+                <div className="tw-tick tw-tick-warn"><X size={28} strokeWidth={3} /></div>
+                <div className="tw-limit-badge">{MAX_TESTIMONIAL_PER_USER}/{MAX_TESTIMONIAL_PER_USER} testimoni terpakai</div>
+                <h2 className="tw-done-heading">Kamu sudah mencapai batas mengirim testimoni</h2>
+                <div className="tw-done-copy">
+                  Setiap akun hanya bisa mengirim testimoni maksimal {MAX_TESTIMONIAL_PER_USER}x. Terima kasih sudah berbagi cerita, {firstName}.
                 </div>
-              )}
 
-              <button type="button" className="tw-go" onClick={goHome}>
-                Kembali ke beranda
-              </button>
+                {status?.items?.length > 0 && (
+                  <div className="tw-limit-history">
+                    <div className="tw-caption">Riwayat testimoni kamu</div>
+                    <div className="tw-history-list">
+                      {status.items.map((item) => (
+                        <div key={item.id} className="tw-history-item">
+                          <div className="tw-history-top">
+                            <span className={`tw-history-pill ${Number(item.show) === 1 ? 'is-live' : 'is-pending'}`}>
+                              {Number(item.show) === 1 ? 'Tampil di halaman depan' : 'Menunggu peninjauan'}
+                            </span>
+                            {item.createdAt && (
+                              <span className="tw-history-date">
+                                {new Date(item.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                              </span>
+                            )}
+                          </div>
+                          <Sample name={item.name || ''} role={item.role || ''} quote={item.quote || ''} photo={item.photo || ''} />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <button type="button" className="tw-go" onClick={goHome}>
+                  Kembali ke beranda
+                </button>
+              </div>
             </div>
           ) : cooldownActive ? (
             /* ---------- SUDAH KIRIM, MASIH DALAM JEDA 24 JAM ---------- */
