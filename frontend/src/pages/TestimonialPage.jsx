@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../utils/media';
 import axios from 'axios';
 import { Pencil, Trash2, Eye, EyeOff, Plus, X, Search, MoreHorizontal } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
@@ -224,7 +225,7 @@ const TestimonialPage = () => {
                       <td className="testi-td">
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                           {t.photo ? (
-                            <img src={t.photo} alt="pic" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
+                            <img src={getImageUrl(t.photo)} alt="pic" style={{ width: '36px', height: '36px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
                           ) : (
                             <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--compreng-bg)', border: '1px solid var(--compreng-border)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'var(--compreng-text)' }}>
                               {t.name.charAt(0).toUpperCase()}

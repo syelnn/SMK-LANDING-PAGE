@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { getImageUrl } from './utils/media';
 import { NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { SettingsContext } from './context/SettingsContext';
 import { 
@@ -212,7 +213,7 @@ export default function Sidebar({
       <div className="sidebar-header">
         <div className="sidebar-brand-wrapper">
           <img 
-            src={settings.school_logo || logoSekolah} 
+            src={getImageUrl(settings.school_logo) || logoSekolah} 
             alt="Logo" 
             className="sidebar-logo-img"
             onError={(e) => { e.target.style.display = 'none'; }} 
@@ -304,7 +305,7 @@ export default function Sidebar({
                    {userData?.initial}
                    {userData?.avatar && (
                      <img
-                       src={userData.avatar}
+                       src={getImageUrl(userData.avatar)}
                        alt={userData?.name}
                        className="sidebar-user-photo"
                        referrerPolicy="no-referrer"
@@ -342,7 +343,7 @@ export default function Sidebar({
             {userData?.initial}
             {userData?.avatar && (
               <img
-                src={userData.avatar}
+                src={getImageUrl(userData.avatar)}
                 alt={userData?.name}
                 className="sidebar-user-photo"
                 referrerPolicy="no-referrer"

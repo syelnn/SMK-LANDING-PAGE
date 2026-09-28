@@ -25,6 +25,14 @@ cloudinary.config({
 const OUR_IMAGE_PREFIX = `https://res.cloudinary.com/${process.env.CLOUDINARY_CLOUD_NAME}/image/upload/`;
 const isOurStorageUrl = (url) => typeof url === 'string' && url.startsWith(OUR_IMAGE_PREFIX);
 
+// URL Cloudinary kita -> path relatif. Dipakai saat admin/user submit ulang URL avatar lama
+// (yang oleh frontend sudah digabung jadi URL utuh untuk ditampilkan) tanpa mengganti fotonya.
+function toRelativePath(urlOrPath) {
+  if (typeof urlOrPath !== 'string') return urlOrPath;
+  if (!urlOrPath.startsWith(OUR_IMAGE_PREFIX)) return urlOrPath;
+  return urlOrPath.slice(OUR_IMAGE_PREFIX.length).replace(/^v\d+\//, '');
+}
+
 function uploadAvatarBuffer(buffer, mimetype) {
   if (!mimetype || !mimetype.startsWith('image/')) {
     throw new Error('File harus berupa gambar');
@@ -43,20 +51,29 @@ function uploadAvatarBuffer(buffer, mimetype) {
       },
       (error, result) => {
         if (error) return reject(new Error(`Upload avatar ke Cloudinary gagal: ${error.message}`));
-        resolve(result.secure_url);
+        // Simpan PATH RELATIF saja ke database, mis. "avatars/1699999999-uuid.jpg"
+        resolve(`${result.public_id}.${result.format}`);
       }
     );
     uploadStream.end(buffer);
   });
 }
 
-async function deleteAvatarByUrl(url) {
+// Menerima path relatif (format baru) ATAU URL Cloudinary lengkap (data lama sebelum migrasi).
+async function deleteAvatarByUrl(value) {
   try {
-    if (typeof url !== 'string' || !url.startsWith(OUR_IMAGE_PREFIX)) return;
-    const afterUpload = url.slice(OUR_IMAGE_PREFIX.length);
-    const withoutVersion = afterUpload.replace(/^v\d+\//, '');
-    const lastDot = withoutVersion.lastIndexOf('.');
-    const publicId = lastDot === -1 ? withoutVersion : withoutVersion.slice(0, lastDot);
+    if (typeof value !== 'string' || !value) return;
+    let publicId;
+    if (value.startsWith(OUR_IMAGE_PREFIX)) {
+      const afterUpload = value.slice(OUR_IMAGE_PREFIX.length);
+      publicId = afterUpload.replace(/^v\d+\//, '');
+    } else if (/^https?:\/\//i.test(value)) {
+      return; // URL asing, bukan avatar hasil upload kita -> jangan disentuh
+    } else {
+      publicId = value; // sudah path relatif
+    }
+    const lastDot = publicId.lastIndexOf('.');
+    if (lastDot !== -1) publicId = publicId.slice(0, lastDot);
     if (publicId) await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
   } catch (err) {
     console.warn('Gagal hapus avatar lama di Cloudinary (diabaikan):', err.message);
@@ -138,4 +155,4 @@ async function uploadAvatarFromUrl(url) {
   return uploadAvatarBuffer(buffer, mimetype);
 }
 
-module.exports = { uploadAvatarBuffer, uploadAvatarFromUrl, deleteAvatarByUrl, isOurStorageUrl };
+module.exports = { uploadAvatarBuffer, uploadAvatarFromUrl, deleteAvatarByUrl, isOurStorageUrl, toRelativePath };

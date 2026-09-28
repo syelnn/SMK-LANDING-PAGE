@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Award, Loader2, Sparkles } from 'lucide-react';
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/AchievementViewer.css';
 
 // Helper agar teks otomatis huruf Kapital Awal Kata (Title Case) seperti Gambar 2
@@ -73,7 +74,7 @@ const AchievementViewer = () => {
                 <div className="card-image-box">
                   {item.photo ? (
                     <img
-                      src={item.photo}
+                      src={getImageUrl(item.photo)}
                       alt={item.student_name}
                       className="card-img"
                       onError={(e) => {

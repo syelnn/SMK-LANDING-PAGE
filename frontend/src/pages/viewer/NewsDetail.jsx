@@ -3,6 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { Loader2, Calendar, User, ChevronRight, Tag } from 'lucide-react';
 import Navbar from '../../components/Navbar';
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/newsDetail.css';
 
 const API_URL = 'http://localhost:5002/api/news';
@@ -164,7 +165,7 @@ export default function NewsDetail() {
           {/* Gambar Utama Artikel */}
           <div className="vnd-banner-wrapper">
             <img
-              src={news.image || 'https://picsum.photos/1000/500'}
+              src={getImageUrl(news.image) || 'https://picsum.photos/1000/500'}
               alt={news.title}
               onError={(e) => { e.target.src = 'https://picsum.photos/1000/500'; }}
             />
@@ -209,7 +210,7 @@ export default function NewsDetail() {
                   <Link to={`/berita/${item.slug}`} key={item.id || item.slug} className="vnd-other-card">
                     <div className="vnd-other-img">
                       <img 
-                        src={item.image || 'https://picsum.photos/400/250'} 
+                        src={getImageUrl(item.image) || 'https://picsum.photos/400/250'} 
                         alt={item.title}
                         onError={(e) => { e.target.src = 'https://picsum.photos/400/250'; }}
                       />

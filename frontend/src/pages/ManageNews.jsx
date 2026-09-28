@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../utils/media';
 import axios from 'axios';
 import { Plus, Edit3, Trash2, X, Loader2, CheckCircle, AlertCircle, Search, MoreHorizontal, Tag } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
@@ -271,7 +272,7 @@ const handleOpenEdit = (item) => {
                     <td>
                       {item.image ? (
                         <img
-                          src={item.image}
+                          src={getImageUrl(item.image)}
                           alt={item.title}
                           className="table-thumb"
                           onError={(e) => { e.target.style.display = 'none'; }}

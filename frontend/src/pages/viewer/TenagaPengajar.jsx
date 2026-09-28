@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/tenagapengajar.css';
 
 export default function TenagaPengajarViewer() {
@@ -50,7 +51,7 @@ export default function TenagaPengajarViewer() {
           <div className="principal-wrapper">
             <div className="teacher-card-light principal-card">
               <div className="teacher-photo-light">
-                <img src={principal.photo || 'https://via.placeholder.com/150'} alt={principal.name} />
+                <img src={getImageUrl(principal.photo) || 'https://via.placeholder.com/150'} alt={principal.name} />
               </div>
               <h3 className="teacher-name-light">{principal.name}</h3>
               <span className="teacher-role-light highlight-role">{principal.role}</span>
@@ -64,7 +65,7 @@ export default function TenagaPengajarViewer() {
             {staff.map((teacher) => (
               <div className="teacher-card-light" key={teacher.id}>
                 <div className="teacher-photo-light">
-                  <img src={teacher.photo || 'https://via.placeholder.com/150'} alt={teacher.name} />
+                  <img src={getImageUrl(teacher.photo) || 'https://via.placeholder.com/150'} alt={teacher.name} />
                 </div>
                 <h3 className="teacher-name-light">{teacher.name}</h3>
                 <span className="teacher-role-light">{teacher.role}</span>

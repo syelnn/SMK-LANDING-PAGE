@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { getImageUrl } from '../utils/media';
 import axios from 'axios';
 import {
   Users, ShieldCheck, MoreHorizontal, Edit,
@@ -40,7 +41,7 @@ function Pic({ src, name, size = 38 }) {
   useEffect(() => { setBroken(false); }, [src]);
   const style = { width: size, height: size, flex: `0 0 ${size}px` };
   if (src && !broken) {
-    return <img src={src} alt={name} className="mu-pic" style={style} referrerPolicy="no-referrer" onError={() => setBroken(true)} />;
+    return <img src={getImageUrl(src)} alt={name} className="mu-pic" style={style} referrerPolicy="no-referrer" onError={() => setBroken(true)} />;
   }
   return <div className="mu-pic-init" style={{ ...style, fontSize: Math.round(size * 0.4) }}>{initialOf(name)}</div>;
 }
@@ -554,7 +555,7 @@ export default function ManageUsers() {
                     {(avatarMode === 'link' && isValidUrl(avatarUrl.trim()))
                       ? <img key={avatarUrl} src={avatarUrl.trim()} alt="Foto profil" referrerPolicy="no-referrer" onError={(e) => { e.currentTarget.style.visibility = 'hidden'; }} />
                       : (avatarPreview || editData.avatar)
-                        ? <img src={avatarPreview || editData.avatar} alt="Foto profil" referrerPolicy="no-referrer" />
+                        ? <img src={avatarPreview || getImageUrl(editData.avatar)} alt="Foto profil" referrerPolicy="no-referrer" />
                         : <UserRound size={34} />}
                     <div className="um-photo-cam"><Camera size={15} /></div>
                   </button>

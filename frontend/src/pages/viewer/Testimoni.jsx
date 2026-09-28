@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Pencil } from 'lucide-react';
 import { getSession } from '../../utils/auth';
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/testimoni.css';
 
 export default function Testimoni() {
@@ -68,7 +69,7 @@ export default function Testimoni() {
 
                 <div className="tt-profile">
                   {t.photo ? (
-                    <img src={t.photo} alt={t.name} className="tt-avatar" />
+                    <img src={getImageUrl(t.photo)} alt={t.name} className="tt-avatar" />
                   ) : (
                     <div className="tt-avatar-initial">
                       {t.name ? t.name.charAt(0).toUpperCase() : 'U'}

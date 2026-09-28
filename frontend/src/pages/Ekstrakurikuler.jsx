@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../utils/media';
 import { 
   Shield, 
   Compass, 
@@ -24,10 +25,10 @@ const renderIcon = (iconValue) => {
 
   if (!iconValue || iconValue === 'EMPTY') return <Shield {...props} className="ekskul-icon text-blue" />;
 
-  if (iconValue.startsWith('data:image') || iconValue.startsWith('http') || iconValue.startsWith('/uploads')) {
+  if (iconValue.startsWith('data:image') || iconValue.startsWith('http') || iconValue.startsWith('/uploads') || iconValue.includes('/')) {
     return (
       <img 
-        src={iconValue} 
+        src={getImageUrl(iconValue)} 
         alt="Logo" 
         style={{ width: '32px', height: '32px', objectFit: 'contain', borderRadius: '4px' }} 
       />

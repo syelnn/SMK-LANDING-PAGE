@@ -1,5 +1,6 @@
 // src/pages/ManageSettings.jsx
 import React, { useState, useContext, useEffect, useRef } from 'react';
+import { getImageUrl } from '../utils/media';
 import axios from 'axios';
 import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import {
@@ -149,7 +150,7 @@ const Field = ({ label, hint, children }) => (
 
 /* ---------- Live preview: tampilan mini hero beranda ---------- */
 const HeroLivePreview = ({ data }) => {
-  const bg = data.hero_bg_image || bgSekolah;
+  const bg = getImageUrl(data.hero_bg_image, bgSekolah);
   const name = (data.school_name || 'SMK Negeri Compreng').toUpperCase();
   return (
     <div className="pf-live">
@@ -160,7 +161,7 @@ const HeroLivePreview = ({ data }) => {
       <div className="pf-live-screen" style={{ backgroundImage: `url(${bg})` }}>
         <div className="pf-live-overlay" style={{ background: buildHeroOverlay(data) }} />
         <div className="pf-live-nav">
-          {data.school_logo ? <img src={data.school_logo} alt="" /> : <span className="pf-live-logo-ph" />}
+          {data.school_logo ? <img src={getImageUrl(data.school_logo)} alt="" /> : <span className="pf-live-logo-ph" />}
           <b>{data.school_name || 'SMKN Compreng'}</b>
           <span className="pf-live-links"><i /><i /><i /></span>
         </div>
@@ -272,6 +273,18 @@ export default function ManageSettings() {
         const imgFd = new FormData();
         imgFd.append('image', file);
         const res = await axios.post(`${API_URL}/api/settings/upload-image/${key}`, imgFd);
+        f[key] = res.data?.data?.value || f[key];
+      }
+
+      // Opsi "Link URL" diperlakukan sama seperti upload file: backend mengunduh gambarnya, mengunggahnya
+      // ke Cloudinary, lalu hanya path relatifnya yang disimpan (link Cloudinary milik sendiri cukup dikonversi).
+      for (const key of ['school_logo', 'school_profile_image', 'hero_bg_image']) {
+        if (pendingImageFiles[key]) continue;
+        const v = String(f[key] || '');
+        if (!/^https?:\/\//i.test(v)) continue;
+        const linkFd = new FormData();
+        linkFd.append('image', v);
+        const res = await axios.post(`${API_URL}/api/settings/upload-image/${key}`, linkFd);
         f[key] = res.data?.data?.value || f[key];
       }
 

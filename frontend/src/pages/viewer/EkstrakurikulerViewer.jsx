@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../../utils/media';
 import { 
   Shield, 
   Compass, 
@@ -14,10 +15,10 @@ import '../../css/viewer/ekstrakurikulerViewer.css';
 const renderIcon = (iconValue) => {
   const props = { className: "ekskul-icon" };
 
-  if (iconValue && (iconValue.startsWith('data:image') || iconValue.startsWith('http') || iconValue.startsWith('/uploads'))) {
+  if (iconValue && (iconValue.startsWith('data:image') || iconValue.startsWith('http') || iconValue.startsWith('/uploads') || iconValue.includes('/'))) {
     return (
       <img 
-        src={iconValue} 
+        src={getImageUrl(iconValue)} 
         alt="Logo Ekskul" 
         className="ekskul-logo-img"
       />

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../utils/media';
 import axios from 'axios';
 import { Plus, Trash2, Edit, X, MoreHorizontal, Search, Filter, ChevronDown } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
@@ -253,7 +254,7 @@ export default function ManagePengajar() {
                   <td className="mp-td">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                       {item.photo ? (
-                        <img src={item.photo} alt="Foto" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
+                        <img src={getImageUrl(item.photo)} alt="Foto" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
                       ) : (
                         <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--compreng-green)', color: 'var(--compreng-accent-text, #ffffff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
                           {item.name.charAt(0).toUpperCase()}

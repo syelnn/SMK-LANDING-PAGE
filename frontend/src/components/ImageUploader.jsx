@@ -30,6 +30,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Image as ImageIcon, Link as LinkIcon, Upload, Pencil, Trash2, Undo2, RefreshCw } from 'lucide-react';
 import ImageEditorModal from './ImageEditorModal';
+import { getImageUrl } from '../utils/media';
 import '../css/imageuploader.css';
 
 const isLocalUrl = (v) => /^(blob:|data:)/i.test(v || '');
@@ -53,7 +54,7 @@ const clampRatio = (r) => Math.min(2.4, Math.max(0.5, r));
 const OUTPUT_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 export default function ImageUploader({
-  value = '',
+  value: rawValue = '',
   onChange,
   aspect = 1,                    // rasio AWAL frame crop: 1, 16 / 9, 4 / 3, 3 / 2, ... atau 'auto' (Full). Pengguna tetap bisa ganti preset.
   aspectOptions,                 // opsional: batasi preset, mis. ['free', '1:1', '16:9'] (default: free, 1:1, 4:3, 16:9, full)
@@ -71,6 +72,8 @@ export default function ImageUploader({
   renderTextPreview,             // opsional: render pratinjau untuk nilai non-gambar (mis. nama ikon)
   disabled = false,
 }) {
+  // Database menyimpan path relatif Cloudinary; untuk pratinjau digabung dengan Base URL dari .env.
+  const value = getImageUrl(rawValue);
   const [mode, setMode] = useState(() => {
     if (!allowUrl) return 'file';
     if (value) return isLocalUrl(value) ? 'file' : 'url';
