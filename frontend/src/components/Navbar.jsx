@@ -7,6 +7,13 @@ import { getSession, clearSession, verifySession } from '../utils/auth';
 import { SettingsContext } from '../context/SettingsContext';
 import { getImageUrl } from '../utils/media';
 
+// Path URL yang membuka landing page, jadi nanti sesuai section yang di panggil)
+const DEEP_LINK_PATHS = [
+  '/profil', '/berita', '/program', '/jurusan', '/ekstrakurikuler', '/ekskul',
+  '/tenagapengajar', '/guru', '/pengajar', '/karya', '/prestasi', '/achievement',
+  '/galeri', '/testimoni', '/faq', '/mitra-industri', '/mitraindustri', '/kontak',
+];
+
 const Navbar = () => {
   const { settings } = useContext(SettingsContext) || {};
   const [menuItems, setMenuItems] = useState([]);
@@ -88,12 +95,17 @@ const Navbar = () => {
   }, []);
 
   useEffect(() => {
-    if (!sessionStorage.getItem('scrollToSection')) return;
+    // Aktif juga saat URL diketik langsung (mis. /berita, /mitra-industri), supaya scroll-spy
+    // tidak menimpa URL selama halaman sedang di-scroll otomatis ke section tujuan.
+    const isDeepLink = DEEP_LINK_PATHS.includes(location.pathname);
+    if (!sessionStorage.getItem('scrollToSection') && !isDeepLink) return;
     isManualScrolling.current = true;
-    setTimeout(() => {
+    const t = setTimeout(() => {
       isManualScrolling.current = false;
       window.dispatchEvent(new Event('scroll'));
-    }, 2200);
+    }, 3200);
+    return () => clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 1. Fetching Menu dari Database
