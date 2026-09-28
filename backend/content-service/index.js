@@ -3,13 +3,13 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const { PrismaClient } = require('@prisma/client');
-const { deleteFromStorageByUrl, detectRemoteFileSize, uploadFromExternalUrl, toAbsoluteImageUrl } = require('./services/cloudinaryStorage');
+const { deleteFromStorageByUrl, deleteDownloadFromStorage, detectRemoteFileSize, uploadFromExternalUrl, toAbsoluteImageUrl, toRelativePath } = require('./services/cloudinaryStorage');
 const { generateDatabaseDump, getDatabaseSummary } = require('./services/dbExport');
 
 const prisma = new PrismaClient();
 const { verifyToken, optionalAuth, checkRole } = require('./middleware/authMiddleware')(prisma);
 const { uploadSingleSafe, resolveImage } = require('./middleware/imageUpload'); // <== BARU (Fase 2)
-const { uploadSingleSafeFile, resolveDownloadFile } = require('./middleware/fileUpload'); // <== khusus berkas Downloads (bukan gambar)
+const { uploadSingleSafeFile, resolveDownloadFile, normalizeDriveUrl } = require('./middleware/fileUpload'); // <== khusus berkas Downloads (bukan gambar)
 const requireStaff = [verifyToken, checkRole(['admin', 'editor'])]; // khusus admin/editor
 const requireAdmin = [verifyToken, checkRole(['admin'])];           // khusus admin (footer, menu, settings)
 
@@ -1415,24 +1415,18 @@ app.post('/api/settings/upload-image/:key', ...requireAdmin, uploadSingleSafe('i
 // API DOWNLOADS (PRISMA ORM)
 // ==========================================
 
-// Downloads TIDAK lewat Cloudinary (bukan gambar, berupa dokumen/berkas) -> link disimpan apa adanya,
-// termasuk boleh dari Google Drive. Yang dilakukan cuma menormalkan link "view" Drive
-// menjadi link direct-download, supaya tombol "Unduh" di frontend langsung mengunduh filenya.
-function normalizeDriveUrl(url) {
-  if (!url || typeof url !== 'string') return url;
-  const patterns = [
-    /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
-    /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
-    /drive\.google\.com\/uc\?(?:export=[a-z]+&)?id=([a-zA-Z0-9_-]+)/,
-  ];
-  for (const p of patterns) {
-    const m = url.match(p);
-    if (m && m[1]) {
-      return `https://drive.google.com/uc?export=download&id=${m[1]}`;
-    }
-  }
-  return url;
-}
+// Semua berkas Downloads disimpan di Cloudinary, baik lewat "Choose File" maupun "Input Link / URL"
+// (lihat middleware/fileUpload.js). Database menyimpan PATH saja (bukan https://...):
+//   url (path relatif, mis. "downloads/xxx.pdf"), publicId, resourceType, fileSize.
+// Frontend menyusun alamat lengkapnya dari Base URL di .env sesuai resourceType.
+// Saat data dihapus / berkasnya diganti, berkas lama di Cloudinary otomatis di-destroy lewat publicId.
+// Data LAMA (dibuat sebelum kolom publicId ada) tetap aman: dibersihkan lewat fallback berbasis URL.
+
+// Rollback: kalau upload ke Cloudinary sudah berhasil tapi proses berikutnya gagal
+// (validasi / error database), hapus berkas yang baru diunggah supaya tidak jadi sampah.
+const discardUpload = (uploaded) => (uploaded ? deleteDownloadFromStorage(uploaded) : null);
+
+const getCurrentDownload = (req) => prisma.download.findUnique({ where: { id: Number(req.params.id) } });
 
 app.get('/api/downloads', optionalAuth, async (req, res) => {
   try {
@@ -1454,18 +1448,21 @@ app.get('/api/downloads', optionalAuth, async (req, res) => {
 
 app.post('/api/downloads', ...requireStaff, uploadSingleSafeFile('file'), resolveDownloadFile('downloads'), async (req, res) => {
   const { title, category, description, url, file_size, fileSize, sort_order, sortOrder, show } = req.body;
+  const uploaded = req.downloadFile; // { url, publicId, resourceType, fileSize } dari Cloudinary, atau null
 
-  if (!title || !url) {
+  if (!title || (!url && !uploaded)) {
+    await discardUpload(uploaded);
     return res.status(400).json({ success: false, message: 'Judul dan URL wajib diisi!' });
   }
 
   try {
-    const finalUrl = normalizeDriveUrl(url);
+    // uploaded.url sudah berupa path relatif; kalau bukan hasil upload (mis. URL Cloudinary milik kita),
+    // tetap dipangkas jadi path supaya database tidak menyimpan "https://".
+    const finalUrl = uploaded ? uploaded.url : toRelativePath(url);
 
-    // Kalau admin isi Link URL manual (bukan upload file, yang sudah otomatis dapat fileSize
-    // dari resolveDownloadFile) dan belum isi ukuran -> coba deteksi otomatis dari header berkas,
-    // termasuk link Google Drive.
-    let finalFileSize = fileSize || file_size || '';
+    // Ukuran berkas: utamakan ukuran asli dari Cloudinary; kalau tidak ada (URL lama/tidak diunggah),
+    // pakai isian admin, lalu terakhir coba deteksi otomatis dari header berkas.
+    let finalFileSize = uploaded?.fileSize || fileSize || file_size || '';
     if (!finalFileSize) {
       finalFileSize = await detectRemoteFileSize(finalUrl);
     }
@@ -1476,6 +1473,8 @@ app.post('/api/downloads', ...requireStaff, uploadSingleSafeFile('file'), resolv
         category: category || 'Lainnya',
         description: description || '',
         url: finalUrl,
+        publicId: uploaded?.publicId ?? null,
+        resourceType: uploaded?.resourceType ?? null,
         fileSize: finalFileSize,
         sortOrder: Number(sortOrder ?? sort_order ?? 1),
         show: Number(show ?? 1)
@@ -1484,47 +1483,65 @@ app.post('/api/downloads', ...requireStaff, uploadSingleSafeFile('file'), resolv
 
     res.status(201).json({ success: true, message: 'Berkas berhasil ditambahkan', data: newDownload });
   } catch (err) {
+    await discardUpload(uploaded);
     console.error('Error POST download:', err.message);
     res.status(500).json({ success: false, message: 'Gagal menambah data: ' + err.message });
   }
 });
 
-app.put('/api/downloads/:id', ...requireStaff, uploadSingleSafeFile('file'), resolveDownloadFile('downloads'), async (req, res) => {
+app.put('/api/downloads/:id', ...requireStaff, uploadSingleSafeFile('file'), resolveDownloadFile('downloads', { getCurrent: getCurrentDownload }), async (req, res) => {
   const { id } = req.params;
   const { title, category, description, url, file_size, fileSize, sort_order, sortOrder, show } = req.body;
+  const uploaded = req.downloadFile; // berkas BARU hasil upload (file / link), atau null kalau berkas tidak diganti
 
   try {
-    // Ambil URL berkas LAMA dulu sebelum ditimpa, supaya nanti bisa dihapus dari Cloudinary
-    // kalau memang berkasnya diganti (link Google Drive lama tidak ikut terhapus, aman).
-    const current = await prisma.download.findUnique({ where: { id: Number(id) } });
-    const oldUrl = current?.url;
-
-    const finalUrl = normalizeDriveUrl(url);
-
-    let finalFileSize = fileSize || file_size || '';
-    if (!finalFileSize) {
-      finalFileSize = await detectRemoteFileSize(finalUrl);
+    // Ambil data LAMA dulu, supaya berkas lamanya bisa dihapus dari Cloudinary kalau memang diganti.
+    const current = await getCurrentDownload(req);
+    if (!current) {
+      await discardUpload(uploaded);
+      return res.status(404).json({ success: false, message: 'Data tidak ditemukan' });
     }
 
-    const updatedDownload = await prisma.download.update({
-      where: { id: Number(id) },
-      data: {
-        title,
-        category,
-        description,
-        url: finalUrl,
-        fileSize: finalFileSize,
-        sortOrder: Number(sortOrder ?? sort_order ?? 1),
-        show: Number(show ?? 1)
-      }
-    });
+    const data = {
+      title,
+      category,
+      description,
+      sortOrder: Number(sortOrder ?? sort_order ?? 1),
+      show: Number(show ?? 1)
+    };
 
-    if (oldUrl && oldUrl !== finalUrl) {
-      await deleteFromStorageByUrl(oldUrl);
+    let fileReplaced = false;
+    if (uploaded) {
+      // Berkas baru sudah di Cloudinary -> simpan secure_url + public_id + resource_type-nya
+      data.url = uploaded.url;
+      data.publicId = uploaded.publicId;
+      data.resourceType = uploaded.resourceType;
+      fileReplaced = true;
+    } else if (url && toRelativePath(url) !== toRelativePath(normalizeDriveUrl(current.url))) {
+      // Link diganti manual tanpa upload baru (mis. sudah berupa berkas Cloudinary milik kita)
+      data.url = toRelativePath(url); // simpan path saja, bukan https://
+      data.publicId = null;
+      data.resourceType = null;
+      fileReplaced = true;
+    }
+    // else: link tidak berubah -> url/publicId/resourceType di database dibiarkan apa adanya
+
+    let finalFileSize = uploaded?.fileSize || fileSize || file_size || '';
+    if (!finalFileSize) {
+      finalFileSize = await detectRemoteFileSize(data.url ?? current.url);
+    }
+    data.fileSize = finalFileSize;
+
+    const updatedDownload = await prisma.download.update({ where: { id: Number(id) }, data });
+
+    // Database sudah beres -> baru hapus berkas LAMA di Cloudinary (best-effort)
+    if (fileReplaced) {
+      await deleteDownloadFromStorage(current);
     }
 
     res.json({ success: true, message: 'Berkas berhasil diperbarui', data: updatedDownload });
   } catch (err) {
+    await discardUpload(uploaded);
     console.error('Error PUT download:', err.message);
     if (err.code === 'P2025') {
       return res.status(404).json({ success: false, message: 'Data tidak ditemukan' });
@@ -1539,11 +1556,9 @@ app.delete('/api/downloads/:id', ...requireStaff, async (req, res) => {
   try {
     const deleted = await prisma.download.delete({ where: { id: Number(id) } });
 
-    // Data di database sudah hilang, sekarang bersihkan file fisiknya juga di Cloudinary
-    // (kalau memang berkas hasil upload kita; link Google Drive dibiarkan, bukan milik kita)
-    if (deleted?.url) {
-      await deleteFromStorageByUrl(deleted.url);
-    }
+    // Data di database sudah hilang -> hapus juga berkas fisiknya di Cloudinary lewat public_id
+    // (cloudinary.uploader.destroy), supaya storage tidak menumpuk.
+    await deleteDownloadFromStorage(deleted);
 
     res.json({ success: true, message: 'Berkas berhasil dihapus' });
   } catch (err) {

@@ -1,5 +1,10 @@
 const multer = require('multer');
-const { uploadRawBufferToStorage } = require('../services/cloudinaryStorage');
+const {
+  uploadDownloadBuffer,
+  uploadDownloadFromUrl,
+  isOurStorageUrl,
+  toRelativePath,
+} = require('../services/cloudinaryStorage');
 
 // Beda dari imageUpload.js: ini untuk berkas Downloads (pdf/docx/xlsx/zip/dll),
 // bukan gambar -> tidak dibatasi fileFilter mimetype, limit dinaikkan jadi 20MB.
@@ -17,23 +22,64 @@ function uploadSingleSafeFile(fieldName) {
   };
 }
 
-// Setelah multer jalan: kalau admin upload berkas fisik, unggah ke Cloudinary (resource_type "raw")
-// dan simpan URL hasilnya ke req.body.url. Kalau admin cuma isi Link URL (termasuk Google Drive),
-// dibiarkan apa adanya -> link Drive TIDAK diunduh ulang, tetap dipakai langsung.
-function resolveDownloadFile(folder) {
+// Link Google Drive versi "view" diubah jadi link direct-download, supaya Cloudinary
+// (dan tombol "Unduh" di frontend) mendapat berkasnya langsung, bukan halaman preview Drive.
+function normalizeDriveUrl(url) {
+  if (!url || typeof url !== 'string') return url;
+  const patterns = [
+    /drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/,
+    /drive\.google\.com\/open\?id=([a-zA-Z0-9_-]+)/,
+    /drive\.google\.com\/uc\?(?:export=[a-z]+&)?id=([a-zA-Z0-9_-]+)/,
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m && m[1]) {
+      return `https://drive.google.com/uc?export=download&id=${m[1]}`;
+    }
+  }
+  return url;
+}
+
+// Setelah multer jalan, tentukan sumber berkas final SEBELUM masuk controller.
+// Hasilnya ditaruh di req.downloadFile = { url, publicId, resourceType, fileSize }
+// (secure_url + public_id + resource_type dari Cloudinary). Kalau tidak ada upload baru,
+// req.downloadFile = null.
+//
+//  Kasus 1 - "Choose File"     : berkas fisik (req.file) -> diunggah ke Cloudinary.
+//  Kasus 2 - "Input Link/URL"  : URL eksternal baru -> Cloudinary mengambil & menyimpannya
+//                                (resource_type "auto"), lalu url/public_id hasilnya disimpan.
+//  Kasus 3 - URL tidak berubah : saat edit, frontend mengirim ulang URL lama apa adanya.
+//                                Itu BUKAN berkas baru -> jangan diunggah ulang (kalau tidak,
+//                                edit judul saja akan membuat berkas dobel di Cloudinary).
+//
+// options.getCurrent(req): opsional, dipakai route PUT untuk mengambil data lama dari database
+// (perlu untuk mendeteksi Kasus 3).
+function resolveDownloadFile(folder, { getCurrent } = {}) {
   return async (req, res, next) => {
+    req.downloadFile = null;
     try {
       if (req.file) {
-        req.body.url = await uploadRawBufferToStorage(req.file.buffer, req.file.originalname, folder);
+        req.downloadFile = await uploadDownloadBuffer(req.file.buffer, req.file.originalname, folder);
+        return next();
+      }
 
-        // Auto-isi ukuran berkas kalau admin belum isi manual
-        if (!req.body.fileSize && !req.body.file_size) {
-          const sizeInMb = req.file.buffer.length / (1024 * 1024);
-          req.body.fileSize = sizeInMb >= 1
-            ? `${sizeInMb.toFixed(1)} MB`
-            : `${Math.max(1, Math.round(req.file.buffer.length / 1024))} KB`;
+      const submittedUrl = normalizeDriveUrl(typeof req.body.url === 'string' ? req.body.url.trim() : '');
+      req.body.url = submittedUrl;
+      if (!submittedUrl) return next(); // kosong: biar controller yang membalas validasinya
+
+      // Bukan link http(s) (mis. path relatif data lama), atau sudah berkas Cloudinary milik kita
+      // -> tidak perlu diunggah lagi.
+      if (!/^https?:\/\//i.test(submittedUrl) || isOurStorageUrl(submittedUrl)) return next();
+
+      // URL sama dengan yang sudah tersimpan -> berkas lama tidak diganti.
+      if (getCurrent) {
+        const current = await getCurrent(req);
+        if (current?.url && toRelativePath(normalizeDriveUrl(current.url)) === toRelativePath(submittedUrl)) {
+          return next();
         }
       }
+
+      req.downloadFile = await uploadDownloadFromUrl(submittedUrl, folder);
       next();
     } catch (err) {
       console.error('Gagal memproses berkas download:', err.message);
@@ -42,4 +88,4 @@ function resolveDownloadFile(folder) {
   };
 }
 
-module.exports = { uploadSingleSafeFile, resolveDownloadFile };
+module.exports = { uploadSingleSafeFile, resolveDownloadFile, normalizeDriveUrl };

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Plus, Trash2, Edit, Link as LinkIcon, Upload, MoreHorizontal, Search, FileText, Download, X } from 'lucide-react';
+import { getDownloadFileUrl, downloadFileDirect } from '../utils/media';
 import '../css/DownloadPage.css';
 import '../App.css';
 
@@ -24,6 +25,8 @@ export default function DownloadPage() {
   // 'url' = tempel link (boleh Google Drive), 'file' = upload berkas langsung (backend yang simpan ke Cloudinary)
   const [sourceType, setSourceType] = useState('url');
   const [selectedFile, setSelectedFile] = useState(null);
+  const [submitting, setSubmitting] = useState(false); // true selama backend mengunggah berkas ke Cloudinary
+  const [downloadingId, setDownloadingId] = useState(null); // id berkas yang sedang diunduh
 
   // State Dropdown & Search
   const [dropdownConfig, setDropdownConfig] = useState({ id: null, right: null, top: null, bottom: null });
@@ -107,7 +110,7 @@ export default function DownloadPage() {
         title: item.title || '',
         category: item.category || 'Kalender Akademik',
         description: item.description || '',
-        url: item.url || '',
+        url: getDownloadFileUrl(item) || '',
         file_size: item.file_size || item.fileSize || '',
         sort_order: item.sort_order ?? item.sortOrder ?? 1,
         show: item.show ?? 1
@@ -132,6 +135,11 @@ export default function DownloadPage() {
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (file.size > 20 * 1024 * 1024) {
+        alert('Ukuran berkas maksimal 20 MB.');
+        e.target.value = '';
+        return;
+      }
       setSelectedFile(file);
       setFormData((prev) => ({ ...prev, file_size: '' })); // biar diisi otomatis oleh backend sesuai ukuran asli
     }
@@ -139,6 +147,7 @@ export default function DownloadPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting) return;
 
     if (sourceType === 'url' && !formData.url) {
       alert('Silakan masukkan Link URL berkas terlebih dahulu!');
@@ -150,12 +159,14 @@ export default function DownloadPage() {
     }
 
     try {
+      setSubmitting(true);
       const url = editId ? `${API_URL}/${editId}` : API_URL;
       const method = editId ? 'PUT' : 'POST';
 
-      // Berkas asli dikirim apa adanya via FormData -> backend yang upload ke Cloudinary
-      // dan cuma URL hasil upload yang disimpan ke database (bukan base64).
-      // Kalau admin pilih tab Link URL, dikirim sebagai teks biasa (boleh link Google Drive).
+      // Dua metode, dua-duanya berakhir di Cloudinary (diproses backend):
+      //  - Upload Berkas : berkas asli dikirim via FormData
+      //  - Link URL      : link dikirim sebagai teks -> backend menyuruh Cloudinary mengambil berkas dari link itu
+      // Yang disimpan ke database: secure_url + public_id Cloudinary (bukan base64).
       const fd = new FormData();
       fd.append('title', formData.title);
       fd.append('category', formData.category);
@@ -183,7 +194,18 @@ export default function DownloadPage() {
     } catch (err) {
       console.error('Error saving data:', err);
       alert('Gagal terhubung ke server.');
+    } finally {
+      setSubmitting(false);
     }
+  };
+
+  // Unduh langsung, tanpa membuka tab/halaman baru
+  const handleDownload = async (e, item) => {
+    e.preventDefault();
+    if (downloadingId) return;
+    setDownloadingId(item.id);
+    await downloadFileDirect(getDownloadFileUrl(item), item.title);
+    setDownloadingId(null);
   };
 
   const handleDelete = async (id, title) => {
@@ -311,14 +333,13 @@ export default function DownloadPage() {
                   <td className="mp-td" style={{ textAlign: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
                       <a 
-                        href={item.url} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                        href={getDownloadFileUrl(item)} 
+                        onClick={(e) => handleDownload(e, item)}
                         download
                         className="btn-modern-secondary" 
-                        style={{ padding: '6px 12px', fontSize: '12px', gap: '4px', textDecoration: 'none' }}
+                        style={{ padding: '6px 12px', fontSize: '12px', gap: '4px', textDecoration: 'none', opacity: downloadingId === item.id ? 0.6 : 1 }}
                       >
-                        <Download size={14} /> Unduh
+                        <Download size={14} /> {downloadingId === item.id ? 'Mengunduh...' : 'Unduh'}
                       </a>
 
                       {isAdmin && (
@@ -475,15 +496,22 @@ export default function DownloadPage() {
                 </div>
 
                 {sourceType === 'url' ? (
-                  <input
-                    type="url"
-                    name="url"
-                    placeholder="https://drive.google.com/file/... atau https://contoh.com/berkas.pdf"
-                    className="input-modern"
-                    value={formData.url}
-                    onChange={handleChange}
-                    required={sourceType === 'url'}
-                  />
+                  <>
+                    <input
+                      type="url"
+                      name="url"
+                      placeholder="https://drive.google.com/file/... atau https://contoh.com/berkas.pdf"
+                      className="input-modern"
+                      value={formData.url}
+                      onChange={handleChange}
+                      required={sourceType === 'url'}
+                    />
+                    <small style={{ color: 'var(--compreng-text-muted)' }}>
+                      {editId
+                        ? 'Biarkan link apa adanya jika berkas tidak diganti.'
+                        : 'Isi Berkas.'}
+                    </small>
+                  </>
                 ) : (
                   <>
                     <input
@@ -519,9 +547,9 @@ export default function DownloadPage() {
               </div>
 
               <div className="modal-actions-modern" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
-                <button type="button" onClick={() => setShowModal(false)} className="btn-modern-secondary">Batal</button>
-                <button type="submit" className="btn-modern-primary">
-                  Simpan Data
+                <button type="button" onClick={() => setShowModal(false)} className="btn-modern-secondary" disabled={submitting}>Batal</button>
+                <button type="submit" className="btn-modern-primary" disabled={submitting}>
+                  {submitting ? 'Mengunggah ke Cloudinary...' : 'Simpan Data'}
                 </button>
               </div>
             </form>
