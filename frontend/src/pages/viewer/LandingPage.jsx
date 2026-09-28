@@ -77,6 +77,8 @@ const LandingPage = () => {
       '/galeri': 'section-galeri',
       '/testimoni': 'section-testimoni',
       '/faq': 'section-faq',
+      '/mitra-industri': 'section-mitra-industri',
+      '/mitraindustri': 'section-mitra-industri',
       '/kontak': 'section-kontak',
     };
     
@@ -84,9 +86,11 @@ const LandingPage = () => {
     const mappedSection = pathToSectionMap[currentPath];
 
     if (mappedSection && currentPath !== '/') {
-      setTimeout(() => scrollToTarget(mappedSection), 100);
-      setTimeout(() => scrollToTarget(mappedSection), 600);
-      setTimeout(() => scrollToTarget(mappedSection), 1200);
+      // Section berisi data async (berita, mitra, dll) -> posisi bisa bergeser, jadi diulang beberapa kali
+      const timers = [100, 600, 1200, 2000, 3000].map((ms) =>
+        setTimeout(() => scrollToTarget(mappedSection), ms)
+      );
+      return () => timers.forEach(clearTimeout);
     }
   }, [location.pathname]);
 
