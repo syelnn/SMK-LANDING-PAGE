@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../utils/media';
 import { Plus, Edit, Trash2, X, ArrowLeft, MoreHorizontal, Star, FolderOpen, Search, Grid, List } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
+import { sortPhotos, orderAlbumNames } from '../utils/galleryOrder';
 import '../css/galeri.css'; 
 import '../App.css'; 
 
@@ -39,7 +40,7 @@ export default function Galeri() {
     try {
       const response = await fetch('http://localhost:5002/api/galleries');
       const result = await response.json();
-      if (result.success) setGalleries(result.data);
+      if (result.success) setGalleries(sortPhotos(result.data));
       setLoading(false);
     } catch (error) {
       console.error('Gagal memuat galeri:', error);
@@ -239,10 +240,9 @@ export default function Galeri() {
     }
   };
 
-  // Urutkan abjad secara paten agar saat album diedit, posisinya tidak melompat ke bawah
-  const albumKeys = Object.keys(groupedGalleries)
-    .filter(key => key.toLowerCase().includes(searchTerm.toLowerCase()))
-    .sort((a, b) => a.localeCompare(b));
+  // Fasilitas Sekolah selalu pertama, sisanya urut pembuatan (id) supaya tidak melompat saat diedit
+  const albumKeys = orderAlbumNames(groupedGalleries)
+    .filter(key => key.toLowerCase().includes(searchTerm.toLowerCase()));
   const currentAlbumPhotos = selectedAlbum ? (groupedGalleries[selectedAlbum] || []).filter(p => (p.caption || '').toLowerCase().includes(searchTerm.toLowerCase())) : [];
 
   if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat Galeri...</div>;

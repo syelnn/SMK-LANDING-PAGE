@@ -134,6 +134,112 @@ async function uploadRawBufferToStorage(buffer, originalName, folder) {
   });
 }
 
+// ===== FITUR DOWNLOADS: simpan secure_url + public_id (+ resource_type) =====
+// Berbeda dari fungsi gambar di atas (yang hanya menyimpan path relatif), fitur Downloads
+// menyimpan 3 hal dari respons Cloudinary ke database:
+//   - url          : result.secure_url  (link langsung yang dipakai tombol "Unduh")
+//   - publicId     : result.public_id   (kunci untuk cloudinary.uploader.destroy)
+//   - resourceType : result.resource_type ("image" | "raw" | "video")
+// resourceType WAJIB disimpan: dengan resource_type "auto", Cloudinary sendiri yang menentukan
+// jenisnya (PDF/gambar -> "image", DOCX/ZIP -> "raw"), dan destroy() hanya berhasil kalau
+// resource_type yang dikirim sama persis dengan saat upload.
+
+function formatFileSize(bytes) {
+  const n = Number(bytes);
+  if (!n || n < 0) return '';
+  const mb = n / (1024 * 1024);
+  return mb >= 1 ? `${mb.toFixed(1)} MB` : `${Math.max(1, Math.round(n / 1024))} KB`;
+}
+
+// secure_url Cloudinary -> path relatif (tanpa https://, tanpa versi "vNNNN/").
+// Contoh: ".../raw/upload/v1699/downloads/xxx.docx"   -> "downloads/xxx.docx"
+//         ".../image/upload/v1699/downloads/xxx.pdf"  -> "downloads/xxx.pdf"
+// Hanya path ini yang disimpan di database; frontend menyusun alamat lengkapnya dari Base URL (.env)
+// sesuai resource_type.
+function secureUrlToPath(secureUrl) {
+  return String(secureUrl || '').replace(/^https:\/\/res\.cloudinary\.com\/[^/]+\/(?:image|raw|video)\/upload\/(?:v\d+\/)?/, '');
+}
+
+function toDownloadResult(result) {
+  return {
+    url: secureUrlToPath(result.secure_url), // path relatif (bukan https://...)
+    publicId: result.public_id,
+    resourceType: result.resource_type,
+    fileSize: formatFileSize(result.bytes),
+  };
+}
+
+// Metode 1 - "Choose File": berkas fisik dari multer (buffer) -> Cloudinary (resource_type "raw",
+// nama file asli + ekstensinya dipertahankan di public_id supaya hasil unduhan tetap benar).
+async function uploadDownloadBuffer(buffer, originalName, folder) {
+  const safeName = (originalName || 'berkas').replace(/[^a-zA-Z0-9._-]/g, '_').slice(-80);
+  const publicId = `${Date.now()}-${crypto.randomUUID()}-${safeName}`;
+
+  return new Promise((resolve, reject) => {
+    const uploadStream = cloudinary.uploader.upload_stream(
+      { folder, public_id: publicId, resource_type: 'raw', overwrite: false },
+      (error, result) => {
+        if (error) return reject(new Error(`Upload berkas ke Cloudinary gagal: ${error.message}`));
+        resolve(toDownloadResult(result));
+      }
+    );
+    uploadStream.end(buffer);
+  });
+}
+
+// Metode 2 - "Input Link / URL": Cloudinary yang mengambil berkas dari URL tersebut
+// (server-to-server, tidak lewat memori backend kita) dengan resource_type "auto"
+// -> mendukung PDF, DOCX, ZIP, gambar, dll.
+async function uploadDownloadFromUrl(remoteUrl, folder) {
+  if (typeof remoteUrl !== 'string' || !/^https?:\/\//i.test(remoteUrl)) {
+    throw new Error('Link harus diawali http:// atau https://');
+  }
+  try {
+    const result = await cloudinary.uploader.upload(remoteUrl, {
+      folder, // downloads/
+      resource_type: 'auto',
+      use_filename: true, // pakai nama berkas dari URL kalau ada
+      unique_filename: true, // + suffix acak supaya tidak bentrok
+      overwrite: false,
+    });
+    return toDownloadResult(result);
+  } catch (error) {
+    // Error Cloudinary kadang berupa objek { message, http_code }, bukan instance Error
+    throw new Error(`Upload dari link ke Cloudinary gagal: ${error?.message || 'link tidak bisa diakses'}`);
+  }
+}
+
+// Hapus berkas Downloads dari Cloudinary. Best-effort: TIDAK boleh melempar error, supaya
+// hapus/ubah data di database tidak ikut gagal hanya karena Cloudinary bermasalah.
+//  - Ada publicId (data baru)          -> destroy(publicId, { resource_type }) sesuai yang tersimpan.
+//  - Tidak ada publicId (data lama)    -> fallback ke deleteFromStorageByUrl(url) (perilaku lama;
+//                                         link eksternal seperti Google Drive dibiarkan, bukan milik kita).
+// Mengembalikan true kalau berkas benar-benar terhapus di Cloudinary.
+async function deleteDownloadFromStorage({ publicId, resourceType, url } = {}) {
+  try {
+    if (!publicId) {
+      await deleteFromStorageByUrl(url);
+      return false;
+    }
+
+    // resourceType tersimpan -> coba itu dulu; sisanya hanya jaga-jaga kalau datanya tidak lengkap.
+    const candidates = [...new Set([resourceType, 'raw', 'image', 'video'].filter(Boolean))];
+    for (const type of candidates) {
+      const res = await cloudinary.uploader.destroy(publicId, { resource_type: type, invalidate: true });
+      if (res?.result === 'ok') {
+        console.log(`Cloudinary: berkas "${publicId}" (${type}) berhasil dihapus`);
+        return true;
+      }
+      if (resourceType) break; // tipe sudah pasti -> "not found" berarti memang sudah tidak ada
+    }
+    console.warn(`Cloudinary: berkas "${publicId}" tidak ditemukan saat dihapus (mungkin sudah terhapus)`);
+    return false;
+  } catch (err) {
+    console.warn('Gagal hapus berkas di Cloudinary (diabaikan):', err?.message || err);
+    return false;
+  }
+}
+
 // Ambil public_id dari secure_url Cloudinary, dibutuhkan cloudinary.uploader.destroy().
 // Untuk resource_type "image": ekstensi ada di luar public_id -> harus dibuang.
 //   Contoh: https://res.cloudinary.com/<cloud>/image/upload/v1699999999/teachers/xxxx.jpg
@@ -221,6 +327,9 @@ module.exports = {
   uploadBufferToStorage,
   uploadFromExternalUrl,
   uploadRawBufferToStorage,
+  uploadDownloadBuffer,
+  uploadDownloadFromUrl,
+  deleteDownloadFromStorage,
   deleteFromStorageByUrl,
   detectRemoteFileSize,
   isOurStorageUrl,

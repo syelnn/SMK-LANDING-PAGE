@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import FooterViewer from './FooterViewer';
+import { sortPhotos } from '../../utils/galleryOrder';
 import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/tampilangalery.css';
 
@@ -135,7 +136,7 @@ export default function GaleriAlbumViewer() {
 
   // Kelompokkan foto berdasarkan kategori album
   const groupedGalleries = useMemo(() => (
-    galleries.reduce((acc, item) => {
+    sortPhotos(galleries).reduce((acc, item) => {
       const cat = item.category || 'Umum';
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(item);

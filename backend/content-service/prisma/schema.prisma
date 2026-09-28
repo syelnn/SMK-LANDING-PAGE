@@ -220,6 +220,8 @@ model Download {
   description String?
   url         String    @db.VarChar(500)
   fileSize    String?   @map("file_size") @db.VarChar(50)
+  publicId     String?  @map("public_id") @db.VarChar(500)    // Cloudinary public_id (dipakai untuk destroy)
+  resourceType String?  @map("resource_type") @db.VarChar(20) // Cloudinary resource_type: image | raw 
   sortOrder   Int?      @default(0) @map("sort_order")
   show        Int?      @default(1)
   createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)

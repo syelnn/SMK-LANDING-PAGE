@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Image as ImageIcon,
 } from 'lucide-react';
 import { getImageUrl } from '../../utils/media';
+import { sortPhotos, orderAlbumNames } from '../../utils/galleryOrder';
 import '../../css/viewer/tampilangalery.css';
 
 // Ubah nama album jadi slug URL 
@@ -47,13 +48,16 @@ export default function TampilanGalery() {
 
   // Kelompokkan foto berdasarkan kategori album
   const groupedGalleries = useMemo(() => (
-    galleries.reduce((acc, item) => {
+    sortPhotos(galleries).reduce((acc, item) => {
       const cat = item.category || 'Umum';
       if (!acc[cat]) acc[cat] = [];
       acc[cat].push(item);
       return acc;
     }, {})
   ), [galleries]);
+
+  // Urutan album berdasarkan urutan pembuatan
+  const albumNames = useMemo(() => orderAlbumNames(groupedGalleries), [groupedGalleries]);
 
   // Klik album -> pindah ke halaman tersendiri 
   
@@ -83,11 +87,11 @@ export default function TampilanGalery() {
         </div>
 
         {/* DAFTAR ALBUM (GRID) */}
-        {Object.keys(groupedGalleries).length === 0 ? (
+        {albumNames.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '50px', color: 'var(--compreng-text-secondary, #475569)' }}>Belum ada album galeri yang tersedia.</div>
         ) : (
           <div className="gx-album-grid">
-            {Object.keys(groupedGalleries).map((catName) => {
+            {albumNames.map((catName) => {
               const items = groupedGalleries[catName];
               const coverImage = items.find(i => i.isFeatured === 1 || i.is_featured === 1)?.image || items[0]?.image;
 

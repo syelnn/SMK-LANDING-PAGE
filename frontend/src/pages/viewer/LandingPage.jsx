@@ -157,6 +157,9 @@ const LandingPage = () => {
                 src={heroIllustration} 
                 alt="Ilustrasi SMKN Compreng" 
                 className="graphic-img"
+                width={1222}
+                height={1287}
+                decoding="async"
               />
             </div>
           </div>

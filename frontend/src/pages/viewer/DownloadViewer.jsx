@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Download, FileText, Folder, HardDrive, AlertCircle } from 'lucide-react';
 import Navbar from '../../components/Navbar';
+import { getDownloadFileUrl, downloadFileDirect } from '../../utils/media';
 import FooterViewer from './FooterViewer';
 import '../../css/viewer/DownloadViewer.css';
 
@@ -11,11 +12,21 @@ const DownloadViewer = () => {
   const [downloads, setDownloads] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [downloadingId, setDownloadingId] = useState(null); // id berkas yang sedang diunduh
 
   useEffect(() => {
     window.scrollTo(0, 0); // selalu mulai dari atas saat pindah dari landing/footer
     fetchDownloads();
   }, []);
+
+  // Unduh langsung, tanpa membuka tab/halaman baru
+  const handleDownload = async (e, item) => {
+    e.preventDefault();
+    if (downloadingId) return;
+    setDownloadingId(item.id);
+    await downloadFileDirect(getDownloadFileUrl(item), item.title);
+    setDownloadingId(null);
+  };
 
   const fetchDownloads = async () => {
     try {
@@ -123,11 +134,12 @@ const DownloadViewer = () => {
                           </div>
                         )}
                         <a 
-                          href={item.url} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
+                          href={getDownloadFileUrl(item)} 
+                          onClick={(e) => handleDownload(e, item)}
+                          download
                           className="btn-download-action"
-                          title="Unduh Berkas"
+                          title={downloadingId === item.id ? 'Mengunduh...' : 'Unduh Berkas'}
+                          style={downloadingId === item.id ? { opacity: 0.6, pointerEvents: 'none' } : undefined}
                         >
                           <Download size={18} />
                         </a>

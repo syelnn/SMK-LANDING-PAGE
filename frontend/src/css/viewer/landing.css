@@ -316,6 +316,21 @@
 .landing-wrapper .graphic-frame {
   width: 100% !important;
   max-width: 360px !important;
+  /* Foto 2 orang: melayang halus otomatis (tanpa hover). Hanya translateY -> dikerjakan GPU.
+     Kurva easeInOutSine + hanya 2 titik keyframe (naik lalu turun) = gerakan sinus kontinu,
+     tanpa berhenti di tengah jalan. Tanpa rotate/scale agar gambar tidak di-resample (bergetar). */
+  animation: heroFloat 5s cubic-bezier(0.37, 0, 0.63, 1) infinite;
+  will-change: transform;
+  backface-visibility: hidden;
+}
+
+@keyframes heroFloat {
+  0%, 100% { transform: translate3d(0, 0, 0); }
+  50%      { transform: translate3d(0, -14px, 0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-wrapper .graphic-frame { animation: none !important; will-change: auto; }
 }
 
 .landing-wrapper .graphic-img {
