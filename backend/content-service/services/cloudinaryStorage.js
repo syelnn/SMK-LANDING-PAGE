@@ -35,6 +35,31 @@ function isOurStorageUrl(url) {
   return typeof url === 'string' && (url.startsWith(OUR_IMAGE_PREFIX) || url.startsWith(OUR_RAW_PREFIX));
 }
 
+// ===== Konversi URL Cloudinary lengkap <-> path relatif =====
+// Path relatif = bagian setelah ".../image/upload/" atau ".../raw/upload/" (tanpa versi "vNNNN/"),
+// contoh: "teachers/1699999999-uuid.jpg". Inilah yang disimpan ke database, BUKAN URL utuhnya.
+
+// URL Cloudinary kita -> path relatif (dipakai saat admin submit ulang URL lama tanpa mengganti gambar,
+// karena frontend menampilkannya sebagai URL utuh hasil gabungan Base URL + path).
+function toRelativePath(urlOrPath) {
+  if (typeof urlOrPath !== 'string') return urlOrPath;
+  if (urlOrPath.startsWith(OUR_IMAGE_PREFIX)) {
+    return urlOrPath.slice(OUR_IMAGE_PREFIX.length).replace(/^v\d+\//, '');
+  }
+  if (urlOrPath.startsWith(OUR_RAW_PREFIX)) {
+    return urlOrPath.slice(OUR_RAW_PREFIX.length).replace(/^v\d+\//, '');
+  }
+  return urlOrPath; // bukan URL kita (path relatif baru, atau link eksternal asli) -> biarkan apa adanya
+}
+
+// path relatif (dari database) -> URL Cloudinary lengkap. Dipakai backend saat PERLU mengunduh ulang
+// gambar yang sudah tersimpan di Cloudinary kita (mis. menyalin foto profil user ke foto testimoni).
+// Frontend TIDAK memakai fungsi ini — frontend menggabungkan sendiri lewat Base URL di .env-nya.
+function toAbsoluteImageUrl(pathOrUrl) {
+  if (!pathOrUrl || typeof pathOrUrl !== 'string') return pathOrUrl;
+  return /^https?:\/\//i.test(pathOrUrl) ? pathOrUrl : `${OUR_IMAGE_PREFIX}${pathOrUrl}`;
+}
+
 async function uploadBufferToStorage(buffer, mimetype, folder) {
   if (!mimetype || !mimetype.startsWith('image/')) {
     throw new Error('File harus berupa gambar');
@@ -52,7 +77,10 @@ async function uploadBufferToStorage(buffer, mimetype, folder) {
       },
       (error, result) => {
         if (error) return reject(new Error(`Upload ke Cloudinary gagal: ${error.message}`));
-        resolve(result.secure_url);
+        // Simpan PATH RELATIF saja ke database (bukan result.secure_url yang lengkap).
+        // result.public_id sudah termasuk folder, tinggal tambahkan ekstensi dari result.format.
+        // Contoh hasil: "teachers/1699999999-uuid.jpg"
+        resolve(`${result.public_id}.${result.format}`);
       }
     );
     // Buffer (dari multer memory storage) dialirkan langsung ke stream upload Cloudinary,
@@ -96,7 +124,10 @@ async function uploadRawBufferToStorage(buffer, originalName, folder) {
       },
       (error, result) => {
         if (error) return reject(new Error(`Upload berkas ke Cloudinary gagal: ${error.message}`));
-        resolve(result.secure_url);
+        // Untuk resource_type "raw", public_id yang kita kirim SUDAH menyertakan ekstensi
+        // (lihat safeName di atas), jadi public_id apa adanya sudah pas jadi path relatif.
+        // Contoh hasil: "downloads/1699999999-uuid-Laporan.pdf"
+        resolve(result.public_id);
       }
     );
     uploadStream.end(buffer);
@@ -119,19 +150,40 @@ function extractPublicIdFromUrl(url, prefix, stripExtension) {
 }
 
 // Best-effort, tidak boleh membuat request utama (update/delete data) ikut gagal.
-// Kalau url bukan hasil upload kita sendiri (mis. link Google Drive), fungsi ini
+// Kalau value bukan hasil upload kita sendiri (mis. link Google Drive), fungsi ini
 // dibiarkan tidak melakukan apa-apa -> file/link asing tidak pernah ikut terhapus.
-async function deleteFromStorageByUrl(url) {
+//
+// Menerima 2 kemungkinan bentuk `value` dari database:
+//  1) Path relatif (format BARU, sejak perubahan ini)      -> "teachers/xxxx.jpg" / "downloads/xxxx-berkas.pdf"
+//  2) URL Cloudinary lengkap (data LAMA, sebelum migrasi)  -> "https://res.cloudinary.com/<cloud>/image/upload/v.../xxxx.jpg"
+// supaya baris data lama yang belum sempat diedit ulang tetap bisa dibersihkan dengan benar.
+async function deleteFromStorageByUrl(value) {
   try {
-    if (typeof url !== 'string') return;
+    if (typeof value !== 'string' || !value) return;
 
-    if (url.startsWith(OUR_IMAGE_PREFIX)) {
-      const publicId = extractPublicIdFromUrl(url, OUR_IMAGE_PREFIX, true);
+    // --- Bentuk lama: URL Cloudinary lengkap ---
+    if (value.startsWith(OUR_IMAGE_PREFIX)) {
+      const publicId = extractPublicIdFromUrl(value, OUR_IMAGE_PREFIX, true);
       if (publicId) await cloudinary.uploader.destroy(publicId, { resource_type: 'image' });
-    } else if (url.startsWith(OUR_RAW_PREFIX)) {
-      const publicId = extractPublicIdFromUrl(url, OUR_RAW_PREFIX, false);
-      if (publicId) await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      return;
     }
+    if (value.startsWith(OUR_RAW_PREFIX)) {
+      const publicId = extractPublicIdFromUrl(value, OUR_RAW_PREFIX, false);
+      if (publicId) await cloudinary.uploader.destroy(publicId, { resource_type: 'raw' });
+      return;
+    }
+    if (/^https?:\/\//i.test(value)) return; // link eksternal asing (Google Drive dll) -> bukan milik kita
+
+    // --- Bentuk baru: path relatif ---
+    // Field gambar (imageIcon/photo/logo_url/image) -> public_id = path tanpa ekstensi, resource_type "image".
+    // Field Downloads ("url") -> public_id = path apa adanya (ekstensi memang bagian public_id), resource_type "raw".
+    // Karena field yang sama dipakai untuk keduanya, coba "image" dulu; kalau tidak ketemu, coba "raw".
+    const lastDot = value.lastIndexOf('.');
+    const asImagePublicId = lastDot === -1 ? value : value.slice(0, lastDot);
+    const imageResult = await cloudinary.uploader.destroy(asImagePublicId, { resource_type: 'image' }).catch(() => null);
+    if (imageResult?.result === 'ok') return;
+
+    await cloudinary.uploader.destroy(value, { resource_type: 'raw' });
   } catch (err) {
     console.warn('Gagal hapus file lama di Cloudinary (diabaikan):', err.message);
   }
@@ -172,4 +224,6 @@ module.exports = {
   deleteFromStorageByUrl,
   detectRemoteFileSize,
   isOurStorageUrl,
+  toRelativePath,
+  toAbsoluteImageUrl,
 };

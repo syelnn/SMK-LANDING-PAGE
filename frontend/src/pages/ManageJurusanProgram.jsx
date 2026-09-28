@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Plus, Trash2, Edit, X, MoreHorizontal, ExternalLink } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
+import { getImageUrl } from '../utils/media';
 import '../css/managejurusanprogram.css';
 import '../App.css';
 
@@ -108,7 +109,9 @@ export default function ManageJurusanProgram() {
   const openEditJurusan = (item) => {
     setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
     setEditIdJurusan(item.id);
-    setNewJurusan({ ...item });
+    // Path relatif dari database digabung dulu jadi URL utuh, supaya pratinjau di ImageUploader tampil.
+    // Kalau admin simpan tanpa ganti gambar, backend akan mengembalikannya lagi ke path relatif.
+    setNewJurusan({ ...item, imageIcon: getImageUrl(item.imageIcon) });
     setImageTypeJurusan(item.imageIcon && item.imageIcon.length > 200 ? 'file' : 'url'); 
     setSelectedFileJurusan(null);
     setShowModalJurusan(true);
@@ -152,7 +155,8 @@ export default function ManageJurusanProgram() {
   const openEditProgram = (item) => {
     setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
     setEditIdProgram(item.id);
-    setNewProgram({ ...item });
+    // Sama seperti jurusan: path relatif -> URL utuh untuk pratinjau ImageUploader.
+    setNewProgram({ ...item, imageIcon: getImageUrl(item.imageIcon) });
     setImageTypeProgram(item.imageIcon && item.imageIcon.length > 200 ? 'file' : 'url');
     setSelectedFileProgram(null);
     setShowModalProgram(true);
@@ -221,7 +225,7 @@ export default function ManageJurusanProgram() {
                   <tr key={item.id} className="mjp-tr">
                     <td className="mjp-td">
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <img src={item.imageIcon || 'https://via.placeholder.com/40'} alt="Icon" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'contain', background: 'var(--compreng-bg)', padding: '4px', border: '1px solid var(--compreng-border)' }} />
+                        <img src={getImageUrl(item.imageIcon) || 'https://via.placeholder.com/40'} alt="Icon" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'contain', background: 'var(--compreng-bg)', padding: '4px', border: '1px solid var(--compreng-border)' }} />
                         <span style={{ fontWeight: '600' }}>{item.title}</span>
                       </div>
                     </td>
@@ -282,7 +286,7 @@ export default function ManageJurusanProgram() {
                 <tr key={prog.id} className="mjp-tr">
                   <td className="mjp-td">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img src={prog.imageIcon || 'https://via.placeholder.com/40'} alt="Icon" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'contain', background: 'var(--compreng-bg)', padding: '4px', border: '1px solid var(--compreng-border)' }} />
+                      <img src={getImageUrl(prog.imageIcon) || 'https://via.placeholder.com/40'} alt="Icon" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'contain', background: 'var(--compreng-bg)', padding: '4px', border: '1px solid var(--compreng-border)' }} />
                       <span style={{ fontWeight: '600' }}>{prog.title}</span>
                     </div>
                   </td>

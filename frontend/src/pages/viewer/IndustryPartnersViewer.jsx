@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/industrypartners.css';
 
 export default function IndustryPartnersViewer() {
@@ -40,7 +41,7 @@ export default function IndustryPartnersViewer() {
             const logoUrl = item.logoUrl ?? item.logo_url;
             return (
               <div className="ipv-logo-item" key={item.id} title={item.name}>
-                <img src={logoUrl} alt={item.name} loading="lazy" />
+                <img src={getImageUrl(logoUrl)} alt={item.name} loading="lazy" />
               </div>
             );
           })}

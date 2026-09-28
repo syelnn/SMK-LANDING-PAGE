@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import FooterViewer from './FooterViewer';
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/tampilangalery.css';
 
 // Harus sama persis dengan cara slug dibuat di TampilanGalery.jsx
@@ -82,7 +83,7 @@ function PhotoTile({ photo, index, onOpen }) {
       ) : (
         <img
           ref={imgRef}
-          src={photo.image}
+          src={getImageUrl(photo.image)}
           alt={photo.caption || `Foto galeri ${index + 1}`}
           loading="lazy"
           draggable={false}
@@ -215,7 +216,7 @@ export default function GaleriAlbumViewer() {
       const target = currentAlbumPhotos[(activePhotoIndex + step + photoCount) % photoCount];
       if (target?.image) {
         const img = new Image();
-        img.src = target.image;
+        img.src = getImageUrl(target.image);
       }
     });
   }, [activePhotoIndex, lightboxOpen, photoCount, currentAlbumPhotos]);
@@ -338,7 +339,7 @@ export default function GaleriAlbumViewer() {
               >
                 <img
                   key={`photo-${activePhotoIndex}`}
-                  src={activePhoto.image}
+                  src={getImageUrl(activePhoto.image)}
                   alt={activePhoto.caption || 'Preview foto'}
                   className="gx-lb-photo"
                   draggable={false}
@@ -371,7 +372,7 @@ export default function GaleriAlbumViewer() {
                         onClick={() => setActivePhotoIndex(i)}
                         aria-label={`Lihat foto ${i + 1}`}
                       >
-                        <img src={p.image} alt="" loading="lazy" draggable={false} />
+                        <img src={getImageUrl(p.image)} alt="" loading="lazy" draggable={false} />
                       </button>
                     ))}
                   </div>

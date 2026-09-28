@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../utils/media';
 import axios from 'axios';
 import { Plus, Trash2, Edit, Image as ImageIcon, X, MoreHorizontal, Search, Loader2 } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
@@ -193,7 +194,7 @@ export default function ManageIndustryPartners() {
                     <td className="ip-td">
                       {logoUrl ? (
                         <div className="ip-logo-box">
-                          <img src={logoUrl} alt={item.name} />
+                          <img src={getImageUrl(logoUrl)} alt={item.name} />
                         </div>
                       ) : (
                         <div className="ip-logo-box ip-logo-empty">

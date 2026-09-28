@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import { SettingsContext } from "../../context/SettingsContext";
 import schoolPhoto from '../../assets/visi.jpg'; 
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/profileSection.css';
 
 export default function ProfilSection() {
@@ -30,17 +31,9 @@ export default function ProfilSection() {
     getSettingValue('school_photo') || 
     getSettingValue('photo');
 
-  // 2. Format URL foto (Menangani path relatif dari server backend)
-  const formatImageUrl = (path) => {
-    if (!path) return schoolPhoto;
-    if (path.startsWith('data:') || path.startsWith('http://') || path.startsWith('https://')) {
-      return path;
-    }
-    // Sesuaikan port 'http://localhost:5000' dengan port backend Anda jika berbeda
-    return `http://localhost:5000${path.startsWith('/') ? '' : '/'}${path}`;
-  };
-
-  const displayPhoto = formatImageUrl(rawPhoto);
+  // 2. Format URL foto: path relatif dari database digabung dengan Base URL Cloudinary (.env),
+  // data: URL / URL lengkap (data lama) dibiarkan apa adanya oleh getImageUrl().
+  const displayPhoto = getImageUrl(rawPhoto, schoolPhoto);
 
   const schoolName = getSettingValue('school_name') || 'Sekolah';
   const schoolHistory = getSettingValue('school_history') || 'Mengenal lebih dekat dedikasi SMK Negeri Compreng dalam membentuk generasi masa depan yang tangguh di dunia digital.';

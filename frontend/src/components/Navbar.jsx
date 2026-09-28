@@ -5,6 +5,7 @@ import logoSekolah from '../assets/logo1.png';
 import '../css/viewer/navbar.css'; 
 import { getSession, clearSession, verifySession } from '../utils/auth';
 import { SettingsContext } from '../context/SettingsContext';
+import { getImageUrl } from '../utils/media';
 
 const Navbar = () => {
   const { settings } = useContext(SettingsContext) || {};
@@ -462,7 +463,7 @@ const Navbar = () => {
           style={{ cursor: 'pointer' }}
         >
           <img 
-            src={settings?.school_logo || logoSekolah} 
+            src={settings?.school_logo ? getImageUrl(settings.school_logo) : logoSekolah} 
             alt="Logo Sekolah" 
             className="logo-img" 
             onError={(e) => { e.target.style.display = 'none'; }}
@@ -551,7 +552,7 @@ const Navbar = () => {
                       {(user.username || 'V').charAt(0).toUpperCase()}
                       {user.avatar && (
                         <img
-                          src={user.avatar}
+                          src={getImageUrl(user.avatar)}
                           alt={user.username || 'Profil'}
                           className="nv-user__photo"
                           referrerPolicy="no-referrer"
@@ -570,7 +571,7 @@ const Navbar = () => {
                         {(user.username || 'V').charAt(0).toUpperCase()}
                         {user.avatar && (
                           <img
-                            src={user.avatar}
+                            src={getImageUrl(user.avatar)}
                             alt={user.username || 'Profil'}
                             className="nv-user__photo"
                             referrerPolicy="no-referrer"

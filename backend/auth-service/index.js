@@ -11,7 +11,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 
 const { supabaseAuth, supabaseAdmin, requireSupabaseAdmin, createStatelessAuthClient } = require('./lib/supabaseClients');
-const { uploadAvatarBuffer, uploadAvatarFromUrl, deleteAvatarByUrl, isOurStorageUrl } = require('./services/avatarStorage');
+const { uploadAvatarBuffer, uploadAvatarFromUrl, deleteAvatarByUrl, isOurStorageUrl, toRelativePath } = require('./services/avatarStorage');
 const { uploadAvatarSafe } = require('./middleware/avatarUpload');
 
 const { verifyToken, checkRole } = require('./middleware/authMiddleware')(prisma);
@@ -378,14 +378,20 @@ app.put('/api/users/:id', ...onlyAdmin, async (req, res) => {
       return res.status(403).json({ success: false, message: 'Email pengguna tidak dapat diubah oleh admin.' });
     }
     // Opsi "Link URL": backend mengunduh gambarnya lalu menyimpannya ke Cloudinary.
-    // Database hanya menyimpan URL Cloudinary milik kita.
-    if (avatarUrl !== undefined && avatarUrl !== target.avatar && !(isOurStorageUrl(avatarUrl) && avatarUrl === target.avatar)) {
-      try {
-        uploadedNew = isOurStorageUrl(avatarUrl) ? avatarUrl : await uploadAvatarFromUrl(avatarUrl);
-      } catch (e) {
-        return res.status(400).json({ success: false, message: e.message || 'Gagal mengunduh gambar dari link.' });
+    // Database hanya menyimpan PATH RELATIF-nya, bukan URL Cloudinary lengkap.
+    if (avatarUrl !== undefined) {
+      // Kalau yang dikirim adalah URL Cloudinary kita sendiri (avatar lama yang ditampilkan
+      // frontend sebagai URL utuh, disubmit ulang apa adanya), cukup ubah ke path relatif -
+      // jangan diunduh ulang. target.avatar di database sudah berbentuk path relatif juga.
+      const relativeAvatarUrl = isOurStorageUrl(avatarUrl) ? toRelativePath(avatarUrl) : avatarUrl;
+      if (relativeAvatarUrl !== target.avatar) {
+        try {
+          uploadedNew = isOurStorageUrl(avatarUrl) ? relativeAvatarUrl : await uploadAvatarFromUrl(avatarUrl);
+        } catch (e) {
+          return res.status(400).json({ success: false, message: e.message || 'Gagal mengunduh gambar dari link.' });
+        }
+        data.avatar = uploadedNew;
       }
-      data.avatar = uploadedNew;
     }
     if (Object.keys(data).length === 0) return res.json({ success: true, message: 'Tidak ada perubahan data.', data: await prisma.user.findUnique({ where: { id }, select: SAFE_USER }) });
 

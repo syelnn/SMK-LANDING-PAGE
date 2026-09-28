@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Loader2 } from 'lucide-react';
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/newsPage.css';
 
 const API_URL = 'http://localhost:5002/api/news';
@@ -84,7 +85,7 @@ export default function NewsSection() {
                   <Link to={targetSlug} className="vnp-card-thumb">
                     <span className="vnp-badge">{item.category || 'Bimtek'}</span>
                     <img
-                      src={item.image || 'https://picsum.photos/600/400'}
+                      src={getImageUrl(item.image) || 'https://picsum.photos/600/400'}
                       alt={item.title}
                       onError={(e) => {
                         e.target.src = 'https://picsum.photos/600/400';

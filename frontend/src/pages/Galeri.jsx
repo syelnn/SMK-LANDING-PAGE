@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../utils/media';
 import { Plus, Edit, Trash2, X, ArrowLeft, MoreHorizontal, Star, FolderOpen, Search, Grid, List } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
 import '../css/galeri.css'; 
@@ -349,7 +350,7 @@ export default function Galeri() {
                         </div>
                       </td>
                       <td className="galeri-td">
-                        <img src={coverImage} alt="Cover" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
+                        <img src={getImageUrl(coverImage)} alt="Cover" style={{ width: '40px', height: '40px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
                       </td>
                       <td className="galeri-td" style={{ color: 'var(--compreng-text-secondary)' }}>{items.length} Foto</td>
                       <td className="galeri-td" style={{ textAlign: 'center', position: 'relative' }} onClick={(e) => e.stopPropagation()}>
@@ -401,7 +402,7 @@ export default function Galeri() {
                   }).map((item) => (
                     <tr key={item.id} className="galeri-tr">
                       <td className="galeri-td">
-                        <img src={item.image} alt="foto" style={{ width: '80px', height: '50px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
+                        <img src={getImageUrl(item.image)} alt="foto" style={{ width: '80px', height: '50px', borderRadius: '6px', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
                       </td>
                       <td className="galeri-td galeri-truncate">{item.caption || <span style={{ color: 'var(--compreng-text-muted)', fontStyle: 'italic' }}>Tidak ada deskripsi</span>}</td>
                       <td className="galeri-td">
@@ -443,7 +444,7 @@ export default function Galeri() {
               }).map((item) => (
                 <div key={item.id} className="galeri-grid-card">
                   <div className="galeri-grid-img-wrap">
-                    <img src={item.image} alt="galeri" className="galeri-grid-img" />
+                    <img src={getImageUrl(item.image)} alt="galeri" className="galeri-grid-img" />
                     {(item.isFeatured === 1 || item.is_featured === 1) && (
                       <div className="galeri-grid-badge">
                         <Star size={12} fill="currentColor" /> Cover

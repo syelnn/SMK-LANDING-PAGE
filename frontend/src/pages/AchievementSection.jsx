@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import { getImageUrl } from '../utils/media';
 import axios from 'axios';
 import { 
   MoreHorizontal, 
@@ -248,7 +249,7 @@ const AchievementSection = () => {
                   <td>
                     {item.photo ? (
                       <img
-                        src={item.photo}
+                        src={getImageUrl(item.photo)}
                         alt={item.student_name}
                         className="table-thumb-rect"
                         onError={(e) => {

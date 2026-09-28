@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowUpRight, Image as ImageIcon,
 } from 'lucide-react';
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/tampilangalery.css';
 
 // Ubah nama album jadi slug URL 
@@ -98,7 +99,7 @@ export default function TampilanGalery() {
                   className="gx-album"
                   aria-label={`Buka album ${catName}, ${items.length} foto`}
                 >
-                  <img src={coverImage} alt="" className="gx-album-cover" loading="lazy" draggable={false} />
+                  <img src={getImageUrl(coverImage)} alt="" className="gx-album-cover" loading="lazy" draggable={false} />
                   <span className="gx-album-shade" />
                   <span className="gx-album-go"><ArrowUpRight size={18} /></span>
                   <span className="gx-album-info">

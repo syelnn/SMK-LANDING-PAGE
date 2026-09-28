@@ -3,7 +3,7 @@ const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const { PrismaClient } = require('@prisma/client');
-const { deleteFromStorageByUrl, detectRemoteFileSize, uploadFromExternalUrl } = require('./services/cloudinaryStorage');
+const { deleteFromStorageByUrl, detectRemoteFileSize, uploadFromExternalUrl, toAbsoluteImageUrl } = require('./services/cloudinaryStorage');
 const { generateDatabaseDump, getDatabaseSummary } = require('./services/dbExport');
 
 const prisma = new PrismaClient();
@@ -521,7 +521,9 @@ const useProfilePhoto = async (req, res, next) => {
   try {
     if (req.file || String(req.body?.use_profile_photo || '') !== '1') return next();
     const me = await prisma.user.findUnique({ where: { id: parseInt(req.user.id) }, select: { avatar: true } });
-    if (me?.avatar) req.body.photo = await uploadFromExternalUrl(me.avatar, 'testimonials');
+    // me.avatar dari database sekarang berupa path relatif (mis. "avatars/xxxx.jpg"), bukan URL utuh,
+    // jadi harus dilengkapi dulu jadi URL Cloudinary sebelum bisa diunduh ulang oleh uploadFromExternalUrl.
+    if (me?.avatar) req.body.photo = await uploadFromExternalUrl(toAbsoluteImageUrl(me.avatar), 'testimonials');
   } catch (err) {
     console.warn('Gagal menyalin foto profil untuk testimoni (diabaikan):', err.message);
   }

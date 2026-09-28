@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowRight } from 'lucide-react';
+import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/jurusanprogram.css';
 
 export default function JurusanProgramViewer() {
@@ -57,7 +58,7 @@ export default function JurusanProgramViewer() {
               <div className="vp-jurusan-card" key={item.id}>
                 <div className="vp-card-content">
                   <img 
-                    src={item.imageIcon || 'https://via.placeholder.com/60'} 
+                    src={getImageUrl(item.imageIcon) || 'https://via.placeholder.com/60'} 
                     alt={item.title} 
                     className="vp-jurusan-icon"
                   />
@@ -92,7 +93,7 @@ export default function JurusanProgramViewer() {
           {programList.map((prog) => (
             <div className="vp-program-card" key={prog.id}>
               <div className="vp-program-icon">
-                <img src={prog.imageIcon || 'https://via.placeholder.com/40'} alt={prog.title} />
+                <img src={getImageUrl(prog.imageIcon) || 'https://via.placeholder.com/40'} alt={prog.title} />
               </div>
               {prog.badge && (
                 <span className="vp-program-badge">{prog.badge}</span>

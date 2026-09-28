@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { getImageUrl } from '../utils/media';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Calendar, User, Tag, Loader2 } from 'lucide-react';
@@ -95,7 +96,7 @@ export default function DetailNews() {
       {/* Gambar Utama */}
       {news.image && (
         <img 
-          src={news.image} 
+          src={getImageUrl(news.image)} 
           alt={news.title} 
           style={{ width: '100%', maxHeight: '420px', objectFit: 'cover', borderRadius: '12px', marginBottom: '30px' }} 
           onError={(e) => { e.target.src = 'https://picsum.photos/800/400'; }}

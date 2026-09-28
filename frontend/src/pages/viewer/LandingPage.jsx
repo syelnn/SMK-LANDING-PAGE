@@ -1,4 +1,5 @@
 import React, { useEffect, useContext } from 'react'; 
+import { getImageUrl } from '../../utils/media';
 import { useNavigate, useLocation } from 'react-router-dom'; 
 import Navbar from '../../components/Navbar';
 import { SettingsContext } from '../../context/SettingsContext';
@@ -15,7 +16,7 @@ import IndustryPartnersViewer from './IndustryPartnersViewer';
 
 // Import Foto dari folder Assets
 import bgSekolah from '../../assets/latar.webp'; 
-import heroIllustration from '../../assets/hero.png'; 
+import heroIllustration from '../../assets/icon.png'; 
 
 // Import Komponen Section
 import ProfileSection from './ProfileSection';
@@ -29,7 +30,7 @@ const LandingPage = () => {
   const { settings, isLoading } = useContext(SettingsContext) || {};
 
   // Foto & lapisan transparan hero: diatur admin di Settings > Profile
-  const heroBg = settings?.hero_bg_image || (isLoading ? '' : bgSekolah);
+  const heroBg = getImageUrl(settings?.hero_bg_image) || (isLoading ? '' : bgSekolah);
   const heroDesc = settings?.hero_description || 'Membangun Generasi Cerdas, Berkarakter, dan Berprestasi menuju Masa Depan Gemilang.';
 
 // =========================================================================

@@ -1,5 +1,6 @@
 //app.jsx
 import React, { useState, useEffect, useContext, useCallback } from 'react';
+import { getImageUrl } from './utils/media';
 import { SettingsContext, SettingsProvider } from './context/SettingsContext';
 import { Routes, Route, Navigate, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
@@ -479,7 +480,7 @@ const DashboardLayout = () => {
                   {userData.initial}
                   {userData.avatar && (
                     <img
-                      src={userData.avatar}
+                      src={getImageUrl(userData.avatar)}
                       alt={userData.name}
                       className="topbar-user-photo"
                       referrerPolicy="no-referrer"
@@ -498,7 +499,7 @@ const DashboardLayout = () => {
                         {userData.initial}
                         {userData.avatar && (
                           <img
-                            src={userData.avatar}
+                            src={getImageUrl(userData.avatar)}
                             alt={userData.name}
                             className="topbar-user-photo"
                             referrerPolicy="no-referrer"

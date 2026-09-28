@@ -1,4 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { getImageUrl } from '../../utils/media';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { ArrowLeft, Camera, Check, Loader2, Send, Trash2, X } from 'lucide-react';
@@ -82,7 +83,7 @@ function Sample({ name, role, quote, photo }) {
       </div>
       <div className="tw-sample-by">
         {photo ? (
-          <img src={photo} alt="" className="tw-face" />
+          <img src={getImageUrl(photo)} alt="" className="tw-face" />
         ) : (
           <div className="tw-initial">{(name.trim().charAt(0) || '?').toUpperCase()}</div>
         )}
@@ -526,7 +527,7 @@ export default function TulisTestimoni() {
                 </div>
                 <div className="tw-photo">
                   {photo ? (
-                    <img src={photo} alt="" className="tw-face tw-face-lg" referrerPolicy="no-referrer" />
+                    <img src={getImageUrl(photo)} alt="" className="tw-face tw-face-lg" referrerPolicy="no-referrer" />
                   ) : (
                     <div className="tw-initial tw-face-lg">{(name.trim().charAt(0) || '?').toUpperCase()}</div>
                   )}

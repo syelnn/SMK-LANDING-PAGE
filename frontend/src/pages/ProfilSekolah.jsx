@@ -1,4 +1,5 @@
 import React, { useContext } from 'react';
+import { getImageUrl } from '../utils/media';
 import { SettingsContext } from '../context/SettingsContext';
 import defaultSchoolPhoto from '../assets/visi.jpg'; // Jadikan sebagai cadangan (fallback)
 
@@ -6,7 +7,7 @@ export default function ProfilSekolah() {
   const { settings } = useContext(SettingsContext);
 
   // Mengambil gambar dari database settings, jika kosong pakai default
-  const activeProfilePhoto = settings.school_profile_image || defaultSchoolPhoto;
+  const activeProfilePhoto = getImageUrl(settings.school_profile_image, defaultSchoolPhoto);
 
   const rawMisi = settings.school_mission || "Menyiapkan lulusan yang beriman dan bertakwa kepada Tuhan Yang Maha Esa.;Menyiapkan lulusan yang siap bersaing di dunia usaha dan industri.;Menyiapkan lulusan yang kompeten dibidangnya.;Menyiapkan lulusan yang berjiwa wirausaha.;Menyiapkan lulusan yang cerdas membaca peluang usaha dan industri.";
   
