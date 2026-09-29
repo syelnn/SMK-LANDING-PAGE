@@ -5,6 +5,34 @@ import { getSession } from '../../utils/auth';
 import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/testimoni.css';
 
+// Avatar: pakai foto kalau ada & berhasil dimuat, selain itu tampil inisial huruf.
+function TestimoniAvatar({ name, photo }) {
+  const [failed, setFailed] = useState(false);
+  const src = photo ? getImageUrl(photo) : '';
+
+  // Reset kalau foto berganti (mis. data dimuat ulang)
+  useEffect(() => { setFailed(false); }, [src]);
+
+  if (src && !failed) {
+    return (
+      <img
+        src={src}
+        alt={name || 'Foto profil'}
+        className="tt-avatar"
+        loading="lazy"
+        onError={() => setFailed(true)}
+      />
+    );
+  }
+
+  const initial = (name || '').trim().charAt(0).toUpperCase() || 'U';
+  return (
+    <div className="tt-initial" aria-label={name || 'Pengguna'}>
+      {initial}
+    </div>
+  );
+}
+
 export default function Testimoni() {
   const [testimonials, setTestimonials] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,7 +76,7 @@ export default function Testimoni() {
         <div className="tt-header">
           <span className="tt-badge">Testimoni</span>
           <h2 className="tt-title">
-            Apa Kata Mereka <span style={{ color: '#16a34a' }}>Tentang Kami</span>
+            Apa Kata Mereka <span className="tt-title-accent">Tentang Kami</span>
           </h2>
           <p className="tt-subtitle">
             Pengalaman nyata dan kesan dari siswa, alumni, serta orang tua murid SMK Negeri Compreng.
@@ -68,13 +96,7 @@ export default function Testimoni() {
                 </div>
 
                 <div className="tt-profile">
-                  {t.photo ? (
-                    <img src={getImageUrl(t.photo)} alt={t.name} className="tt-avatar" />
-                  ) : (
-                    <div className="tt-avatar-initial">
-                      {t.name ? t.name.charAt(0).toUpperCase() : 'U'}
-                    </div>
-                  )}
+                  <TestimoniAvatar name={t.name} photo={t.photo} />
                   <div className="tt-info">
                     <h4>{t.name}</h4>
                     <p>{t.role}</p>
