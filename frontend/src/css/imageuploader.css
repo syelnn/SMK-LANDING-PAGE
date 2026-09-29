@@ -439,3 +439,62 @@
 }
 @keyframes iu-sheet { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .iu-editor, .iu-editor-overlay { animation: none; } }
+
+
+/* =========================================================
+   PERBAIKAN EDITOR: handle tidak terpotong, zoom & geser gambar
+   ========================================================= */
+/* Pemotongan (overflow) dipindah ke .iu-imgclip supaya handle di tepi gambar tetap bisa diraih */
+.iu-imgbox { overflow: visible; box-shadow: none; }
+.iu-imgclip { position: absolute; inset: 0; overflow: hidden; border-radius: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+/* Lapisan gelap di luar frame (dulu box-shadow milik .iu-crop) */
+.iu-dim { position: absolute; pointer-events: none; box-shadow: 0 0 0 9999px rgba(2, 6, 23, .62); }
+.iu-dim.round { border-radius: 50%; }
+.iu-crop { box-shadow: 0 0 0 1px rgba(2, 6, 23, .35); }
+
+/* Saat di-zoom, area di luar frame bisa di-drag untuk menggeser gambar */
+.iu-stage.iu-zoomed { cursor: grab; }
+.iu-stage.iu-zoomed:active { cursor: grabbing; }
+
+/* Kontrol zoom */
+.iu-zoom { display: flex; align-items: center; gap: 10px; }
+.iu-zoom-btn { width: 32px; height: 32px; flex: none; }
+.iu-zoom-slider { flex: 1; min-width: 0; height: 28px; cursor: pointer; accent-color: var(--compreng-accent, #2563eb); }
+.iu-zoom-slider:disabled { cursor: not-allowed; opacity: .5; }
+.iu-zoom-value { min-width: 44px; text-align: right; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--compreng-text-secondary, #64748b); }
+
+@media (max-width: 640px) {
+  .iu-tools { width: 100%; }
+}
+
+/* =========================================================
+   POPUP EDITOR LUWES: bisa di-scroll (scrollbar tipis), tombol aksi selalu terlihat
+   ========================================================= */
+.iu-editor {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;             /* scroll popup tidak "tembus" ke halaman di belakang */
+  scrollbar-width: thin;                    /* Firefox */
+  scrollbar-color: rgba(148, 163, 184, .35) transparent;
+}
+.iu-editor::-webkit-scrollbar { width: 6px; }
+.iu-editor::-webkit-scrollbar-track { background: transparent; margin: 14px 0; }
+.iu-editor::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .28); border-radius: 999px; }
+.iu-editor:hover::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .55); }
+
+/* Anak-anaknya tidak lagi "diperas" agar muat; kalau tinggi layar kurang, popup yang di-scroll */
+.iu-editor > * { flex-shrink: 0; }
+.iu-stage { flex: none; height: clamp(240px, 46vh, 400px); }
+
+/* Tombol Batal / Gunakan Hasil Edit menempel di bawah popup */
+.iu-editor-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin-top: 10px;
+  background: var(--compreng-surface, #ffffff);
+  box-shadow: 0 -10px 16px -12px rgba(15, 23, 42, .25);
+}
+@media (max-width: 640px) {
+  .iu-stage { height: clamp(220px, 42vh, 340px); }
+}
