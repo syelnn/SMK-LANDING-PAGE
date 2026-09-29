@@ -1,16 +1,21 @@
 // src/components/ImageEditorModal.jsx
 // Editor foto ala aplikasi foto di HP:
-//  - Frame crop di atas gambar, sudut (dan sisi, saat mode Free) bisa ditarik manual; isi frame bisa digeser
+//  - Frame crop di atas gambar: sudut DAN sisi bisa ditarik (rasio terkunci tetap terjaga), isi frame bisa digeser
 //  - Preset rasio sekali klik: Free, 1:1, 4:3, 16:9, Full (klik lagi 4:3 / 16:9 untuk balik landscape <-> portrait)
-//  - Tombol rotasi 90° (tanpa slider), Reset, Batal, Gunakan Hasil Edit
+//    Ganti rasio / putar foto TIDAK mereset frame: posisi & ukuran frame dipertahankan semaksimal mungkin
+//  - Zoom (slider, tombol +/-, Ctrl + scroll) dan geser gambar (drag area di luar frame) untuk crop presisi
+//  - Putar kiri / kanan 90°, Reset, Batal, Gunakan Hasil Edit
+//  - Popup bisa di-scroll (scrollbar tipis) & tombol aksi menempel di bawah, jadi tetap terjangkau di layar pendek
 // Tanpa library eksternal (canvas + pointer events). Biasanya dipakai lewat <ImageUploader />.
 
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { X, RotateCw, Undo2, Check, Loader2 } from 'lucide-react';
+import { X, RotateCw, RotateCcw, Undo2, Check, Loader2, ZoomIn, ZoomOut } from 'lucide-react';
 import '../css/imageuploader.css';
 
 const MIN_PX = 36; // ukuran minimum frame crop di layar
+const MIN_ZOOM = 1;
+const MAX_ZOOM = 4;
 const PRESET_LABEL = { free: 'Free', '1:1': '1:1', '4:3': '4:3', '16:9': '16:9', full: 'Full' };
 const PRESET_RATIO = { '1:1': 1, '4:3': 4 / 3, '16:9': 16 / 9 };
 const ALL_PRESETS = ['free', '1:1', '4:3', '16:9', 'full'];
@@ -36,6 +41,33 @@ function defaultRect(preset, flip, rw, rh) {
   let h = w / r;
   if (h > rh) { h = rh; w = h * r; }
   return { x: (rw - w) / 2 / rw, y: (rh - h) / 2 / rh, w: w / rw, h: h / rh };
+}
+
+/**
+ * Sesuaikan frame yang sudah ada ke rasio baru r TANPA membuangnya:
+ * titik tengah dipertahankan dan luas area dijaga (lalu dipaksa muat di dalam gambar).
+ * Semua dalam pecahan 0..1; rw/rh = dimensi gambar (px asli) yang sedang tampil.
+ */
+function refitRect(rect, r, rw, rh) {
+  if (!rect || !r) return rect;
+  const area = rect.w * rw * rect.h * rh;
+  let w = Math.sqrt(area * r);
+  let h = w / r;
+  if (w > rw) { w = rw; h = w / r; }
+  if (h > rh) { h = rh; w = h * r; }
+  const cx = (rect.x + rect.w / 2) * rw;
+  const cy = (rect.y + rect.h / 2) * rh;
+  const x = clamp(cx - w / 2, 0, rw - w);
+  const y = clamp(cy - h / 2, 0, rh - h);
+  return { x: x / rw, y: y / rh, w: w / rw, h: h / rh };
+}
+
+/** Pindahkan frame ikut putaran gambar 90° (dir: 1 = searah jarum jam, -1 = berlawanan). */
+function rotateRect(rect, dir) {
+  const { x, y, w, h } = rect;
+  return dir > 0
+    ? { x: 1 - y - h, y: x, w: h, h: w }
+    : { x: y, y: 1 - x - w, w: h, h: w };
 }
 
 /** Cocokkan prop `aspect` ke preset awal. */
@@ -78,6 +110,8 @@ export default function ImageEditorModal({
   const stageRef = useRef(null);
   const boxRef = useRef(null);
   const drag = useRef(null);
+  const panDrag = useRef(null);
+  const wheelRef = useRef(null);
 
   const init = initialPresetFor(aspect, shape);
   const options = shape === 'round'
@@ -91,6 +125,8 @@ export default function ImageEditorModal({
   const [preset, setPreset] = useState(initialView ? initialView.preset : init.preset);
   const [flip, setFlip] = useState(initialView ? initialView.flip : init.flip);
   const [rect, setRect] = useState(initialView ? initialView.rect : null); // pecahan 0..1 pada gambar yang sudah diputar
+  const [zoom, setZoom] = useState(1);
+  const [pan, setPan] = useState({ x: 0, y: 0 }); // geseran gambar (px layar) dari posisi tengah
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
 
@@ -135,10 +171,19 @@ export default function ImageEditorModal({
   const rh = img ? (swap ? img.nw : img.nh) : 1;
   const pad = 18;
   const ready = !!img && stage.w > 0 && stage.h > 0;
-  const fit = ready ? Math.min((stage.w - pad * 2) / rw, (stage.h - pad * 2) / rh) : 1;
+  const fitBase = ready ? Math.min((stage.w - pad * 2) / rw, (stage.h - pad * 2) / rh) : 1; // muat pas di area editor
+  const fit = fitBase * zoom;
   const dw = rw * fit;
   const dh = rh * fit;
   const ratio = ratioOf(preset, flip, rw, rh);
+
+  // Batas geser gambar: gambar tidak boleh "hilang" keluar area editor
+  const clampPan = (p, z) => {
+    const mx = Math.max(0, (rw * fitBase * z - stage.w) / 2 + pad);
+    const my = Math.max(0, (rh * fitBase * z - stage.h) / 2 + pad);
+    return { x: clamp(p.x, -mx, mx), y: clamp(p.y, -my, my) };
+  };
+  const eff = ready ? clampPan(pan, zoom) : { x: 0, y: 0 };
 
   // Frame awal setelah gambar termuat
   useEffect(() => {
@@ -158,6 +203,33 @@ export default function ImageEditorModal({
     return () => window.removeEventListener('keydown', onKey);
   }, [busy, onClose]);
 
+  // ---------- Zoom ----------
+  // (qx, qy) = titik acuan relatif terhadap pusat area editor; zoom "menempel" ke titik itu.
+  const setZoomAt = (nz, qx = 0, qy = 0) => {
+    if (!ready) return;
+    const z2 = clamp(nz, MIN_ZOOM, MAX_ZOOM);
+    const f = z2 / zoom;
+    setZoom(z2);
+    setPan(clampPan({ x: qx - (qx - eff.x) * f, y: qy - (qy - eff.y) * f }, z2));
+  };
+  wheelRef.current = (qx, qy, factor) => setZoomAt(zoom * factor, qx, qy);
+
+  // Ctrl + scroll (atau pinch di trackpad) = zoom. Listener native agar bisa preventDefault; React membuat onWheel pasif
+  useEffect(() => {
+    const el = stageRef.current;
+    if (!el) return undefined;
+    const onWheel = (e) => {
+      if (!e.ctrlKey && !e.metaKey) return; // scroll biasa = scroll popup (jangan dibajak untuk zoom)
+      e.preventDefault();
+      const b = el.getBoundingClientRect();
+      const qx = e.clientX - (b.left + b.width / 2);
+      const qy = e.clientY - (b.top + b.height / 2);
+      wheelRef.current && wheelRef.current(qx, qy, Math.exp(-e.deltaY * 0.0015));
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, []);
+
   // ---------- Aksi ----------
   const choosePreset = (p) => {
     if (!ready) return;
@@ -165,26 +237,53 @@ export default function ImageEditorModal({
     if (p === preset && (p === '4:3' || p === '16:9')) nextFlip = !flip; // klik lagi = portrait/landscape
     setPreset(p);
     setFlip(nextFlip);
-    setRect(defaultRect(p, nextFlip, rw, rh));
+    if (p === 'free') return; // bebas: frame yang sekarang dibiarkan apa adanya
+    if (p === 'full') { setRect(defaultRect(p, nextFlip, rw, rh)); return; }
+    setRect(refitRect(rect, ratioOf(p, nextFlip, rw, rh), rw, rh)); // pertahankan posisi & ukuran
   };
 
-  const rotate90 = () => {
+  const rotate90 = (dir) => {
     if (!ready) return;
-    const nr = (rot + 90) % 360;
+    const nr = (((rot + dir * 90) % 360) + 360) % 360;
     const nSwap = Math.abs(nr % 180) === 90;
     const nrw = nSwap ? img.nh : img.nw;
     const nrh = nSwap ? img.nw : img.nh;
     setRot(nr);
-    setRect(defaultRect(preset, flip, nrw, nrh));
+    setPan({ x: 0, y: 0 });
+    if (preset === 'full') {
+      setRect(defaultRect(preset, flip, nrw, nrh));
+      return;
+    }
+    const moved = rotateRect(rect || { x: 0, y: 0, w: 1, h: 1 }, dir); // frame ikut berputar bersama gambar
+    const nratio = ratioOf(preset, flip, nrw, nrh);
+    setRect(nratio ? refitRect(moved, nratio, nrw, nrh) : moved);
   };
 
   const resetAll = () => {
     if (!ready) return;
     setError('');
     setRot(0);
+    setZoom(1);
+    setPan({ x: 0, y: 0 });
     setPreset(init.preset);
     setFlip(init.flip);
     setRect(init.custom ? customRect(init.custom, img.nw, img.nh) : defaultRect(init.preset, init.flip, img.nw, img.nh));
+  };
+
+  // ---------- Geser gambar (drag area di luar frame, saat di-zoom) ----------
+  const onStagePointerDown = (e) => {
+    if (!ready || zoom <= 1.001) return;
+    if (e.target && e.target.closest && e.target.closest('.iu-crop')) return; // di dalam frame = urusan frame
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+    panDrag.current = { id: e.pointerId, sx: e.clientX, sy: e.clientY, start: { ...eff } };
+  };
+  const onStagePointerMove = (e) => {
+    const d = panDrag.current;
+    if (!d || d.id !== e.pointerId) return;
+    setPan(clampPan({ x: d.start.x + (e.clientX - d.sx), y: d.start.y + (e.clientY - d.sy) }, zoom));
+  };
+  const onStagePointerUp = (e) => {
+    if (panDrag.current && panDrag.current.id === e.pointerId) panDrag.current = null;
   };
 
   // ---------- Tarik / geser frame crop ----------
@@ -237,13 +336,36 @@ export default function ImageEditorModal({
       }
       n = { x: dirX > 0 ? ax : ax - w, y: dirY > 0 ? ay : ay - h, w, h };
     } else {
-      // sisi (hanya mode Free)
+      // sisi
       const pxp = clamp(e.clientX - d.left, 0, dw);
       const pyp = clamp(e.clientY - d.top, 0, dh);
-      if (d.handle === 'e') n.w = clamp(pxp - s.x, MIN_PX, dw - s.x);
-      if (d.handle === 'w') { const x1 = clamp(pxp, 0, s.x + s.w - MIN_PX); n.x = x1; n.w = s.x + s.w - x1; }
-      if (d.handle === 's') n.h = clamp(pyp - s.y, MIN_PX, dh - s.y);
-      if (d.handle === 'n') { const y1 = clamp(pyp, 0, s.y + s.h - MIN_PX); n.y = y1; n.h = s.y + s.h - y1; }
+      if (ratio) {
+        // rasio terkunci: sisi seberang tetap, sisi lain ikut menyesuaikan dari titik tengahnya
+        const cx = s.x + s.w / 2;
+        const cy = s.y + s.h / 2;
+        if (d.handle === 'e' || d.handle === 'w') {
+          const east = d.handle === 'e';
+          const ax = east ? s.x : s.x + s.w;
+          const raw = east ? pxp - ax : ax - pxp;
+          const maxW = Math.min(east ? dw - ax : ax, 2 * Math.min(cy, dh - cy) * ratio);
+          const w = clamp(raw, Math.min(Math.max(MIN_PX, MIN_PX * ratio), maxW), maxW);
+          const h = w / ratio;
+          n = { x: east ? ax : ax - w, y: cy - h / 2, w, h };
+        } else {
+          const south = d.handle === 's';
+          const ay = south ? s.y : s.y + s.h;
+          const raw = south ? pyp - ay : ay - pyp;
+          const maxH = Math.min(south ? dh - ay : ay, (2 * Math.min(cx, dw - cx)) / ratio);
+          const h = clamp(raw, Math.min(Math.max(MIN_PX, MIN_PX / ratio), maxH), maxH);
+          const w = h * ratio;
+          n = { x: cx - w / 2, y: south ? ay : ay - h, w, h };
+        }
+      } else {
+        if (d.handle === 'e') n.w = clamp(pxp - s.x, MIN_PX, dw - s.x);
+        if (d.handle === 'w') { const x1 = clamp(pxp, 0, s.x + s.w - MIN_PX); n.x = x1; n.w = s.x + s.w - x1; }
+        if (d.handle === 's') n.h = clamp(pyp - s.y, MIN_PX, dh - s.y);
+        if (d.handle === 'n') { const y1 = clamp(pyp, 0, s.y + s.h - MIN_PX); n.y = y1; n.h = s.y + s.h - y1; }
+      }
     }
     setRect({ x: n.x / dw, y: n.y / dh, w: n.w / dw, h: n.h / dh });
   };
@@ -326,7 +448,7 @@ export default function ImageEditorModal({
 
   // ---------- Render ----------
   const stop = (e) => e.stopPropagation();
-  const showEdges = !ratio; // sisi hanya bisa ditarik saat rasio bebas
+  const isRound = shape === 'round';
 
   return createPortal(
     <div
@@ -346,7 +468,14 @@ export default function ImageEditorModal({
           </button>
         </div>
 
-        <div className="iu-stage" ref={stageRef}>
+        <div
+          className={`iu-stage ${zoom > 1.001 ? 'iu-zoomed' : ''}`}
+          ref={stageRef}
+          onPointerDown={onStagePointerDown}
+          onPointerMove={onStagePointerMove}
+          onPointerUp={onStagePointerUp}
+          onPointerCancel={onStagePointerUp}
+        >
           {!loadError && !ready && (
             <div className="iu-stage-msg"><Loader2 size={22} className="iu-spin" /> Memuat gambar...</div>
           )}
@@ -356,23 +485,36 @@ export default function ImageEditorModal({
             <div
               className="iu-imgbox"
               ref={boxRef}
-              style={{ width: dw, height: dh, left: (stage.w - dw) / 2, top: (stage.h - dh) / 2 }}
+              style={{
+                width: dw,
+                height: dh,
+                left: (stage.w - dw) / 2 + eff.x,
+                top: (stage.h - dh) / 2 + eff.y,
+              }}
             >
-              <img
-                className="iu-stage-img"
-                src={src}
-                alt=""
-                draggable={false}
-                crossOrigin={isLocalUrl(src) ? undefined : 'anonymous'}
-                style={{
-                  width: img.nw * fit,
-                  height: img.nh * fit,
-                  transform: `translate(-50%, -50%) rotate(${rot}deg)`,
-                }}
-              />
+              {/* Gambar + lapisan gelap di luar frame dipotong di sini; frame & handle ada di luar
+                  sehingga sudut/sisi yang menempel di tepi gambar tetap bisa diraih. */}
+              <div className="iu-imgclip">
+                <img
+                  className="iu-stage-img"
+                  src={src}
+                  alt=""
+                  draggable={false}
+                  crossOrigin={isLocalUrl(src) ? undefined : 'anonymous'}
+                  style={{
+                    width: img.nw * fit,
+                    height: img.nh * fit,
+                    transform: `translate(-50%, -50%) rotate(${rot}deg)`,
+                  }}
+                />
+                <div
+                  className={`iu-dim ${isRound ? 'round' : ''}`}
+                  style={{ left: px.x, top: px.y, width: px.w, height: px.h }}
+                />
+              </div>
 
               <div
-                className={`iu-crop ${shape === 'round' ? 'round' : ''}`}
+                className={`iu-crop ${isRound ? 'round' : ''}`}
                 style={{ left: px.x, top: px.y, width: px.w, height: px.h }}
                 onPointerDown={onPointerDown}
                 onPointerMove={onPointerMove}
@@ -388,7 +530,7 @@ export default function ImageEditorModal({
                 {['nw', 'ne', 'sw', 'se'].map((h) => (
                   <span key={h} className={`iu-handle iu-corner iu-${h}`} data-h={h} />
                 ))}
-                {showEdges && ['n', 's', 'e', 'w'].map((h) => (
+                {['n', 's', 'e', 'w'].map((h) => (
                   <span key={h} className={`iu-handle iu-edge iu-${h}`} data-h={h} />
                 ))}
               </div>
@@ -414,16 +556,54 @@ export default function ImageEditorModal({
               </div>
             )}
             <div className="iu-tools">
-              <button type="button" className="iu-btn iu-btn-secondary" onClick={rotate90} disabled={!ready || busy}>
-                <RotateCw size={16} /> Putar 90°
+              <button type="button" className="iu-btn iu-btn-secondary" onClick={() => rotate90(-1)} disabled={!ready || busy} title="Putar 90° ke kiri">
+                <RotateCcw size={16} /> Kiri
+              </button>
+              <button type="button" className="iu-btn iu-btn-secondary" onClick={() => rotate90(1)} disabled={!ready || busy} title="Putar 90° ke kanan">
+                <RotateCw size={16} /> Kanan
               </button>
               <button type="button" className="iu-btn iu-btn-secondary" onClick={resetAll} disabled={!ready || busy}>
                 <Undo2 size={16} /> Reset
               </button>
             </div>
           </div>
+
+          <div className="iu-zoom">
+            <button
+              type="button"
+              className="iu-icon-btn iu-zoom-btn"
+              onClick={() => setZoomAt(zoom - 0.25)}
+              disabled={!ready || busy || zoom <= MIN_ZOOM}
+              aria-label="Perkecil"
+            >
+              <ZoomOut size={16} />
+            </button>
+            <input
+              type="range"
+              className="iu-zoom-slider"
+              min={MIN_ZOOM}
+              max={MAX_ZOOM}
+              step="0.01"
+              value={zoom}
+              onChange={(e) => setZoomAt(Number(e.target.value))}
+              disabled={!ready || busy}
+              aria-label="Zoom"
+            />
+            <button
+              type="button"
+              className="iu-icon-btn iu-zoom-btn"
+              onClick={() => setZoomAt(zoom + 0.25)}
+              disabled={!ready || busy || zoom >= MAX_ZOOM}
+              aria-label="Perbesar"
+            >
+              <ZoomIn size={16} />
+            </button>
+            <span className="iu-zoom-value">{Math.round(zoom * 100)}%</span>
+          </div>
+
           <p className="iu-tip">
-            Tarik sudut frame untuk memotong, geser isi frame untuk memindahkan.
+            Tarik sudut/sisi frame untuk memotong, geser isi frame untuk memindahkan.
+            Zoom lewat slider atau Ctrl + scroll{zoom > 1.001 ? ', geser area gelap untuk menggeser gambar' : ''}.
             {options.length > 1 ? ' Klik 4:3 / 16:9 lagi untuk portrait.' : ''}
           </p>
           {error && <p className="iu-error" role="alert">{error}</p>}

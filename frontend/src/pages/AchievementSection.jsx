@@ -175,15 +175,34 @@ const AchievementSection = () => {
     }
   };
 
+  // Normalisasi teks: huruf kecil, hilangkan aksen, rapikan spasi berlebih
+  const normalize = (val) =>
+    String(val ?? '')
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+  // Pencarian gabungan: semua kata yang diketik harus ada di salah satu kolom
+  // (nama, kelas/kejuaraan, judul prestasi, tingkat, tahun, status).
+  // Contoh: "alya juara web" akan cocok walau kata-katanya tersebar di kolom berbeda.
   const filteredAchievements = achievements.filter((item) => {
-    const query = searchQuery.toLowerCase();
-    return (
-      item.student_name?.toLowerCase().includes(query) ||
-      item.achievement?.toLowerCase().includes(query) ||
-      item.class_name?.toLowerCase().includes(query) ||
-      item.level?.toLowerCase().includes(query) ||
-      String(item.year || '').toLowerCase().includes(query)
+    const tokens = normalize(searchQuery).split(' ').filter(Boolean);
+    if (tokens.length === 0) return true;
+
+    const haystack = normalize(
+      [
+        item.student_name,
+        item.class_name,
+        item.achievement,
+        item.level,
+        item.year,
+        item.show === 1 ? 'tampil' : 'sembunyi',
+      ].join(' ')
     );
+
+    return tokens.every((token) => haystack.includes(token));
   });
 
   return (
@@ -207,7 +226,7 @@ const AchievementSection = () => {
           <Search size={18} className="search-icon" />
           <input
             type="text"
-            placeholder="Cari prestasi..."
+            placeholder="Cari nama, kelas, kejuaraan, tingkat, tahun..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="search-input"
