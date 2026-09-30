@@ -1,0 +1,12 @@
+{
+  "services": {
+    "auth": { "root": "auth-service/" },
+    "content": { "root": "content-service/" }
+  },
+  "rewrites": [
+    { "source": "/api/auth/(.*)", "destination": { "service": "auth" } },
+    { "source": "/api/users", "destination": { "service": "auth" } },
+    { "source": "/api/users/(.*)", "destination": { "service": "auth" } },
+    { "source": "/(.*)", "destination": { "service": "content" } }
+  ]
+}

@@ -119,7 +119,7 @@ const Navbar = () => {
 
     const fetchMenus = async () => {
       try {
-        const response = await fetch('http://localhost:5002/api/menu-items');
+        const response = await fetch('https://smkn-compreng-api.vercel.app/api/menu-items');
         const result = await response.json();
         
         if (!isMounted) return;

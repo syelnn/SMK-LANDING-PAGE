@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/newsPage.css';
 
-const API_URL = 'http://localhost:5002/api/news';
+const API_URL = 'https://smkn-compreng-api.vercel.app/api/news';
 
 const formatDate = (dateString) => {
   if (!dateString) return 'TERBARU';

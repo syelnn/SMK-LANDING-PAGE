@@ -7,7 +7,7 @@ export default function TenagaPengajarViewer() {
   const [teachers, setTeachers] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'http://localhost:5002/api';
+  const API_URL = 'https://smkn-compreng-api.vercel.app/api';
 
   useEffect(() => {
     const fetchData = async () => {

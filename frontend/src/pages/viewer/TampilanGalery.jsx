@@ -30,7 +30,7 @@ export default function TampilanGalery() {
   useEffect(() => {
     const fetchGalleries = async () => {
       try {
-        const response = await fetch('http://localhost:5002/api/galleries');
+        const response = await fetch('https://smkn-compreng-api.vercel.app/api/galleries');
         const result = await response.json();
         if (result.success) {
           // Hanya ambil foto yang aktif/show

@@ -15,7 +15,7 @@ export default function DetailNews() {
     const fetchNewsDetail = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`http://localhost:5002/api/news/${slug}`);
+        const res = await axios.get(`https://smkn-compreng-api.vercel.app/api/news/${slug}`);
         setNews(res.data?.data || res.data);
       } catch (err) {
         console.error('Error fetching detail news:', err);

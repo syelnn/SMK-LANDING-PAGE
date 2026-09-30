@@ -20,6 +20,7 @@ const staffIfAdminQuery = (req, res, next) =>
     : next();
 
 const app = express();
+app.set('trust proxy', 1);app.set('trust proxy', 1);
 const PORT = process.env.PORT || 5002; // Bedakan port-nya, misal 5002 untuk content-service
 
 app.disable('x-powered-by');
@@ -1600,7 +1601,9 @@ app.get('/api/database/export', ...requireAdmin, async (req, res) => {
 
 
 
-
-app.listen(PORT, () => {
-  console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Content Service berjalan di http://localhost:${PORT}`);
+  });
+}
+module.exports = app;

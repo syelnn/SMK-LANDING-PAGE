@@ -119,7 +119,7 @@ export default function GaleriAlbumViewer() {
   useEffect(() => {
     const fetchGalleries = async () => {
       try {
-        const response = await fetch('http://localhost:5002/api/galleries');
+        const response = await fetch('https://smkn-compreng-api.vercel.app/api/galleries');
         const result = await response.json();
         if (result.success) {
           const activeGalleries = result.data.filter(item => item.show === 1 || item.show === true || item.show === undefined);
