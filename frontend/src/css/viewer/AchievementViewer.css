@@ -4,7 +4,7 @@
 .achievement-viewer-container {
   width: 100%;
   min-height: 100vh;
-  background-color: var(--compreng-bg, #f8fafc);
+  background-color: var(--compreng-bg, #f8fafc) !important;
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
   padding-bottom: 70px;
   /* [FIX] id="section-prestasi" ada tepat di elemen ini. Tanpa scroll-margin-top,
@@ -78,16 +78,22 @@
   max-width: 1120px;
   margin: 36px auto 0;
   padding: 0 20px;
+  /* Wrapper layout harus transparan agar tidak jadi kotak putih di belakang card */
+  background-color: transparent !important;
+  border-color: transparent !important;
 }
 
 .achievement-viewer-container .achievement-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 24px;
+  background-color: transparent !important;
+  border-color: transparent !important;
 }
 
 .achievement-viewer-container .achievement-card {
   background: var(--compreng-surface, #ffffff);
+  background-color: var(--compreng-surface, #ffffff) !important;
   border-radius: 16px;
   overflow: hidden;
   border: 1px solid var(--compreng-border, #e2e8f0);
