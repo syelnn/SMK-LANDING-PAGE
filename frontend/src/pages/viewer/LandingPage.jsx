@@ -3,7 +3,7 @@ import { getImageUrl } from '../../utils/media';
 import { useNavigate, useLocation } from 'react-router-dom'; 
 import Navbar from '../../components/Navbar';
 import { SettingsContext } from '../../context/SettingsContext';
-import { buildHeroOverlay } from '../../utils/heroOverlay';
+import { buildHeroOverlay, HERO_DEFAULTS, normalizeHex } from '../../utils/heroOverlay';
 import '../../css/viewer/landing.css';
 import TenagaPengajarViewer from './TenagaPengajar';
 import AchievementViewer from './AchievementViewer';
@@ -23,6 +23,21 @@ import ProfileSection from './ProfileSection';
 import NewsPage from './NewsPage';
 import JurusanProgramViewer from './JurusanProgram'; 
 import EkstrakurikulerViewer from './EkstrakurikulerViewer';
+
+// Perkiraan kecerahan latar hero ('dark' | 'light') agar warna teks selalu terbaca di tema/overlay apa pun
+const getHeroTone = (s = {}) => {
+  const hex = normalizeHex(s.hero_overlay_color);
+  const n = parseInt(hex.slice(1), 16);
+  const lin = (v) => {
+    const c = v / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const lum = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  const rawIn = s.hero_overlay_opacity;
+  const raw = rawIn === '' || rawIn == null ? Number(HERO_DEFAULTS.hero_overlay_opacity) : Number(rawIn);
+  const op = (Number.isFinite(raw) ? Math.min(100, Math.max(0, raw)) : 88) / 100;
+  return op * lum + (1 - op) * 0.15 > 0.45 ? 'light' : 'dark';
+};
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -112,6 +127,7 @@ const LandingPage = () => {
       <section 
         id="section-hero" 
         className="hero-section"
+        data-tone={getHeroTone(settings)}
         style={{
           backgroundImage: heroBg ? `url(${heroBg})` : 'none',
           '--hero-overlay-bg': buildHeroOverlay(settings),
@@ -131,7 +147,7 @@ const LandingPage = () => {
             </div>
 
             <h1 className="hero-title">
-              Selamat Datang di <br />
+              Selamat Datang <span className="hero-di">di</span> <br />
               <span className="brand-highlight">{(settings?.school_name || 'SMK NEGERI COMPRENG').toUpperCase()}</span>
             </h1>
 

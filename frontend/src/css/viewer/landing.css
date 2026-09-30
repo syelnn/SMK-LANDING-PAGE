@@ -8,6 +8,10 @@
   min-height: 100vh !important;
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif !important;
   background-color: var(--compreng-nav-bg, #0f172a) !important;
+  /* Cegah "font boosting" browser HP: pada mode Situs Desktop, Chrome/Samsung Internet
+     memperbesar teks otomatis sehingga judul terlihat jauh lebih besar dari aslinya. */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 /* ==========================================
@@ -23,10 +27,16 @@
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-  padding-top: 80px !important;
-  padding-bottom: 40px !important;
+  padding-top: 84px !important;
+  padding-bottom: 72px !important; /* ruang untuk indikator scroll-down */
   color: var(--compreng-nav-text, #f8fafc) !important;
   box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+/* 100svh = tinggi layar HP yang stabil (tidak berubah saat address bar naik/turun) */
+@supports (min-height: 100svh) {
+  .landing-wrapper .hero-section { min-height: 100svh !important; }
 }
 
 .landing-wrapper .hero-overlay {
@@ -52,14 +62,15 @@
 .landing-wrapper .hero-container {
   position: relative !important;
   z-index: 3 !important;
-  max-width: 1200px !important;
+  max-width: 1120px !important;
   width: 100% !important;
   margin: 0 auto !important;
-  padding: 2rem 1.5rem !important;
+  padding: 1.5rem clamp(1.25rem, 4vw, 2.5rem) !important;
   display: grid !important;
-  grid-template-columns: 1.15fr 0.85fr !important;
-  gap: 2.5rem !important;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.8fr) !important;
+  gap: clamp(1.5rem, 4vw, 3.5rem) !important;
   align-items: center !important;
+  box-sizing: border-box !important;
 }
 
 .landing-wrapper .hero-content {
@@ -69,6 +80,7 @@
   flex-direction: column !important;
   align-items: flex-start !important;
   text-align: left !important;
+  min-width: 0 !important;
 }
 
 /* ==========================================
@@ -111,7 +123,7 @@
   background-size: 250% 100%;
   background-repeat: no-repeat;
   background-position: 160% 0;
-  animation: akrSweep 3.6s ease-in-out infinite;
+  animation: akrSweep 4.4s cubic-bezier(0.45, 0, 0.55, 1) infinite;
 }
 
 .landing-wrapper .badge-akreditasi .green-dot,
@@ -148,7 +160,9 @@
   -webkit-text-fill-color: transparent;
   color: transparent !important;
   text-shadow: none !important;
-  animation: akrText 3.6s ease-in-out infinite;
+  animation:
+    akrText 4.4s cubic-bezier(0.45, 0, 0.55, 1) infinite,
+    akrTextFade 4.4s linear infinite;
 }
 
 /* Bintang kecil yang berkelip di sekitar badge */
@@ -175,11 +189,20 @@
 }
 @keyframes akrSweep {
   0%        { background-position: 160% 0; }
-  55%, 100% { background-position: -60% 0; }
+  70%, 100% { background-position: -60% 0; }
 }
 @keyframes akrText {
-  0%        { background-position: 160% 0; }
-  55%, 100% { background-position: -60% 0; }
+  /* awal & akhir siklus hanya menyisakan 1 huruf, lalu animasi mengulang */
+  0%        { background-position: 165% 0; }
+  70%, 100% { background-position: -65% 0; }
+}
+/* Huruf terakhir memudar & huruf pertama muncul perlahan, jadi tidak ada "lompatan"
+   saat siklus mengulang */
+@keyframes akrTextFade {
+  0%   { opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { opacity: 0; }
 }
 @keyframes akrTwinkle {
   0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
@@ -200,35 +223,75 @@
    5. TIPOGRAFI & SUBTITLE
    ========================================== */
 .landing-wrapper .hero-title {
-  /* clamp() = ukuran mengalir lembut mengikuti lebar layar efektif (termasuk saat di-zoom),
-     jadi tidak lagi "meloncat" tiba-tiba di titik breakpoint tertentu */
-  font-size: clamp(1.45rem, 1.05rem + 2vw, 1.9rem) !important;
+  /* clamp() = ukuran mengalir mengikuti lebar layar efektif (termasuk saat di-zoom
+     atau mode Situs Desktop), tanpa "loncat" di breakpoint tertentu */
+  font-size: clamp(1.5rem, 4.2vw, 2.8rem) !important;
   font-weight: 700 !important;
-  line-height: 1.3 !important;
-  margin: 0 0 1rem 0 !important;
+  line-height: 1.2 !important;
+  margin: 0 0 0.9rem 0 !important;
   color: var(--compreng-nav-text, #f8fafc) !important;
-  letter-spacing: -0.3px !important;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5) !important;
-  overflow-wrap: break-word !important;
+  letter-spacing: -0.01em !important;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.45) !important;
+  overflow-wrap: anywhere !important;
+  text-wrap: balance;
 }
 
 .landing-wrapper .brand-highlight {
   color: var(--compreng-accent, #2563eb) !important;
   font-weight: 800 !important;
   display: block !important;
-  font-size: clamp(1.85rem, 1.3rem + 2.5vw, 2.35rem) !important;
-  letter-spacing: -0.5px !important;
-  margin-top: 2px !important;
-  overflow-wrap: break-word !important;
+  font-size: clamp(1.5rem, 4.2vw, 2.8rem) !important;
+  line-height: 1.2 !important;
+  letter-spacing: -0.025em !important;
+  margin-top: 0.3rem !important;
+  overflow-wrap: anywhere !important;
+  text-wrap: balance;
 }
 
 .landing-wrapper .hero-subtitle {
-  font-size: clamp(0.88rem, 0.78rem + 0.45vw, 0.95rem) !important;
+  font-size: clamp(0.875rem, 0.82rem + 0.3vw, 1rem) !important;
   color: var(--compreng-nav-text-muted, #94a3b8) !important;
-  max-width: 480px !important;
-  line-height: 1.65 !important;
-  margin: 0 0 1.8rem 0 !important;
+  max-width: 34rem !important;
+  line-height: 1.7 !important;
+  margin: 0 0 1.75rem 0 !important;
   font-weight: 400 !important;
+  text-wrap: pretty;
+}
+
+/* Warna teks mengikuti tema (variabel --compreng-nav-*). Selektor sengaja lebih spesifik
+   dari aturan theme.css ".hero-section span { color: muted }" yang sebelumnya membuat nama
+   sekolah jadi abu-abu redup. */
+.landing-wrapper .hero-section .hero-title .brand-highlight {
+  color: var(--compreng-nav-accent, #38bdf8) !important;
+  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.45) !important;
+}
+
+.landing-wrapper .hero-section .hero-subtitle {
+  color: color-mix(in srgb, var(--compreng-nav-text, #f8fafc) 88%, transparent) !important;
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.35) !important;
+}
+
+/* Latar hero terang (overlay terang dari pengaturan admin): balik ke teks gelap */
+.landing-wrapper .hero-section .hero-title .hero-di {
+  color: inherit !important;
+}
+
+.landing-wrapper .hero-section[data-tone="light"] .hero-title {
+  color: #0f172a !important;
+  text-shadow: none !important;
+}
+.landing-wrapper .hero-section[data-tone="light"] .hero-title .brand-highlight {
+  color: color-mix(in srgb, var(--compreng-accent, #2563eb) 70%, #0f172a) !important;
+  text-shadow: none !important;
+}
+.landing-wrapper .hero-section[data-tone="light"] .hero-subtitle {
+  color: #334155 !important;
+  text-shadow: none !important;
+}
+.landing-wrapper .hero-section[data-tone="light"] a.btn-hero-secondary {
+  color: #0f172a !important;
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-color: rgba(15, 23, 42, 0.3) !important;
 }
 
 /* ==========================================
@@ -236,34 +299,44 @@
    ========================================== */
 .landing-wrapper .hero-buttons {
   display: flex !important;
-  gap: 1rem !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
   align-items: center !important;
 }
 
 .landing-wrapper .btn-icon,
 .landing-wrapper .btn-arrow {
   display: inline-block !important;
-  font-size: 0.95rem !important;
+  font-size: 0.9rem !important;
   line-height: 1 !important;
+}
+
+.landing-wrapper .btn-arrow {
+  transition: transform 0.25s ease !important;
 }
 
 .landing-wrapper a.btn-hero-primary {
   background-color: var(--compreng-accent, #2563eb) !important;
   background: var(--compreng-accent, #2563eb) !important;
-  /* --compreng-accent-text = warna teks yang memang dipasangkan tema dengan warna aksen
+  /* --compreng-accent-text = warna teks yang dipasangkan tema dengan warna aksen
      (gelap di atas biru muda pada Dark, putih di atas biru/hijau pada tema lain) */
   color: var(--compreng-accent-text, #ffffff) !important;
-  padding: 0.75rem 1.6rem !important;
-  border-radius: 50px !important;
+  padding: 0.7rem 1.45rem !important;
+  min-height: 44px !important; /* target sentuh nyaman di HP */
+  border-radius: 999px !important;
   text-decoration: none !important;
   font-weight: 600 !important;
-  font-size: 0.9rem !important;
+  font-size: 0.875rem !important;
+  line-height: 1 !important;
   display: inline-flex !important;
   align-items: center !important;
-  gap: 0.5rem !important;
-  border: none !important;
-  transition: all 0.25s ease !important;
-  box-shadow: 0 4px 14px rgba(14, 165, 233, 0.3) !important;
+  justify-content: center !important;
+  gap: 0.55rem !important;
+  border: 1px solid transparent !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
+  transition: transform 0.25s ease, box-shadow 0.25s ease !important;
+  box-shadow: 0 6px 18px -6px color-mix(in srgb, var(--compreng-accent, #2563eb) 70%, transparent) !important;
 }
 
 /* Teks & panah di dalam tombol (<span>) — sebelumnya dicat abu-abu (nav-text-muted) oleh
@@ -276,7 +349,11 @@
   background-color: var(--compreng-accent, #2563eb) !important;
   background: var(--compreng-accent, #2563eb) !important;
   transform: translateY(-2px) !important;
-  box-shadow: 0 6px 20px rgba(14, 165, 233, 0.45) !important;
+  box-shadow: 0 10px 24px -6px color-mix(in srgb, var(--compreng-accent, #2563eb) 80%, transparent) !important;
+}
+
+.landing-wrapper a.btn-hero-primary:hover .btn-arrow {
+  transform: translateX(3px) !important;
 }
 
 .landing-wrapper a.btn-hero-secondary {
@@ -284,22 +361,36 @@
   align-items: center !important;
   justify-content: center !important;
   gap: 0.5rem !important;
-  padding: 0.75rem 1.5rem !important;
-  border-radius: 50px !important;
+  padding: 0.7rem 1.35rem !important;
+  min-height: 44px !important;
+  border-radius: 999px !important;
   text-decoration: none !important;
-  font-size: 0.9rem !important;
-  background: rgba(255, 255, 255, 0.08) !important;
+  font-size: 0.875rem !important;
+  line-height: 1 !important;
+  background: rgba(255, 255, 255, 0.06) !important;
   color: var(--compreng-nav-text, #f8fafc) !important;
-  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border: 1px solid rgba(255, 255, 255, 0.24) !important;
   font-weight: 500 !important;
+  box-sizing: border-box !important;
+  white-space: nowrap !important;
   backdrop-filter: blur(8px) !important;
-  transition: all 0.25s ease !important;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease !important;
+}
+
+.landing-wrapper .hero-buttons a.btn-hero-secondary span {
+  color: inherit !important;
 }
 
 .landing-wrapper a.btn-hero-secondary:hover {
-  background: rgba(255, 255, 255, 0.15) !important;
-  border-color: rgba(255, 255, 255, 0.4) !important;
+  background: rgba(255, 255, 255, 0.14) !important;
+  border-color: rgba(255, 255, 255, 0.42) !important;
   transform: translateY(-2px) !important;
+}
+
+.landing-wrapper a.btn-hero-primary:focus-visible,
+.landing-wrapper a.btn-hero-secondary:focus-visible {
+  outline: 2px solid var(--compreng-nav-accent, #38bdf8) !important;
+  outline-offset: 3px !important;
 }
 
 /* ==========================================
@@ -345,7 +436,7 @@
    ========================================== */
 .landing-wrapper .scroll-down {
   position: absolute !important;
-  bottom: 25px !important;
+  bottom: 20px !important;
   left: 50% !important;
   z-index: 5 !important;
   width: 40px !important;
@@ -387,25 +478,57 @@
 
 /* ==========================================
    9. RESPONSIVE DESIGN
+   ------------------------------------------
+   Catatan "Situs Desktop" di HP: browser memakai viewport virtual ±980px.
+   Breakpoint 1 kolom sengaja diturunkan ke 820px (sebelumnya 992px) supaya
+   mode Situs Desktop tetap tampil 2 kolom persis seperti di laptop/PC.
    ========================================== */
-@media (max-width: 992px) {
+
+/* Tablet & HP (layout 1 kolom, teks rata kiri) */
+@media (max-width: 820px) {
+  .landing-wrapper .hero-section {
+    padding-top: 76px !important;
+    padding-bottom: 76px !important;
+  }
+
   .landing-wrapper .hero-container {
-    grid-template-columns: 1fr !important;
-    text-align: center !important;
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 1.75rem !important;
+    padding: 1rem 1.25rem !important;
   }
 
+  /* Teks tetap rata kiri agar rapi & mudah dibaca; hanya gambar yang berada di tengah */
   .landing-wrapper .hero-content {
-    align-items: center !important;
+    align-items: flex-start !important;
+    text-align: left !important;
   }
 
-  .landing-wrapper .badge-akreditasi, 
-  .landing-wrapper .hero-subtitle, 
-  .landing-wrapper .hero-buttons {
-    margin-left: auto !important;
-    margin-right: auto !important;
+  .landing-wrapper .hero-subtitle {
+    max-width: 100% !important;
+    margin-bottom: 1.5rem !important;
   }
 
-  .landing-wrapper .hero-buttons {
+  /* Judul mengalir sebagai satu kalimat: "Selamat Datang di SMK NEGERI COMPRENG"
+     (bukan lagi dipaksa turun baris), seperti contoh */
+  .landing-wrapper .hero-title {
+    text-wrap: wrap;
+  }
+  .landing-wrapper .hero-title br {
+    display: none !important;
+  }
+  /* Susunan seperti contoh: "Selamat Datang" / "di SMK NEGERI" / "COMPRENG".
+     Kata "di" dipindah ke baris kedua agar menyatu dengan nama sekolah. */
+  .landing-wrapper .hero-title .hero-di::before {
+    content: "\A";
+    white-space: pre;
+  }
+  .landing-wrapper .hero-title .brand-highlight {
+    display: inline !important;
+    margin-top: 0 !important;
+    text-wrap: inherit;
+  }
+
+  .landing-wrapper .hero-graphic {
     justify-content: center !important;
   }
 
@@ -415,15 +538,62 @@
   }
 }
 
-@media (max-width: 576px) {
-  .landing-wrapper .hero-buttons {
-    flex-direction: column !important;
-    width: 100% !important;
+/* Tablet portrait (481-820px): judul & deskripsi lebih lega karena kolomnya lebar */
+@media (min-width: 481px) and (max-width: 820px) {
+  .landing-wrapper .hero-title,
+  .landing-wrapper .brand-highlight {
+    font-size: clamp(2.2rem, 5.6vw, 2.75rem) !important;
   }
 
-  .landing-wrapper a.btn-hero-primary, 
-  .landing-wrapper a.btn-hero-secondary {
-    justify-content: center !important;
-    width: 100% !important;
+  .landing-wrapper .hero-subtitle {
+    font-size: 1.0625rem !important;
+    line-height: 1.7 !important;
+    max-width: 36rem !important;
   }
+}
+
+/* HP (<=480px): judul besar & tegas, boleh turun 2 baris; tombol penuh selebar layar */
+@media (max-width: 480px) {
+  .landing-wrapper .hero-title,
+  .landing-wrapper .brand-highlight {
+    font-size: clamp(1.9rem, 9.8vw, 2.6rem) !important;
+    line-height: 1.18 !important;
+  }
+
+  .landing-wrapper .hero-title {
+    margin-bottom: 1rem !important;
+  }
+
+  .landing-wrapper .hero-subtitle {
+    font-size: 1.0625rem !important;
+    line-height: 1.65 !important;
+    margin-bottom: 1.6rem !important;
+  }
+
+  .landing-wrapper .hero-buttons {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    width: 100% !important;
+    gap: 0.75rem !important;
+  }
+
+  .landing-wrapper a.btn-hero-primary,
+  .landing-wrapper a.btn-hero-secondary {
+    width: 100% !important;
+    min-height: 52px !important;
+    padding: 0.85rem 1.25rem !important;
+    font-size: 1.0625rem !important;
+    font-weight: 600 !important;
+  }
+
+  .landing-wrapper .btn-icon,
+  .landing-wrapper .btn-arrow {
+    font-size: 1.05rem !important;
+  }
+}
+
+/* Layar landscape pendek: jangan paksa tinggi 100vh */
+@media (max-height: 520px) and (orientation: landscape) {
+  .landing-wrapper .hero-section { min-height: auto !important; }
+  .landing-wrapper .scroll-down { display: none !important; }
 }
