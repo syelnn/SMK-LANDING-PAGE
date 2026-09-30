@@ -45,7 +45,7 @@ export default function EkstrakurikulerViewer() {
   useEffect(() => {
     const fetchEkskul = async () => {
       try {
-        const response = await fetch('https://smkn-compreng-api.vercel.app/api/extracurriculars');
+        const response = await fetch('https://smkn-compreng-api-pi.vercel.app/api/extracurriculars');
         const result = await response.json();
         if (result.success) {
           const visibleData = result.data.filter(item => item.show === 1 || item.show === true || item.show === undefined);

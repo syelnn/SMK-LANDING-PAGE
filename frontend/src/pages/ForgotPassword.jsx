@@ -6,7 +6,7 @@ import { supabase } from '../supabaseClient';
 import '../App.css';
 import '../css/auth.css';
 
-const AUTH_API = 'https://smkn-compreng-api.vercel.app/api/auth';
+const AUTH_API = 'https://smkn-compreng-api-pi.vercel.app/api/auth';
 
 const RULES = [
   { key: 'lower', label: 'Huruf kecil', test: (p) => /[a-z]/.test(p) },

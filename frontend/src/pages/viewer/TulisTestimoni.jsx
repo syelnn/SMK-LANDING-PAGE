@@ -7,7 +7,7 @@ import { getSession, clearSession, isStaff, verifySession, notifyProfileUpdated,
 import logoSekolah from '../../assets/logo1.png';
 import '../../css/viewer/tulisTestimoni.css';
 
-const API = 'https://smkn-compreng-api.vercel.app';
+const API = 'https://smkn-compreng-api-pi.vercel.app';
 const MIN_QUOTE = 20;
 const MAX_QUOTE = 400;
 const MAX_TESTIMONIAL_PER_USER = 2;

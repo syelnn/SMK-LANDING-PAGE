@@ -103,7 +103,7 @@ export default function Ekstrakurikuler() {
 
   const fetchEkskul = async () => {
     try {
-      const response = await fetch('https://smkn-compreng-api.vercel.app/api/extracurriculars');
+      const response = await fetch('https://smkn-compreng-api-pi.vercel.app/api/extracurriculars');
       const result = await response.json();
       if (result.success) {
         setListEkskul(result.data);
@@ -195,8 +195,8 @@ export default function Ekstrakurikuler() {
     setIsSubmitting(true);
 
     const url = isEditing 
-      ? `https://smkn-compreng-api.vercel.app/api/extracurriculars/${currentId}` 
-      : 'https://smkn-compreng-api.vercel.app/api/extracurriculars';
+      ? `https://smkn-compreng-api-pi.vercel.app/api/extracurriculars/${currentId}` 
+      : 'https://smkn-compreng-api-pi.vercel.app/api/extracurriculars';
     
     const method = isEditing ? 'PUT' : 'POST';
 
@@ -242,7 +242,7 @@ export default function Ekstrakurikuler() {
     if (!window.confirm('Apakah kamu yakin ingin menghapus ekstrakurikuler ini?')) return;
 
     try {
-      const response = await fetch(`https://smkn-compreng-api.vercel.app/api/extracurriculars/${id}`, {
+      const response = await fetch(`https://smkn-compreng-api-pi.vercel.app/api/extracurriculars/${id}`, {
         method: 'DELETE'
       });
       const result = await response.json();

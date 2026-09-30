@@ -12,7 +12,7 @@ export default function ManageIndustryPartners() {
   const [submitting, setSubmitting] = useState(false); // true selama proses Simpan/Edit berjalan
   const userRole = localStorage.getItem('role');
 
-  const API_URL = 'https://smkn-compreng-api.vercel.app/api';
+  const API_URL = 'https://smkn-compreng-api-pi.vercel.app/api';
 
   // State Modal Form
   const [showModal, setShowModal] = useState(false);

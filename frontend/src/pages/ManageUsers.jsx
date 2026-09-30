@@ -11,7 +11,7 @@ import { verifySession } from '../utils/auth';
 import '../css/manageusers.css';
 import '../App.css';
 
-const API_URL = 'https://smkn-compreng-api.vercel.app/api';
+const API_URL = 'https://smkn-compreng-api-pi.vercel.app/api';
 
 // Harus sama dengan "Email OTP Length" di Supabase Dashboard (backend juga mengirim nilainya).
 const DEFAULT_OTP_LENGTH = 6;

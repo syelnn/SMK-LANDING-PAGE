@@ -2,7 +2,7 @@
 // Satu-satunya tempat yang mengatur tema (warna + font) untuk SELURUH website.
 // Dipakai oleh SettingsContext (menerapkan ke DOM) dan ManageSettings/ThemePreview (preview).
 
-export const API_URL = 'https://smkn-compreng-api.vercel.app';
+export const API_URL = 'https://smkn-compreng-api-pi.vercel.app';
 
 /* ========================================================================
    FONT — 4 pilihan: Default (bawaan situs) + Plus Jakarta Sans, Poppins, Inter

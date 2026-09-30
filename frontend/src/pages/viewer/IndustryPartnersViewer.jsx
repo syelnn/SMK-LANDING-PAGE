@@ -7,7 +7,7 @@ export default function IndustryPartnersViewer() {
   const [partners, setPartners] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'https://smkn-compreng-api.vercel.app/api';
+  const API_URL = 'https://smkn-compreng-api-pi.vercel.app/api';
 
   useEffect(() => {
     const fetchData = async () => {

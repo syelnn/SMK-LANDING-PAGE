@@ -48,7 +48,7 @@ export default function Testimoni() {
   useEffect(() => {
     const fetchPublicTestimonials = async () => {
       try {
-        const response = await fetch('https://smkn-compreng-api.vercel.app/api/testimonials/public');
+        const response = await fetch('https://smkn-compreng-api-pi.vercel.app/api/testimonials/public');
         const result = await response.json();
         if (result.success || result.data) {
           const list = Array.isArray(result) ? result : (result.data || []);

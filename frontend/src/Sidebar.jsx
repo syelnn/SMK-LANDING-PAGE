@@ -126,7 +126,7 @@ export default function Sidebar({
   const [dynamicNavs, setDynamicNavs] = useState([]);
   
   useEffect(() => {
-    fetch('https://smkn-compreng-api.vercel.app/api/menu-items')
+    fetch('https://smkn-compreng-api-pi.vercel.app/api/menu-items')
       .then((res) => res.json())
       .then((resData) => {
         if (resData.success && resData.data && resData.data.length > 0) {

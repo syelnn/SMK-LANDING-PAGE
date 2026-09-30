@@ -6,7 +6,7 @@ import Navbar from '../../components/Navbar';
 import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/newsDetail.css';
 
-const API_URL = 'https://smkn-compreng-api.vercel.app/api/news';
+const API_URL = 'https://smkn-compreng-api-pi.vercel.app/api/news';
 
 const formatDate = (dateString) => {
   if (!dateString) return '';

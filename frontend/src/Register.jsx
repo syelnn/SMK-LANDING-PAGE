@@ -7,7 +7,7 @@ import AvatarPicker, { EMPTY_AVATAR, isValidImageUrl } from './components/Avatar
 import './App.css';
 import './css/auth.css';
 
-const AUTH_API = 'https://smkn-compreng-api.vercel.app/api/auth';
+const AUTH_API = 'https://smkn-compreng-api-pi.vercel.app/api/auth';
 const USERNAME_RULE = /^[a-zA-Z0-9_.-]{3,50}$/; // sama dengan backend
 
 // Aturan password wajib: huruf besar, huruf kecil, angka, simbol, minimal 8 karakter.
