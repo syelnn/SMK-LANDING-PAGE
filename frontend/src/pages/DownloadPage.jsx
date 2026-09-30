@@ -32,7 +32,7 @@ export default function DownloadPage() {
   const [dropdownConfig, setDropdownConfig] = useState({ id: null, right: null, top: null, bottom: null });
   const [searchTerm, setSearchTerm] = useState('');
 
-  const API_URL = 'https://smkn-compreng-api.vercel.app/api/downloads';
+  const API_URL = 'https://smkn-compreng-api-pi.vercel.app/api/downloads';
 
   useEffect(() => {
     fetchDownloads();

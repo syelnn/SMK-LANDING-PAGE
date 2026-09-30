@@ -6,7 +6,7 @@ import { getDownloadFileUrl, downloadFileDirect } from '../../utils/media';
 import FooterViewer from './FooterViewer';
 import '../../css/viewer/DownloadViewer.css';
 
-const API_URL = 'https://smkn-compreng-api.vercel.app';
+const API_URL = 'https://smkn-compreng-api-pi.vercel.app';
 
 const DownloadViewer = () => {
   const [downloads, setDownloads] = useState([]);

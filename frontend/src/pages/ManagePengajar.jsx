@@ -11,7 +11,7 @@ export default function ManagePengajar() {
   const [loading, setLoading] = useState(true);
   const userRole = localStorage.getItem('role');
 
-  const API_URL = 'https://smkn-compreng-api.vercel.app/api';
+  const API_URL = 'https://smkn-compreng-api-pi.vercel.app/api';
 
   // State Modal Form
   const [showModal, setShowModal] = useState(false);

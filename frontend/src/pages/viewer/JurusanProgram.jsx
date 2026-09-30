@@ -10,7 +10,7 @@ export default function JurusanProgramViewer() {
   const [programList, setProgramList] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'https://smkn-compreng-api.vercel.app/api'; 
+  const API_URL = 'https://smkn-compreng-api-pi.vercel.app/api'; 
 
   const fetchData = async () => {
     try {

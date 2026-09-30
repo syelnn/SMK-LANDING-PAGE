@@ -7,7 +7,7 @@ import { SettingsContext } from '../../context/SettingsContext';
 import { resolveContact, normalizeUrl, toMapEmbedSrc } from '../../utils/contact';
 import '../../css/viewer/footerviewer.css';
 
-const API_URL = 'https://smkn-compreng-api.vercel.app';
+const API_URL = 'https://smkn-compreng-api-pi.vercel.app';
 
 
 

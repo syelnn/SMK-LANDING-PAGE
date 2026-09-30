@@ -24,7 +24,7 @@ const FaqPage = () => {
   // Fetch semua data untuk Admin
   const fetchFaqs = () => {
     setLoading(true);
-    fetch('https://smkn-compreng-api.vercel.app/api/faqs?admin=true')
+    fetch('https://smkn-compreng-api-pi.vercel.app/api/faqs?admin=true')
       .then((res) => res.json())
       .then((resData) => {
         if (resData.success) {
@@ -80,8 +80,8 @@ const FaqPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     const url = editingId 
-      ? `https://smkn-compreng-api.vercel.app/api/faqs/${editingId}` 
-      : 'https://smkn-compreng-api.vercel.app/api/faqs';
+      ? `https://smkn-compreng-api-pi.vercel.app/api/faqs/${editingId}` 
+      : 'https://smkn-compreng-api-pi.vercel.app/api/faqs';
     const method = editingId ? 'PUT' : 'POST';
 
     const payload = {
@@ -119,7 +119,7 @@ const FaqPage = () => {
   const handleDelete = (id) => {
     setActiveDropdown(null); // Tutup dropdown
     if (window.confirm('Yakin ingin menghapus FAQ ini? Urutan FAQ lainnya akan otomatis disesuaikan.')) {
-      fetch(`https://smkn-compreng-api.vercel.app/api/faqs/${id}`, { method: 'DELETE' })
+      fetch(`https://smkn-compreng-api-pi.vercel.app/api/faqs/${id}`, { method: 'DELETE' })
         .then((res) => res.json())
         .then((data) => {
           if (data.success) {
