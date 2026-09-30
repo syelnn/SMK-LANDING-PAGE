@@ -39,7 +39,7 @@ const AchievementSection = () => {
     show: 1
   });
 
-  const API_URL = 'http://localhost:5002/api/achievements';
+  const API_URL = 'https://smkn-compreng-api.vercel.app/api/achievements';
 
   const fetchAchievements = async () => {
     try {

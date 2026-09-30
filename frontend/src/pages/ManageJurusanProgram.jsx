@@ -13,7 +13,7 @@ export default function ManageJurusanProgram() {
   const [loading, setLoading] = useState(true);
   const userRole = localStorage.getItem('role');
 
-  const API_URL = 'http://localhost:5002/api'; 
+  const API_URL = 'https://smkn-compreng-api.vercel.app/api'; 
 
   // State Modal Jurusan
   const [showModalJurusan, setShowModalJurusan] = useState(false);

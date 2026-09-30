@@ -79,9 +79,9 @@ export const homeFor = (role) => (isStaff(role) ? '/admin' : '/');
 // dicek ke server (GET /api/auth/me). Token palsu / diedit / secret diganti
 // / akun dinonaktifkan  ->  server balas 401  ->  otomatis ditendang ke login.
 // =====================================================================
-const API_ORIGINS = ['http://localhost:5001', 'http://localhost:5002', 'http://localhost:5003'];
+const API_ORIGINS = ['https://smkn-compreng-api.vercel.app', 'https://smkn-compreng-api.vercel.app', 'https://smkn-compreng-api.vercel.app'];
 const PUBLIC_AUTH_PATHS = ['/api/auth/login', '/api/auth/register', '/api/auth/forgot-password'];
-export const AUTH_API = 'http://localhost:5001/api/auth';
+export const AUTH_API = 'https://smkn-compreng-api.vercel.app/api/auth';
 
 const isApiUrl = (url) => API_ORIGINS.some((o) => String(url || '').startsWith(o));
 const isPublicAuthUrl = (url) => PUBLIC_AUTH_PATHS.some((p) => String(url || '').includes(p));

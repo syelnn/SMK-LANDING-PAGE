@@ -18,6 +18,7 @@ const { verifyToken, checkRole } = require('./middleware/authMiddleware')(prisma
 const onlyAdmin = [verifyToken, checkRole(['admin'])];
 
 const app = express();
+app.set('trust proxy', 1);  
 const PORT = process.env.PORT || 5001;
 
 const ROLES = ['admin', 'editor', 'viewer'];
@@ -554,6 +555,10 @@ app.delete('/api/users/:id', ...onlyAdmin, async (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Auth Service berjalan di http://localhost:${PORT}`);
-});
+// Di Vercel, server tidak boleh listen sendiri. Kita export app-nya saja.
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`🚀 Auth Service berjalan di http://localhost:${PORT}`);
+  });
+}
+module.exports = app;

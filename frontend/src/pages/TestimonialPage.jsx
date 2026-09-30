@@ -42,8 +42,8 @@ const TestimonialPage = () => {
   const fetchData = async () => {
     try {
       const endpoint = userRole === 'admin' || userRole === 'editor' 
-        ? 'http://localhost:5002/api/testimonials' 
-        : 'http://localhost:5002/api/testimonials/public';
+        ? 'https://smkn-compreng-api.vercel.app/api/testimonials' 
+        : 'https://smkn-compreng-api.vercel.app/api/testimonials/public';
         
       const isStaff = userRole === 'admin' || userRole === 'editor';
       const res = await axios.get(endpoint, isStaff ? authHeaders() : undefined);
@@ -86,7 +86,7 @@ const TestimonialPage = () => {
   const handleViewerSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5002/api/testimonials', { ...viewerFormData, userId });
+      await axios.post('https://smkn-compreng-api.vercel.app/api/testimonials', { ...viewerFormData, userId });
       alert('Testimoni terkirim! Menunggu persetujuan Admin.');
       setHasSubmitted(true);
       fetchData();
@@ -126,9 +126,9 @@ const TestimonialPage = () => {
       fd.append('photo', adminPhotoMode === 'upload' && selectedAdminFile ? selectedAdminFile : (adminFormData.photo || ''));
 
       if (modalMode === 'add') {
-        await axios.post('http://localhost:5002/api/testimonials/admin', fd, authHeaders());
+        await axios.post('https://smkn-compreng-api.vercel.app/api/testimonials/admin', fd, authHeaders());
       } else {
-        await axios.put(`http://localhost:5002/api/testimonials/${editId}`, fd, authHeaders());
+        await axios.put(`https://smkn-compreng-api.vercel.app/api/testimonials/${editId}`, fd, authHeaders());
       }
       setIsModalOpen(false);
       fetchData();
@@ -141,7 +141,7 @@ const TestimonialPage = () => {
     setDropdownConfig({ id: null, right: null, top: null, bottom: null });
     try {
       const newShow = currentShow === 1 ? 0 : 1;
-      await axios.put(`http://localhost:5002/api/testimonials/${id}/toggle-show`, { show: newShow }, authHeaders());
+      await axios.put(`https://smkn-compreng-api.vercel.app/api/testimonials/${id}/toggle-show`, { show: newShow }, authHeaders());
       fetchData();
     } catch (error) {
       alert('Gagal merubah status');
@@ -152,7 +152,7 @@ const TestimonialPage = () => {
     setDropdownConfig({ id: null, right: null, top: null, bottom: null });
     if (!window.confirm("Hapus testimoni ini secara permanen?")) return;
     try {
-      await axios.delete(`http://localhost:5002/api/testimonials/${id}`, authHeaders());
+      await axios.delete(`https://smkn-compreng-api.vercel.app/api/testimonials/${id}`, authHeaders());
       fetchData();
     } catch (error) {
       alert('Gagal menghapus');

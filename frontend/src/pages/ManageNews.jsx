@@ -6,7 +6,7 @@ import ImageUploader from '../components/ImageUploader';
 import '../css/managenews.css';
 import '../App.css';
 
-const API_URL = 'http://localhost:5002/api/news';
+const API_URL = 'https://smkn-compreng-api.vercel.app/api/news';
 
 export default function ManageNews() {
   const [newsList, setNewsList] = useState([]);

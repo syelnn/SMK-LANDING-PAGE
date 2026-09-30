@@ -38,7 +38,7 @@ export default function Galeri() {
 
   const fetchGalleries = async () => {
     try {
-      const response = await fetch('http://localhost:5002/api/galleries');
+      const response = await fetch('https://smkn-compreng-api.vercel.app/api/galleries');
       const result = await response.json();
       if (result.success) setGalleries(sortPhotos(result.data));
       setLoading(false);
@@ -134,7 +134,7 @@ export default function Galeri() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
-    const url = isEditing ? `http://localhost:5002/api/galleries/${currentId}` : 'http://localhost:5002/api/galleries';
+    const url = isEditing ? `https://smkn-compreng-api.vercel.app/api/galleries/${currentId}` : 'https://smkn-compreng-api.vercel.app/api/galleries';
     const method = isEditing ? 'PUT' : 'POST';
 
     try {
@@ -174,7 +174,7 @@ export default function Galeri() {
     setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
     if (!window.confirm('Yakin ingin menghapus foto ini secara permanen?')) return;
     try {
-      const res = await fetch(`http://localhost:5002/api/galleries/${id}`, { method: 'DELETE' });
+      const res = await fetch(`https://smkn-compreng-api.vercel.app/api/galleries/${id}`, { method: 'DELETE' });
       if ((await res.json()).success) {
         if (galleries.filter(g => g.category === currentCategory && g.id !== id).length === 0) backToAlbums();
         fetchGalleries();
@@ -190,7 +190,7 @@ export default function Galeri() {
 
     try {
       await Promise.all(groupedGalleries[categoryName].map(photo => 
-        fetch(`http://localhost:5002/api/galleries/${photo.id}`, {
+        fetch(`https://smkn-compreng-api.vercel.app/api/galleries/${photo.id}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ ...photo, category: newName })
         })
@@ -204,7 +204,7 @@ export default function Galeri() {
     setDropdownConfig({ id: null, type: null, right: null, top: null, bottom: null });
     if (!window.confirm(`AWAS! Hapus album "${categoryName}" beserta SEMUA foto di dalamnya secara permanen?`)) return;
     try {
-      await Promise.all(groupedGalleries[categoryName].map(photo => fetch(`http://localhost:5002/api/galleries/${photo.id}`, { method: 'DELETE' })));
+      await Promise.all(groupedGalleries[categoryName].map(photo => fetch(`https://smkn-compreng-api.vercel.app/api/galleries/${photo.id}`, { method: 'DELETE' })));
       fetchGalleries();
     } catch (err) { console.error(err); }
   };
@@ -221,13 +221,13 @@ export default function Galeri() {
       
       for (const oldCover of currentCovers) {
         const resetPayload = { ...oldCover, is_featured: 0, sort_order: oldCover.sortOrder || oldCover.sort_order || 1 };
-        await fetch(`http://localhost:5002/api/galleries/${oldCover.id}`, {
+        await fetch(`https://smkn-compreng-api.vercel.app/api/galleries/${oldCover.id}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(resetPayload)
         });
       }
 
       const newCoverPayload = { ...photo, is_featured: 1, sort_order: photo.sortOrder || photo.sort_order || 1 };
-      await fetch(`http://localhost:5002/api/galleries/${photo.id}`, {
+      await fetch(`https://smkn-compreng-api.vercel.app/api/galleries/${photo.id}`, {
         method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(newCoverPayload)
       });
       

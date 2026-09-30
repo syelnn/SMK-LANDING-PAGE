@@ -7,7 +7,7 @@ import logoSekolah from './assets/logo1.png';
 import './App.css';
 import './css/auth.css';
 
-const AUTH_API = 'http://localhost:5001/api/auth';
+const AUTH_API = 'https://smkn-compreng-api.vercel.app/api/auth';
 
 export default function Login() {
   const [username, setUsername] = useState('');

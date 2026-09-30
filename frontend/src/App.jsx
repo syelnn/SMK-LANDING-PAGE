@@ -57,14 +57,14 @@ import './css/theme.css';
     useEffect(() => {
       const fetchStats = async () => {
         const endpoints = [
-          { key: 'users', url: 'http://localhost:5001/api/users' },
-          { key: 'teachers', url: 'http://localhost:5002/api/teacher' },
-          { key: 'news', url: 'http://localhost:5002/api/news' },
-          { key: 'jurusan', url: 'http://localhost:5002/api/jurusan' },
-          { key: 'program', url: 'http://localhost:5002/api/program' },
-          { key: 'ekskul', url: 'http://localhost:5002/api/extracurriculars' },
-          { key: 'prestasi', url: 'http://localhost:5002/api/achievements' },
-          { key: 'testimoni', url: 'http://localhost:5002/api/testimonials' },
+          { key: 'users', url: 'https://smkn-compreng-api.vercel.app/api/users' },
+          { key: 'teachers', url: 'https://smkn-compreng-api.vercel.app/api/teacher' },
+          { key: 'news', url: 'https://smkn-compreng-api.vercel.app/api/news' },
+          { key: 'jurusan', url: 'https://smkn-compreng-api.vercel.app/api/jurusan' },
+          { key: 'program', url: 'https://smkn-compreng-api.vercel.app/api/program' },
+          { key: 'ekskul', url: 'https://smkn-compreng-api.vercel.app/api/extracurriculars' },
+          { key: 'prestasi', url: 'https://smkn-compreng-api.vercel.app/api/achievements' },
+          { key: 'testimoni', url: 'https://smkn-compreng-api.vercel.app/api/testimonials' },
         ];
 
         // PERBAIKAN: Ganti Promise.allSettled dengan 'for...of' loop

@@ -8,7 +8,7 @@ const FaqViewer = () => {
   const [openId, setOpenId] = useState(null);
 
   useEffect(() => {
-    fetch('http://localhost:5002/api/faqs')
+    fetch('https://smkn-compreng-api.vercel.app/api/faqs')
       .then((res) => res.json())
       .then((resData) => {
         if (resData.success) {
