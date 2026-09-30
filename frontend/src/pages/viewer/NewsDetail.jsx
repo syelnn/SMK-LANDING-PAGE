@@ -124,8 +124,11 @@ export default function NewsDetail() {
             <ChevronRight size={14} className="vnd-breadcrumb-icon" />
             <a href="/#section-berita" onClick={handleGoToBeritaSection}>BERITA</a>
             <ChevronRight size={14} className="vnd-breadcrumb-icon" />
-            <span className="vnd-breadcrumb-active">{news.title}</span>
+            <span className="vnd-breadcrumb-active" title={news.title} aria-current="page">{news.title}</span>
           </nav>
+
+          {/* Kartu Artikel: foto & teks sejajar, warna mengikuti tema */}
+          <div className="vnd-article-card">
 
           {/* Tag Badges di Atas Judul */}
           {tagsList.length > 0 && (
@@ -198,6 +201,8 @@ export default function NewsDetail() {
             </div>
           )}
 
+          </div>
+          {/* Akhir Kartu Artikel */}
         </div>
 
         {/* Section Berita Lainnya */}
