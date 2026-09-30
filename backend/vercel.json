@@ -1,7 +1,15 @@
 {
   "services": {
-    "auth": { "root": "auth-service/" },
-    "content": { "root": "content-service/" }
+    "auth": {
+      "root": "auth-service/",
+      "framework": "express",
+      "entrypoint": "index.js"
+    },
+    "content": {
+      "root": "content-service/",
+      "framework": "express",
+      "entrypoint": "index.js"
+    }
   },
   "rewrites": [
     { "source": "/api/auth/(.*)", "destination": { "service": "auth" } },
