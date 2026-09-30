@@ -643,4 +643,20 @@
   .vnd-page .vnd-other-card:hover .vnd-other-img img {
     transform: none !important;
   }
+
+  .vnd-article-container {
+    padding: 0 18px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .vnd-title {
+    font-size: 21px !important;
+  }
+  .vnd-content p {
+    font-size: 15px !important;
+  }
+  .vnd-banner-wrapper img {
+    max-height: 220px !important;
+  }
 }

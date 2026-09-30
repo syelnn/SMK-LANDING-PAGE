@@ -108,6 +108,30 @@ const Navbar = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Drawer mobile: tutup saat pindah halaman / tekan ESC / layar melebar, dan kunci scroll body saat terbuka
+  useEffect(() => {
+    setMobileMenuOpen(false);
+    setProfileDropdownOpen(false);
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (!mobileMenuOpen) {
+      setProfileDropdownOpen(false);
+      return undefined;
+    }
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => { if (e.key === 'Escape') setMobileMenuOpen(false); };
+    const onResize = () => { if (window.innerWidth > 868) setMobileMenuOpen(false); };
+    document.addEventListener('keydown', onKey);
+    window.addEventListener('resize', onResize);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      document.removeEventListener('keydown', onKey);
+      window.removeEventListener('resize', onResize);
+    };
+  }, [mobileMenuOpen]);
+
   // 1. Fetching Menu dari Database
   useEffect(() => {
     let isMounted = true;
@@ -490,10 +514,18 @@ const Navbar = () => {
         <button 
           className="mobile-toggle" 
           onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-          aria-label="Toggle Menu"
+          aria-label={mobileMenuOpen ? 'Tutup menu' : 'Buka menu'}
+          aria-expanded={mobileMenuOpen}
         >
-          ☰
+          {mobileMenuOpen ? '✕' : '☰'}
         </button>
+
+        {/* Latar gelap di belakang drawer (hanya tampil di mobile) */}
+        <div
+          className={`nv-backdrop ${mobileMenuOpen ? 'show' : ''}`}
+          onClick={() => setMobileMenuOpen(false)}
+          aria-hidden="true"
+        />
 
         {/* List Navigasi */}
         <ul className={`navbar-menu ${mobileMenuOpen ? 'active' : ''}`}>
@@ -574,6 +606,14 @@ const Navbar = () => {
                     </span>
                     <span className="nv-user__dot" aria-hidden="true"></span>
                   </span>
+                  <svg
+                    className={`nv-user__chevron ${profileDropdownOpen ? 'open' : ''}`}
+                    width="16" height="16" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
                 </button>
 
                 {profileDropdownOpen && (

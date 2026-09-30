@@ -35,6 +35,48 @@
   transform: translateX(-4px); /* Efek bergeser ke kiri sedikit */
 }
 
+/* Breadcrumb (disamakan dengan halaman berita) */
+.dk-breadcrumb {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px 8px;
+  margin-bottom: 28px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+/* Link: lebih gelap. Wajib 1 baris, tidak boleh turun ke bawah */
+.dk-breadcrumb .dk-crumb {
+  color: var(--compreng-text-secondary, #475569) !important;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: color 0.2s ease;
+}
+
+.dk-breadcrumb .dk-crumb:hover {
+  color: var(--compreng-accent, #2563eb) !important;
+}
+
+.dk-breadcrumb .dk-breadcrumb-icon {
+  flex-shrink: 0;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+/* Halaman aktif: abu-abu pudar supaya terlihat "kamu di sini" */
+.dk-breadcrumb .dk-crumb-active {
+  color: #94a3b8 !important; /* fallback */
+  color: color-mix(in srgb, var(--compreng-text-secondary, #475569) 60%, transparent) !important;
+  white-space: nowrap;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Header Section */
 .dk-header {
   display: flex;
@@ -59,12 +101,19 @@
 }
 
 .dk-tagline {
+  display: inline-block;
   font-size: 12px;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 2px;
-  margin-bottom: 15px;
-  color: var(--badge-color);
+  line-height: 1.4;
+  margin-bottom: 18px;
+  padding: 9px 22px;
+  border-radius: 999px;
+  white-space: nowrap;
+  color: var(--badge-color) !important;
+  background-color: var(--badge-bg) !important;
+  border: 1px solid var(--badge-color) !important;
 }
 
 .dk-title {
@@ -220,11 +269,14 @@
   .dk-header { margin-bottom: 40px; }
   .dk-icon-box { width: 64px; height: 64px; margin-bottom: 18px; }
   .dk-subtitle { font-size: 15px; }
+  .dk-col-left, .dk-col-right { flex: 1 1 100%; min-width: 0; }
+  .dk-subjects-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
 }
 
 @media (max-width: 420px) {
   .dk-wrapper { padding: 92px 14px 40px 14px; }
-  .dk-title { font-size: 25px; }
-  .dk-back-link { margin-bottom: 26px; }
+  .dk-breadcrumb { font-size: 11px; gap: 6px; margin-bottom: 22px; }
+  .dk-title { font-size: 25px; overflow-wrap: anywhere; }
+  .dk-tagline { font-size: 11px; letter-spacing: 1.5px; padding: 8px 18px; }
   .dk-career-card { padding: 30px 22px; }
 }

@@ -38,13 +38,17 @@
 }
 
 .tampilan-galeri-wrapper.gav-standalone {
-  padding-top: 140px;
+  padding-top: 132px;
+  padding-bottom: 72px;
   flex: 1;
+  min-width: 0;
+  overflow-x: clip; /* jaga-jaga: tidak ada elemen yang membuat halaman bisa digeser ke samping */
 }
 
 @media (max-width: 768px) {
   .tampilan-galeri-wrapper.gav-standalone {
-    padding-top: 110px;
+    padding-top: 96px;
+    padding-bottom: 48px;
   }
 }
 
@@ -131,6 +135,37 @@
   color: var(--compreng-text, #0f172a);
   margin: 0;
   letter-spacing: -0.5px;
+}
+
+/* ==========================================================================
+   HEADER HALAMAN ALBUM — tombol kembali di atas, judul di bawahnya.
+   Tidak lagi memakai grid 3 kolom + spacer tetap, jadi judul panjang
+   tidak akan menabrak tombol.
+   ========================================================================== */
+.tampilan-galeri-wrapper .gx-head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 36px;
+  padding-bottom: 28px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+.tampilan-galeri-wrapper .gx-back {
+  justify-self: auto;
+  flex: 0 0 auto;
+}
+
+.tampilan-galeri-wrapper .gx-head-title {
+  max-width: 100%;
+  margin: 0;
+  font-size: clamp(26px, 5.2vw, 44px);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+  overflow-wrap: anywhere;
 }
 
 /* ==========================================================================
@@ -266,10 +301,10 @@
 .tampilan-galeri-wrapper .gx-meta {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
-  gap: 12px;
-  margin: -10px 0 30px;
+  gap: 8px 14px;
+  margin: 0;
 }
 
 .tampilan-galeri-wrapper .gx-meta-pill {
@@ -398,18 +433,29 @@
   left: 0;
   right: 0;
   bottom: 0;
+  display: block;
+  box-sizing: border-box;
+  padding: 26px 16px 14px;
+  text-align: left;
+  pointer-events: none;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Pemotongan baris HANYA di elemen tanpa padding. Kalau padding & line-clamp
+   ada di elemen yang sama, baris ke-3 tetap kelihatan di area padding. */
+.tampilan-galeri-wrapper .gx-tile-cap-text {
   display: -webkit-box;
   -webkit-line-clamp: 2;
+  line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  padding: 16px 18px;
+  padding: 0;
   font-size: 13.5px;
   font-weight: 600;
   line-height: 1.4;
-  text-align: left;
+  overflow-wrap: anywhere;
   color: #ffffff !important;
-  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55);
 }
 
 .tampilan-galeri-wrapper .gx-tile:hover .gx-tile-cap {
@@ -452,7 +498,13 @@
   z-index: 10000;
   display: flex;
   flex-direction: column;
+  width: 100%;
+  max-width: 100vw;
+  height: 100vh;
+  height: 100dvh;
   overflow: hidden;
+  overscroll-behavior: contain;
+  touch-action: none; /* cegah browser menggeser halaman saat foto di-swipe */
   color: #ffffff;
   background-color: #050a09;
   animation: fadeIn 0.25s ease;
@@ -475,7 +527,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 28px;
+  flex: 0 0 auto;
+  padding: max(16px, env(safe-area-inset-top)) 28px 12px;
 }
 
 .tampilan-galeri-wrapper .gx-lb-count {
@@ -543,35 +596,63 @@
 .tampilan-galeri-wrapper .gx-lb-stage {
   position: relative;
   z-index: 1;
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
+  min-width: 0;
+  width: 100%;
   margin: 0;
   padding: 0 100px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  touch-action: none;
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.tampilan-galeri-wrapper .gx-lb-stage:active { cursor: grabbing; }
+
+/* Foto + caption bergerak bersama saat di-drag */
+.tampilan-galeri-wrapper .gx-lb-slide {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  max-width: 100%;
+  max-height: 100%;
+  min-width: 0;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform;
 }
+
+.tampilan-galeri-wrapper .gx-lb-slide.is-dragging { transition: none; }
 
 .tampilan-galeri-wrapper .gx-lb-photo {
   display: block;
   width: auto;
   height: auto;
   max-width: 100%;
-  max-height: calc(100vh - 260px);
-  max-height: calc(100dvh - 260px);
+  min-height: 0;
+  max-height: calc(100vh - 250px);
+  max-height: calc(100dvh - 250px);
   object-fit: contain;
   border-radius: 18px;
   background: transparent !important;
   box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.75);
   animation: gxPhotoIn 0.45s cubic-bezier(0.16, 1, 0.3, 1);
-  user-select: none;
+  -webkit-user-drag: none;
+  pointer-events: none; /* semua gesture ditangani oleh stage */
 }
 
 .tampilan-galeri-wrapper .gx-lb-caption {
-  max-width: 760px;
+  max-width: min(760px, 100%);
+  box-sizing: border-box;
   margin-top: 18px;
   padding: 9px 20px;
+  overflow-wrap: anywhere;
   border-radius: 999px;
   font-size: 14.5px;
   font-weight: 600;
@@ -587,8 +668,14 @@
 .tampilan-galeri-wrapper .gx-lb-strip {
   position: relative;
   z-index: 2;
+  flex: 0 0 auto;
+  width: 100%;
+  box-sizing: border-box;
   overflow-x: auto;
-  padding: 14px 24px 24px;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  touch-action: pan-x; /* strip boleh digulir menyamping, halaman tidak */
+  padding: 14px 24px max(24px, env(safe-area-inset-bottom));
   scrollbar-width: none;
 }
 
@@ -596,9 +683,11 @@
 
 .tampilan-galeri-wrapper .gx-lb-strip-inner {
   display: flex;
+  justify-content: center;
   gap: 10px;
   width: max-content;
-  margin: 0 auto;
+  min-width: 100%; /* tetap di tengah kalau sedikit, mulai dari kiri kalau banyak (tidak terpotong) */
+  margin: 0;
 }
 
 .tampilan-galeri-wrapper .gx-mini {
@@ -658,6 +747,7 @@
 @media (prefers-reduced-motion: reduce) {
   .tampilan-galeri-wrapper .gx-tile,
   .tampilan-galeri-wrapper .gx-lb-photo,
+  .tampilan-galeri-wrapper .gx-lb-slide,
   .tampilan-galeri-wrapper .gx-lb-ambient,
   .tampilan-galeri-wrapper .gx-lightbox {
     animation: none;
@@ -676,17 +766,10 @@
    ========================================================================== */
 @media (max-width: 768px) {
   .tampilan-galeri-wrapper { padding: 60px 16px; }
+  .tampilan-galeri-wrapper.gav-standalone { padding-left: 16px; padding-right: 16px; }
 
-  .tg-detail-top {
-    display: flex;
-    flex-direction: column;
-    gap: 15px;
-    align-items: center;
-  }
-  .tg-detail-title {
-    font-size: 22px;
-    text-align: center;
-  }
+  .tampilan-galeri-wrapper .gx-head { gap: 14px; margin-bottom: 24px; padding-bottom: 20px; }
+  .tampilan-galeri-wrapper .gx-back { padding: 9px 14px; }
 
   .tampilan-galeri-wrapper .gx-album-grid { gap: 18px; }
   .tampilan-galeri-wrapper .gx-album { height: 240px; border-radius: 20px; }
@@ -695,19 +778,26 @@
   .tampilan-galeri-wrapper .gx-masonry,
   .tampilan-galeri-wrapper .gx-col { gap: 12px; }
   .tampilan-galeri-wrapper .gx-tile { border-radius: 16px; }
-  .tampilan-galeri-wrapper .gx-tile-cap { padding: 12px 13px; font-size: 12px; }
+  .tampilan-galeri-wrapper .gx-tile-cap { padding: 22px 12px 11px; }
+  .tampilan-galeri-wrapper .gx-tile-cap-text { font-size: 12px; line-height: 1.35; }
 
-  .tampilan-galeri-wrapper .gx-lb-top { padding: 14px 16px; }
-  .tampilan-galeri-wrapper .gx-lb-stage { padding: 0 14px; }
+  .tampilan-galeri-wrapper .gx-lb-top { padding: max(12px, env(safe-area-inset-top)) 16px 8px; }
+  .tampilan-galeri-wrapper .gx-lb-stage { padding: 0 12px; }
   .tampilan-galeri-wrapper .gx-lb-photo {
-    max-height: calc(100vh - 230px);
-    max-height: calc(100dvh - 230px);
+    max-height: calc(100vh - 220px);
+    max-height: calc(100dvh - 220px);
     border-radius: 14px;
   }
-  .tampilan-galeri-wrapper .gx-lb-caption { font-size: 13px; margin-top: 14px; }
+  .tampilan-galeri-wrapper .gx-lb-caption { font-size: 13px; margin-top: 12px; padding: 8px 16px; border-radius: 18px; }
   .tampilan-galeri-wrapper .gx-lb-nav { width: 40px; height: 40px; }
-  .tampilan-galeri-wrapper .gx-lb-prev { left: 8px; }
-  .tampilan-galeri-wrapper .gx-lb-next { right: 8px; }
-  .tampilan-galeri-wrapper .gx-lb-strip { padding: 10px 14px 18px; }
+  .tampilan-galeri-wrapper .gx-lb-prev { left: 12px; }
+  .tampilan-galeri-wrapper .gx-lb-next { right: 12px; }
+  .tampilan-galeri-wrapper .gx-lb-strip { padding: 8px 14px max(16px, env(safe-area-inset-bottom)); }
   .tampilan-galeri-wrapper .gx-mini { width: 54px; height: 40px; }
+}
+
+@media (max-width: 380px) {
+  .tampilan-galeri-wrapper .gx-masonry,
+  .tampilan-galeri-wrapper .gx-col { gap: 10px; }
+  .tampilan-galeri-wrapper .gx-tile-cap-text { font-size: 11.5px; }
 }

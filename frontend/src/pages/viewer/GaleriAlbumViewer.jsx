@@ -26,6 +26,9 @@ const createSlug = (text) => {
     .replace(/^-+|-+$/g, '');
 };
 
+// Jarak geser minimal (px) agar dianggap perpindahan foto, bukan sentuhan biasa
+const SWIPE_THRESHOLD = 60;
+
 /* ------------------------------------------------------------------
    Jumlah kolom masonry mengikuti lebar layar (kiri -> kanan, bukan atas -> bawah)
    ------------------------------------------------------------------ */
@@ -94,7 +97,13 @@ function PhotoTile({ photo, index, onOpen }) {
       )}
       <span className="gx-tile-shade" />
       <span className="gx-tile-zoom"><Maximize2 size={15} /></span>
-      {photo.caption && <span className="gx-tile-cap">{photo.caption}</span>}
+      {photo.caption && (
+        <span className="gx-tile-cap">
+          {/* padding ada di .gx-tile-cap, pemotongan baris di teks di dalamnya,
+              supaya baris ke-3 tidak "bocor" ke area padding */}
+          <span className="gx-tile-cap-text">{photo.caption}</span>
+        </span>
+      )}
     </button>
   );
 }
@@ -107,8 +116,13 @@ export default function GaleriAlbumViewer() {
   const [loading, setLoading] = useState(true);
   const [activePhotoIndex, setActivePhotoIndex] = useState(null);
 
+  // Geser jari / mouse di lightbox
+  const [dragX, setDragX] = useState(0);
+  const [dragging, setDragging] = useState(false);
+
   const stripRef = useRef(null);
-  const touchStartX = useRef(null);
+  const closeBtnRef = useRef(null);
+  const dragRef = useRef(null);
   const columnCount = useColumnCount();
 
   // Selalu mulai dari atas halaman saat berpindah dari daftar album
@@ -169,7 +183,12 @@ export default function GaleriAlbumViewer() {
   };
 
   // Handler Slider Lightbox
-  const closeLightbox = useCallback(() => setActivePhotoIndex(null), []);
+  const closeLightbox = useCallback(() => {
+    setActivePhotoIndex(null);
+    setDragX(0);
+    setDragging(false);
+    dragRef.current = null;
+  }, []);
   const goNext = useCallback(() => {
     if (!photoCount) return;
     setActivePhotoIndex((prev) => (prev === null ? prev : (prev + 1) % photoCount));
@@ -181,7 +200,9 @@ export default function GaleriAlbumViewer() {
 
   const lightboxOpen = activePhotoIndex !== null;
 
-  // Keyboard (Esc / panah) + kunci scroll halaman saat lightbox terbuka
+  // Keyboard (Esc / panah) + kunci scroll halaman saat lightbox terbuka.
+  // <html> ikut dikunci (bukan hanya <body>) supaya browser HP tidak ikut
+  // menggeser halaman ke samping ketika foto di-swipe.
   useEffect(() => {
     if (!lightboxOpen) return undefined;
 
@@ -192,22 +213,37 @@ export default function GaleriAlbumViewer() {
     };
     window.addEventListener('keydown', onKey);
 
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const html = document.documentElement;
+    const body = document.body;
+    const prev = {
+      htmlOverflow: html.style.overflow,
+      htmlOverscroll: html.style.overscrollBehavior,
+      bodyOverflow: body.style.overflow,
+    };
+    html.style.overflow = 'hidden';
+    html.style.overscrollBehavior = 'none';
+    body.style.overflow = 'hidden';
+
+    closeBtnRef.current?.focus({ preventScroll: true });
 
     return () => {
       window.removeEventListener('keydown', onKey);
-      document.body.style.overflow = previousOverflow;
+      html.style.overflow = prev.htmlOverflow;
+      html.style.overscrollBehavior = prev.htmlOverscroll;
+      body.style.overflow = prev.bodyOverflow;
     };
   }, [lightboxOpen, closeLightbox, goNext, goPrev]);
 
-  // Strip thumbnail otomatis menggulir ke foto yang sedang dibuka
+  // Strip thumbnail otomatis menggulir ke foto yang sedang dibuka.
+  // Hanya menggeser strip-nya sendiri (bukan scrollIntoView, yang bisa ikut
+  // menggeser halaman/viewport di HP).
   useEffect(() => {
-    if (!lightboxOpen || !stripRef.current) return;
-    const current = stripRef.current.querySelector('[data-current="true"]');
-    if (current && current.scrollIntoView) {
-      current.scrollIntoView({ inline: 'center', block: 'nearest', behavior: 'smooth' });
-    }
+    const strip = stripRef.current;
+    if (!lightboxOpen || !strip) return;
+    const current = strip.querySelector('[data-current="true"]');
+    if (!current) return;
+    const target = current.offsetLeft - (strip.clientWidth - current.offsetWidth) / 2;
+    strip.scrollTo({ left: Math.max(0, target), behavior: 'smooth' });
   }, [activePhotoIndex, lightboxOpen]);
 
   // Preload foto sebelum & sesudahnya supaya perpindahan terasa instan
@@ -222,13 +258,47 @@ export default function GaleriAlbumViewer() {
     });
   }, [activePhotoIndex, lightboxOpen, photoCount, currentAlbumPhotos]);
 
-  // Geser jari (swipe) di HP
-  const onTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
-  const onTouchEnd = (e) => {
-    if (touchStartX.current === null) return;
-    const delta = e.changedTouches[0].clientX - touchStartX.current;
-    touchStartX.current = null;
-    if (Math.abs(delta) > 50) (delta < 0 ? goNext : goPrev)();
+  // Geser (swipe) memakai pointer events. Area foto memakai `touch-action: none`
+  // di CSS, sehingga browser tidak ikut menggeser halaman.
+  const onPointerDown = (e) => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    dragRef.current = { id: e.pointerId, startX: e.clientX, startY: e.clientY, moved: false };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+
+  const onPointerMove = (e) => {
+    const d = dragRef.current;
+    if (!d || d.id !== e.pointerId) return;
+    const dx = e.clientX - d.startX;
+    const dy = e.clientY - d.startY;
+    if (!d.moved && Math.abs(dx) < 6) return;
+    if (!d.moved && Math.abs(dy) > Math.abs(dx)) return; // gerakan vertikal, abaikan
+    d.moved = true;
+    setDragging(true);
+    // Foto ikut jari, tapi dibatasi supaya tidak lari keluar layar
+    setDragX(Math.max(-160, Math.min(160, dx)));
+  };
+
+  const endDrag = (e) => {
+    const d = dragRef.current;
+    if (!d || d.id !== e.pointerId) return;
+    const dx = e.clientX - d.startX;
+    const moved = d.moved;
+    e.currentTarget.releasePointerCapture?.(e.pointerId);
+    setDragging(false);
+    setDragX(0);
+    if (moved && photoCount > 1 && Math.abs(dx) > SWIPE_THRESHOLD) {
+      (dx < 0 ? goNext : goPrev)();
+    }
+    // `moved` dibiarkan sebentar agar klik susulan setelah geser tidak menutup lightbox
+    dragRef.current = moved ? { id: null, moved: true } : null;
+    if (moved) setTimeout(() => { dragRef.current = null; }, 0);
+  };
+
+  const onStageClick = (e) => {
+    // Klik di area kosong sekitar foto = tutup; klik di foto/caption = tidak
+    if (dragRef.current?.moved) return;
+    if (e.target === e.currentTarget) closeLightbox();
   };
 
   const activePhoto = lightboxOpen ? currentAlbumPhotos[activePhotoIndex] : null;
@@ -237,64 +307,57 @@ export default function GaleriAlbumViewer() {
     <div className="gav-page-wrapper">
       <Navbar />
 
-      <div id="section-galeri-album" className="tampilan-galeri-wrapper gav-standalone">
+      <div id="section-galeri-album" className="tampilan-galeri-wrapper gx-standalone gav-standalone">
         <div className="tg-container">
 
-          {/* HEADER SECTION */}
-          <div className="tg-header">
-            <div className="tg-detail-top">
-              <button onClick={backToAlbums} className="tg-btn-back">
-                <ArrowLeft size={16} /> Kembali ke Daftar Album
-              </button>
-              <h2 className="tg-title" style={{ margin: 0, fontSize: '26px' }}>
-                Album: <span style={{ color: '#16a34a' }}>{selectedAlbum || '...'}</span>
-              </h2>
-              <div style={{ width: '140px' }}></div>
-            </div>
-          </div>
+          {/* HEADER: tombol kembali di atas, judul di bawahnya (tidak saling menabrak) */}
+          <header className="gx-head">
+            <button type="button" onClick={backToAlbums} className="tg-btn-back gx-back">
+              <ArrowLeft size={16} /> Kembali ke Daftar Album
+            </button>
+
+            <h1 className="gx-head-title">{selectedAlbum || (loading ? 'Memuat album…' : 'Album')}</h1>
+
+            {!loading && selectedAlbum && (
+              <div className="gx-meta">
+                <span className="gx-meta-pill"><ImageIcon size={14} /> {photoCount} Foto</span>
+                <span className="gx-meta-hint">Ketuk foto untuk memperbesar</span>
+              </div>
+            )}
+          </header>
 
           {/* STATE: MEMUAT */}
           {loading && (
-            <div style={{ textAlign: 'center', padding: '100px', fontSize: '16px', color: 'var(--compreng-text-secondary, #475569)' }}>
+            <div style={{ textAlign: 'center', padding: '80px 0', fontSize: '16px', color: 'var(--compreng-text-secondary, #475569)' }}>
               Memuat Album Galeri...
             </div>
           )}
 
           {/* STATE: ALBUM TIDAK DITEMUKAN */}
           {!loading && !selectedAlbum && (
-            <div style={{ textAlign: 'center', padding: '80px 20px' }}>
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <p style={{ color: 'var(--compreng-text-secondary, #475569)', marginBottom: '20px' }}>
                 Album galeri tidak ditemukan atau sudah tidak tersedia.
               </p>
-              <button onClick={backToAlbums} className="tg-btn-back" style={{ margin: '0 auto' }}>
-                <ArrowLeft size={16} /> Kembali ke Daftar Album
-              </button>
             </div>
           )}
 
           {/* FOTO DALAM ALBUM (MASONRY) */}
           {!loading && selectedAlbum && (
-            <>
-              <div className="gx-meta">
-                <span className="gx-meta-pill"><ImageIcon size={14} /> {photoCount} Foto</span>
-                <span className="gx-meta-hint">Klik foto untuk memperbesar</span>
-              </div>
-
-              <div className={`gx-masonry${masonryColumns.length === 1 ? ' is-single' : ''}`}>
-                {masonryColumns.map((col, colIndex) => (
-                  <div className="gx-col" key={colIndex}>
-                    {col.map(({ photo, index }) => (
-                      <PhotoTile
-                        key={photo.id || index}
-                        photo={photo}
-                        index={index}
-                        onOpen={setActivePhotoIndex}
-                      />
-                    ))}
-                  </div>
-                ))}
-              </div>
-            </>
+            <div className={`gx-masonry${masonryColumns.length === 1 ? ' is-single' : ''}`}>
+              {masonryColumns.map((col, colIndex) => (
+                <div className="gx-col" key={colIndex}>
+                  {col.map(({ photo, index }) => (
+                    <PhotoTile
+                      key={photo.id || index}
+                      photo={photo}
+                      index={index}
+                      onOpen={setActivePhotoIndex}
+                    />
+                  ))}
+                </div>
+              ))}
+            </div>
           )}
 
           {/* LIGHTBOX / SLIDER FOTO */}
@@ -309,75 +372,85 @@ export default function GaleriAlbumViewer() {
               <div
                 key={`bg-${activePhotoIndex}`}
                 className="gx-lb-ambient"
-                style={{ backgroundImage: `url("${activePhoto.image}")` }}
+                style={{ backgroundImage: `url("${getImageUrl(activePhoto.image)}")` }}
               />
 
               <div className="gx-lb-top" onClick={(e) => e.stopPropagation()}>
                 <span className="gx-lb-count">
                   {activePhotoIndex + 1}<em> / {photoCount}</em>
                 </span>
-                <button type="button" className="gx-lb-close" onClick={closeLightbox} aria-label="Tutup">
+                <button
+                  ref={closeBtnRef}
+                  type="button"
+                  className="gx-lb-close"
+                  onClick={closeLightbox}
+                  aria-label="Tutup"
+                >
                   <X size={20} />
                 </button>
               </div>
 
-              {photoCount > 1 && (
-                <button
-                  type="button"
-                  className="gx-lb-nav gx-lb-prev"
-                  onClick={(e) => { e.stopPropagation(); goPrev(); }}
-                  aria-label="Foto sebelumnya"
-                >
-                  <ChevronLeft size={26} />
-                </button>
-              )}
-
               <figure
                 className="gx-lb-stage"
-                onClick={(e) => e.stopPropagation()}
-                onTouchStart={onTouchStart}
-                onTouchEnd={onTouchEnd}
+                onClick={(e) => { e.stopPropagation(); onStageClick(e); }}
+                onPointerDown={onPointerDown}
+                onPointerMove={onPointerMove}
+                onPointerUp={endDrag}
+                onPointerCancel={endDrag}
               >
-                <img
-                  key={`photo-${activePhotoIndex}`}
-                  src={getImageUrl(activePhoto.image)}
-                  alt={activePhoto.caption || 'Preview foto'}
-                  className="gx-lb-photo"
-                  draggable={false}
-                />
-                {activePhoto.caption && (
-                  <figcaption className="gx-lb-caption">{activePhoto.caption}</figcaption>
-                )}
+                <div
+                  className={`gx-lb-slide${dragging ? ' is-dragging' : ''}`}
+                  style={{ transform: dragX ? `translate3d(${dragX}px, 0, 0)` : undefined }}
+                >
+                  <img
+                    key={`photo-${activePhotoIndex}`}
+                    src={getImageUrl(activePhoto.image)}
+                    alt={activePhoto.caption || 'Preview foto'}
+                    className="gx-lb-photo"
+                    draggable={false}
+                  />
+                  {activePhoto.caption && (
+                    <figcaption className="gx-lb-caption">{activePhoto.caption}</figcaption>
+                  )}
+                </div>
               </figure>
 
               {photoCount > 1 && (
-                <button
-                  type="button"
-                  className="gx-lb-nav gx-lb-next"
-                  onClick={(e) => { e.stopPropagation(); goNext(); }}
-                  aria-label="Foto berikutnya"
-                >
-                  <ChevronRight size={26} />
-                </button>
-              )}
+                <>
+                  <button
+                    type="button"
+                    className="gx-lb-nav gx-lb-prev"
+                    onClick={(e) => { e.stopPropagation(); goPrev(); }}
+                    aria-label="Foto sebelumnya"
+                  >
+                    <ChevronLeft size={26} />
+                  </button>
+                  <button
+                    type="button"
+                    className="gx-lb-nav gx-lb-next"
+                    onClick={(e) => { e.stopPropagation(); goNext(); }}
+                    aria-label="Foto berikutnya"
+                  >
+                    <ChevronRight size={26} />
+                  </button>
 
-              {photoCount > 1 && (
-                <div className="gx-lb-strip" ref={stripRef} onClick={(e) => e.stopPropagation()}>
-                  <div className="gx-lb-strip-inner">
-                    {currentAlbumPhotos.map((p, i) => (
-                      <button
-                        type="button"
-                        key={p.id || i}
-                        className={`gx-mini${i === activePhotoIndex ? ' is-current' : ''}`}
-                        data-current={i === activePhotoIndex}
-                        onClick={() => setActivePhotoIndex(i)}
-                        aria-label={`Lihat foto ${i + 1}`}
-                      >
-                        <img src={getImageUrl(p.image)} alt="" loading="lazy" draggable={false} />
-                      </button>
-                    ))}
+                  <div className="gx-lb-strip" ref={stripRef} onClick={(e) => e.stopPropagation()}>
+                    <div className="gx-lb-strip-inner">
+                      {currentAlbumPhotos.map((p, i) => (
+                        <button
+                          type="button"
+                          key={p.id || i}
+                          className={`gx-mini${i === activePhotoIndex ? ' is-current' : ''}`}
+                          data-current={i === activePhotoIndex}
+                          onClick={() => setActivePhotoIndex(i)}
+                          aria-label={`Lihat foto ${i + 1}`}
+                        >
+                          <img src={getImageUrl(p.image)} alt="" loading="lazy" draggable={false} />
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </>
               )}
             </div>
           )}

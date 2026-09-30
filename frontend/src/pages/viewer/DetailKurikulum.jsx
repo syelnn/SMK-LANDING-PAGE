@@ -78,13 +78,13 @@ export default function DetailKurikulumViewer() {
       >
         <div className="dk-container">
           
-          {/* Breadcrumb Navigasi */}
-          <nav className="dk-breadcrumb" aria-label="Breadcrumb" style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '600' }}>
-            <Link to="/" style={{ color: 'var(--compreng-text-secondary, #475569)', textDecoration: 'none' }}>BERANDA</Link>
-            <ChevronRight size={14} style={{ color: 'var(--compreng-text-secondary, #475569)' }} />
-            <a href="/program" onClick={handleGoToProgramSection} style={{ color: 'var(--compreng-text-secondary, #475569)', textDecoration: 'none' }}>JURUSAN & PROGRAM</a>
-            <ChevronRight size={14} style={{ color: 'var(--compreng-text-secondary, #475569)' }} />
-            <span style={{ color: 'var(--compreng-text, #0f172a)' }}>{current.title}</span>
+          {/* Breadcrumb Navigasi (gaya sama dengan NewsDetail) */}
+          <nav className="dk-breadcrumb" aria-label="Breadcrumb">
+            <Link to="/" className="dk-crumb">BERANDA</Link>
+            <ChevronRight size={14} className="dk-breadcrumb-icon" />
+            <a href="/program" onClick={handleGoToProgramSection} className="dk-crumb">JURUSAN &amp; PROGRAM</a>
+            <ChevronRight size={14} className="dk-breadcrumb-icon" />
+            <span className="dk-crumb-active" aria-current="page">{current.title.toUpperCase()}</span>
           </nav>
 
           <div className="dk-header">
