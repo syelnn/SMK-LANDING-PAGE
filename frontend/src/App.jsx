@@ -44,6 +44,7 @@ import ManageIndustryPartners from './pages/ManageIndustryPartners';
 
 import './css/dashboard.css'; // MENGIMPOR CSS DASHBOARD 
 import './css/theme.css';
+import './css/admin-responsive.css'; // RESPONSIVE ADMIN/EDITOR (harus paling akhir agar menang atas CSS lain)
 
 // ==========================================
   // HALAMAN DASHBOARD ANALYTICS (REAL DATA)
@@ -317,6 +318,9 @@ const GuestRoute = ({ children }) => {
   return children;
 };
 
+// Batas layar HP/tablet untuk mode drawer (sinkron dengan css/admin-responsive.css)
+const ADMIN_MOBILE_QUERY = '(max-width: 1024px)';
+
 const DashboardLayout = () => {
   const navigate = useNavigate();
 
@@ -371,6 +375,53 @@ const DashboardLayout = () => {
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true); 
+  const location = useLocation();
+
+  // ==============================================
+  // RESPONSIVE: di layar <= 1024px sidebar berubah jadi drawer (geser dari kiri).
+  // Tombol di topbar membuka/menutup drawer (isMobileMenuOpen), sedangkan di desktop
+  // tombol yang sama tetap mengecilkan/melebarkan sidebar (isSidebarVisible).
+  // Batas 1024px HARUS sama dengan media query di css/admin-responsive.css.
+  // ==============================================
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' && window.matchMedia(ADMIN_MOBILE_QUERY).matches
+  );
+
+  useEffect(() => {
+    const mq = window.matchMedia(ADMIN_MOBILE_QUERY);
+    const onChange = (e) => {
+      setIsMobile(e.matches);
+      if (!e.matches) setIsMobileMenuOpen(false); // kembali ke desktop -> tutup drawer
+    };
+    setIsMobile(mq.matches);
+    if (mq.addEventListener) mq.addEventListener('change', onChange);
+    else mq.addListener(onChange); // Safari lama
+    return () => {
+      if (mq.removeEventListener) mq.removeEventListener('change', onChange);
+      else mq.removeListener(onChange);
+    };
+  }, []);
+
+  // Drawer otomatis menutup setelah pindah halaman
+  useEffect(() => { setIsMobileMenuOpen(false); }, [location.pathname]);
+
+  // Saat drawer terbuka: kunci scroll halaman di belakangnya & Escape untuk menutup
+  useEffect(() => {
+    if (!(isMobile && isMobileMenuOpen)) return undefined;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const onKey = (e) => { if (e.key === 'Escape') setIsMobileMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener('keydown', onKey);
+    };
+  }, [isMobile, isMobileMenuOpen]);
+
+  const handleToggleSidebar = () => {
+    if (isMobile) setIsMobileMenuOpen((open) => !open);
+    else setIsSidebarVisible((visible) => !visible);
+  };
   
   // STATE NAVBAR ATAS
   const [isTopUserMenuOpen, setIsTopUserMenuOpen] = useState(false);
@@ -432,7 +483,7 @@ const DashboardLayout = () => {
       <Sidebar 
         isMobileMenuOpen={isMobileMenuOpen}
         setIsMobileMenuOpen={setIsMobileMenuOpen}
-        isSidebarVisible={isSidebarVisible}
+        isSidebarVisible={isMobile ? true : isSidebarVisible}
         setIsSidebarVisible={setIsSidebarVisible}
         userData={userData}
       />
@@ -446,7 +497,13 @@ const DashboardLayout = () => {
         <header className="topbar">
           <div className="topbar-left">
             {/* Tombol selalu tampil dan berfungsi sebagai Toggle (Buka/Tutup) */}
-            <button onClick={() => setIsSidebarVisible(!isSidebarVisible)} className="btn-sidebar-toggle">
+            <button
+              type="button"
+              onClick={handleToggleSidebar}
+              className="btn-sidebar-toggle"
+              aria-label={isMobile ? 'Buka menu navigasi' : 'Ciutkan / lebarkan sidebar'}
+              aria-expanded={isMobile ? isMobileMenuOpen : isSidebarVisible}
+            >
               <PanelLeft size={20} />
             </button>
             

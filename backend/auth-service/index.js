@@ -29,6 +29,9 @@ const USERNAME_RULE = /^[a-zA-Z0-9_.-]{3,50}$/;
 // Panjang OTP HARUS sama dengan Supabase Dashboard > Auth > Email > "Email OTP Length"
 const OTP_LENGTH = Number(process.env.OTP_LENGTH || 6);
 const RESET_OTP_COOLDOWN_MS = 30 * 1000;
+// URL frontend (tanpa slash di akhir). Dipakai sebagai tujuan link di email verifikasi.
+// Isi di Vercel/.env backend, mis. FRONTEND_URL=https://smkn-compreng.vercel.app
+const FRONTEND_URL = (process.env.FRONTEND_URL || '').replace(/\/+$/, '');
 
 // Field aman untuk dikirim ke client (TIDAK PERNAH kirim hash password)
 const SAFE_USER = {
@@ -192,7 +195,11 @@ app.post('/api/auth/resend-verification', authLimiter, async (req, res) => {
     const email = String(req.body.email || '').trim().toLowerCase();
     if (!EMAIL_RULE.test(email)) return res.status(400).json({ success: false, message: 'Format email tidak valid!' });
 
-    const { error } = await supabaseAuth.auth.resend({ type: 'signup', email });
+    const { error } = await supabaseAuth.auth.resend({
+      type: 'signup',
+      email,
+      options: { emailRedirectTo: `${(FRONTEND_URL || String(req.get('origin') || '').replace(/\/+$/, '') || 'http://localhost:5173')}/login` },
+    });
     if (error) return res.status(400).json({ success: false, message: mapSupabaseAuthError(error.message) });
 
     res.json({ success: true, message: 'Email verifikasi baru sudah dikirim. Silakan cek inbox/spam.' });
