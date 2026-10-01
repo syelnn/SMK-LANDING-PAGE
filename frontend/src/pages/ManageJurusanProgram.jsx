@@ -255,6 +255,43 @@ export default function ManageJurusanProgram() {
         </table>
       </div>
 
+      {/* Card List Jurusan (mobile) */}
+      <div className="mjp-mlist">
+        {jurusanList.length === 0 ? (
+          <div className="mjp-mempty">Belum ada data jurusan.</div>
+        ) : (
+          jurusanList.map((item) => {
+            const subjectArray = item.subjects ? item.subjects.split(',') : [];
+            return (
+              <div key={item.id} className="mjp-mcard">
+                <div className="mjp-mtop">
+                  <img className="mjp-mpic" src={getImageUrl(item.imageIcon) || 'https://via.placeholder.com/40'} alt="Icon" />
+                  <div className="mjp-mbody">
+                    <div className="mjp-mtitle">{item.title}</div>
+                    <div className="mjp-mslug">/{item.slug}</div>
+                  </div>
+                  <button
+                    onClick={(e) => handleDropdownClick(e, item.id, 'jurusan')}
+                    className="mjp-action-btn"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                </div>
+                {item.desc && <p className="mjp-mtext">{item.desc}</p>}
+                {subjectArray.length > 0 && (
+                  <div className="mjp-mtags">
+                    {subjectArray.slice(0, 3).map((sub, idx) => (
+                      <span key={idx} className="mjp-badge-tag">{sub.trim()}</span>
+                    ))}
+                    {subjectArray.length > 3 && <span className="mjp-badge-tag">+{subjectArray.length - 3}</span>}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
       {/* ================= BAGIAN 2: PROGRAM UNGGULAN ================= */}
       <div className="mjp-header-box" style={{ marginTop: '50px' }}>
         <div>
@@ -310,6 +347,34 @@ export default function ManageJurusanProgram() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Card List Program (mobile) */}
+      <div className="mjp-mlist">
+        {programList.length === 0 ? (
+          <div className="mjp-mempty">Belum ada program unggulan.</div>
+        ) : (
+          programList.map((prog) => (
+            <div key={prog.id} className="mjp-mcard">
+              <div className="mjp-mtop">
+                <img className="mjp-mpic" src={getImageUrl(prog.imageIcon) || 'https://via.placeholder.com/40'} alt="Icon" />
+                <div className="mjp-mbody">
+                  <div className="mjp-mtitle">{prog.title}</div>
+                  {prog.badge && <span className="mjp-badge-blue">{prog.badge}</span>}
+                </div>
+                {(userRole === 'admin' || userRole === 'editor') && (
+                  <button
+                    onClick={(e) => handleDropdownClick(e, prog.id, 'program')}
+                    className="mjp-action-btn"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                )}
+              </div>
+              {prog.desc && <p className="mjp-mtext">{prog.desc}</p>}
+            </div>
+          ))
+        )}
       </div>
 
       {/* MENAMPILKAN DROPDOWN SECARA FIXED (Di Luar Flow Tabel) */}

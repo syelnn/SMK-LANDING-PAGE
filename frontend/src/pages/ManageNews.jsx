@@ -189,6 +189,10 @@ const handleOpenEdit = (item) => {
     setOpenMenuId((prevId) => (prevId === id ? null : id));
   };
 
+  // Daftar tag aman untuk tampilan kartu mobile (format sama dengan yang dipakai di tabel)
+  const getTagList = (item) =>
+    Array.isArray(item.tags) ? item.tags : (item.tags ? item.tags.split(',') : []);
+
   const filteredNews = newsList.filter((item) => {
     const query = searchQuery.toLowerCase();
     const matchTitle = item.title?.toLowerCase().includes(query);
@@ -216,7 +220,7 @@ const handleOpenEdit = (item) => {
             Kelola seluruh berita, pengumuman, dan artikel kegiatan sekolah di sini.
           </p>
         </div>
-        <button className="btn-primary" onClick={handleOpenAdd}>
+        <button className="btn-primary news-add-desktop" onClick={handleOpenAdd}>
           <Plus size={18} /> Tambah Berita
         </button>
       </div>
@@ -232,6 +236,14 @@ const handleOpenEdit = (item) => {
             className="search-input"
           />
         </div>
+        <button
+          type="button"
+          className="btn-primary news-add-mobile"
+          onClick={handleOpenAdd}
+          aria-label="Tambah Berita"
+        >
+          <Plus size={16} /> Tambah
+        </button>
       </div>
 
       <div className="table-wrapper">
@@ -369,6 +381,110 @@ const handleOpenEdit = (item) => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* ===== TAMPILAN MOBILE: Card List (tabel disembunyikan via CSS di layar HP) ===== */}
+      <div className="news-m-list">
+        {loading ? (
+          <div className="news-m-state">
+            <Loader2 className="animate-spin" size={18} />
+            Memuat data...
+          </div>
+        ) : filteredNews.length === 0 ? (
+          <div className="news-m-state">Tidak ada berita ditemukan.</div>
+        ) : (
+          filteredNews.map((item) => {
+            const itemId = item.id || item._id;
+            const mobileTags = getTagList(item);
+
+            return (
+              <div key={itemId} className="news-m-card">
+                <div className="news-m-head">
+                  {item.image ? (
+                    <img
+                      src={getImageUrl(item.image)}
+                      alt={item.title}
+                      className="news-m-thumb"
+                      onError={(e) => { e.target.style.display = 'none'; }}
+                    />
+                  ) : (
+                    <div className="news-m-thumb news-m-thumb-empty">No Image</div>
+                  )}
+
+                  <div className="news-m-main">
+                    <div className="news-m-title">{item.title}</div>
+                    {mobileTags.length > 0 && (
+                      <div className="news-m-tags">
+                        {mobileTags.map((tag, idx) => (
+                          <span key={idx} className="badge-tag">
+                            #{tag.trim()}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="dropdown-action-wrapper">
+                    <button
+                      type="button"
+                      className="btn-more-action"
+                      onClick={(e) => toggleDropdown(e, itemId)}
+                      title="Opsi"
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
+
+                    {openMenuId === itemId && (
+                      <div className="action-dropdown-menu">
+                        <button
+                          type="button"
+                          className="dropdown-item"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleOpenEdit(item);
+                          }}
+                        >
+                          <Edit3 size={14} /> Edit Data
+                        </button>
+                        <button
+                          type="button"
+                          className="dropdown-item delete"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDelete(itemId);
+                          }}
+                        >
+                          <Trash2 size={14} /> Delete
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="news-m-details">
+                  <div className="news-m-row">
+                    <div className="news-m-label">Kategori</div>
+                    <div className="news-m-value">
+                      <span className="badge badge-category">{item.category || 'Berita'}</span>
+                    </div>
+                  </div>
+                  <div className="news-m-row">
+                    <div className="news-m-label">Status</div>
+                    <div className="news-m-value">
+                      <span className={`badge ${item.status === 'published' ? 'badge-success' : 'badge-warning'}`}>
+                        {item.status === 'published' ? 'Tampil' : 'Sembunyi'}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="news-m-row">
+                    <div className="news-m-label">Penulis</div>
+                    <div className="news-m-value">Admin</div>
+                  </div>
+                </div>
+              </div>
+            );
+          })
+        )}
       </div>
 
       {showModal && (

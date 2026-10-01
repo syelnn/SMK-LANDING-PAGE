@@ -271,7 +271,7 @@ export default function Galeri() {
         </div>
 
         {canAccessCRUD && (
-          <div>
+          <div className="galeri-add-desktop">
             {viewMode === 'albums' ? (
               <button className="btn-modern-primary" onClick={handleOpenAddAlbum}>
                 <Plus size={16} /> Buat Album Baru
@@ -315,6 +315,18 @@ export default function Galeri() {
               <List size={16} />
             </button>
           </div>
+        )}
+
+        {/* Tombol ringkas khusus mobile: sebaris dengan Search (aksi sama dengan tombol desktop) */}
+        {canAccessCRUD && (
+          <button
+            type="button"
+            className="galeri-add-mobile"
+            onClick={viewMode === 'albums' ? handleOpenAddAlbum : handleOpenAddPhoto}
+            aria-label={viewMode === 'albums' ? 'Buat Album Baru' : 'Tambah Foto'}
+          >
+            <Plus size={16} /> {viewMode === 'albums' ? 'Album' : 'Foto'}
+          </button>
         )}
       </div>
 
@@ -370,6 +382,44 @@ export default function Galeri() {
               )}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Card List Album (mobile) */}
+      {viewMode === 'albums' && (
+        <div className="galeri-mlist">
+          {albumKeys.length === 0 ? (
+            <div className="galeri-mempty">
+              {searchTerm ? `Tidak ditemukan album "${searchTerm}"` : 'Belum ada album.'}
+            </div>
+          ) : (
+            albumKeys.map((catName) => {
+              const items = groupedGalleries[catName];
+              const coverImage = items.find(i => i.isFeatured === 1 || i.is_featured === 1)?.image || items[0].image;
+              return (
+                <div key={catName} className="galeri-mcard" onClick={() => openAlbum(catName)}>
+                  <img className="galeri-mpic" src={getImageUrl(coverImage)} alt="Cover" />
+                  <div className="galeri-mbody">
+                    <div className="galeri-mname">
+                      <FolderOpen size={14} />
+                      <span>{catName}</span>
+                    </div>
+                    <div className="galeri-mcount">{items.length} Foto</div>
+                  </div>
+                  {canAccessCRUD && (
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <button
+                        onClick={(e) => handleDropdownClick(e, catName, 'album')}
+                        className="galeri-action-btn"
+                      >
+                        <MoreHorizontal size={18} />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
         </div>
       )}
 
@@ -469,6 +519,45 @@ export default function Galeri() {
             )}
           </div>
         )
+      )}
+
+      {/* Card List Foto (mobile, untuk mode tabel) - mode grid sudah responsif */}
+      {viewMode === 'detail' && selectedAlbum && displayMode === 'list' && (
+        <div className="galeri-mlist">
+          {currentAlbumPhotos.length === 0 ? (
+            <div className="galeri-mempty">
+              {searchTerm ? `Tidak ditemukan deskripsi foto "${searchTerm}"` : 'Album ini belum memiliki foto.'}
+            </div>
+          ) : (
+            [...currentAlbumPhotos].sort((a, b) => {
+              const aIsCover = (a.isFeatured === 1 || a.is_featured === 1) ? 1 : 0;
+              const bIsCover = (b.isFeatured === 1 || b.is_featured === 1) ? 1 : 0;
+              return bIsCover - aIsCover;
+            }).map((item) => (
+              <div key={item.id} className="galeri-mcard">
+                <img className="galeri-mpic" src={getImageUrl(item.image)} alt="foto" />
+                <div className="galeri-mbody">
+                  <div className="galeri-mcaption">
+                    {item.caption || <span style={{ color: 'var(--compreng-text-muted)', fontStyle: 'italic' }}>Tidak ada deskripsi</span>}
+                  </div>
+                  {(item.isFeatured === 1 || item.is_featured === 1) ? (
+                    <span className="galeri-badge-cover"><Star size={12} fill="currentColor" /> Cover Utama</span>
+                  ) : (
+                    <span className="galeri-badge-normal">Foto Biasa</span>
+                  )}
+                </div>
+                {canAccessCRUD && (
+                  <button
+                    onClick={(e) => handleDropdownClick(e, item.id, 'photo')}
+                    className="galeri-action-btn"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       )}
 
       {/* DROPDOWN MENU */}

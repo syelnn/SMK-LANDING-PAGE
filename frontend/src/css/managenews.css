@@ -837,3 +837,196 @@ tr.row-featured {
     animation: none;
   }
 }
+
+
+/* ==========================================================================
+   I. RESPONSIF HP — KELOLA BERITA (Card List)
+   --------------------------------------------------------------------------
+   - Semua aturan dikunci ke #admin-berita, jadi halaman admin lain yang
+     memakai class sama (.table-toolbar, .admin-page-header, dst) tidak ikut berubah.
+   - Warna/border/teks memakai variabel tema (--compreng-*), jadi otomatis
+     mengikuti tema terang/gelap yang sedang dipakai.
+   - Di luar media query: elemen khusus HP disembunyikan -> desktop tidak berubah.
+   ========================================================================== */
+#admin-berita .news-add-mobile,
+#admin-berita .news-m-list {
+  display: none;
+}
+
+@media (max-width: 640px) {
+
+  /* --- 1. Header & kontrol ------------------------------------------------ */
+  /* Tombol "Tambah Berita" besar di header diganti tombol ringkas di sebelah search */
+  #admin-berita .admin-page-header {
+    margin-bottom: 16px;
+    gap: 6px;
+  }
+  #admin-berita .admin-page-header > .news-add-desktop {
+    display: none;
+  }
+
+  /* Search + tombol Tambah: satu baris, tinggi sama */
+  #admin-berita .table-toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  #admin-berita .table-toolbar .search-input-wrapper {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0;
+    max-width: none !important;
+  }
+  #admin-berita .table-toolbar .search-input {
+    height: 40px;
+    padding: 0 12px 0 36px !important;
+    border-radius: 10px !important;
+  }
+  #admin-berita .table-toolbar .news-add-mobile {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    height: 40px;
+    padding: 0 14px !important;
+    border-radius: 10px !important;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+  }
+
+  /* --- 2. Tabel disembunyikan, ganti Card List ---------------------------- */
+  #admin-berita .table-wrapper {
+    display: none !important;
+  }
+  #admin-berita .news-m-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  #admin-berita .news-m-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 28px 12px;
+    font-size: 14px;
+    color: var(--compreng-text-secondary, #475569);
+    text-align: center;
+  }
+
+  #admin-berita .news-m-card {
+    background-color: var(--compreng-surface, #ffffff);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    border-radius: 14px;
+    padding: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    box-sizing: border-box;
+    min-width: 0;
+  }
+
+  /* Baris atas: gambar | judul + tags | tombol aksi */
+  #admin-berita .news-m-head {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  #admin-berita .news-m-thumb {
+    flex: 0 0 auto;
+    width: 64px;
+    height: 48px;
+    object-fit: cover;
+    border-radius: 8px;
+    display: block;
+  }
+  #admin-berita .news-m-thumb-empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--compreng-surface-soft, #f1f5f9);
+    border: 1px dashed var(--compreng-border, #cbd5e1);
+    color: var(--compreng-text-secondary, #475569);
+    font-size: 10px;
+    text-align: center;
+  }
+  #admin-berita .news-m-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  #admin-berita .news-m-title {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.4;
+    color: var(--compreng-text, #0f172a);
+    overflow-wrap: anywhere;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  #admin-berita .news-m-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  /* Tombol titik tiga: rapat ke pojok kanan atas kartu */
+  #admin-berita .news-m-head .dropdown-action-wrapper {
+    flex: 0 0 auto;
+    margin: -4px -4px 0 0;
+  }
+
+  /* Detail: label : nilai (mengikuti tata letak acuan) */
+  #admin-berita .news-m-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--compreng-border, #e2e8f0);
+  }
+  #admin-berita .news-m-row {
+    display: grid;
+    grid-template-columns: 76px minmax(0, 1fr);
+    align-items: center;
+    column-gap: 4px;
+    font-size: 13px;
+  }
+  #admin-berita .news-m-label {
+    display: flex;
+    justify-content: space-between;
+    padding-right: 8px;
+    color: var(--compreng-text-secondary, #475569);
+  }
+  #admin-berita .news-m-label::after {
+    content: ":";
+  }
+  #admin-berita .news-m-value {
+    min-width: 0;
+    font-weight: 500;
+    color: var(--compreng-text, #0f172a);
+    overflow-wrap: anywhere;
+  }
+}
+
+/* HP sangat kecil */
+@media (max-width: 360px) {
+  #admin-berita .news-m-thumb {
+    width: 54px;
+    height: 42px;
+  }
+  #admin-berita .news-m-head {
+    gap: 10px;
+  }
+  #admin-berita .table-toolbar .news-add-mobile {
+    padding: 0 10px !important;
+  }
+}

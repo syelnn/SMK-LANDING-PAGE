@@ -460,3 +460,171 @@
 @media (prefers-reduced-motion: reduce) {
   #admin-prestasi .action-dropdown-menu { animation: none; }
 }
+
+/* ==========================================
+   RESPONSIF: DESKTOP RAPI + CARD LIST MOBILE
+   Selector dikunci dengan ID (#admin-prestasi) agar menang atas wildcard
+   theme.css & admin-responsive.css.
+   ========================================== */
+
+/* Default (desktop/tablet): card list & tombol mobile disembunyikan */
+.ach-mlist,
+.ach-add-mobile { display: none; }
+
+/* Desktop/laptop: tabel tetap tabel, dirapikan.
+   - Kolom Tingkat, Tahun, Status: lebar = isi (width:1% + nowrap) sehingga badge selalu utuh
+     satu baris dan sisa ruang dipakai kolom Nama & Judul.
+   - Nama & Judul boleh turun baris, tapi hanya antar kata (tidak dipotong per huruf).
+   - Overflow wrapper tetap visible agar dropdown aksi tidak terpotong. */
+#admin-prestasi .table-wrapper { max-width: 100%; }
+#admin-prestasi .custom-table { table-layout: auto; width: 100%; }
+#admin-prestasi .custom-table th { white-space: nowrap; }
+#admin-prestasi .custom-table td { overflow-wrap: normal; word-break: normal; }
+
+#admin-prestasi .custom-table th:nth-child(1),
+#admin-prestasi .custom-table td:nth-child(1) { width: 76px; }
+
+#admin-prestasi .custom-table th:nth-child(4),
+#admin-prestasi .custom-table td:nth-child(4),
+#admin-prestasi .custom-table th:nth-child(5),
+#admin-prestasi .custom-table td:nth-child(5),
+#admin-prestasi .custom-table th:nth-child(6),
+#admin-prestasi .custom-table td:nth-child(6) { width: 1%; white-space: nowrap; }
+
+#admin-prestasi .custom-table td .badge {
+  white-space: nowrap;
+  word-break: normal;
+  overflow-wrap: normal;
+  justify-content: center;
+}
+#admin-prestasi .custom-table th:nth-child(7),
+#admin-prestasi .custom-table td:nth-child(7) { width: 64px; text-align: center; }
+
+@media (min-width: 1300px) {
+  #admin-prestasi .custom-table td:nth-child(2) { min-width: 150px; }
+  #admin-prestasi .custom-table td:nth-child(3) { min-width: 220px; }
+}
+@media (min-width: 769px) and (max-width: 1500px) {
+  #admin-prestasi .custom-table th,
+  #admin-prestasi .custom-table td { padding-left: 10px; padding-right: 10px; }
+}
+@media (min-width: 769px) and (max-width: 1199px) {
+  #admin-prestasi .custom-table { font-size: 0.8rem; }
+  #admin-prestasi .custom-table th { font-size: 0.7rem; letter-spacing: 0.03em; }
+}
+
+/* Card list HANYA untuk HP (<=768px). Di laptop/desktop tetap tabel. */
+@media (max-width: 768px) {
+  #admin-prestasi .admin-page-header { margin-bottom: 12px; gap: 0; }
+  #admin-prestasi .ach-add-desktop { display: none !important; }
+
+  /* --- Control bar: Search + Tambah dalam 1 baris --- */
+  #admin-prestasi .table-toolbar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch;
+    gap: 8px !important;
+    margin-bottom: 14px;
+  }
+  #admin-prestasi .table-toolbar .search-input-wrapper {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  #admin-prestasi .ach-add-mobile {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 42px;               /* sama dengan tinggi input search (theme.css) */
+    padding: 0 14px;
+    border: 1px solid var(--compreng-accent, #2563eb);
+    border-radius: 999px;
+    background: var(--compreng-accent, #2563eb);
+    color: var(--compreng-accent-text, #ffffff);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .15s ease, background-color .15s ease;
+  }
+  #admin-prestasi .ach-add-mobile:active { transform: scale(0.96); }
+
+  /* --- Sembunyikan tabel, tampilkan Card List --- */
+  #admin-prestasi .table-wrapper { display: none !important; }
+  #admin-prestasi .ach-mlist {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  #admin-prestasi .ach-mcard {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    background: var(--compreng-surface);
+    border: 1px solid var(--compreng-border);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    min-width: 0;
+  }
+  #admin-prestasi .ach-mtop { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  #admin-prestasi .ach-mpic {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 42px;
+    border-radius: 8px;
+    object-fit: cover;
+    background-color: var(--compreng-surface-soft, #f1f5f9);
+    box-sizing: border-box;
+  }
+  #admin-prestasi .ach-mpic-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--compreng-text-secondary, #475569);
+    font-weight: 700;
+    font-size: 15px;
+  }
+  #admin-prestasi .ach-mbody { flex: 1 1 auto; min-width: 0; }
+  #admin-prestasi .ach-mbody .student-name-text { font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
+  #admin-prestasi .ach-mbody .student-class-text { overflow-wrap: anywhere; }
+  #admin-prestasi .ach-mmenu { position: relative; flex: 0 0 auto; }
+  #admin-prestasi .ach-mtext {
+    font-size: 13px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--compreng-text-secondary, #475569);
+    overflow-wrap: anywhere;
+  }
+  #admin-prestasi .ach-mmeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--compreng-border, #e2e8f0);
+  }
+  #admin-prestasi .ach-myear {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--compreng-text-secondary, #475569);
+  }
+
+  #admin-prestasi .ach-mempty {
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--compreng-text-muted, #64748b);
+    background: var(--compreng-surface, #ffffff);
+    border: 1px dashed var(--compreng-border, #e2e8f0);
+    border-radius: 14px;
+  }
+}

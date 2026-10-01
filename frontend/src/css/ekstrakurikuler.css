@@ -566,3 +566,134 @@
   color: var(--compreng-text, #0f172a) !important;
   transition: background-color 0.2s ease, color 0.2s ease;
 }
+
+/* ==========================================
+   RESPONSIF: DESKTOP RAPI + CARD LIST MOBILE
+   Selector dikunci dengan ID (#admin-ekskul) agar menang atas wildcard
+   theme.css & admin-responsive.css.
+   ========================================== */
+
+/* Default (desktop/tablet): card list & tombol mobile disembunyikan */
+.ekskul-mlist,
+.ekskul-add-mobile { display: none; }
+
+/* Desktop: tabel tidak meluap; deskripsi panjang dipotong 2 baris */
+.ekskul-container { min-width: 0; }
+.ekskul-table-card { max-width: 100%; }
+.ekskul-table { min-width: 640px; }
+#admin-ekskul .ekskul-table td:nth-child(3) { max-width: 360px; }
+#admin-ekskul .ekskul-table td:nth-child(3) > span {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 768px) {
+  /* --- Control bar: Search + Tambah dalam 1 baris --- */
+  #admin-ekskul .ekskul-header-wrapper { margin-bottom: 14px; gap: 0 !important; }
+  #admin-ekskul .ekskul-add-wrapper { display: none !important; }
+
+  #admin-ekskul .ekskul-controls {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  #admin-ekskul .ekskul-controls .ekskul-search-wrapper {
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    margin-bottom: 0;
+  }
+  #admin-ekskul .ekskul-add-mobile {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 42px;               /* sama dengan tinggi input search (theme.css) */
+    padding: 0 14px;
+    border: 1px solid var(--compreng-accent, #2563eb);
+    border-radius: 999px;
+    background: var(--compreng-accent, #2563eb);
+    color: var(--compreng-accent-text, #ffffff);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .15s ease, background-color .15s ease;
+  }
+  #admin-ekskul .ekskul-add-mobile:active { transform: scale(0.96); }
+
+  /* --- Sembunyikan tabel, tampilkan Card List --- */
+  #admin-ekskul .ekskul-table-card { display: none !important; }
+  #admin-ekskul .ekskul-mlist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  #admin-ekskul .ekskul-mcard {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    background: var(--compreng-surface, #ffffff);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    min-width: 0;
+  }
+  #admin-ekskul .ekskul-mtop { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  #admin-ekskul .ekskul-mpic { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 10px; }
+  #admin-ekskul .ekskul-mbody {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  #admin-ekskul .ekskul-mtitle {
+    max-width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--compreng-text, #0f172a);
+    overflow-wrap: anywhere;
+  }
+  #admin-ekskul .ekskul-mmeta { display: flex; flex-wrap: wrap; gap: 6px; }
+  #admin-ekskul .ekskul-mcard .badge-status { font-size: 11px; padding: 2px 8px; }
+  #admin-ekskul .ekskul-mcard .dropdown-action-wrapper { flex: 0 0 auto; }
+  #admin-ekskul .ekskul-mtext {
+    margin: 0;
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--compreng-text-secondary, #475569);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
+
+  #admin-ekskul .ekskul-mempty {
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--compreng-text-muted, #64748b);
+    background: var(--compreng-surface, #ffffff);
+    border: 1px dashed var(--compreng-border, #e2e8f0);
+    border-radius: 14px;
+  }
+}
