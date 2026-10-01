@@ -1,0 +1,421 @@
+/* ==========================================================================
+   src/css/admin-responsive.css
+   --------------------------------------------------------------------------
+   RESPONSIVE DESIGN UNTUK SELURUH AREA ADMIN / EDITOR (/admin/*)
+   Dimuat PALING AKHIR (lihat import di App.jsx) supaya menang atas CSS halaman
+   lain tanpa perlu menyentuh puluhan file CSS yang sudah ada.
+
+   Breakpoint:
+     >= 1025px  : desktop  -> sidebar tetap di kiri (bisa mode mini)
+     <= 1024px  : tablet   -> sidebar jadi drawer (geser dari kiri) + overlay
+     <=  820px  : tablet kecil -> grid statistik 2 kolom, header/toolbar menumpuk
+     <=  640px  : HP       -> modal jadi bottom-sheet, nama user di topbar disembunyikan
+     <=  480px  : HP kecil -> padding lebih rapat
+     <=  340px  : HP sangat kecil -> grid 1 kolom
+
+   Semua aturan di-scope ke .dashboard-container supaya halaman publik
+   (landing, login, dll) tidak ikut berubah.
+   ========================================================================== */
+
+/* ---------- 0. DASAR (semua ukuran layar) ---------- */
+
+/* 100vh di browser HP termasuk area address-bar -> konten bawah terpotong.
+   100dvh mengikuti tinggi layar yang benar-benar terlihat. */
+.dashboard-container,
+.dashboard-container .layout-content-wrapper {
+  height: 100vh;
+  height: 100dvh;
+}
+/* 100vw ikut menghitung lebar scrollbar -> bisa memicu geser horizontal */
+.dashboard-container { width: 100%; max-width: 100%; }
+
+.dashboard-container .layout-content-wrapper { min-width: 0; }
+
+.dashboard-container .main-content-area {
+  min-width: 0;
+  overflow-x: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+}
+.dashboard-container .main-content-inner { min-width: 0; }
+.dashboard-container .main-content-inner > * { min-width: 0; }
+.dashboard-container .main-content-inner img,
+.dashboard-container .main-content-inner video,
+.dashboard-container .main-content-inner iframe { max-width: 100%; }
+
+/* Tabel: geser horizontal dengan halus di layar sentuh */
+.dashboard-container .table-wrapper,
+.dashboard-container .ekskul-table-responsive,
+.dashboard-container .faq-table-card,
+.dashboard-container .mp-table-card,
+.dashboard-container .mjp-table-card,
+.dashboard-container .ip-table-card,
+.dashboard-container .testi-table-card,
+.dashboard-container .galeri-table-card {
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+/* Overlay gelap di belakang drawer sidebar (sebelumnya belum punya gaya dasar) */
+.dashboard-container .sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 890;
+  animation: adminRespFade 0.2s ease;
+}
+@keyframes adminRespFade { from { opacity: 0; } to { opacity: 1; } }
+
+/* Tombol tutup drawer: hanya muncul di mode tablet/HP */
+.dashboard-container .sidebar-mobile-close {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+.dashboard-container .sidebar-mobile-close:hover { background: var(--compreng-surface-soft); }
+
+/* Grid komposisi dashboard: tidak boleh lebih lebar dari layar */
+.dashboard-container .dash-bottom-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+}
+.dashboard-container .dash-stat-header { gap: 8px; align-items: flex-start; }
+.dashboard-container .dash-stat-title { min-width: 0; overflow-wrap: anywhere; }
+.dashboard-container .dash-stat-icon { flex-shrink: 0; }
+.dashboard-container .dash-progress-label { gap: 12px; }
+
+/* Grid form/pengaturan: minmax dengan min(100%, x) agar tidak meluber di layar < x */
+.dashboard-container .ms-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); }
+.dashboard-container .pf-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 250px), 1fr)); }
+.dashboard-container .ms-color-group { grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); }
+.dashboard-container .ms-font-row { grid-template-columns: repeat(auto-fit, minmax(min(100%, 160px), 1fr)); }
+.dashboard-container .modern-testi-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); }
+.dashboard-container .ms-content-area { min-width: 0; }
+.dashboard-container .ms-map-frame,
+.dashboard-container .ms-map-frame iframe { max-width: 100%; }
+
+/* Dropdown user di topbar tidak boleh keluar dari layar */
+.dashboard-container .topbar-dropdown { width: min(260px, calc(100vw - 24px)); }
+
+/* Layar 1025-1100px: sidebar masih terbuka, ruang konten sempit -> 2 kolom */
+@media (min-width: 1025px) and (max-width: 1100px) {
+  .dashboard-container .dash-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ==========================================================================
+   <= 1024px  —  SIDEBAR JADI DRAWER
+   ========================================================================== */
+@media (max-width: 1024px) {
+  .dashboard-container .dashboard-sidebar,
+  .dashboard-container .dashboard-sidebar.sidebar-mini,
+  .dashboard-container .dashboard-sidebar.collapsed {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    margin-left: 0;
+    width: min(288px, 86vw);
+    height: 100vh;
+    height: 100dvh;
+    transform: translateX(-105%);
+    visibility: hidden;                 /* tidak bisa difokus lewat keyboard saat tertutup */
+    box-shadow: none;
+    z-index: 900;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, visibility 0s linear 0.3s;
+  }
+  .dashboard-container .dashboard-sidebar.mobile-open {
+    transform: translateX(0);
+    visibility: visible;
+    box-shadow: 0 0 48px rgba(0, 0, 0, 0.35);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease, visibility 0s;
+  }
+  .dashboard-container .sidebar-mobile-close { display: inline-flex; }
+  .dashboard-container .sidebar-menu { overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+  .dashboard-container .sidebar-link { min-height: 44px; }
+  .dashboard-container .sidebar-sub-link { padding: 10px 12px; }
+  .dashboard-container .sidebar-footer { padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px)); }
+
+  /* Topbar */
+  .dashboard-container .topbar { height: 60px; padding: 0 16px; gap: 12px; }
+  .dashboard-container .topbar-left { gap: 12px; min-width: 0; }
+  .dashboard-container .topbar-right { gap: 12px; flex-shrink: 0; }
+  .dashboard-container .btn-sidebar-toggle {
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .dashboard-container .btn-sidebar-toggle:hover { background: var(--compreng-surface-soft); }
+
+  /* Area konten */
+  .dashboard-container .main-content-area { padding: 20px 16px 28px; }
+}
+
+/* Drawer hanya ada di <= 1024px; di desktop overlay tidak boleh muncul */
+@media (min-width: 1025px) {
+  .dashboard-container .sidebar-overlay { display: none; }
+}
+
+/* ==========================================================================
+   <= 820px  —  TABLET KECIL
+   ========================================================================== */
+@media (max-width: 820px) {
+  .dashboard-container .dash-stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+}
+
+/* ==========================================================================
+   <= 768px  —  HEADER, TOOLBAR, FORM, MODAL
+   ========================================================================== */
+@media (max-width: 768px) {
+
+  /* --- Padding ganda: main-content-area sudah punya padding, wrapper halaman tidak perlu lagi --- */
+  .dashboard-container .mp-wrapper,
+  .dashboard-container .mjp-wrapper,
+  .dashboard-container .ip-wrapper,
+  .dashboard-container .testi-wrapper,
+  .dashboard-container .galeri-wrapper { padding: 4px 0 24px; }
+  .dashboard-container .ekskul-container { padding: 4px 0 24px; }
+  .dashboard-container .ms-wrapper { padding: 4px 0 56px; }
+  .dashboard-container .admin-container,
+  .dashboard-container .faq-admin-container { padding: 16px; }
+
+  /* --- Dashboard overview --- */
+  .dashboard-container .dash-header { flex-wrap: wrap; gap: 12px; margin-bottom: 18px; }
+  .dashboard-container .dash-title { flex: 1 1 200px; min-width: 0; font-size: clamp(20px, 5.6vw, 26px); }
+  .dashboard-container .dash-chart-card { padding: 20px; }
+  .dashboard-container .dash-chart-subtitle { margin-bottom: 18px; }
+
+  /* --- Header halaman: judul di atas, tombol aksi di bawah (lebar penuh) --- */
+  .dashboard-container .admin-page-header,
+  .dashboard-container .mp-header-box,
+  .dashboard-container .mjp-header-box,
+  .dashboard-container .ip-header-box,
+  .dashboard-container .testi-header-box,
+  .dashboard-container .galeri-header-box,
+  .dashboard-container .simple-page-header,
+  .dashboard-container .faq-page-header,
+  .dashboard-container .ekskul-header-wrapper {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+  }
+  .dashboard-container .admin-page-header > button,
+  .dashboard-container .mp-header-box > button,
+  .dashboard-container .mjp-header-box > button,
+  .dashboard-container .ip-header-box > button,
+  .dashboard-container .testi-header-box > button,
+  .dashboard-container .galeri-header-box > button,
+  .dashboard-container .simple-page-header > button,
+  .dashboard-container .faq-page-header > button,
+  .dashboard-container .ekskul-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .dashboard-container .ekskul-add-wrapper { width: 100%; }
+  .dashboard-container .galeri-header-box > div:last-child:not(:first-child) { width: 100%; }
+
+  /* --- Toolbar: pencarian & filter memenuhi lebar layar --- */
+  .dashboard-container .table-toolbar,
+  .dashboard-container .mp-toolbar,
+  .dashboard-container .ip-toolbar,
+  .dashboard-container .testi-toolbar,
+  .dashboard-container .galeri-toolbar,
+  .dashboard-container .faq-toolbar,
+  .dashboard-container .simple-toolbar { flex-wrap: wrap; gap: 10px; }
+
+  .dashboard-container .search-input-wrapper,
+  .dashboard-container .search-box,
+  .dashboard-container .mp-search-wrapper,
+  .dashboard-container .mu-search-wrapper,
+  .dashboard-container .ip-search-wrapper,
+  .dashboard-container .galeri-search-wrapper,
+  .dashboard-container .testi-search-wrapper,
+  .dashboard-container .ekskul-search-wrapper,
+  .dashboard-container .ekskul-search-input-box {
+    flex: 1 1 100% !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  .dashboard-container .mp-toolbar .mp-filter-wrapper {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+  .dashboard-container .galeri-view-toggle { margin-left: 0; }
+
+  /* --- Pengaturan website: menu samping jadi tab horizontal di atas --- */
+  .dashboard-container .ms-layout-flex { flex-direction: column; gap: 20px; align-items: stretch; }
+  .dashboard-container .ms-sidebar {
+    width: 100%;
+    flex-direction: row;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  .dashboard-container .ms-sidebar::-webkit-scrollbar { display: none; }
+  .dashboard-container .ms-sidebar > * { flex: 0 0 auto; white-space: nowrap; }
+  .dashboard-container .ms-content-area { width: 100%; max-width: 100%; flex: 1 1 100%; }
+  .dashboard-container .ms-page-header { margin-bottom: 20px; padding-bottom: 16px; }
+  .dashboard-container .ms-submit-area { flex-wrap: wrap; }
+
+  /* --- Database backup --- */
+  .dashboard-container .dbk-header { flex-wrap: wrap; }
+  .dashboard-container .dbk-table-list-row,
+  .dashboard-container .dbk-table-list-header { gap: 8px; }
+
+  /* --- Form di dalam modal: input bertumpuk, font 16px supaya iOS tidak auto-zoom --- */
+  .dashboard-container .form-row-modern { flex-direction: column; gap: 16px; }
+  .dashboard-container input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="color"]):not([type="file"]),
+  .dashboard-container select,
+  .dashboard-container textarea { font-size: 16px !important; }
+
+  /* --- Popup form (Berita, Pengajar, Jurusan, dst) --- */
+  .dashboard-container .modal-overlay,
+  .dashboard-container .ekskul-modal-overlay,
+  .dashboard-container .faq-modal-overlay {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    padding: 12px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+  .dashboard-container .modal-overlay .modern-modal,
+  .dashboard-container .modal-overlay .modal-content.modern-modal {
+    max-width: 100% !important;
+    max-height: calc(100dvh - 24px);
+  }
+  .dashboard-container .ekskul-modal-box,
+  .dashboard-container .faq-modal-card { max-width: 100%; max-height: calc(100dvh - 24px); }
+  .dashboard-container .modal-header-modern { padding: 16px 18px; }
+  .dashboard-container .form-modern-layout { padding: 0 18px 18px; gap: 16px; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .dashboard-container .modal-actions-modern { flex-wrap: wrap; }
+}
+
+/* ==========================================================================
+   <= 640px  —  HP
+   ========================================================================== */
+@media (max-width: 640px) {
+  /* Topbar: sisakan ruang untuk tombol menu, pencarian, dan avatar */
+  .dashboard-container .topbar { padding: 0 12px; }
+  .dashboard-container .topbar-user-info { display: none; }
+  .dashboard-container .topbar-user-btn { padding: 2px; max-width: none; }
+
+  /* Popup form jadi bottom-sheet (konsisten dengan dialog Kelola Pengguna) */
+  .dashboard-container .modal-overlay,
+  .dashboard-container .ekskul-modal-overlay,
+  .dashboard-container .faq-modal-overlay { padding: 0; align-items: flex-end; }
+
+  .dashboard-container .modal-overlay .modern-modal,
+  .dashboard-container .modal-overlay .modal-content.modern-modal,
+  .dashboard-container .ekskul-modal-box,
+  .dashboard-container .faq-modal-card {
+    width: 100%;
+    max-width: 100% !important;
+    max-height: 92vh;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0 !important;
+    border-bottom: none !important;
+  }
+
+  /* Tombol aksi modal: penuh & bertumpuk, aman dari home-indicator iPhone */
+  .dashboard-container .modal-actions-modern { flex-direction: column-reverse; gap: 10px; padding-bottom: env(safe-area-inset-bottom, 0px); }
+  .dashboard-container .modal-actions-modern button { width: 100%; }
+  .dashboard-container .ekskul-modal-actions { grid-template-columns: 1fr; }
+  .dashboard-container .ekskul-modal-actions .ekskul-btn-cancel { order: 2; }
+
+  /* Tabel besar tetap bisa digeser, tapi sel dibuat lebih rapat */
+  .dashboard-container .custom-table th,
+  .dashboard-container .custom-table td,
+  .dashboard-container .mp-th, .dashboard-container .mp-td,
+  .dashboard-container .mjp-th, .dashboard-container .mjp-td,
+  .dashboard-container .ip-th, .dashboard-container .ip-td,
+  .dashboard-container .testi-th, .dashboard-container .testi-td,
+  .dashboard-container .galeri-th, .dashboard-container .galeri-td,
+  .dashboard-container .faq-table th, .dashboard-container .faq-table td { padding-left: 12px; padding-right: 12px; }
+
+  /* Galeri (tampilan grid) lebih rapat: 2 kolom di HP */
+  .dashboard-container .galeri-grid-container { grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 12px; }
+
+  /* Judul halaman */
+  .dashboard-container .admin-title,
+  .dashboard-container .mp-title,
+  .dashboard-container .mjp-title,
+  .dashboard-container .ip-title,
+  .dashboard-container .testi-title,
+  .dashboard-container .galeri-title,
+  .dashboard-container .simple-main-title,
+  .dashboard-container .ms-page-title { font-size: 20px; }
+}
+
+/* ==========================================================================
+   <= 480px  —  HP KECIL
+   ========================================================================== */
+@media (max-width: 480px) {
+  .dashboard-container .main-content-area { padding: 16px 12px 24px; }
+  .dashboard-container .dash-btn-download { width: 100%; padding: 11px 16px; }
+  .dashboard-container .dash-stats-grid { gap: 10px; }
+  .dashboard-container .dash-stat-card { padding: 14px; }
+  .dashboard-container .dash-stat-header { margin-bottom: 8px; }
+  .dashboard-container .dash-stat-title { font-size: 12px; }
+  .dashboard-container .dash-stat-value { font-size: 24px; }
+  .dashboard-container .dash-stat-desc { font-size: 11.5px; }
+  .dashboard-container .dash-chart-card { padding: 16px; }
+  .dashboard-container .admin-container,
+  .dashboard-container .faq-admin-container { padding: 12px; }
+  .dashboard-container .form-modern-layout { padding: 0 14px 16px; }
+  .dashboard-container .modal-header-modern { padding: 14px; }
+}
+
+/* ==========================================================================
+   <= 340px  —  HP SANGAT KECIL
+   ========================================================================== */
+@media (max-width: 340px) {
+  .dashboard-container .dash-stats-grid { grid-template-columns: 1fr; }
+  .dashboard-container .topbar { padding: 0 8px; }
+  .dashboard-container .topbar-left,
+  .dashboard-container .topbar-right { gap: 8px; }
+}
+
+/* Layar sentuh: target tekan minimal ±40px untuk tombol aksi di tabel */
+@media (pointer: coarse) {
+  .dashboard-container .mp-action-btn,
+  .dashboard-container .mjp-action-btn,
+  .dashboard-container .ip-action-btn,
+  .dashboard-container .testi-action-btn,
+  .dashboard-container .galeri-action-btn,
+  .dashboard-container .mu-action-btn,
+  .dashboard-container .btn-more-action,
+  .dashboard-container .btn-action-more {
+    min-width: 40px;
+    min-height: 40px;
+  }
+  .dashboard-container .mp-dropdown-item,
+  .dashboard-container .mjp-dropdown-item,
+  .dashboard-container .ip-dropdown-item,
+  .dashboard-container .testi-dropdown-item,
+  .dashboard-container .galeri-dropdown-item,
+  .dashboard-container .mu-dropdown-item,
+  .dashboard-container .dropdown-item { min-height: 40px; }
+}
+
+/* Landscape HP: topbar & modal jangan makan tinggi layar */
+@media (max-height: 480px) and (orientation: landscape) {
+  .dashboard-container .topbar { height: 52px; }
+  .dashboard-container .modal-overlay .modern-modal,
+  .dashboard-container .ekskul-modal-box,
+  .dashboard-container .faq-modal-card { max-height: calc(100dvh - 16px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dashboard-container .dashboard-sidebar,
+  .dashboard-container .sidebar-overlay { transition: none !important; animation: none !important; }
+}

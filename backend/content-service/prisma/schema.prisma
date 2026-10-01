@@ -1,0 +1,303 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement())
+  username     String        @unique @db.VarChar(100)
+  email        String        @unique @db.VarChar(200)
+  password     String        @db.VarChar(255)
+  fullName     String?       @map("full_name") @db.VarChar(200)
+  avatar       String?       @db.VarChar(255)
+  role         String?       @default("viewer") @db.VarChar(50)
+  isActive     Int?          @default(1) @map("is_active")
+  lastLogin    DateTime?     @map("last_login") @db.Timestamp(6)
+  createdAt    DateTime?     @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt    DateTime?     @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  supabase_id  String?       @unique @db.Uuid
+  auditLogs    AuditLog[]
+  testimonials Testimonial[]
+
+  @@map("users")
+}
+
+model Setting {
+  id        Int       @id @default(autoincrement())
+  key       String    @unique @db.VarChar(100)
+  value     String?
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("settings")
+}
+
+model News {
+  id          Int       @id @default(autoincrement())
+  category    String?   @db.VarChar(100)
+  tags        Json?
+  title       String    @db.VarChar(255)
+  slug        String    @unique @db.VarChar(255)
+  excerpt     String?
+  content     String?
+  image       String?
+  author      String?   @default("Admin") @db.VarChar(100)
+  publishedAt DateTime? @map("published_at") @db.Timestamp(6)
+  status      String?   @default("published") @db.VarChar(50)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("news")
+}
+
+model Program {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category    String
+  code        String?
+  title       String
+  description String?
+  icon        String?   @default("star")
+  imageUrl    String?   @map("image_url")
+  sortOrder   Int?      @default(0) @map("sort_order") @db.SmallInt
+  show        Boolean?  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([category, title], map: "uq_programs_category_title")
+  @@map("programs")
+}
+
+model AuditLog {
+  id          Int       @id @default(autoincrement())
+  userId      Int?      @map("user_id")
+  action      String    @db.VarChar(50)
+  tableName   String    @map("table_name") @db.VarChar(100)
+  recordId    String?   @map("record_id")
+  description String?
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  user        User?     @relation(fields: [userId], references: [id], onUpdate: NoAction, map: "fk_audit_user")
+
+  @@map("audit_logs")
+}
+
+model Extracurricular {
+  id          Int      @id @default(autoincrement())
+  title       String
+  description String?
+  icon        String?
+  sortOrder   Int      @default(0) @map("sort_order")
+  show        Int      @default(1)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("extracurriculars")
+}
+
+model Faq {
+  id        Int       @id @default(autoincrement())
+  question  String    @db.VarChar(255)
+  answer    String
+  category  String?   @db.VarChar(100)
+  sortOrder Int?      @default(0) @map("sort_order")
+  show      Int?      @default(1)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("faq")
+}
+
+model Gallery {
+  id         Int       @id @default(autoincrement())
+  category   String?   @db.VarChar(100)
+  image      String
+  caption    String?   @db.VarChar(255)
+  isFeatured Int?      @default(0) @map("is_featured")
+  sortOrder  Int?      @default(0) @map("sort_order")
+  show       Int?      @default(1)
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt  DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("galleries")
+}
+
+model Page {
+  id              Int        @id @default(autoincrement())
+  title           String     @db.VarChar(255)
+  slug            String     @unique @db.VarChar(255)
+  content         String?
+  excerpt         String?
+  image           String?    @db.VarChar(255)
+  status          String?    @default("draft") @db.VarChar(50)
+  metaTitle       String?    @map("meta_title") @db.VarChar(255)
+  metaDescription String?    @map("meta_description") @db.VarChar(255)
+  createdAt       DateTime   @default(now()) @map("created_at")
+  updatedAt       DateTime   @updatedAt @map("updated_at")
+  menuItems       MenuItem[]
+
+  @@map("pages")
+}
+
+model MenuItem {
+  id         Int        @id @default(autoincrement())
+  parentId   Int?       @map("parent_id")
+  title      String     @db.VarChar(255)
+  url        String?    @db.VarChar(255)
+  target     String?    @default("_self") @db.VarChar(50)
+  icon       String?    @db.VarChar(255)
+  sectionKey String?    @map("section_key") @db.VarChar(255)
+  sortOrder  Int?       @default(0) @map("sort_order")
+  status     Int?       @default(1)
+  type       String?    @default("section") @db.VarChar(50)
+  pageId     Int?       @map("page_id")
+  createdAt  DateTime   @default(now()) @map("created_at")
+  updatedAt  DateTime   @updatedAt @map("updated_at")
+  isPublic   Boolean    @default(true) @map("is_public")
+  page       Page?      @relation(fields: [pageId], references: [id])
+  parent     MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade)
+  children   MenuItem[] @relation("MenuHierarchy")
+
+  @@map("menu_items")
+}
+
+model Teacher {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(200)
+  photo     String?
+  role      String?   @db.VarChar(200)
+  sortOrder Int?      @default(0) @map("sort_order")
+  show      Int?      @default(1)
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@map("teachers")
+}
+
+model Testimonial {
+  id        Int       @id @default(autoincrement())
+  name      String
+  photo     String?
+  role      String
+  quote     String
+  sortOrder Int?      @default(0) @map("sort_order")
+  show      Int?      @default(0)
+  createdAt DateTime? @default(now()) @map("created_at")
+  updatedAt DateTime? @default(now()) @updatedAt @map("updated_at")
+  userId    Int?      @map("user_id")
+  user      User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("testimonials")
+}
+
+model StudentWorkAchievement {
+  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  category    String
+  studentName String    @map("student_name")
+  className   String?   @map("class_name")
+  title       String
+  description String?
+  photoUrl    String?   @map("photo_url")
+  level       String?
+  year        Int?      @db.SmallInt
+  medal       String?
+  sortOrder   Int?      @default(0) @map("sort_order") @db.SmallInt
+  show        Boolean?  @default(true)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("student_works_achievements")
+}
+
+model Download {
+  id          Int       @id @default(autoincrement())
+  category    String    @db.VarChar(100)
+  title       String    @db.VarChar(255)
+  description String?
+  url         String    @db.VarChar(500)
+  fileSize    String?   @map("file_size") @db.VarChar(50)
+  publicId     String?  @map("public_id") @db.VarChar(500)    // Cloudinary public_id (dipakai untuk destroy)
+  resourceType String?  @map("resource_type") @db.VarChar(20) // Cloudinary resource_type: image | raw 
+  sortOrder   Int?      @default(0) @map("sort_order")
+  show        Int?      @default(1)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+
+  @@index([category], map: "idx_downloads_category")
+  @@index([sortOrder], map: "idx_downloads_sort_order")
+  @@map("downloads")
+}
+
+model achievements {
+  id           Int       @id @default(autoincrement())
+  student_name String    @db.VarChar(200)
+  photo        String?
+  class_name   String?   @db.VarChar(100)
+  achievement  String    @db.VarChar(255)
+  level        String?   @default("Kota") @db.VarChar(50)
+  year         Int?
+  medal        String?   @default("gold") @db.VarChar(50)
+  sort_order   Int?      @default(0)
+  show         Int?      @default(1)
+  created_at   DateTime? @default(now()) @db.Timestamp(6)
+  updated_at   DateTime? @default(now()) @db.Timestamp(6)
+}
+
+model JurusanCustom {
+  id        Int      @id @default(autoincrement())
+  title     String
+  slug      String   @unique
+  desc      String
+  imageIcon String   @map("image_icon")
+  subjects  String
+  career    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("jurusan_custom")
+}
+
+model ProgramUnggulanCustom {
+  id        Int      @id @default(autoincrement())
+  title     String
+  desc      String
+  badge     String
+  imageIcon String   @map("image_icon")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("program_unggulan_custom")
+}
+
+model IndustryPartner {
+  id        BigInt   @id @default(autoincrement())
+  name      String   @db.VarChar(255)
+  logoUrl   String   @map("logo_url")
+  isActive  Boolean? @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("industry_partners")
+}
+model FooterSetting {
+  id           Int      @id @default(autoincrement())
+  schoolName   String   @map("school_name")
+  description  String
+  address      String
+  phone        String
+  email        String
+  facebookUrl  String?  @map("facebook_url")
+  instagramUrl String?  @map("instagram_url")
+  mapsEmbedUrl String?  @map("maps_embed_url")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  tiktokUrl    String?  @map("tiktok_url")
+  twitterUrl   String?  @map("twitter_url")
+  youtubeUrl   String?  @map("youtube_url")
+
+  @@map("footer_setting")
+}

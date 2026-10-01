@@ -1,0 +1,378 @@
+/* ==========================================
+   MAIN CONTAINER & PAGE LAYOUT
+   ========================================== */
+
+.download-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background-color: transparent;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--compreng-text-secondary, #475569);
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+/* ==========================================
+   SIMPLE HEADER
+   ========================================== */
+
+.simple-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+  gap: 16px;
+}
+
+.header-text-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.simple-main-title {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--compreng-text, #0f172a);
+  margin: 0;
+}
+
+.simple-subtitle {
+  font-size: 14px;
+  color: var(--compreng-text-secondary, #475569);
+  margin: 0;
+}
+
+/* ==========================================
+   TOOLBAR / SEARCH
+   ========================================== */
+
+.simple-toolbar {
+  margin-bottom: 20px;
+}
+
+/* ==========================================
+   MODAL OVERLAY & MODAL CONTAINER
+   ========================================== */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+.modern-modal {
+  background: var(--compreng-surface, #ffffff);
+  width: 100%;
+  max-width: 520px;
+  border-radius: 12px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.modal-header-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  margin-bottom: 20px;
+}
+
+.modal-header-modern h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--compreng-text, #0f172a);
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  color: var(--compreng-text-secondary, #475569);
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.btn-close-modal:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text, #0f172a);
+}
+
+/* ==========================================
+   MODAL FORM & INPUTS
+   ========================================== */
+
+.form-modern-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group-modern label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.form-row-modern {
+  display: flex;
+  gap: 16px;
+}
+
+.input-modern {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--compreng-text, #0f172a);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  box-sizing: border-box;
+  background-color: var(--compreng-surface, #ffffff);
+}
+
+.input-modern:focus {
+  border-color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.modal-actions-modern {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+/* ==========================================
+   TABLE, SEARCH, BADGE & ACTION (mandiri — sebelumnya numpang ke
+   managepengajar.css lewat class "mp-*" yang sama, sehingga tampilan
+   Download ikut berubah tergantung halaman apa yang dibuka duluan)
+   ========================================== */
+
+.mp-wrapper {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mp-search-wrapper {
+  position: relative;
+  width: 280px;
+  max-width: 100%;
+}
+
+.mp-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+  font-size: 13px;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mp-search-input:focus {
+  border-color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.mp-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.mp-table-card {
+  background-color: var(--compreng-surface, #ffffff);
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  overflow-x: auto;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  width: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.mp-table-card::-webkit-scrollbar { display: none; }
+
+.mp-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  min-width: 800px;
+}
+
+.mp-th {
+  padding: 12px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--compreng-text-secondary, #475569);
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  white-space: nowrap;
+  background: var(--compreng-surface-soft, #f1f5f9);
+}
+
+.mp-td {
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  vertical-align: middle;
+  color: var(--compreng-text, #0f172a);
+  font-size: 13px;
+}
+
+.mp-tr { transition: background 0.2s; }
+.mp-tr:hover { background: var(--compreng-surface-soft, #f1f5f9); }
+
+.mp-badge-active {
+  display: inline-flex;
+  background: rgba(34, 197, 94, 0.15);
+  color: #16a34a;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mp-badge-inactive {
+  display: inline-flex;
+  background: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text-secondary, #475569);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.mp-badge-role {
+  display: inline-block;
+  background: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-accent, #2563eb);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+}
+
+.mp-action-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  color: var(--compreng-text-secondary, #475569);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+
+.mp-action-btn:hover {
+  background: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text, #0f172a);
+}
+
+.mp-dropdown-menu {
+  background: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 8px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  width: 150px;
+  padding: 6px;
+  z-index: 9999;
+  animation: downloadDropdownFadeIn 0.2s ease;
+}
+
+@keyframes downloadDropdownFadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.mp-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  background: transparent;
+  border: none;
+  text-align: left;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--compreng-text, #0f172a);
+  text-decoration: none;
+  transition: background 0.2s;
+}
+
+.mp-dropdown-item:hover { background: var(--compreng-surface-soft, #f1f5f9); }
+.mp-dropdown-item.danger { color: #dc2626; }
+.mp-dropdown-item.danger:hover { background: var(--compreng-surface-soft, #f1f5f9); }
+
+/* ==========================================
+   RESPONSIVE DESIGN
+   ========================================== */
+
+@media (max-width: 768px) {
+  .simple-page-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .form-row-modern {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .mp-search-wrapper {
+    width: 100%;
+  }
+}

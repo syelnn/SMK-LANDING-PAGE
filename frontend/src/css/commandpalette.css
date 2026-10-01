@@ -1,0 +1,343 @@
+/* ==========================================================================
+   src/css/commandpalette.css — PENCARIAN CEPAT (trigger topbar + palette Ctrl/⌘ K)
+   --------------------------------------------------------------------------
+   Semua warna lewat token tema (--compreng-*) → otomatis ikut System, Light,
+   Dark, dan Custom.
+   Nama class sengaja berawalan "qs-" dan TIDAK memakai kata seperti
+   modal / search / item / card / box / wrapper / icon, karena theme.css punya
+   selector "rakus" ([class*="..."]) untuk kata-kata itu yang bisa merusak gaya.
+   ========================================================================== */
+
+/* ---------- 1. TRIGGER DI TOPBAR ---------- */
+.qs-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  width: 340px;
+  max-width: 100%;
+  height: 40px;
+  padding: 0 8px 0 13px;
+  border-radius: 12px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 45%, var(--compreng-surface, #ffffff));
+  color: var(--compreng-text-secondary, #475569);
+  font: inherit;
+  font-size: 13.5px;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color .15s ease, background-color .15s ease, box-shadow .15s ease;
+}
+.qs-trigger:hover {
+  background: var(--compreng-surface, #ffffff);
+  border-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 45%, var(--compreng-border, #e2e8f0));
+  box-shadow: 0 1px 2px var(--compreng-shadow, rgba(15, 23, 42, .08));
+}
+.qs-trigger:focus-visible {
+  outline: 2px solid var(--compreng-accent, #2563eb);
+  outline-offset: 2px;
+}
+.qs-trigger .qs-trigger-glyph {
+  flex-shrink: 0;
+  color: var(--compreng-text-secondary, #475569);
+}
+.qs-trigger .qs-trigger-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+.qs-trigger .qs-trigger-keys {
+  display: inline-flex;
+  gap: 4px;
+  flex-shrink: 0;
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Tombol keyboard (dipakai di trigger & palette) */
+.qs-trigger kbd,
+.qs-dialog kbd {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 6px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-bottom-width: 2px;
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text-secondary, #475569);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1;
+  box-sizing: border-box;
+}
+
+/* ---------- 2. PALETTE ---------- */
+.qs-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: min(13vh, 120px) 16px 16px;
+  background: color-mix(in srgb, #020617 55%, transparent);
+  -webkit-backdrop-filter: blur(6px) saturate(120%);
+  backdrop-filter: blur(6px) saturate(120%);
+  animation: qsFade .14s ease-out;
+}
+
+.qs-dialog {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  max-height: calc(100vh - min(13vh, 120px) - 32px);
+  overflow: hidden;
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 16px;
+  box-shadow:
+    0 32px 64px -18px rgba(0, 0, 0, .5),
+    0 0 0 1px color-mix(in srgb, var(--compreng-text, #0f172a) 4%, transparent);
+  animation: qsPop .16s cubic-bezier(.2, .9, .3, 1.05);
+}
+
+/* Kotak input: polos, tanpa bingkai (theme.css memaksa semua <input> berkotak,
+   maka selector ini sengaja dibuat sangat spesifik) */
+.qs-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: 60px;
+  padding: 0 14px 0 18px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  flex-shrink: 0;
+}
+.qs-head .qs-head-glyph {
+  flex-shrink: 0;
+  color: var(--compreng-text-secondary, #475569);
+}
+.qs-dialog .qs-head input.qs-field.qs-field.qs-field,
+.qs-dialog .qs-head input.qs-field.qs-field.qs-field:focus {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  margin: 0;
+  padding: 0 !important;
+  background: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  outline: none !important;
+  color: var(--compreng-text, #0f172a) !important;
+  font-family: inherit;
+  font-size: 16px;
+}
+.qs-dialog .qs-head input.qs-field.qs-field.qs-field::placeholder {
+  color: var(--compreng-text-secondary, #475569) !important;
+  opacity: .75;
+}
+.qs-dialog .qs-head .qs-esc {
+  flex-shrink: 0;
+  height: 26px;
+  padding: 0 9px;
+  border-radius: 7px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  background: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text-secondary, #475569);
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color .15s ease, border-color .15s ease;
+}
+.qs-dialog .qs-head .qs-esc:hover {
+  color: var(--compreng-text, #0f172a);
+  border-color: var(--compreng-text-secondary, #475569);
+}
+.qs-dialog .qs-head .qs-esc:focus-visible {
+  outline: 2px solid var(--compreng-accent, #2563eb);
+  outline-offset: 1px;
+}
+
+/* Daftar hasil */
+.qs-scroll {
+  flex: 1;
+  min-height: 0;
+  max-height: 420px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 6px 8px 8px;
+}
+
+.qs-dialog .qs-group-title {
+  padding: 12px 12px 6px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+
+.qs-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  color: var(--compreng-text, #0f172a);
+  font-size: 14px;
+  user-select: none;
+}
+.qs-row.qs-row-on {
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 9%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--compreng-accent, #2563eb) 24%, transparent);
+}
+
+.qs-dialog .qs-row-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 10%, var(--compreng-surface, #ffffff));
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 20%, transparent);
+  color: var(--compreng-accent, #2563eb) !important;
+}
+/* Aksi cepat: ikon terisi penuh agar beda dari halaman biasa */
+.qs-dialog .qs-row-act .qs-row-glyph {
+  background: var(--compreng-accent, #2563eb);
+  border-color: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #ffffff) !important;
+}
+.qs-dialog .qs-row-glyph svg {
+  color: inherit !important;
+  stroke: currentColor;
+  background: transparent !important;
+  border: none !important;
+  opacity: 1 !important;
+}
+
+.qs-dialog .qs-row-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--compreng-text, #0f172a) !important;
+}
+.qs-dialog .qs-hit {
+  padding: 0 1px;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 30%, transparent);
+  color: inherit;
+  font-weight: 700;
+}
+
+/* Petunjuk "Buka ↵" hanya muncul di baris yang sedang dipilih */
+.qs-dialog .qs-row-go {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+.qs-dialog .qs-row-on .qs-row-go { display: inline-flex; }
+
+/* Kosong */
+.qs-none {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 44px 24px 40px;
+  text-align: center;
+}
+.qs-dialog .qs-none-glyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  margin-bottom: 14px;
+  border-radius: 14px;
+  background: var(--compreng-surface-soft, #f1f5f9);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+.qs-dialog .qs-none-title {
+  margin: 0 0 4px;
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--compreng-text, #0f172a) !important;
+}
+.qs-dialog .qs-none-hint {
+  margin: 0;
+  max-width: 340px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+
+/* Footer petunjuk keyboard */
+.qs-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 16px;
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
+  background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 40%, var(--compreng-surface, #ffffff));
+  font-size: 12px;
+  flex-shrink: 0;
+}
+.qs-dialog .qs-foot,
+.qs-dialog .qs-foot span {
+  color: var(--compreng-text-secondary, #475569) !important;
+}
+.qs-hints {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.qs-dialog .qs-hint {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+.qs-dialog .qs-foot kbd { min-width: 20px; height: 20px; padding: 0 5px; }
+.qs-dialog .qs-count { font-variant-numeric: tabular-nums; }
+
+/* ---------- 3. ANIMASI & RESPONSIF ---------- */
+@keyframes qsFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes qsPop {
+  from { opacity: 0; transform: translateY(-8px) scale(.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@media (max-width: 720px) {
+  .qs-trigger { width: 40px; padding: 0; justify-content: center; }
+  .qs-trigger .qs-trigger-label,
+  .qs-trigger .qs-trigger-keys { display: none; }
+}
+@media (max-width: 640px) {
+  .qs-scrim { padding-top: 10vh; }
+  .qs-hints { display: none; }
+  .qs-foot { justify-content: flex-end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qs-scrim, .qs-dialog { animation: none !important; }
+  .qs-trigger { transition: none; }
+}

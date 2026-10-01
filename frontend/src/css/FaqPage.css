@@ -1,0 +1,745 @@
+/* ==========================================================================
+   1. CONTAINER & LAYOUT UTAMA
+   ========================================================================== */
+.faq-admin-container {
+  padding: 24px;
+  background-color: var(--compreng-bg, #f8fafc);
+  min-height: 100vh;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: var(--compreng-text, #0f172a);
+  box-sizing: border-box;
+}
+
+/* Header Halaman */
+.faq-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.faq-page-header h2 {
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--compreng-text, #0f172a);
+  margin: 0 0 4px 0;
+}
+
+.faq-page-header p {
+  font-size: 14px;
+  color: var(--compreng-text-secondary, #475569);
+  margin: 0;
+}
+
+/* Toolbar & Pencarian */
+.faq-toolbar {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.search-box {
+  position: relative;
+  width: 100%;
+  max-width: 320px;
+}
+
+.search-box .search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.search-box input {
+  width: 100%;
+  padding: 9px 12px 9px 38px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 8px;
+  font-size: 14px;
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.search-box input:focus {
+  border-color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* ==========================================================================
+   2. TAMPILAN TABEL & KARTU
+   ========================================================================== */
+.faq-table-card {
+  background: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  scrollbar-width: none; 
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch; 
+}
+
+.table-responsive::-webkit-scrollbar {
+  display: none;
+  width: 0px;
+  height: 0px;
+  background: transparent;
+}
+
+.faq-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.faq-table th {
+  background-color: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text-secondary, #475569);
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+.faq-table td {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  vertical-align: middle;
+}
+
+.faq-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.faq-table tbody tr:hover {
+  background-color: var(--compreng-bg, #f8fafc);
+}
+
+/* ==========================================================================
+   3. KONTEN SEL & ELEMEN BADGE
+   ========================================================================== */
+.col-no {
+  color: var(--compreng-text-secondary, #475569);
+  font-weight: 500;
+}
+
+.col-qa {
+  max-width: 420px;
+}
+
+.faq-question-title {
+  font-weight: 600;
+  color: var(--compreng-text, #0f172a);
+  margin-bottom: 4px;
+  line-height: 1.4;
+}
+
+.faq-answer-snippet {
+  color: var(--compreng-text-secondary, #475569);
+  font-size: 13px;
+  line-height: 1.4;
+  max-height: 2.8em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  box-orient: vertical;
+}
+
+/* Badges */
+.badge-category {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text-secondary, #475569);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+.badge-sort {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--compreng-bg, #f8fafc);
+  color: var(--compreng-text-secondary, #475569);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+.badge-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-active {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: #166534;
+}
+
+.status-hidden {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text-secondary, #475569);
+}
+
+/* State Loading & Kosong */
+.faq-loading-state, 
+.faq-empty-state {
+  padding: 48px 20px;
+  text-align: center;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.faq-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ==========================================================================
+   4. TOMBOL & DROPDOWN AKSI
+   ========================================================================== */
+.btn-add-faq {
+  background-color: var(--compreng-surface, #ffffff);
+  color: var(--compreng-accent-text, #ffffff);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.btn-add-faq:hover {
+  background-color: var(--compreng-nav-bg, #0f172a);
+  transform: translateY(-1px);
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-action {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-action.edit {
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.btn-action.edit:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-accent, #2563eb);
+}
+
+.btn-action.delete {
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.btn-action.delete:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: #dc2626;
+}
+
+.faq-dropdown-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-action-more {
+  background: transparent;
+  border: none;
+  color: var(--compreng-text-secondary, #475569);
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.btn-action-more:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text, #0f172a);
+}
+
+/* Dropdown Popup Melayang */
+.action-dropdown-menu {
+  position: absolute;
+  right: 18px;
+  top: calc(100% - 8px);
+  background: var(--compreng-surface, #ffffff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 10px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+  padding: 6px;
+  z-index: 100;
+  min-width: 130px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: background-color 0.15s ease;
+}
+
+.dropdown-item.edit {
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.dropdown-item.edit:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text, #0f172a);
+}
+
+.dropdown-item.delete {
+  color: #ef4444;
+}
+
+.dropdown-item.delete:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+}
+
+/* ==========================================================================
+   5. MODAL & FORM INPUT
+   ========================================================================== */
+.faq-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.faq-modal-card {
+  background: var(--compreng-surface, #ffffff);
+  width: 100%;
+  max-width: 520px;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+}
+
+.faq-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.faq-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--compreng-text, #0f172a);
+}
+
+.btn-close-modal {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--compreng-text-secondary, #475569);
+  padding: 4px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+}
+
+.btn-close-modal:hover {
+  color: var(--compreng-text, #0f172a);
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+}
+
+.faq-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--compreng-text-secondary, #475569);
+  text-transform: uppercase;  
+  letter-spacing: 0.06em;    
+}
+
+.form-group input, 
+.form-group textarea, 
+.form-group select {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: var(--compreng-bg, #f8fafc);
+  color: var(--compreng-text, #0f172a);
+  outline: none;
+  transition: all 0.2s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus, 
+.form-group textarea:focus, 
+.form-group select:focus {
+  border-color: var(--compreng-accent, #2563eb);
+  background-color: var(--compreng-surface, #ffffff);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+/* Custom Checkbox (Public Card) */
+.form-checkbox-group {
+  padding-top: 4px;
+}
+
+.checkbox-container {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  position: relative;
+  padding: 12px 16px 12px 42px;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 700;
+  color: #166534;
+  letter-spacing: 0.5px;
+  user-select: none;
+  transition: background-color 0.2s ease;
+}
+
+.checkbox-container input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+  height: 0;
+  width: 0;
+}
+
+.checkmark {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  height: 18px;
+  width: 18px;
+  background-color: var(--compreng-surface, #ffffff);
+  border: 1.5px solid #16a34a;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.checkbox-container:hover input ~ .checkmark {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+}
+
+.checkbox-container input:checked ~ .checkmark {
+  background-color: #16a34a;
+  border-color: #16a34a;
+}
+
+.checkmark:after {
+  content: "";
+  position: absolute;
+  display: none;
+}
+
+.checkbox-container input:checked ~ .checkmark:after {
+  display: block;
+}
+
+.checkbox-container .checkmark:after {
+  left: 5px;
+  top: 2px;
+  width: 4px;
+  height: 8px;
+  border: solid var(--compreng-border, #e2e8f0);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+/* Footer Modal */
+.faq-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.btn-cancel {
+  background: var(--compreng-border, #e2e8f0);
+  color: var(--compreng-text-secondary, #475569);
+  border: none;
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.btn-cancel:hover {
+  background: var(--compreng-border, #e2e8f0);
+}
+
+.btn-submit {
+  background: #059669;
+  color: var(--compreng-accent-text, #ffffff);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-submit:hover {
+  background: #047857;
+}
+
+/* ==========================================================================
+   6. RESPONSIVE DESIGN (MOBILE)
+   ========================================================================== */
+@media (max-width: 640px) {
+  .faq-admin-container {
+    padding: 12px;
+  }
+
+  .faq-page-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .faq-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-add-faq {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .search-box {
+    max-width: 100%;
+  }
+
+  .faq-table th, 
+  .faq-table td {
+    padding: 10px 12px;
+  }
+
+  .col-qa {
+    min-width: 200px;
+    max-width: 100%;
+  }
+
+  .faq-modal-card {
+    padding: 16px;
+    margin: 10px;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .faq-modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .btn-cancel, 
+  .btn-submit {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* =========================================
+   FAQ PUBLIC SECTION (VIEWER)
+========================================= */
+#section-faq {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  width: 100%;
+}
+
+.faq-public-section {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 60px 20px;
+  background-color: var(--compreng-surface, #ffffff) !important;
+  color: var(--compreng-text, #0f172a);
+  box-sizing: border-box;
+}
+
+.faq-public-header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.faq-public-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #e0e7ff;
+  color: #4338ca;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 6px 14px;
+  border-radius: 20px;
+  margin-bottom: 12px;
+}
+
+.faq-public-header h2 {
+  font-size: 30px;
+  font-weight: 800;
+  color: var(--compreng-text, #0f172a) !important;
+  margin: 0 0 10px 0;
+}
+
+.faq-public-header p {
+  color: var(--compreng-text-secondary, #475569) !important;
+  font-size: 15px;
+  margin: 0;
+}
+
+.faq-public-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.faq-public-card {
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 12px;
+  background-color: var(--compreng-surface, #ffffff) !important;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.faq-public-question {
+  width: 100%;
+  padding: 18px 20px;
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  text-align: left;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--compreng-text, #0f172a) !important;
+  cursor: pointer;
+}
+
+.faq-public-answer {
+  padding: 16px 20px 20px 20px;
+  color: var(--compreng-text-secondary, #475569) !important;
+  font-size: 15px;
+  line-height: 1.6;
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
+  background-color: var(--compreng-surface, #ffffff) !important;
+}
+
+/* ==========================================
+   FIX: KOTAK PUTIH DI TOMBOL TITIK TIGA (KOLOM AKSI) + ANIMASI MENU
+   - Pembungkus "faq-dropdown-wrapper" mengandung kata "-wrapper", jadi ikut
+     kena wildcard theme.css ([class*="-wrapper"] { background: var(--compreng-bg)
+     !important }) -> muncul kotak putih/krem di atas baris tabel. Dikunci transparan
+     pakai ID (#admin-faq) supaya spesifisitasnya menang di semua tema.
+   - Menu Edit/Delete muncul halus (fade + turun 5px), sama seperti menu di
+     halaman Jurusan & Program.
+   ========================================== */
+#admin-faq .faq-dropdown-wrapper {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes faq-menu-fade-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#admin-faq .action-dropdown-menu {
+  animation: faq-menu-fade-in 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-faq .action-dropdown-menu { animation: none; }
+}

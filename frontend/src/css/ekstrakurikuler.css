@@ -1,0 +1,568 @@
+/* src/css/ekstrakurikuler.css */
+
+.ekskul-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px 40px 20px;
+  box-sizing: border-box;
+}
+
+/* HEADER SECTION */
+.ekskul-header-wrapper {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.ekskul-header-text {
+  text-align: left;
+}
+
+.ekskul-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 800;
+  color: var(--compreng-text, #0f172a);
+}
+
+.ekskul-desc {
+  margin: 6px 0 0 0;
+  color: var(--compreng-text-secondary, #475569);
+  font-size: 14px;
+}
+
+.ekskul-add-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.ekskul-add-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: var(--compreng-nav-bg, #0f172a);
+  color: var(--compreng-accent-text, #ffffff);
+  border: none;
+  padding: 10px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.ekskul-add-btn:hover {
+  background-color: var(--compreng-nav-bg, #0f172a);
+}
+
+/* KARTU TABEL (Sama seperti foto 1) */
+.ekskul-table-card {
+  background-color: var(--compreng-surface, #ffffff);
+  border-radius: 12px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+  overflow: hidden;
+}
+
+/* SEARCH INPUT BAR — selaras dengan pola toolbar di halaman lain
+   (Galeri/Testimoni/Pengajar): wrapper tunggal, di luar table card,
+   background & border ikut token tema, ring aksen saat fokus. */
+.ekskul-search-wrapper {
+  position: relative;
+  width: 280px;
+  max-width: 100%;
+  margin-bottom: 16px;
+}
+
+.ekskul-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--compreng-text-secondary, #475569);
+  pointer-events: none;
+}
+
+.ekskul-search-input {
+  width: 100%;
+  padding: 8px 12px 8px 36px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--compreng-text, #0f172a);
+  outline: none;
+  background-color: var(--compreng-surface, #ffffff);
+  box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ekskul-search-input:focus {
+  border-color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-accent, #2563eb) 18%, transparent);
+}
+
+.ekskul-search-input::placeholder {
+  color: var(--compreng-text-secondary, #475569);
+}
+
+/* TABEL STYLING - SESUAI FOTO 1 */
+.ekskul-table-responsive {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.ekskul-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.ekskul-table th {
+  background-color: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text-secondary, #475569);
+  font-weight: 500;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  white-space: nowrap;
+}
+
+.ekskul-table td {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  color: var(--compreng-text-secondary, #475569);
+  vertical-align: middle;
+}
+
+.ekskul-table tbody tr:hover {
+  background-color: var(--compreng-bg, #f8fafc);
+}
+
+.ekskul-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* FOTO / LOGO THUMBNAIL */
+.ekskul-table-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 6px;
+  background-color: var(--compreng-bg, #f8fafc);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.ekskul-table-icon img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: 6px !important;
+}
+
+/* BADGE STATUS (SEPERTI FOTO 1) */
+.badge-status {
+  display: inline-block;
+  padding: 2px 8px;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 4px;
+}
+
+.badge-status.show {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: #10b981;
+}
+
+.badge-status.hide {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: #ef4444;
+}
+
+/* DROPDOWN AKSI (...) */
+.dropdown-action-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-more-action {
+  background: transparent;
+  border: none;
+  color: var(--compreng-text-secondary, #475569);
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+}
+
+.btn-more-action:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.dropdown-action-menu {
+  position: absolute;
+  right: 0;
+  top: 100%;
+  margin-top: 4px;
+  width: 140px;
+  background-color: var(--compreng-surface, #ffffff);
+  border-radius: 8px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  padding: 4px;
+  z-index: 50;
+}
+
+.dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--compreng-text-secondary, #475569);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.dropdown-item:hover {
+  background-color: var(--compreng-bg, #f8fafc);
+  color: var(--compreng-text, #0f172a);
+}
+
+.dropdown-item.danger {
+  color: #ef4444;
+}
+
+.dropdown-item.danger:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: #dc2626;
+}
+
+/* MODAL STYLING */
+.ekskul-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.ekskul-modal-box {
+  background-color: var(--compreng-surface, #ffffff);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.ekskul-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 16px 24px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+.ekskul-modal-header h3 {
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+  color: var(--compreng-text, #0f172a);
+}
+
+.ekskul-close-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--compreng-text-secondary, #475569);
+  padding: 4px;
+  border-radius: 6px;
+}
+
+.ekskul-modal-body {
+  padding: 20px 24px 24px 24px;
+  overflow-y: auto;
+}
+
+.ekskul-form-group {
+  margin-bottom: 16px;
+}
+
+.ekskul-form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.ekskul-form-input,
+.ekskul-form-textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  background-color: var(--compreng-bg, #f8fafc);
+  font-size: 14px;
+  color: var(--compreng-text-secondary, #475569);
+  outline: none;
+  box-sizing: border-box;
+}
+
+.ekskul-form-input:focus,
+.ekskul-form-textarea:focus {
+  border-color: #10b981;
+  background-color: var(--compreng-surface, #ffffff);
+}
+
+.ekskul-logo-box {
+  margin-bottom: 16px;
+  padding: 16px;
+  background-color: var(--compreng-bg, #f8fafc);
+  border-radius: 12px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+.ekskul-tab-container {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  background-color: var(--compreng-border, #e2e8f0);
+  padding: 4px;
+  border-radius: 8px;
+}
+
+.ekskul-tab-btn {
+  flex: 1;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: none;
+  background-color: transparent;
+  color: var(--compreng-text-secondary, #475569);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.ekskul-tab-btn.active {
+  background-color: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+}
+
+.ekskul-modal-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.ekskul-btn-cancel {
+  padding: 12px;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+/* UBAH WARNA FOCUS INPUT & TEXTAREA */
+.ekskul-form-input:focus,
+.ekskul-form-textarea:focus {
+  border-color: var(--compreng-border, #e2e8f0); 
+  background-color: var(--compreng-surface, #ffffff);
+}
+
+/* UBAH TOMBOL SUBMIT (SIMPAN DATA) MENJADI HITAM */
+.ekskul-btn-submit {
+  padding: 12px;
+  background-color: var(--compreng-nav-bg, #0f172a);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--compreng-accent-text, #ffffff);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: background-color 0.2s ease;
+}
+
+.ekskul-btn-submit:hover {
+  background-color: var(--compreng-nav-bg, #0f172a); 
+}
+
+/* HELPER CLASSES */
+.ekskul-icon {
+  width: 20px;
+  height: 20px;
+}
+
+.text-blue { color: #2563eb; }
+.text-green { color: #16a34a; }
+.text-yellow { color: #ca8a04; }
+.text-orange { color: #ea580c; }
+.text-red { color: #dc2626; }
+.text-emerald { color: #059669; }
+.text-pink { color: #db2777; }
+.text-purple { color: #9333ea; }
+.font-semibold { font-weight: 600; }
+.text-dark { color: #0f172a; }
+.text-muted { color: #64748b; }
+.text-center { text-align: center; }
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+  .ekskul-container {
+    padding: 16px 12px 30px 12px;
+  }
+
+  .ekskul-header-wrapper {
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .ekskul-title {
+    font-size: 20px;
+  }
+
+  .ekskul-desc {
+    font-size: 13px;
+  }
+
+  .ekskul-add-wrapper {
+    width: 100%;
+  }
+
+  .ekskul-add-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ekskul-search-wrapper {
+    width: 100%;
+  }
+
+  .ekskul-table th,
+  .ekskul-table td {
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+}
+
+/* ==========================================
+   FIX: KOTAK PUTIH DI TOMBOL TITIK TIGA (KOLOM AKSI) + ANIMASI MENU
+   - Pembungkus "dropdown-action-wrapper" mengandung kata "-wrapper", jadi ikut
+     kena wildcard theme.css ([class*="-wrapper"] { background: var(--compreng-bg)
+     !important }) -> muncul kotak putih/krem di atas baris tabel. Dikunci transparan
+     pakai ID (#admin-ekskul) supaya spesifisitasnya menang di semua tema.
+   - Menu Edit/Delete muncul halus (fade + turun 5px), sama seperti menu di
+     halaman Jurusan & Program.
+   ========================================== */
+#admin-ekskul .dropdown-action-wrapper {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+@keyframes ekskul-menu-fade-in {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+#admin-ekskul .dropdown-action-menu {
+  animation: ekskul-menu-fade-in 0.2s ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-ekskul .dropdown-action-menu { animation: none; }
+}
+
+/* ==========================================
+   FIX: WARNA FORM TAMBAH/EDIT EKSTRAKURIKULER SAMA DENGAN FORM HALAMAN LAIN
+   Akar masalah (aturan wildcard di theme.css):
+   - ".ekskul-logo-box" mengandung "-box" -> dipaksa warna permukaan (putih),
+     padahal kotak upload di form halaman lain (.upload-section) berwarna
+     latar tema (--compreng-bg, krem). Itu yang bikin kotak logo terlihat beda.
+   - ".ekskul-modal-body" mengandung "modal" -> ikut dipaksa jadi "kartu" sendiri
+     (border penuh + bayangan besar), sehingga di dalam modal muncul kotak lagi.
+     Di form Karya & Prestasi bagian isi ini polos menyatu dengan modal.
+   - Header & tombol tutup (X) disamakan dengan form Karya & Prestasi.
+   Dikunci pakai ID (#admin-ekskul) supaya menang di semua tema.
+   ========================================== */
+#admin-ekskul .ekskul-logo-box {
+  background-color: var(--compreng-bg, #f8fafc) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 8px !important;
+  box-shadow: none !important;
+}
+
+/* Isi form polos & transparan (seperti form Karya & Prestasi): menyatu dengan
+   modal, sehingga bayangan header terlihat jatuh di atas area isi. */
+#admin-ekskul .ekskul-modal-body {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+
+/* Header disamakan dengan header form Karya & Prestasi: latar permukaan tema,
+   border tipis, dan bayangan halus di bawahnya. */
+#admin-ekskul .ekskul-modal-header {
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 25px 50px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.4)) !important;
+}
+
+/* Tombol tutup (X) disamakan dengan form Karya & Prestasi: kotak kecil
+   berlatar --compreng-surface-soft (mengikuti tema), bukan ikon polos. */
+#admin-ekskul .ekskul-close-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 10px !important;
+  color: var(--compreng-text, #0f172a) !important;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}

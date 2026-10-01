@@ -1,0 +1,500 @@
+/* =========================================================
+   ImageUploader + ImageEditorModal
+   Semua class diawali "iu-" agar tidak bentrok dengan CSS halaman lain.
+   ========================================================= */
+
+.iu-root {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+}
+.iu-root.is-disabled { opacity: 0.6; pointer-events: none; }
+
+.iu-file-hidden { display: none !important; }
+
+/* ---------- Tabs ---------- */
+.iu-tabs {
+  display: flex;
+  gap: 6px;
+  padding: 4px;
+  border-radius: 10px;
+  background: var(--compreng-surface-soft, #f1f5f9);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+.iu-tab {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--compreng-text-secondary, #475569);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.iu-tab:hover { color: var(--compreng-text, #0f172a); }
+.iu-tab.active {
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 1px 3px var(--compreng-shadow, rgba(15, 23, 42, 0.12));
+}
+
+.iu-url-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 10px 12px;
+  font-size: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border, #cbd5e1);
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+}
+.iu-url-input:focus {
+  outline: none;
+  border-color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+/* ---------- Dropzone ---------- */
+.iu-dropzone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 22px 12px;
+  text-align: center;
+  border: 2px dashed var(--compreng-border, #cbd5e1);
+  border-radius: 12px;
+  background: var(--compreng-bg, #f8fafc);
+  color: var(--compreng-text-secondary, #475569);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.iu-dropzone strong { font-size: 13px; color: var(--compreng-text, #0f172a); }
+.iu-dropzone span { font-size: 12px; color: var(--compreng-text-muted, var(--compreng-text-secondary, #64748b)); }
+.iu-dropzone:hover,
+.iu-dropzone:focus-visible,
+.iu-dropzone.drag {
+  outline: none;
+  border-color: var(--compreng-accent, #2563eb);
+  background: var(--compreng-surface-soft, #eff6ff);
+}
+
+/* ---------- Preview ---------- */
+.iu-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.iu-preview-label {
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: var(--compreng-text-muted, var(--compreng-text-secondary, #64748b));
+}
+.iu-frame {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  /* pola kotak-kotak agar area transparan / ruang kosong terlihat */
+  background-color: var(--compreng-surface, #ffffff);
+  background-image:
+    linear-gradient(45deg, rgba(148, 163, 184, 0.18) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(148, 163, 184, 0.18) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.18) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.18) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  box-shadow: 0 4px 12px var(--compreng-shadow, rgba(15, 23, 42, 0.08));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.iu-frame.round { width: 150px; max-width: 150px; border-radius: 50%; }
+.iu-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+.iu-frame-msg { font-size: 12px; color: var(--compreng-text-secondary, #64748b); padding: 12px; text-align: center; }
+
+.iu-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+.iu-hint { font-size: 11.5px; color: var(--compreng-text-secondary, #64748b); text-align: center; }
+.iu-error { margin: 0; font-size: 12.5px; color: #dc2626; }
+
+/* ---------- Buttons ---------- */
+.iu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+.iu-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.iu-btn-primary {
+  background: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #ffffff);
+}
+.iu-btn-primary:hover:not(:disabled) { background: var(--compreng-accent-hover, #1d4ed8); }
+.iu-btn-secondary {
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+  border-color: var(--compreng-border, #cbd5e1);
+}
+.iu-btn-secondary:hover:not(:disabled) { background: var(--compreng-surface-soft, #f1f5f9); }
+.iu-btn-danger {
+  background: transparent;
+  color: #dc2626;
+  border-color: rgba(220, 38, 38, 0.45);
+}
+.iu-btn-danger:hover:not(:disabled) { background: rgba(220, 38, 38, 0.08); }
+.iu-btn-ghost {
+  background: transparent;
+  color: var(--compreng-text-secondary, #475569);
+}
+.iu-btn-ghost:hover:not(:disabled) { background: var(--compreng-surface-soft, #f1f5f9); }
+
+.iu-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex: 0 0 auto;
+  border-radius: 8px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+  cursor: pointer;
+}
+.iu-icon-btn:hover:not(:disabled) { background: var(--compreng-surface-soft, #f1f5f9); }
+.iu-icon-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* =========================================================
+   Editor modal (di-render lewat portal ke <body>)
+   ========================================================= */
+.iu-editor-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000; /* di atas .modal-overlay (1000) milik form */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.78);
+  backdrop-filter: blur(4px);
+}
+.iu-editor {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 640px;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+}
+.iu-editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 18px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+}
+.iu-editor-header h3 { margin: 0; font-size: 16px; font-weight: 700; color: var(--compreng-text, #0f172a); }
+
+.iu-stage {
+  position: relative;
+  flex: 1 1 auto;
+  min-height: 260px;
+  height: min(54vh, 400px);
+  overflow: hidden;
+  background: #0b1220;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+.iu-imgbox { position: absolute; overflow: hidden; }
+.iu-stage-img {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  max-width: none !important;  /* cegah aturan global "img { max-width: 100% }" */
+  max-height: none !important;
+  transform-origin: center center;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Frame crop: area di luarnya digelapkan lewat box-shadow (dipotong oleh .iu-imgbox) */
+.iu-crop {
+  position: absolute;
+  box-sizing: border-box;
+  border: 2px solid #ffffff;
+  box-shadow: 0 0 0 9999px rgba(2, 6, 23, 0.6);
+  touch-action: none;
+}
+.iu-crop.round { border-radius: 50%; }
+.iu-crop-move { position: absolute; inset: 0; cursor: move; touch-action: none; }
+.iu-grid { position: absolute; background: rgba(255, 255, 255, 0.35); pointer-events: none; }
+.iu-grid-v1, .iu-grid-v2 { top: 0; bottom: 0; width: 1px; }
+.iu-grid-h1, .iu-grid-h2 { left: 0; right: 0; height: 1px; }
+.iu-grid-v1 { left: 33.333%; } .iu-grid-v2 { left: 66.666%; }
+.iu-grid-h1 { top: 33.333%; }  .iu-grid-h2 { top: 66.666%; }
+.iu-crop.round .iu-grid { display: none; }
+
+/* Handle tarik: area sentuh 32px, tampilan sudut berbentuk "L" */
+.iu-handle { position: absolute; width: 32px; height: 32px; touch-action: none; }
+.iu-handle::after { content: ''; position: absolute; pointer-events: none; }
+.iu-corner::after { width: 18px; height: 18px; border: 0 solid #ffffff; }
+.iu-nw { left: -16px; top: -16px; cursor: nwse-resize; }
+.iu-ne { right: -16px; top: -16px; cursor: nesw-resize; }
+.iu-sw { left: -16px; bottom: -16px; cursor: nesw-resize; }
+.iu-se { right: -16px; bottom: -16px; cursor: nwse-resize; }
+.iu-nw::after { left: 12px; top: 12px; border-left-width: 4px; border-top-width: 4px; }
+.iu-ne::after { right: 12px; top: 12px; border-right-width: 4px; border-top-width: 4px; }
+.iu-sw::after { left: 12px; bottom: 12px; border-left-width: 4px; border-bottom-width: 4px; }
+.iu-se::after { right: 12px; bottom: 12px; border-right-width: 4px; border-bottom-width: 4px; }
+.iu-crop.round .iu-corner::after { display: none; }
+.iu-crop.round .iu-corner::before {
+  content: ''; position: absolute; left: 10px; top: 10px; width: 12px; height: 12px;
+  border-radius: 50%; background: #ffffff; pointer-events: none;
+}
+
+.iu-edge::after { background: #ffffff; border-radius: 2px; }
+.iu-n, .iu-s { left: 50%; margin-left: -16px; }
+.iu-e, .iu-w { top: 50%; margin-top: -16px; }
+.iu-n { top: -16px; cursor: ns-resize; }
+.iu-s { bottom: -16px; cursor: ns-resize; }
+.iu-e { right: -16px; cursor: ew-resize; }
+.iu-w { left: -16px; cursor: ew-resize; }
+.iu-n::after, .iu-s::after { left: 6px; right: 6px; top: 14px; height: 4px; }
+.iu-e::after, .iu-w::after { top: 6px; bottom: 6px; left: 14px; width: 4px; }
+
+.iu-stage-msg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+  font-size: 13px;
+  color: #e2e8f0;
+}
+.iu-stage-error { color: #fecaca; line-height: 1.5; }
+
+.iu-controls { display: flex; flex-direction: column; gap: 10px; padding: 14px 18px 4px; }
+.iu-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.iu-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.iu-chip {
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--compreng-border, #cbd5e1);
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.iu-chip:hover:not(:disabled) { background: var(--compreng-surface-soft, #f1f5f9); }
+.iu-chip.active {
+  background: var(--compreng-accent, #2563eb);
+  border-color: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #ffffff);
+}
+.iu-chip:disabled { opacity: 0.5; cursor: not-allowed; }
+.iu-tools { display: flex; gap: 8px; }
+.iu-tip { margin: 0; font-size: 11.5px; color: var(--compreng-text-secondary, #64748b); }
+
+.iu-editor-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 18px 16px;
+}
+
+.iu-spin { animation: iu-spin 0.9s linear infinite; }
+@keyframes iu-spin { to { transform: rotate(360deg); } }
+
+@media (max-width: 520px) {
+  .iu-editor { border-radius: 12px; }
+  .iu-toolbar { flex-direction: column; align-items: stretch; }
+  .iu-tools .iu-btn { flex: 1; }
+  .iu-editor-footer { flex-direction: column-reverse; align-items: stretch; }
+  .iu-editor-footer .iu-btn { width: 100%; }
+}
+
+
+/* =========================================================
+   TAMPILAN BARU (rapi & modern) — menimpa gaya lama di atas
+   ========================================================= */
+.iu-root { gap: 12px; --iu-tint: color-mix(in srgb, var(--compreng-accent, #2563eb) 10%, transparent); --iu-tint-2: color-mix(in srgb, var(--compreng-accent, #2563eb) 20%, transparent); }
+
+/* Tab Upload / Link: segmented control */
+.iu-tabs { gap: 4px; padding: 4px; border-radius: 12px; }
+.iu-tab { padding: 9px 10px; border-radius: 9px; font-size: 12.5px; }
+.iu-tab.active { background: var(--compreng-accent, #2563eb); color: var(--compreng-accent-text, #fff); box-shadow: 0 6px 14px -6px var(--compreng-accent, #2563eb); }
+
+.iu-url-input { padding: 11px 14px; border-radius: 12px; font-size: 13px; }
+
+/* Dropzone */
+.iu-dropzone { gap: 6px; padding: 28px 16px; border-radius: 16px; border-width: 1.5px; background: var(--iu-tint); border-color: var(--iu-tint-2); }
+.iu-dropzone > svg { box-sizing: content-box; padding: 11px; border-radius: 50%; color: var(--compreng-accent, #2563eb); background: var(--compreng-surface, #fff); box-shadow: 0 6px 16px -8px var(--compreng-accent, #2563eb); margin-bottom: 4px; transition: transform .2s; }
+.iu-dropzone:hover > svg, .iu-dropzone.drag > svg { transform: translateY(-3px); }
+.iu-dropzone:hover, .iu-dropzone:focus-visible, .iu-dropzone.drag { border-color: var(--compreng-accent, #2563eb); background: var(--iu-tint-2); }
+
+/* Kartu pratinjau */
+.iu-preview { align-items: stretch; gap: 12px; padding: 12px; border-radius: 16px; background: var(--compreng-bg, #f8fafc); border: 1px solid var(--compreng-border, #e2e8f0); }
+.iu-preview-label { align-self: flex-start; padding: 3px 10px; border-radius: 999px; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--compreng-accent, #2563eb); background: var(--iu-tint); }
+.iu-frame { margin: 0 auto; border-radius: 12px; box-shadow: 0 10px 24px -14px rgba(15, 23, 42, .5); }
+.iu-frame.round { margin: 0 auto; }
+
+/* Tombol aksi: sejajar, ukuran sama */
+.iu-actions { display: grid; grid-template-columns: repeat(auto-fit, minmax(92px, 1fr)); gap: 8px; width: 100%; justify-content: stretch; }
+.iu-actions .iu-btn { width: 100%; height: 38px; padding: 0 10px; border-radius: 10px; font-size: 12.5px; white-space: nowrap; }
+.iu-btn-primary { box-shadow: 0 6px 14px -8px var(--compreng-accent, #2563eb); }
+.iu-btn-danger { background: rgba(220, 38, 38, .06); border-color: rgba(220, 38, 38, .3); }
+.iu-btn-ghost { border-color: var(--compreng-border, #e2e8f0); }
+.iu-hint { align-self: center; padding: 4px 10px; border-radius: 999px; background: var(--iu-tint); color: var(--compreng-text-secondary, #64748b); }
+
+/* ---------- Editor crop ---------- */
+.iu-editor-overlay { background: rgba(2, 6, 23, .72); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); animation: iu-fade .18s ease; }
+.iu-editor { max-width: 720px; border-radius: 24px; box-shadow: 0 40px 90px -20px rgba(0, 0, 0, .6); animation: iu-pop .22s cubic-bezier(.2, .9, .3, 1.1); }
+.iu-editor-header { padding: 16px 20px; }
+.iu-editor-header h3 { font-size: 16px; letter-spacing: -.01em; }
+.iu-icon-btn { width: 36px; height: 36px; border-radius: 50%; }
+
+.iu-stage {
+  margin: 14px 20px 0; border-radius: 16px; min-height: 260px; height: min(52vh, 420px);
+  background-color: #0b1220;
+  background-image: radial-gradient(rgba(148, 163, 184, .16) 1px, transparent 1px);
+  background-size: 18px 18px;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, .15);
+}
+.iu-imgbox { border-radius: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+.iu-crop { border-width: 1.5px; box-shadow: 0 0 0 9999px rgba(2, 6, 23, .62); }
+.iu-grid { background: rgba(255, 255, 255, .28); }
+.iu-corner::after { border-radius: 2px; }
+.iu-edge::after { border-radius: 99px; }
+
+.iu-controls { gap: 12px; padding: 16px 20px 6px; }
+.iu-toolbar { gap: 12px; }
+.iu-chips { gap: 2px; padding: 4px; border-radius: 999px; background: var(--compreng-surface-soft, #f1f5f9); border: 1px solid var(--compreng-border, #e2e8f0); }
+.iu-chip { padding: 7px 14px; border: 0; background: transparent; border-radius: 999px; font-size: 12.5px; color: var(--compreng-text-secondary, #475569); }
+.iu-chip:hover:not(:disabled) { background: transparent; color: var(--compreng-text, #0f172a); }
+.iu-chip.active { background: var(--compreng-accent, #2563eb); color: var(--compreng-accent-text, #fff); box-shadow: 0 6px 14px -6px var(--compreng-accent, #2563eb); }
+.iu-tools .iu-btn { height: 36px; padding: 0 14px; border-radius: 999px; }
+.iu-tip { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: 10px; background: var(--iu-tint); font-size: 12px; line-height: 1.45; }
+.iu-tip::before { content: '!'; font-size: 13px; }
+
+.iu-editor-footer { padding: 14px 20px 18px; gap: 10px; border-top: 1px solid var(--compreng-border, #e2e8f0); margin-top: 10px; }
+.iu-editor-footer .iu-btn { height: 42px; padding: 0 20px; border-radius: 12px; font-size: 13.5px; }
+.iu-editor-footer .iu-btn-primary { min-width: 190px; }
+
+@keyframes iu-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes iu-pop { from { opacity: 0; transform: translateY(12px) scale(.97); } to { opacity: 1; transform: none; } }
+
+@media (max-width: 640px) {
+  .iu-editor-overlay { align-items: flex-end; padding: 0; }
+  .iu-editor { max-width: 100%; border-radius: 24px 24px 0 0; max-height: 96dvh; animation: iu-sheet .25s ease; }
+  .iu-stage { margin: 12px 14px 0; height: min(46vh, 340px); }
+  .iu-controls { padding: 14px 14px 4px; }
+  .iu-chips { width: 100%; justify-content: space-between; }
+  .iu-chip { flex: 1; padding: 8px 4px; }
+  .iu-editor-footer { padding: 12px 14px calc(14px + env(safe-area-inset-bottom, 0px)); }
+  .iu-editor-footer .iu-btn-primary { min-width: 0; }
+}
+@keyframes iu-sheet { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .iu-editor, .iu-editor-overlay { animation: none; } }
+
+
+/* =========================================================
+   PERBAIKAN EDITOR: handle tidak terpotong, zoom & geser gambar
+   ========================================================= */
+/* Pemotongan (overflow) dipindah ke .iu-imgclip supaya handle di tepi gambar tetap bisa diraih */
+.iu-imgbox { overflow: visible; box-shadow: none; }
+.iu-imgclip { position: absolute; inset: 0; overflow: hidden; border-radius: 4px; box-shadow: 0 10px 30px rgba(0, 0, 0, .5); }
+/* Lapisan gelap di luar frame (dulu box-shadow milik .iu-crop) */
+.iu-dim { position: absolute; pointer-events: none; box-shadow: 0 0 0 9999px rgba(2, 6, 23, .62); }
+.iu-dim.round { border-radius: 50%; }
+.iu-crop { box-shadow: 0 0 0 1px rgba(2, 6, 23, .35); }
+
+/* Saat di-zoom, area di luar frame bisa di-drag untuk menggeser gambar */
+.iu-stage.iu-zoomed { cursor: grab; }
+.iu-stage.iu-zoomed:active { cursor: grabbing; }
+
+/* Kontrol zoom */
+.iu-zoom { display: flex; align-items: center; gap: 10px; }
+.iu-zoom-btn { width: 32px; height: 32px; flex: none; }
+.iu-zoom-slider { flex: 1; min-width: 0; height: 28px; cursor: pointer; accent-color: var(--compreng-accent, #2563eb); }
+.iu-zoom-slider:disabled { cursor: not-allowed; opacity: .5; }
+.iu-zoom-value { min-width: 44px; text-align: right; font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--compreng-text-secondary, #64748b); }
+
+@media (max-width: 640px) {
+  .iu-tools { width: 100%; }
+}
+
+/* =========================================================
+   POPUP EDITOR LUWES: bisa di-scroll (scrollbar tipis), tombol aksi selalu terlihat
+   ========================================================= */
+.iu-editor {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;             /* scroll popup tidak "tembus" ke halaman di belakang */
+  scrollbar-width: thin;                    /* Firefox */
+  scrollbar-color: rgba(148, 163, 184, .35) transparent;
+}
+.iu-editor::-webkit-scrollbar { width: 6px; }
+.iu-editor::-webkit-scrollbar-track { background: transparent; margin: 14px 0; }
+.iu-editor::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .28); border-radius: 999px; }
+.iu-editor:hover::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, .55); }
+
+/* Anak-anaknya tidak lagi "diperas" agar muat; kalau tinggi layar kurang, popup yang di-scroll */
+.iu-editor > * { flex-shrink: 0; }
+.iu-stage { flex: none; height: clamp(240px, 46vh, 400px); }
+
+/* Tombol Batal / Gunakan Hasil Edit menempel di bawah popup */
+.iu-editor-footer {
+  position: sticky;
+  bottom: 0;
+  z-index: 3;
+  margin-top: 10px;
+  background: var(--compreng-surface, #ffffff);
+  box-shadow: 0 -10px 16px -12px rgba(15, 23, 42, .25);
+}
+@media (max-width: 640px) {
+  .iu-stage { height: clamp(220px, 42vh, 340px); }
+}

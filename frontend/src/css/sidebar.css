@@ -1,0 +1,498 @@
+/* src/css/sidebar.css */
+
+/* =========================================
+   1. BASE SIDEBAR (LEBAR PENUH)
+   ========================================= */
+.dashboard-sidebar {
+  width: 260px;
+  background-color: var(--compreng-surface, var(--compreng-surface, #ffffff));
+  border-right: 1px solid var(--compreng-border, var(--compreng-border, #e2e8f0));
+  display: flex;
+  flex-direction: column;
+  transition: width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: width;
+  flex-shrink: 0;
+  z-index: 50;
+  overflow: visible; /* <--- UBAH JADI VISIBLE AGAR POPUP BISA KELUAR */
+}
+
+/* NAMA CLASS BARU: MENGGANTIKAN COLLAPSED */
+.dashboard-sidebar.sidebar-mini {
+  width: 72px; 
+}
+
+/* =========================================
+   2. HEADER & LOGO
+   ========================================= */
+.sidebar-header {
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--compreng-border);
+  flex-shrink: 0;
+  transition: padding 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-header {
+  justify-content: center;
+  padding: 0;
+}
+
+.sidebar-brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+  transition: gap 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-brand-wrapper {
+  gap: 0;
+}
+
+.sidebar-logo-img {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  max-width: 180px;
+  transition: opacity 0.2s ease, max-width 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-brand-text {
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
+}
+
+.sidebar-brand-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--compreng-text);
+  letter-spacing: -0.02em;
+}
+
+.sidebar-brand-subtitle {
+  font-size: 11px;
+  color: var(--compreng-text-muted);
+}
+
+.sidebar-mobile-close {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--compreng-text-muted);
+  cursor: pointer;
+}
+
+/* =========================================
+   3. MENU NAVIGASI UTAMA
+   ========================================= */
+.sidebar-menu {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+  scrollbar-width: none;
+}
+.sidebar-menu::-webkit-scrollbar { display: none; }
+
+.sidebar-group-label {
+  padding: 0 12px;
+  margin-bottom: 8px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--compreng-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  max-height: 20px;
+  transition: opacity 0.2s ease, max-height 0.28s cubic-bezier(0.4, 0, 0.2, 1), margin-bottom 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-group-label {
+  opacity: 0;
+  max-height: 0;
+  margin-bottom: 0;
+}
+
+.sidebar-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-link {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 6px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--compreng-text-secondary);
+  transition: background 0.2s, color 0.2s, padding 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-link {
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.sidebar-link:hover {
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text);
+}
+
+.sidebar-link.active {
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text);
+  font-weight: 600;
+}
+
+.sidebar-link-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  transition: gap 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mini: hilangkan jarak ke teks yang sudah disembunyikan, supaya ikon benar-benar
+   presisi di tengah (sebelumnya gap tetap ada walau teksnya 0 lebar, jadi ikon
+   sedikit terdorong ke kiri — paling kelihatan pada menu yang punya panah dropdown). */
+.dashboard-sidebar.sidebar-mini .sidebar-link-inner {
+  gap: 0;
+}
+
+.sidebar-link-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 20px;
+}
+
+.sidebar-link-text {
+  font-size: 13.5px;
+  white-space: nowrap;
+  overflow: hidden;
+  opacity: 1;
+  max-width: 180px;
+  transition: opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-link-text {
+  opacity: 0;
+  max-width: 0;
+}
+
+.sidebar-dropdown-icon {
+  flex-shrink: 0;
+  opacity: 1;
+  transition: transform 0.25s ease, opacity 0.18s ease;
+}
+
+.sidebar-dropdown-icon.open {
+  transform: rotate(90deg);
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-dropdown-icon {
+  opacity: 0;
+  pointer-events: none;
+  width: 0;
+  min-width: 0;
+  
+  /* Mengeluarkan elemen dari aliran flexbox sehingga tidak mengganggu center */
+  position: absolute;
+}
+
+/* SUB MENU SETTINGS — dianimasikan lewat grid-template-rows supaya buka/tutup
+   halus (bukan langsung muncul/hilang seperti display:none/flex). */
+.sidebar-sub-menu {
+  display: grid;
+  grid-template-rows: 0fr;
+  margin-left: 26px;
+  transition: grid-template-rows 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.sidebar-sub-menu.open {
+  grid-template-rows: 1fr;
+}
+
+.sidebar-sub-menu-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-height: 0;
+  overflow: hidden;
+  border-left: 1px solid var(--compreng-border);
+  padding-left: 12px;
+}
+
+.sidebar-sub-menu.open .sidebar-sub-menu-inner {
+  padding-top: 4px;
+  padding-bottom: 2px;
+}
+
+/* Saat sidebar mini: submenu langsung disembunyikan total (bukan cuma tinggi 0)
+   supaya tidak ada border/garis sisa yang kelihatan sedikit pun. Klik menu di
+   mode mini langsung navigasi ke halaman utama, lihat Sidebar.jsx. */
+.dashboard-sidebar.sidebar-mini .sidebar-sub-menu {
+  display: none !important;
+}
+
+.sidebar-sub-link {
+  padding: 8px 12px;
+  font-size: 13px;
+  border-radius: 6px;
+  text-decoration: none;
+  display: block;
+  transition: all 0.2s;
+  color: var(--compreng-text-muted);
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.sidebar-sub-link:hover { color: var(--compreng-text); }
+.sidebar-sub-link.active {
+  background: var(--compreng-surface-soft);
+  color: var(--compreng-text);
+  font-weight: 600;
+}
+
+/* =========================================
+   4. FOOTER (PROFIL USER DI BAWAH)
+   ========================================= */
+.sidebar-footer {
+  border-top: 1px solid var(--compreng-border);
+  padding: 16px 12px;
+  position: relative;
+  flex-shrink: 0;
+  transition: padding 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-footer {
+  padding: 16px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.sidebar-user-btn {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 8px;
+  border: none;
+  background: transparent;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.2s, padding 0.32s cubic-bezier(0.4, 0, 0.2, 1), gap 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+  text-align: left;
+  overflow: hidden;
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-user-btn {
+  justify-content: center;
+  padding: 8px 0;
+  gap: 0;
+}
+
+.sidebar-user-btn:hover, .sidebar-user-btn.active {
+  background: var(--compreng-surface-soft);
+}
+
+.sidebar-user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  background: var(--compreng-text);
+  color: var(--compreng-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.sidebar-user-text {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  opacity: 1;
+  max-width: 180px;
+  transition: opacity 0.18s ease, max-width 0.28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-user-text {
+  opacity: 0;
+  max-width: 0;
+  flex: 0 0 0;
+}
+
+.sidebar-user-name {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--compreng-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-email {
+  font-size: 11px;
+  color: var(--compreng-text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-user-chevron {
+  color: var(--compreng-text-muted);
+  flex-shrink: 0;
+  opacity: 1;
+  transition: opacity 0.18s ease;
+}
+
+.dashboard-sidebar.sidebar-mini .sidebar-user-chevron {
+  opacity: 0;
+  width: 0;
+  min-width: 0; /* sama seperti dropdown-icon: SVG butuh min-width:0 eksplisit */
+  pointer-events: none;
+}
+
+/* =========================================
+   5. POPUP MENU KELUAR (LOGOUT)
+   ========================================= */
+.sidebar-user-popup {
+  position: absolute;
+  bottom: calc(100% + 10px);
+  left: 16px;
+  right: 16px;
+  background: var(--compreng-surface);
+  border: 1px solid var(--compreng-border);
+  border-radius: 14px;
+  box-shadow: 0 16px 36px -12px var(--compreng-shadow, rgba(0,0,0,0.18)), 0 4px 10px rgba(0,0,0,0.05);
+  overflow: hidden;
+  z-index: 50;
+  min-width: 200px;
+  padding: 6px;
+  animation: dropdownFadeIn 0.15s ease;
+}
+
+.sidebar-user-popup-header {
+  padding: 12px;
+  margin-bottom: 4px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--compreng-accent) 8%, transparent);
+}
+
+.sidebar-popup-action {
+  width: 100%;
+  padding: 9px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: none;
+  border-radius: 9px;
+  background: transparent;
+  color: var(--compreng-text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-popup-action:hover {
+  background: color-mix(in srgb, var(--compreng-accent) 10%, transparent);
+  color: var(--compreng-accent);
+}
+
+.sidebar-popup-action.danger {
+  color: #ef4444;
+  font-weight: 500;
+}
+
+.sidebar-popup-action.danger:hover {
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+/* =========================================
+   6. RESPONSIVE MOBILE
+   ========================================= */
+@media (max-width: 768px) {
+  .dashboard-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+  .dashboard-sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .sidebar-mobile-close {
+    display: block;
+  }
+}
+
+/* =========================================
+   FOTO PROFIL (tombol footer + popup) — sinkron dengan topbar & navbar viewer
+   Inisial tetap ada di bawah foto sebagai cadangan kalau gambar gagal dimuat.
+   ========================================= */
+.sidebar-user-avatar { position: relative; }
+.sidebar-user-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+
+.sidebar-user-popup .sidebar-user-popup-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.sidebar-user-popup .sidebar-popup-pic {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  font-size: 16px;
+}
+.sidebar-user-popup .sidebar-popup-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.sidebar-user-popup .sidebar-popup-info .sidebar-user-name,
+.sidebar-user-popup .sidebar-popup-info .sidebar-user-email {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -1,0 +1,1020 @@
+/* =========================================
+   1. GLOBAL RESET & BASE STYLES
+   ========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Plus Jakarta Sans', sans-serif;
+}
+
+html {
+  /* PENTING: mencegah Chrome/HP otomatis "membesarkan" sebagian teks
+     (text autosizing) saat layar sempit atau saat halaman di-zoom.
+     Inilah penyebab utama font terlihat berantakan/tidak konsisten
+     di HP maupun saat di-zoom, padahal di layar lebar normal terlihat rapi. */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body, html, #root {
+  margin: 0 !important;
+  padding: 0 !important;
+  min-height: 100vh;
+  width: 100%; /* Ubah dari 100vw menjadi 100% agar tidak tembus ke area scrollbar */
+  background-color: var(--compreng-bg, #f8fafc);
+  overflow-x: hidden; /* Mencegah geseran ke samping */
+  color: var(--compreng-text, #0f172a);
+  -webkit-font-smoothing: antialiased;
+}
+
+.dashboard-container {
+  display: flex;
+  width: 100%; /* Pastikan ini juga 100%, bukan 100vw */
+  height: 100vh;
+  overflow: hidden; 
+  background-color: var(--compreng-bg, #f8fafc);
+  position: relative;
+}
+
+/* =========================================
+   2. GLOBAL AUTHENTICATION STYLES
+   ========================================= */
+/* Dipindah sepenuhnya ke css/auth.css (versi theme-aware, tanpa warna hardcode).
+   File ini sengaja dikosongkan di bagian auth supaya tidak ada dua sumber
+   kebenaran yang saling tabrakan tergantung urutan load CSS. */
+.auth-logo { width: 80px; height: 80px; object-fit: contain; margin-bottom: 15px; background: transparent; border-radius: 0; }
+.check-circle { width: 70px; height: 70px; background-color: var(--compreng-accent, #2563eb); opacity: 0.12; border-radius: 50%; display: flex; justify-content: center; align-items: center; margin: 0 auto 15px auto; }
+
+
+/* =========================================
+   3. DASHBOARD & PANEL LAYOUT STYLES
+   ========================================= */
+.dashboard-container {
+  display: flex;
+  width: 100%;
+  height: 100vh;
+  overflow: hidden; 
+  background-color: var(--compreng-bg, #f8fafc);
+  position: relative;
+}
+
+/* SIDEBAR KIRI */
+.dashboard-sidebar {
+  width: 260px;
+  height: 100vh;
+  flex-shrink: 0;
+  background-color: var(--compreng-surface, #ffffff);
+  border-right: 1px solid var(--compreng-border, #e2e8f0);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 100;
+}
+
+/* MENGHILANGKAN SIDEBAR DENGAN MARGIN NEGATIF */
+.dashboard-sidebar.collapsed {
+  margin-left: -260px;
+}
+
+.sidebar-toggle-btn,
+.topbar-toggle-btn {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.sidebar-toggle-btn {
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.sidebar-toggle-btn:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: #ef4444;
+}
+
+.topbar-toggle-btn {
+  color: var(--compreng-text-secondary, #475569);
+  margin-right: 12px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.topbar-toggle-btn:hover {
+  background-color: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #ffffff);
+}
+
+.sidebar-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+.sidebar-menu {
+  flex: 1;
+  padding: 16px 12px;
+  overflow-y: auto;
+}
+
+.sidebar-menu ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  padding: 10px 14px;
+  color: var(--compreng-text-secondary, #475569);
+  text-decoration: none;
+  gap: 12px;
+  transition: all 0.2s ease;
+  font-size: 13px;
+  font-weight: 500; 
+  border-radius: 8px;
+  width: 100%;
+}
+
+.sidebar-link:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text, #0f172a);
+}
+
+.sidebar-link.active {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-accent, #2563eb);
+  font-weight: 700;
+}
+
+.sidebar-footer {
+  padding: 16px;
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+.logout-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background-color: var(--compreng-surface-soft, #f1f5f9); 
+  color: #dc2626; 
+  border: none; 
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.2s ease;
+}
+
+.logout-btn:hover {
+  background-color: #dc2626; 
+  color: var(--compreng-accent-text, #ffffff);
+}
+
+/* AREA KONTEN KANAN */
+.dashboard-content {
+  flex: 1;
+  min-width: 0; 
+  height: 100vh;
+  overflow-y: auto;
+  background-color: var(--compreng-bg, #f8fafc);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+/* =========================================
+   4. MANAGE USERS STYLES
+   ========================================= */
+/* Semua style form Lupa Password / checklist password sudah dipindah ke
+   css/auth.css (theme-aware). Jangan tambahkan lagi di sini. */
+.manage-users-header { display: flex; align-items: center; gap: 12px; margin-bottom: 25px; }
+.manage-users-title { margin: 0; color: #111827; font-size: 20px; }
+.manage-users-subtitle { margin: 4px 0 0 0; font-size: 13px; color: #6b7280; }
+.manage-users-alert { background-color: #fef3c7; color: #b45309; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; font-weight: bold; border: 1px solid #fde68a; }
+.table-center { text-align: center; }
+.user-name-cell { font-weight: 500; }
+.user-email-cell { color: #6b7280; }
+.role-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; }
+.badge-admin { background-color: #fee2e2; color: #dc2626; }
+.badge-editor { background-color: #fef3c7; color: #d97706; }
+.badge-viewer { background-color: #e0f2fe; color: #0284c7; }
+.action-button-group { display: inline-flex; align-items: center; gap: 8px; justify-content: center; }
+.select-wrapper-inline { display: inline-flex; align-items: center; gap: 4px; }
+.role-select-dropdown { padding: 6px 8px; border-radius: 6px; border: 1px solid #d1d5db; outline: none; font-size: 12px; background-color: #fff; cursor: pointer; }
+.btn-action-reset { display: flex; align-items: center; gap: 3px; padding: 6px 8px; background-color: #d97706; color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 12px; font-weight: bold; }
+.btn-action-delete { display: flex; align-items: center; padding: 6px 8px; background-color: #ef4444; color: white; border: none; border-radius: 6px; cursor: pointer; }
+.manage-header-icon { color: #d97706; }
+.select-check-icon { color: #4b5563; }
+
+/* =========================================
+   5. PROGRAM JURUSAN
+   ========================================= */
+
+/* =========================================
+   6. NAVBAR ATAU NAVIGASI
+   ========================================= */
+
+/* =========================================
+   7. TENAGA PENGAJAR
+   ========================================= */
+
+/* =========================================
+   8. STANDARISASI TOMBOL MODERN (GLOBAL) button
+   ========================================= */
+
+.btn-modern-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #ffffff);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+}
+.btn-modern-primary:hover {
+  background-color: var(--compreng-accent-hover, #1d4ed8);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+}
+
+.btn-modern-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text-secondary, #475569);
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-modern-secondary:hover {
+  background-color: var(--compreng-border, #e2e8f0);
+  color: var(--compreng-text, #0f172a);
+}
+
+/* Tombol Edit/Hapus Melayang di Kartu */
+.teacher-admin-actions-light {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  display: flex;
+  gap: 8px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+.teacher-card-light:hover .teacher-admin-actions-light {
+  opacity: 1;
+}
+
+.btn-edit-icon, .btn-delete-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+.btn-edit-icon {
+  background-color: var(--compreng-surface-soft, #f1f5f9);
+  color: #d97706;
+}
+.btn-edit-icon:hover {
+  background-color: #fde68a;
+  transform: scale(1.05);
+}
+.btn-delete-icon {
+  background-color: #fee2e2;
+  color: #ef4444;
+}
+.btn-delete-icon:hover {
+  background-color: #fecaca;
+  transform: scale(1.05);
+}
+
+/* =========================================
+   9. MODAL UI MODERN (POPUP FORM RESPONSIVE)
+   ========================================= */
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 20px; /* Jarak aman agar tidak menempel di tepi layar */
+  box-sizing: border-box;
+}
+
+.modern-modal {
+  padding: 0 !important;
+  border-radius: 20px !important;
+  overflow: hidden;
+  width: 100%;
+  max-width: 500px !important;
+  max-height: 90vh; /* Batas tinggi maksimal 90% dari layar */
+  background: var(--compreng-surface, #ffffff);
+  display: flex;
+  flex-direction: column; /* Memisahkan header dan isi */
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.modal-header-modern {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 25px;
+  background: var(--compreng-bg, #f8fafc);
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  flex-shrink: 0; /* Header tetap di atas, tidak ikut ter-scroll */
+}
+
+.modal-header-modern h3 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--compreng-text, #0f172a);
+}
+
+.btn-close-modal {
+  background: transparent;
+  border: none;
+  color: var(--compreng-text-secondary, #475569);
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  transition: 0.2s;
+}
+
+.btn-close-modal:hover {
+  background: var(--compreng-surface-soft, #f1f5f9);
+  color: #ef4444;
+}
+
+.form-modern-layout {
+  padding: 0px 24px 24px 24px; /* Atas 8px, Kanan 24px, Bawah 24px, Kiri 24px */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+  /* ... kode lainnya tetap biarkan saja ... */
+}
+
+.form-group-modern {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  text-align: left;
+}
+
+.form-group-modern label {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--compreng-text-secondary, #475569);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.input-modern {
+  padding: 12px 16px;
+  border: 1.5px solid var(--compreng-border, #e2e8f0);
+  border-radius: 10px;
+  font-size: 14px;
+  color: var(--compreng-text, #0f172a);
+  background: var(--compreng-surface, #ffffff);
+  transition: all 0.2s ease;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.input-modern:focus {
+  border-color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1);
+}
+
+.form-row-modern {
+  display: flex;
+  gap: 15px;
+}
+
+.upload-section {
+  background: var(--compreng-bg, #f8fafc);
+  padding: 15px;
+  border-radius: 12px;
+  border: 1px dashed var(--compreng-border, #e2e8f0);
+}
+
+.radio-tabs {
+  display: flex;
+  background: var(--compreng-border, #e2e8f0);
+  padding: 4px;
+  border-radius: 8px;
+  gap: 4px;
+  margin-bottom: 10px;
+}
+
+.radio-tab {
+  flex: 1;
+  text-align: center;
+  padding: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--compreng-text-secondary, #475569);
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+}
+
+.radio-tab.active {
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.input-modern.file-style {
+  padding: 8px;
+  background: var(--compreng-surface, #ffffff);
+}
+
+.modal-actions-modern {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 5px;
+  padding-top: 15px;
+}
+
+.modal-actions-modern button {
+  flex: 1; 
+  padding: 12px;
+}
+
+/* Responsivitas untuk Layar HP */
+@media (max-width: 480px) {
+  .form-row-modern {
+    flex-direction: column; /* Input berjejer ke bawah di layar sempit */
+    gap: 16px;
+  }
+  
+  .form-modern-layout {
+    padding: 20px;
+  }
+  
+  .modal-header-modern {
+    padding: 15px 20px;
+  }
+}
+
+
+/* Profil Sekolah */
+
+/* Container Utama */
+
+.profil-container {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif !important;
+  padding: 40px 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* Memastikan Header Utama Rata Tengah */
+.profil-header {
+  text-align: center !important;
+  margin-bottom: 50px;
+}
+
+.profil-header h1 {
+  font-size: 36px;
+  font-weight: 700;
+  color: var(--compreng-text, #0f172a);
+  margin-bottom: 12px;
+}
+
+.profil-header p {
+  color: var(--compreng-text-secondary, #475569);
+  font-size: 16px;
+  max-width: 700px;
+  margin: 0 auto;
+  line-height: 1.6;
+}
+
+/* Memperbaiki Bagian Judul Visi & Misi agar Tepat di Tengah */
+.misi-section-title {
+  width: 100% !important;
+  text-align: center !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 50px 0 30px 0 !important;
+}
+
+.misi-section-title h2 {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--compreng-text, #0f172a);
+  margin-top: 10px;
+  text-align: center !important;
+}
+
+/* Badge (Tujuan Strategis / Visi / Misi) */
+.section-tag, .badge-title {
+  display: inline-block;
+  background: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-accent, #2563eb);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+/* Wrapper Foto dengan Efek Pergerakan (Hover Zoom) */
+.photo-hover-wrapper {
+  width: 100%;
+  max-width: 800px; /* Batasi lebar maksimal agar tidak selebar container utama */
+  height: 320px;    /* Tentukan tinggi pasti, misalnya 320px agar pas dipandang */
+  margin: 30px auto; /* auto agar posisinya otomatis di tengah */
+  overflow: hidden;
+  border-radius: 24px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+}
+
+.school-image-zoom {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Memastikan foto menutupi area tanpa merusak proporsi (cropping rapi) */
+  object-position: center; /* Fokus foto di bagian tengah */
+  transition: transform 0.5s ease-in-out;
+}
+
+/* Efek saat kursor mengarah ke foto (Zoom In) */
+.photo-hover-wrapper:hover .school-image-zoom {
+  transform: scale(1.08); 
+}
+
+/* Efek saat kursor mengarah ke foto (Zoom In) */
+.photo-hover-wrapper:hover .school-image-zoom {
+  transform: scale(1.08); 
+}
+
+/* Card Visi */
+.visi-card {
+  max-width: 800px; /* Batasi lebar maksimal kotak visi */
+  margin: 30px auto; /* Membuat posisinya otomatis berada di tengah */
+  padding: 30px 40px;
+  background: var(--compreng-surface, #ffffff);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  text-align: center;
+}
+
+.badge-title {
+  background: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text, #0f172a);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.05em;
+}
+
+.visi-text {
+  font-size: 20px;
+  font-style: italic;
+  color: var(--compreng-text, #0f172a);
+  margin-top: 20px;
+  line-height: 1.6;
+}
+
+
+/* Judul Visi & Misi di Tengah */
+.misi-section-title {
+  width: 100%;
+  text-align: center !important;
+  margin: 50px auto 30px auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+/* Pastikan badge dan teks di dalamnya ikut rata tengah */
+.misi-section-title * {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.misi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+}
+
+.misi-card {
+  background: var(--compreng-surface, #ffffff);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.03);
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  transition: transform 0.2s ease;
+}
+
+.misi-card:hover {
+  transform: translateY(-4px);
+}
+
+.misi-number {
+  background: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #ffffff);
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.misi-card p {
+  color: var(--compreng-text-secondary, #475569);
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* Responsif untuk Layar HP / Mobile */
+@media (max-width: 768px) {
+  .profil-container {
+    padding: 20px 15px;
+  }
+  
+  .profil-header h1 {
+    font-size: 28px;
+  }
+
+  .visi-text {
+    font-size: 16px;
+  }
+
+  .misi-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Styling Utama Kotak Visi */
+.visi-card {
+  max-width: 850px;
+  margin: 40px auto;
+  padding: 40px 30px 30px 30px;
+  background: var(--compreng-surface, #ffffff);
+  border-radius: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+  text-align: center;
+  position: relative;
+  transition: transform 0.3s ease, box-shadow 0.3s ease; /* Efek transisi halus */
+}
+
+/* Efek Pergerakan saat Kursor Mengarah ke Visi (Hover) */
+.visi-card:hover {
+  transform: translateY(-8px); /* Kotak naik sedikit ke atas */
+  box-shadow: 0 15px 35px rgba(37, 99, 235, 0.1); /* Bayangan sedikit membiru */
+}
+
+/* Styling Icon di Atas Visi */
+.visi-icon-wrapper {
+  position: absolute;
+  top: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 48px;
+  height: 48px;
+  background: var(--compreng-accent, #2563eb);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: transform 0.3s ease;
+}
+
+/* Efek ikon ikut berputar/membesar sedikit saat di-hover */
+.visi-card:hover .visi-icon-wrapper {
+  transform: translateX(-50%) scale(1.1) rotate(5deg);
+}
+
+.visi-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--compreng-accent-text, #ffffff);
+}
+
+/* Styling Teks Visi */
+.visi-text {
+  font-size: 18px;
+  font-style: italic;
+  color: var(--compreng-text, #0f172a);
+  line-height: 1.6;
+  margin-top: 10px;
+}
+
+
+
+
+/* =========================================
+   MODERN TESTIMONIAL STYLES (NO TAILWIND DEPENDENCY)
+========================================= */
+
+/* =========================================
+   MODUL GALERI SEKOLAH 
+   ========================================= */
+
+
+/* ==========================================
+    KONTAK DAN ALAMAT
+   ========================================== */
+#section-kontak {
+  width: 100%;
+  clear: both;
+  background-color: var(--compreng-nav-bg, #0f172a) !important;
+}
+
+#section-kontak a {
+  text-decoration: none;
+}
+
+/* STYLING UTAMA FOOTER */
+.footer-container {
+  background-color: var(--compreng-nav-bg, #0f172a);
+  color: var(--compreng-text-secondary, #475569);
+  padding-top: 3rem;
+  padding-bottom: 1.5rem;
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
+  font-family: system-ui, -apple-system, sans-serif;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.footer-content {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+  display: grid;
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+  gap: 2rem;
+}
+
+@media (min-width: 768px) {
+  .footer-content {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-title-main {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--compreng-accent-text, #ffffff);
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.025em;
+}
+
+.footer-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--compreng-accent-text, #ffffff);
+  margin-bottom: 1rem;
+}
+
+.footer-desc {
+  font-size: 0.875rem;
+  color: var(--compreng-text-secondary, #475569);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.footer-links-list, 
+.footer-contact-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer-links-list a {
+  color: var(--compreng-text-secondary, #475569);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+}
+
+.footer-links-list a:hover {
+  color: var(--compreng-accent-text, #ffffff);
+}
+
+.footer-links-list a.admin-link {
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.footer-links-list a.admin-link:hover {
+  text-decoration: underline;
+}
+
+.footer-contact-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.footer-icon {
+  color: var(--compreng-accent, #2563eb);
+  flex-shrink: 0;
+}
+
+.footer-map-box {
+  width: 100%;
+  height: 9rem;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  background-color: var(--compreng-nav-bg, #0f172a);
+}
+
+.footer-map-empty {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.footer-copyright {
+  max-width: 1280px;
+  margin: 2.5rem auto 0 auto;
+  padding: 1.5rem 1.5rem 0 1.5rem;
+  border-top: 1px solid rgba(30, 41, 59, 0.6);
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+
+/* ==========================================
+   SIDEBAR HEADER STYLES (SHADCN UI MATCH)
+   ========================================== */
+
+.dashboard-sidebar {
+  border-right: 1px solid var(--compreng-border);
+  background: var(--compreng-surface, #ffffff); /* Tetap putih */
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-header {
+  padding: 0 16px;
+  border-bottom: 1px solid var(--compreng-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  box-sizing: border-box;
+  background: var(--compreng-surface, #ffffff);
+  flex-shrink: 0;
+}
+
+.sidebar-brand-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  overflow: hidden;
+}
+
+/* Container Logo Berbentuk Kotak (Diubah ke Latar Putih) */
+.sidebar-logo-box {
+  width: 32px;
+  height: 32px;
+  background: var(--compreng-surface, #ffffff); /* Latar belakang diubah menjadi putih */
+  border: 1px solid var(--compreng-border, #e2e8f0); /* Border tipis agar terlihat rapi */
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.sidebar-logo-img {
+  width: 20px;
+  height: 20px;
+  object-fit: contain;
+}
+
+/* Typo Branding Modern (Disamakan dengan Foto 2) */
+.sidebar-brand-text {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebar-brand-title {
+  font-size: 13.5px;
+  margin: 0;
+  font-weight: 500; 
+  color: var(--compreng-text, #0f172a);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+.sidebar-brand-subtitle {
+  font-size: 11px;
+  color: var(--compreng-text-secondary, #475569);
+  font-weight: 500;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
+/* Tombol X Tetap Ada */
+.sidebar-close-btn {
+  color: var(--compreng-text-secondary, #475569);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.sidebar-close-btn:hover {
+  background: var(--compreng-surface-soft, #f1f5f9);
+  color: var(--compreng-text, #0f172a);
+}
