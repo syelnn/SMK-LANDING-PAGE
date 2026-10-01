@@ -15,17 +15,22 @@
 .mu-wrapper {
   width: 100%;
   max-width: 1200px;
+  min-width: 0; /* agar overflow-x tabel bekerja di dalam layout flex/grid */
   margin: 0 auto;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
 }
+.mu-wrapper > * { min-width: 0; max-width: 100%; }
 
-.mu-header { margin-bottom: 24px; }
+.mu-header { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
 
 .mu-title {
   font-size: 24px;
   font-weight: 800;
   color: var(--compreng-text);
-  margin: 0 0 6px 0;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .mu-subtitle {
@@ -68,11 +73,12 @@
   flex-wrap: wrap;
   gap: 12px;
   margin-bottom: 16px;
+  width: 100%;
 }
 
 .mu-toolbar-group { display: flex; align-items: center; gap: 10px; }
 
-.mu-search-wrapper { position: relative; width: 280px; }
+.mu-search-wrapper { position: relative; width: 280px; max-width: 100%; }
 
 .mu-search-input {
   width: 100%;
@@ -113,23 +119,26 @@
   background-color: var(--compreng-surface);
   border-radius: 12px;
   border: 1px solid var(--compreng-border);
+  width: 100%;
+  max-width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  scrollbar-width: none;
-  -ms-overflow-style: none;
 }
-.mu-table-card::-webkit-scrollbar { display: none; }
+.mu-table-card::-webkit-scrollbar { height: 6px; }
+.mu-table-card::-webkit-scrollbar-thumb { background: var(--compreng-border); border-radius: 999px; }
 
 .mu-table {
   width: 100%;
   border-collapse: collapse;
   text-align: left;
-  min-width: 900px;
+  table-layout: auto;
 }
 
 .mu-th {
-  padding: 12px 16px;
+  padding: 12px 14px;
   font-size: 12px;
   font-weight: 600;
   color: var(--compreng-text-secondary);
@@ -139,12 +148,25 @@
 }
 
 .mu-td {
-  padding: 12px 16px;
+  padding: 12px 14px;
+  overflow-wrap: anywhere; /* email panjang turun baris, bukan melebarkan tabel */
   border-bottom: 1px solid var(--compreng-border);
   vertical-align: middle;
   color: var(--compreng-text);
   font-size: 13px;
 }
+
+/* Satu baris per data. EMAIL TIDAK PERNAH DIPOTONG (nowrap, tanpa ellipsis).
+   Last Login juga satu baris. Hanya Name yang boleh turun baris (di spasi antar kata). */
+.mu-table .mu-th:nth-child(1), .mu-table .mu-td:nth-child(1),
+.mu-table .mu-th:nth-child(8), .mu-table .mu-td:nth-child(8) { width: 1%; white-space: nowrap; }
+.mu-table .mu-td:nth-child(2),
+.mu-table .mu-td:nth-child(4),
+.mu-table .mu-td:nth-child(5),
+.mu-table .mu-td:nth-child(6),
+.mu-table .mu-td:nth-child(7) { white-space: nowrap; overflow-wrap: normal; }
+.mu-table .mu-td:nth-child(3) { white-space: normal; overflow-wrap: break-word; min-width: 90px; }
+.mu-table .mu-td:nth-child(5) { color: var(--compreng-text-secondary); }
 
 .mu-tr { transition: background 0.2s; }
 .mu-tr:hover { background: var(--compreng-surface-soft); }
@@ -200,11 +222,13 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  font-size: 13px;
+  white-space: nowrap;
   font-weight: 500;
   text-transform: capitalize;
   color: var(--compreng-text);
 }
-.mu-role-icon svg { color: var(--compreng-text-secondary); }
+.mu-role-icon svg { color: var(--compreng-text-secondary); flex: 0 0 auto; }
 .mu-role-icon b { font-weight: 500; }
 
 /* =========================================
@@ -310,7 +334,8 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 .mu-urow-main { display: flex; align-items: center; gap: 12px; }
-.mu-urow-text { flex: 1; min-width: 0; }
+.mu-urow-text { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
+.mu-uhandle { font-size: 12.5px; color: var(--compreng-text-secondary); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mu-uname {
   font-size: 14px;
   font-weight: 700;
@@ -319,24 +344,29 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.mu-umail {
-  margin-top: 2px;
-  font-size: 12px;
-  color: var(--compreng-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.mu-urow-foot {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px 12px;
+.mu-udetails {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
+  gap: 14px 16px;
   padding-top: 12px;
   border-top: 1px dashed var(--compreng-border);
-  font-size: 12px;
 }
-.mu-urow-time { margin-left: auto; font-size: 11.5px; color: var(--compreng-text-secondary); }
+.mu-ufield { font-size: 13px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
+.mu-ufield-full { grid-column: 1 / -1; }
+.mu-ulabel {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--compreng-text-muted);
+}
+.mu-uvalue {
+  font-size: 13px;
+  color: var(--compreng-text);
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
 .mu-uempty {
   text-align: center;
   padding: 28px 12px;
@@ -801,6 +831,11 @@
 /* =========================================
    9. RESPONSIVE
    ========================================= */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .mu-th, .mu-td { padding: 10px 10px; }
+  .mu-td { font-size: 12.5px; }
+}
+
 @media (max-width: 1024px) {
   .mu-header { margin-bottom: 18px; }
   .mu-title { font-size: 22px; }
@@ -811,13 +846,38 @@
   .mu-title { font-size: 20px; }
   .mu-subtitle { font-size: 13px; }
 
-  /* Toolbar: pencarian penuh, filter di bawahnya */
-  .mu-wrapper .mu-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
-  .mu-wrapper .mu-toolbar .mu-search-wrapper { flex: 1 1 auto !important; width: 100% !important; max-width: 100% !important; }
-  .mu-wrapper .mu-toolbar .mu-toolbar-group { width: 100%; }
-  .mu-wrapper .mu-toolbar .mu-filter-select { width: 100%; }
+  /* Toolbar HP: kompak, tersusun vertikal (filter Role di atas, kolom search di bawahnya) */
+  .mu-wrapper .mu-toolbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .mu-wrapper .mu-toolbar .mu-toolbar-group { order: 1; width: auto; max-width: 100%; }
+  .mu-wrapper .mu-toolbar .mu-search-wrapper {
+    order: 2;
+    flex: 0 1 auto !important;
+    width: 100% !important;
+    max-width: 260px !important;
+  }
+  .mu-wrapper .mu-toolbar .mu-search-input {
+    height: 36px;
+    padding: 0 12px 0 32px;
+    font-size: 13px;
+    border-radius: 8px;
+  }
+  .mu-wrapper .mu-toolbar .mu-search-icon { left: 10px; width: 14px; height: 14px; }
+  .mu-wrapper .mu-toolbar .mu-filter-select {
+    width: auto;
+    height: 36px;
+    padding: 0 12px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 8px;
+    box-sizing: border-box;
+  }
 
-  /* Tabel diganti daftar kartu */
+  /* admin-responsive.css memaksa semua input/select jadi 16px !important (anti-zoom iOS).
+     Untuk toolbar ini kita timpa ke 13px dengan spesifisitas lebih tinggi. */
+  .dashboard-container .mu-wrapper .mu-toolbar .mu-filter-select,
+  .dashboard-container .mu-wrapper .mu-toolbar .mu-search-input { font-size: 13px !important; }
+
+  /* Tabel diganti daftar kartu di HP */
   .mu-wrapper .mu-table-card { display: none; }
   .mu-wrapper .mu-ulist { display: flex; flex-direction: column; gap: 10px; }
 

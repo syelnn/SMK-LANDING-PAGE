@@ -430,8 +430,8 @@ export default function ManageUsers() {
                     <tr key={user.id} className="mu-tr">
                       <td className="mu-td"><Pic src={user.avatar} name={getName(user)} /></td>
                       <td className="mu-td" style={{ fontWeight: 600 }}>{user.username}</td>
-                      <td className="mu-td">{user.fullName || user.full_name || '-'}</td>
-                      <td className="mu-td">{user.email || '-'}</td>
+                      <td className="mu-td" title={getName(user)}>{user.fullName || user.full_name || '-'}</td>
+                      <td className="mu-td" title={user.email || ''}>{user.email || '-'}</td>
                       <td className="mu-td" style={{ color: 'var(--compreng-text-secondary)' }}>{lastSeenText(user)}</td>
                       <td className="mu-td">
                         <span className={isActiveUser(user) ? 'mu-badge-active' : 'mu-badge-inactive'}>
@@ -464,18 +464,31 @@ export default function ManageUsers() {
                     <Pic src={user.avatar} name={getName(user)} size={44} />
                     <div className="mu-urow-text">
                       <div className="mu-uname">{getName(user)}</div>
-                      <div className="mu-umail">@{user.username} · {user.email || '-'}</div>
+                      <div className="mu-uhandle">@{user.username}</div>
                     </div>
                     <button onClick={(e) => handleDropdownClick(e, user.id)} className="mu-action-btn" aria-label="Aksi pengguna">
                       <MoreHorizontal size={18} />
                     </button>
                   </div>
-                  <div className="mu-urow-foot">
-                    <span className={isActiveUser(user) ? 'mu-badge-active' : 'mu-badge-inactive'}>
-                      {isActiveUser(user) ? 'Active' : 'Suspended'}
-                    </span>
-                    <div className="mu-role-icon"><RoleIcon role={user.role} /><b>{user.role || 'Viewer'}</b></div>
-                    <div className="mu-urow-time">{lastSeenText(user)}</div>
+                  <div className="mu-udetails">
+                    <div className="mu-ufield">
+                      <span className="mu-ulabel">Email</span>
+                      <span className="mu-uvalue">{user.email || '-'}</span>
+                    </div>
+                    <div className="mu-ufield">
+                      <span className="mu-ulabel">Status</span>
+                      <span className={isActiveUser(user) ? 'mu-badge-active' : 'mu-badge-inactive'}>
+                        {isActiveUser(user) ? 'Active' : 'Suspended'}
+                      </span>
+                    </div>
+                    <div className="mu-ufield">
+                      <span className="mu-ulabel">Last Login</span>
+                      <span className="mu-uvalue">{lastSeenText(user)}</span>
+                    </div>
+                    <div className="mu-ufield">
+                      <span className="mu-ulabel">Role</span>
+                      <div className="mu-role-icon"><RoleIcon role={user.role} /><b>{user.role || 'Viewer'}</b></div>
+                    </div>
                   </div>
                 </div>
               ))
