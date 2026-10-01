@@ -1,10 +1,67 @@
 import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../utils/media';
 import axios from 'axios';
-import { Plus, Trash2, Edit, X, MoreHorizontal, Search, Filter, ChevronDown } from 'lucide-react';
+import { Plus, Trash2, Edit, X, MoreHorizontal, Search, Filter, ChevronDown, Users, Check } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
 import '../css/managepengajar.css'; 
 import '../App.css'; 
+
+// ---------- Komponen kecil (di luar komponen utama agar tidak re-mount tiap render) ----------
+const initialOf = (name) => (name || '?').trim().charAt(0).toUpperCase();
+const roleOf = (role) => (role || '').trim().toUpperCase();
+const isHeadmaster = (role) => roleOf(role).includes('KEPALA');
+
+function Avatar({ item }) {
+  return item.photo ? (
+    <img className="mp-avatar" src={getImageUrl(item.photo)} alt="" loading="lazy" />
+  ) : (
+    <div className="mp-avatar mp-avatar-fallback" aria-hidden="true">{initialOf(item.name)}</div>
+  );
+}
+
+function ShowPill({ on }) {
+  return (
+    <div className={`mp-pill ${on ? 'mp-pill-on' : 'mp-pill-off'}`}>
+      {on ? 'Ditampilkan' : 'Disembunyikan'}
+    </div>
+  );
+}
+
+function EmptyState({ filtering, canEdit }) {
+  return (
+    <div className="mp-empty">
+      <div className="mp-empty-icon">{filtering ? <Search size={20} /> : <Users size={20} />}</div>
+      <div className="mp-empty-title">{filtering ? 'Tidak ada hasil' : 'Belum ada data pengajar'}</div>
+      <p className="mp-empty-text">
+        {filtering
+          ? 'Coba kata kunci lain atau ubah filter mata pelajaran.'
+          : canEdit ? 'Klik Tambah untuk menambahkan pengajar pertama.' : 'Data akan muncul di sini setelah ditambahkan.'}
+      </p>
+    </div>
+  );
+}
+
+function LoadingSkeleton() {
+  return (
+    <div className="mp-wrapper" id="admin-pengajar" aria-busy="true">
+      <div className="mp-head">
+        <div className="mp-sk-bar" style={{ width: 180, height: 24 }} />
+        <div className="mp-sk-bar" style={{ width: 280, height: 14 }} />
+      </div>
+      <div className="mp-skel">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div className="mp-sk-row" key={i}>
+            <div className="mp-sk-av" />
+            <div className="mp-sk-col">
+              <div className="mp-sk-bar" style={{ width: '45%', height: 13 }} />
+              <div className="mp-sk-bar" style={{ width: '25%', height: 11 }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function ManagePengajar() {
   const [teachers, setTeachers] = useState([]);
@@ -27,6 +84,7 @@ export default function ManagePengajar() {
   const [dropdownConfig, setDropdownConfig] = useState({ id: null, right: null, top: null, bottom: null });
   const [searchTerm, setSearchTerm] = useState('');
   const [filterRole, setFilterRole] = useState(''); 
+  const [filterOpen, setFilterOpen] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -57,6 +115,14 @@ export default function ManagePengajar() {
     window.addEventListener('scroll', handleScroll, true);
     return () => window.removeEventListener('scroll', handleScroll, true);
   }, [dropdownConfig.id]);
+
+  // Tutup dropdown filter dengan tombol Esc
+  useEffect(() => {
+    if (!filterOpen) return;
+    const onKey = (e) => e.key === 'Escape' && setFilterOpen(false);
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [filterOpen]);
 
   // Callback dari <ImageUploader>: file asli/hasil edit disimpan di state (dikirim ke backend),
   // URL-nya dipakai untuk pratinjau.
@@ -174,127 +240,136 @@ export default function ManagePengajar() {
     }
   };
 
-  if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data pengajar...</div>;
+  const canEdit = userRole === 'admin' || userRole === 'editor';
+  const totalCount = teachers.length;
+  const shownCount = teachers.filter((t) => t.show === 1).length;
+  const hiddenCount = totalCount - shownCount;
+  const isFiltering = Boolean(searchTerm || filterRole);
+
+  if (loading) return <LoadingSkeleton />;
 
   return (
     <div className="mp-wrapper" id="admin-pengajar">
-      
-      <div className="mp-header-box">
+
+      <div className="mp-head">
         <div>
           <h2 className="mp-title">Tenaga Pengajar</h2>
           <p className="mp-subtitle">Kelola daftar guru, kepala sekolah, dan staf pengajar.</p>
         </div>
-        {(userRole === 'admin' || userRole === 'editor') && (
-          <button className="btn-modern-primary mp-add-desktop" onClick={openAdd}>
-            <Plus size={16} /> Tambah Pengajar
-          </button>
-        )}
+        <div className="mp-stats">
+          <div className="mp-stat"><b>{totalCount}</b> total</div>
+          <div className="mp-stat"><b>{shownCount}</b> ditampilkan</div>
+          {hiddenCount > 0 && <div className="mp-stat"><b>{hiddenCount}</b> disembunyikan</div>}
+        </div>
       </div>
 
       <div className="mp-toolbar">
+        {/* Cari */}
         <div className="mp-search-wrapper">
-          <Search size={16} className="mp-search-icon" />
-          <input 
-            type="text" 
-            placeholder="Cari nama atau jabatan..." 
+          <Search size={14} className="mp-search-icon" />
+          <input
+            type="text"
+            placeholder="Cari"
+            aria-label="Cari nama atau jabatan"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="mp-search-input"
           />
         </div>
-        {/* Tombol ringkas khusus mobile: sebaris dengan Search (aksi sama dengan tombol desktop) */}
-        {(userRole === 'admin' || userRole === 'editor') && (
-          <button type="button" className="mp-add-mobile" onClick={openAdd} aria-label="Tambah Pengajar">
-            <Plus size={16} /> Tambah
+
+        {/* Filter (dropdown kustom: popover di desktop, bottom sheet di mobile) */}
+        <div className="mp-filter-wrapper">
+          <button
+            type="button"
+            className={`mp-filter-trigger${filterRole ? ' is-active' : ''}${filterOpen ? ' is-open' : ''}`}
+            onClick={() => setFilterOpen((o) => !o)}
+            aria-haspopup="listbox"
+            aria-expanded={filterOpen}
+            aria-label="Filter mata pelajaran"
+          >
+            <Filter size={14} className="mp-filter-icon" />
+            <span className="mp-filter-label">{filterRole || 'Semua mapel'}</span>
+            <ChevronDown size={14} className="mp-filter-arrow" />
+          </button>
+
+          {filterOpen && (
+            <>
+              <div className="mp-filter-backdrop" onClick={() => setFilterOpen(false)} />
+              <div className="mp-filter-menu" role="listbox">
+                <div className="mp-filter-sheet-title">Filter mapel</div>
+                {['', ...uniqueRoles].map((role) => (
+                  <button
+                    key={role || 'all'}
+                    type="button"
+                    role="option"
+                    aria-selected={filterRole === role}
+                    className={`mp-filter-option${filterRole === role ? ' is-selected' : ''}`}
+                    onClick={() => { setFilterRole(role); setFilterOpen(false); }}
+                  >
+                    <span>{role || 'Semua mapel'}</span>
+                    {filterRole === role && <Check size={14} />}
+                  </button>
+                ))}
+              </div>
+            </>
+          )}
+        </div>
+
+        {canEdit && (
+          <button type="button" className="mp-add-btn" onClick={openAdd}>
+            <Plus size={14} />Tambah
           </button>
         )}
-        
-        {/* Tambahan Filter Dropdown Mapel (Modern UI) */}
-        <div className="mp-filter-wrapper">
-          <Filter size={16} className="mp-filter-icon" />
-          <select 
-            className="mp-filter-select"
-            value={filterRole}
-            onChange={(e) => setFilterRole(e.target.value)}
-          >
-            <option value="">Semua Mata Pelajaran</option>
-            {uniqueRoles.map((role, idx) => (
-              <option key={idx} value={role}>{role}</option>
-            ))}
-          </select>
-          <ChevronDown size={14} className="mp-filter-arrow" />
-        </div>
-        
-        {/* Tombol Hapus Massal (Muncul jika ada filter aktif) */}
-        {filterRole && (userRole === 'admin') && (
-           <button 
-             onClick={() => handleDeleteRoleBatch(filterRole)}
-             style={{ background: 'var(--compreng-surface-soft, #f1f5f9)', color: '#dc2626', border: '1px solid #fecaca', padding: '6px 12px', borderRadius: '6px', fontSize: '12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '600' }}
-           >
-             <Trash2 size={14} /> Hapus Mapel Ini
-           </button>
+
+        {filterRole && userRole === 'admin' && (
+          <button type="button" className="mp-danger-btn" onClick={() => handleDeleteRoleBatch(filterRole)}>
+            <Trash2 size={14} />Hapus mapel ini
+          </button>
         )}
       </div>
 
+      {/* Tabel (tablet & desktop) */}
       <div className="mp-table-card">
         <table className="mp-table">
           <thead>
             <tr>
-              <th className="mp-th">Nama & Gelar</th>
-              <th className="mp-th">Jabatan / Mapel</th>
-              <th className="mp-th" style={{ textAlign: 'center' }}>Urutan</th>
-              <th className="mp-th">Status Tampil</th>
-              <th className="mp-th" style={{ textAlign: 'center' }}></th>
+              <th className="mp-th" scope="col">Nama & gelar</th>
+              <th className="mp-th" scope="col">Jabatan / mapel</th>
+              <th className="mp-th mp-th-center" scope="col">Urutan</th>
+              <th className="mp-th" scope="col">Tampil</th>
+              <th className="mp-th mp-th-action" scope="col"><span className="mp-sr">Aksi</span></th>
             </tr>
           </thead>
           <tbody>
             {filteredTeachers.length === 0 ? (
               <tr>
-                <td colSpan="5" style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
-                  {searchTerm || filterRole ? `Tidak ditemukan data yang sesuai kriteria pencarian.` : 'Belum ada data pengajar.'}
+                <td colSpan="5" className="mp-td mp-td-empty">
+                  <EmptyState filtering={isFiltering} canEdit={canEdit} />
                 </td>
               </tr>
             ) : (
               filteredTeachers.map((item) => (
                 <tr key={item.id} className="mp-tr">
                   <td className="mp-td">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      {item.photo ? (
-                        <img src={getImageUrl(item.photo)} alt="Foto" style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--compreng-border)' }} />
-                      ) : (
-                        <div style={{ width: '40px', height: '40px', borderRadius: '50%', backgroundColor: 'var(--compreng-green)', color: 'var(--compreng-accent-text, #ffffff)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
-                          {item.name.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                      <span style={{ fontWeight: '600' }}>{item.name}</span>
+                    <div className="mp-person">
+                      <Avatar item={item} />
+                      <div className="mp-name">{item.name}</div>
                     </div>
                   </td>
-                  
                   <td className="mp-td">
-                    {/* Selalu cetak dalam huruf besar */}
-                    {item.role.toUpperCase().includes('KEPALA') ? (
-                      <span className="mp-badge-role">{item.role.toUpperCase()}</span>
-                    ) : (
-                      <span style={{ color: 'var(--compreng-text-secondary)' }}>{item.role.toUpperCase()}</span>
-                    )}
+                    {isHeadmaster(item.role)
+                      ? <div className="mp-chip">{roleOf(item.role)}</div>
+                      : <div className="mp-role">{roleOf(item.role)}</div>}
                   </td>
-                  
-                  <td className="mp-td" style={{ textAlign: 'center', fontWeight: '600', color: 'var(--compreng-text-secondary)' }}>
-                    {item.sort_order ?? item.sortOrder}
-                  </td>
-                  
-                  <td className="mp-td">
-                    <span className={item.show === 1 ? 'mp-badge-active' : 'mp-badge-inactive'}>
-                      {item.show === 1 ? 'Ditampilkan' : 'Disembunyikan'}
-                    </span>
-                  </td>
-                  
-                  <td className="mp-td" style={{ textAlign: 'center', position: 'relative' }}>
-                    {(userRole === 'admin' || userRole === 'editor') && (
-                      <button 
+                  <td className="mp-td mp-td-center mp-order">{item.sort_order ?? item.sortOrder}</td>
+                  <td className="mp-td"><ShowPill on={item.show === 1} /></td>
+                  <td className="mp-td mp-td-action">
+                    {canEdit && (
+                      <button
+                        type="button"
                         onClick={(e) => handleDropdownClick(e, item.id)}
                         className="mp-action-btn"
-                        style={{ margin: '0 auto' }}
+                        aria-label={`Aksi untuk ${item.name}`}
                       >
                         <MoreHorizontal size={18} />
                       </button>
@@ -307,46 +382,34 @@ export default function ManagePengajar() {
         </table>
       </div>
 
-      {/* Tampilan Card List (mobile) - data & tombol aksi sama dengan tabel */}
+      {/* Daftar kartu (mobile) */}
       <div className="mp-mlist">
         {filteredTeachers.length === 0 ? (
-          <div className="mp-mempty">
-            {searchTerm || filterRole ? `Tidak ditemukan data yang sesuai kriteria pencarian.` : 'Belum ada data pengajar.'}
-          </div>
+          <div className="mp-mempty"><EmptyState filtering={isFiltering} canEdit={canEdit} /></div>
         ) : (
           filteredTeachers.map((item) => (
             <div key={item.id} className="mp-mcard">
-              <div className="mp-mtop">
-                {item.photo ? (
-                  <img className="mp-mpic" src={getImageUrl(item.photo)} alt="Foto" />
-                ) : (
-                  <div className="mp-mpic mp-mpic-fallback">
-                    {item.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div className="mp-mbody">
-                  <div className="mp-mname">{item.name}</div>
-                  {item.role.toUpperCase().includes('KEPALA') ? (
-                    <span className="mp-badge-role">{item.role.toUpperCase()}</span>
-                  ) : (
-                    <div className="mp-mrole">{item.role.toUpperCase()}</div>
-                  )}
+              <Avatar item={item} />
+              <div className="mp-mbody">
+                <div className="mp-mname">{item.name}</div>
+                {isHeadmaster(item.role)
+                  ? <div className="mp-chip">{roleOf(item.role)}</div>
+                  : <div className="mp-mrole">{roleOf(item.role)}</div>}
+                <div className="mp-mmeta">
+                  <ShowPill on={item.show === 1} />
+                  <span className="mp-morder">Urutan {item.sort_order ?? item.sortOrder}</span>
                 </div>
-                {(userRole === 'admin' || userRole === 'editor') && (
-                  <button
-                    onClick={(e) => handleDropdownClick(e, item.id)}
-                    className="mp-action-btn"
-                  >
-                    <MoreHorizontal size={18} />
-                  </button>
-                )}
               </div>
-              <div className="mp-mmeta">
-                <span className={item.show === 1 ? 'mp-badge-active' : 'mp-badge-inactive'}>
-                  {item.show === 1 ? 'Ditampilkan' : 'Disembunyikan'}
-                </span>
-                <span className="mp-morder">Urutan {item.sort_order ?? item.sortOrder}</span>
-              </div>
+              {canEdit && (
+                <button
+                  type="button"
+                  onClick={(e) => handleDropdownClick(e, item.id)}
+                  className="mp-action-btn"
+                  aria-label={`Aksi untuk ${item.name}`}
+                >
+                  <MoreHorizontal size={18} />
+                </button>
+              )}
             </div>
           ))
         )}
@@ -354,19 +417,19 @@ export default function ManagePengajar() {
 
       {dropdownConfig.id && (
         <>
-          <div 
-            onClick={() => setDropdownConfig({ id: null, right: null, top: null, bottom: null })} 
+          <div
+            onClick={() => setDropdownConfig({ id: null, right: null, top: null, bottom: null })}
             style={{ position: 'fixed', inset: 0, zIndex: 40 }}
           ></div>
-          
-          <div 
-            className="mp-dropdown-menu" 
-            style={{ 
-              position: 'fixed', 
-              right: dropdownConfig.right, 
+
+          <div
+            className="mp-dropdown-menu"
+            style={{
+              position: 'fixed',
+              right: dropdownConfig.right,
               ...(dropdownConfig.top !== null ? { top: dropdownConfig.top } : {}),
               ...(dropdownConfig.bottom !== null ? { bottom: dropdownConfig.bottom } : {}),
-              zIndex: 50 
+              zIndex: 50
             }}
           >
             {(() => {
@@ -375,11 +438,11 @@ export default function ManagePengajar() {
               return (
                 <>
                   <button onClick={() => openEdit(targetItem)} className="mp-dropdown-item">
-                    <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Data
+                    <Edit size={14} color="var(--compreng-text-secondary)" /> Edit data
                   </button>
                   <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
                   <button onClick={() => handleDelete(targetItem.id, targetItem.name)} className="mp-dropdown-item danger">
-                    <Trash2 size={14} color="currentColor" /> Delete
+                    <Trash2 size={14} color="currentColor" /> Hapus
                   </button>
                 </>
               );

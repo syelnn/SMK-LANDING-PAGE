@@ -186,196 +186,192 @@ export default function ManageJurusanProgram() {
     catch (error) { alert('Gagal menghapus program'); }
   };
 
-  if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data program...</div>;
+  if (loading) return <div style={{ padding: '30px', color: 'var(--compreng-text-muted)', textAlign: 'center' }}>Memuat data...</div>;
 
   return (
     <div className="mjp-wrapper" id="admin-jurusan">
       
       {/* ================= BAGIAN 1: JURUSAN ================= */}
-      <div className="mjp-header-box">
-        <div>
-          <h2 className="mjp-title">Jurusan (Kompetensi Keahlian)</h2>
-          <p className="mjp-subtitle">Kelola daftar jurusan dan mata pelajaran yang ditawarkan di sekolah.</p>
+      <div className="mjp-head">
+        <div className="mjp-head-row">
+          <h2 className="mjp-title">Jurusan <span className="mjp-count">{jurusanList.length}</span></h2>
+          {(userRole === 'admin' || userRole === 'editor') && (
+            <button className="mjp-cta" onClick={openAddJurusan} aria-label="Tambah Jurusan" data-tip="Tambah Jurusan">
+              <Plus size={18} strokeWidth={2.75} />
+            </button>
+          )}
         </div>
-        {(userRole === 'admin' || userRole === 'editor') && (
-          <button className="mjp-btn-primary" onClick={openAddJurusan}>
-            <Plus size={16} /> Tambah Jurusan
-          </button>
-        )}
+        <p className="mjp-subtitle">Kelola daftar jurusan (kompetensi keahlian) dan mata pelajaran yang ditawarkan di sekolah.</p>
       </div>
 
-      <div className="mjp-table-card">
-        <table className="mjp-table">
-          <thead>
-            <tr style={{ background: 'var(--compreng-surface-soft)' }}>
-              <th className="mjp-th">Jurusan</th>
-              <th className="mjp-th">Slug URL</th>
-              <th className="mjp-th">Deskripsi Singkat</th>
-              <th className="mjp-th">Mata Pelajaran</th>
-              <th className="mjp-th" style={{ textAlign: 'center' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {jurusanList.length === 0 ? (
-              <tr><td colSpan="5" style={{ textAlign: 'center', padding: '30px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>Belum ada data jurusan.</td></tr>
-            ) : (
-              jurusanList.map((item) => {
-                const subjectArray = item.subjects ? item.subjects.split(',') : [];
-                return (
-                  <tr key={item.id} className="mjp-tr">
-                    <td className="mjp-td">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <img src={getImageUrl(item.imageIcon) || 'https://via.placeholder.com/40'} alt="Icon" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'contain', background: 'var(--compreng-bg)', padding: '4px', border: '1px solid var(--compreng-border)' }} />
-                        <span style={{ fontWeight: '600' }}>{item.title}</span>
-                      </div>
-                    </td>
-                    <td className="mjp-td" style={{ color: 'var(--compreng-text-secondary)' }}>/{item.slug}</td>
-                    <td className="mjp-td mjp-truncate">{item.desc}</td>
-                    <td className="mjp-td">
-                      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', maxWidth: '240px' }}>
-                        {subjectArray.slice(0, 2).map((sub, idx) => (
-                          <span key={idx} className="mjp-badge-tag">{sub.trim()}</span>
-                        ))}
-                        {subjectArray.length > 2 && <span className="mjp-badge-tag">+{subjectArray.length - 2}</span>}
-                      </div>
-                    </td>
-                    <td className="mjp-td" style={{ textAlign: 'center', position: 'relative' }}>
-                      <button 
-                        onClick={(e) => handleDropdownClick(e, item.id, 'jurusan')}
-                        className="mjp-action-btn"
-                      >
-                        <MoreHorizontal size={18} />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })
-            )}
-          </tbody>
-        </table>
-      </div>
+      {jurusanList.length === 0 ? (
+        <div className="mjp-empty">Belum ada data jurusan. Klik "Tambah Jurusan" untuk mulai.</div>
+      ) : (
+        <>
+          {/* TABEL (desktop/laptop) */}
+          <div className="mjp-sheet">
+            <table className="mjp-data">
+              <colgroup>
+                <col style={{ width: '27%' }} />
+                <col style={{ width: '11%' }} />
+                <col style={{ width: '32%' }} />
+                <col style={{ width: '24%' }} />
+                <col style={{ width: '56px' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th className="mjp-th">Jurusan</th>
+                  <th className="mjp-th">Slug URL</th>
+                  <th className="mjp-th">Deskripsi singkat</th>
+                  <th className="mjp-th">Mata pelajaran</th>
+                  <th className="mjp-th mjp-th-act"><span className="mjp-sr">Aksi</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                {jurusanList.map((item) => {
+                  const subjectArray = item.subjects ? item.subjects.split(',').filter((x) => x.trim()) : [];
+                  return (
+                    <tr key={item.id} className="mjp-row">
+                      <td className="mjp-cell">
+                        <div className="mjp-who">
+                          <img className="mjp-pic mjp-pic-sm" src={getImageUrl(item.imageIcon) || 'https://via.placeholder.com/44'} alt="" />
+                          <div className="mjp-name">{item.title}</div>
+                        </div>
+                      </td>
+                      <td className="mjp-cell"><div><span className="mjp-slug">/{item.slug}</span></div></td>
+                      <td className="mjp-cell"><div className="mjp-text mjp-text-2">{item.desc}</div></td>
+                      <td className="mjp-cell">
+                        <div className="mjp-chips">
+                          {subjectArray.slice(0, 2).map((sub, idx) => (
+                            <span key={idx} className="mjp-chip">{sub.trim()}</span>
+                          ))}
+                          {subjectArray.length > 2 && <span className="mjp-chip mjp-chip-more">+{subjectArray.length - 2}</span>}
+                        </div>
+                      </td>
+                      <td className="mjp-cell mjp-cell-act">
+                        <button onClick={(e) => handleDropdownClick(e, item.id, 'jurusan')} className="mjp-action-btn" aria-label="Menu aksi">
+                          <MoreHorizontal size={18} />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
 
-      {/* Card List Jurusan (mobile) */}
-      <div className="mjp-mlist">
-        {jurusanList.length === 0 ? (
-          <div className="mjp-mempty">Belum ada data jurusan.</div>
-        ) : (
-          jurusanList.map((item) => {
-            const subjectArray = item.subjects ? item.subjects.split(',') : [];
+          {/* KARTU (HP/tablet kecil) */}
+        <div className="mjp-grid">
+          {jurusanList.map((item) => {
+            const subjectArray = item.subjects ? item.subjects.split(',').filter((x) => x.trim()) : [];
             return (
-              <div key={item.id} className="mjp-mcard">
-                <div className="mjp-mtop">
-                  <img className="mjp-mpic" src={getImageUrl(item.imageIcon) || 'https://via.placeholder.com/40'} alt="Icon" />
-                  <div className="mjp-mbody">
-                    <div className="mjp-mtitle">{item.title}</div>
-                    <div className="mjp-mslug">/{item.slug}</div>
+              <article key={item.id} className="mjp-tile">
+                <div className="mjp-top">
+                  <img className="mjp-pic" src={getImageUrl(item.imageIcon) || 'https://via.placeholder.com/56'} alt="" />
+                  <div className="mjp-main">
+                    <h3 className="mjp-name">{item.title}</h3>
+                    <span className="mjp-slug">/{item.slug}</span>
                   </div>
-                  <button
-                    onClick={(e) => handleDropdownClick(e, item.id, 'jurusan')}
-                    className="mjp-action-btn"
-                  >
+                  <button onClick={(e) => handleDropdownClick(e, item.id, 'jurusan')} className="mjp-action-btn" aria-label="Menu aksi">
                     <MoreHorizontal size={18} />
                   </button>
                 </div>
-                {item.desc && <p className="mjp-mtext">{item.desc}</p>}
+                {item.desc && <p className="mjp-text">{item.desc}</p>}
                 {subjectArray.length > 0 && (
-                  <div className="mjp-mtags">
+                  <div className="mjp-chips">
                     {subjectArray.slice(0, 3).map((sub, idx) => (
-                      <span key={idx} className="mjp-badge-tag">{sub.trim()}</span>
+                      <span key={idx} className="mjp-chip">{sub.trim()}</span>
                     ))}
-                    {subjectArray.length > 3 && <span className="mjp-badge-tag">+{subjectArray.length - 3}</span>}
+                    {subjectArray.length > 3 && <span className="mjp-chip mjp-chip-more">+{subjectArray.length - 3}</span>}
                   </div>
                 )}
-              </div>
+              </article>
             );
-          })
-        )}
-      </div>
+          })}
+        </div>
+        </>
+      )}
 
       {/* ================= BAGIAN 2: PROGRAM UNGGULAN ================= */}
-      <div className="mjp-header-box" style={{ marginTop: '50px' }}>
-        <div>
-          <h2 className="mjp-title">Program Unggulan</h2>
-          <p className="mjp-subtitle">Pilihan jalur karier komprehensif (Akademik, Siap Kerja, dsb).</p>
+      <div className="mjp-head mjp-head-second">
+        <div className="mjp-head-row">
+          <h2 className="mjp-title">Program Unggulan <span className="mjp-count">{programList.length}</span></h2>
+          {(userRole === 'admin' || userRole === 'editor') && (
+            <button className="mjp-cta" onClick={openAddProgram} aria-label="Tambah Program" data-tip="Tambah Program">
+              <Plus size={18} strokeWidth={2.75} />
+            </button>
+          )}
         </div>
-        {(userRole === 'admin' || userRole === 'editor') && (
-          <button className="mjp-btn-primary" onClick={openAddProgram}>
-            <Plus size={16} /> Tambah Program
-          </button>
-        )}
+        <p className="mjp-subtitle">Pilihan jalur karier komprehensif (Akademik, Siap Kerja, dsb).</p>
       </div>
 
-      <div className="mjp-table-card">
-        <table className="mjp-table">
-          <thead>
-            <tr style={{ background: 'var(--compreng-surface-soft)' }}>
-              <th className="mjp-th">Nama Program</th>
-              <th className="mjp-th">Label Kategori</th>
-              <th className="mjp-th">Deskripsi Program</th>
-              <th className="mjp-th" style={{ textAlign: 'center' }}></th>
-            </tr>
-          </thead>
-          <tbody>
-            {programList.length === 0 ? (
-              <tr><td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>Belum ada program unggulan.</td></tr>
-            ) : (
-              programList.map((prog) => (
-                <tr key={prog.id} className="mjp-tr">
-                  <td className="mjp-td">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                      <img src={getImageUrl(prog.imageIcon) || 'https://via.placeholder.com/40'} alt="Icon" style={{ width: '40px', height: '40px', borderRadius: '8px', objectFit: 'contain', background: 'var(--compreng-bg)', padding: '4px', border: '1px solid var(--compreng-border)' }} />
-                      <span style={{ fontWeight: '600' }}>{prog.title}</span>
-                    </div>
-                  </td>
-                  <td className="mjp-td">
-                    {prog.badge && <span className="mjp-badge-blue">{prog.badge}</span>}
-                  </td>
-                  <td className="mjp-td mjp-truncate" style={{ maxWidth: '400px' }}>{prog.desc}</td>
-                  <td className="mjp-td" style={{ textAlign: 'center', position: 'relative' }}>
-                    
-                    {(userRole === 'admin' || userRole === 'editor') && (
-                      <button 
-                        onClick={(e) => handleDropdownClick(e, prog.id, 'program')}
-                        className="mjp-action-btn"
-                      >
-                        <MoreHorizontal size={18} />
-                      </button>
-                    )}
-                  </td>
+      {programList.length === 0 ? (
+        <div className="mjp-empty">Belum ada program unggulan. Klik "Tambah Program" untuk mulai.</div>
+      ) : (
+        <>
+          {/* TABEL (desktop/laptop) */}
+          <div className="mjp-sheet">
+            <table className="mjp-data">
+              <colgroup>
+                <col style={{ width: '30%' }} />
+                <col style={{ width: '20%' }} />
+                <col />
+                <col style={{ width: '56px' }} />
+              </colgroup>
+              <thead>
+                <tr>
+                  <th className="mjp-th">Nama program</th>
+                  <th className="mjp-th">Kategori</th>
+                  <th className="mjp-th">Deskripsi program</th>
+                  <th className="mjp-th mjp-th-act"><span className="mjp-sr">Aksi</span></th>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              </thead>
+              <tbody>
+                {programList.map((prog) => (
+                  <tr key={prog.id} className="mjp-row">
+                    <td className="mjp-cell">
+                      <div className="mjp-who">
+                        <img className="mjp-pic mjp-pic-sm" src={getImageUrl(prog.imageIcon) || 'https://via.placeholder.com/44'} alt="" />
+                        <div className="mjp-name">{prog.title}</div>
+                      </div>
+                    </td>
+                    <td className="mjp-cell"><div>{prog.badge && <span className="mjp-pill">{prog.badge}</span>}</div></td>
+                    <td className="mjp-cell"><div className="mjp-text mjp-text-2">{prog.desc}</div></td>
+                    <td className="mjp-cell mjp-cell-act">
+                      {(userRole === 'admin' || userRole === 'editor') && (
+                        <button onClick={(e) => handleDropdownClick(e, prog.id, 'program')} className="mjp-action-btn" aria-label="Menu aksi">
+                          <MoreHorizontal size={18} />
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      {/* Card List Program (mobile) */}
-      <div className="mjp-mlist">
-        {programList.length === 0 ? (
-          <div className="mjp-mempty">Belum ada program unggulan.</div>
-        ) : (
-          programList.map((prog) => (
-            <div key={prog.id} className="mjp-mcard">
-              <div className="mjp-mtop">
-                <img className="mjp-mpic" src={getImageUrl(prog.imageIcon) || 'https://via.placeholder.com/40'} alt="Icon" />
-                <div className="mjp-mbody">
-                  <div className="mjp-mtitle">{prog.title}</div>
-                  {prog.badge && <span className="mjp-badge-blue">{prog.badge}</span>}
+          {/* KARTU (HP/tablet kecil) */}
+        <div className="mjp-grid">
+          {programList.map((prog) => (
+            <article key={prog.id} className="mjp-tile">
+              <div className="mjp-top">
+                <img className="mjp-pic" src={getImageUrl(prog.imageIcon) || 'https://via.placeholder.com/56'} alt="" />
+                <div className="mjp-main">
+                  <h3 className="mjp-name">{prog.title}</h3>
+                  {prog.badge && <span className="mjp-pill">{prog.badge}</span>}
                 </div>
                 {(userRole === 'admin' || userRole === 'editor') && (
-                  <button
-                    onClick={(e) => handleDropdownClick(e, prog.id, 'program')}
-                    className="mjp-action-btn"
-                  >
+                  <button onClick={(e) => handleDropdownClick(e, prog.id, 'program')} className="mjp-action-btn" aria-label="Menu aksi">
                     <MoreHorizontal size={18} />
                   </button>
                 )}
               </div>
-              {prog.desc && <p className="mjp-mtext">{prog.desc}</p>}
-            </div>
-          ))
-        )}
-      </div>
+              {prog.desc && <p className="mjp-text">{prog.desc}</p>}
+            </article>
+          ))}
+        </div>
+        </>
+      )}
 
       {/* MENAMPILKAN DROPDOWN SECARA FIXED (Di Luar Flow Tabel) */}
       {dropdownConfig.id && (

@@ -1,4 +1,26 @@
-/* src/css/managepengajar.css */
+/* src/css/managepengajar.css
+   Halaman Tenaga Pengajar: clean, ringkas, modern, responsif.
+   - Hanya memakai variabel --compreng-* sehingga keempat tema tetap bekerja.
+   - Kontrol dikunci dengan #admin-pengajar karena theme.css punya aturan
+     wildcard !important (tinggi 42px, pil, badge paksa) yang harus dikalahkan.
+   - Search & filter: kotak (border, latar, radius) dipegang oleh WRAPPER, bukan
+     input/select. Ikon ada di dalam alur flex, jadi mustahil menabrak teks. */
+
+#admin-pengajar {
+  --mp-ctl-h: 34px;
+  --mp-ctl-font: 12px;   /* ukuran teks search, filter, dan tombol Tambah (disamakan) */
+  --mp-ctl-radius: 10px;
+  --mp-radius: 14px;
+  --mp-field-bg: #ffffff;                 /* kotak search & filter: putih, berbeda dari latar halaman */
+  --mp-field-shadow: 0 1px 2px rgba(16, 24, 40, 0.06);
+  --mp-line: color-mix(in srgb, var(--compreng-border) 80%, transparent);
+}
+
+/* Tema gelap: kotak pakai warna surface-soft (sesuaikan selector jika nama tema berbeda) */
+:is([data-theme*="dark"], [data-theme*="night"], .dark, .theme-dark, .dark-mode) #admin-pengajar {
+  --mp-field-bg: var(--compreng-surface-soft);
+  --mp-field-shadow: none;
+}
 
 /* =========================================
    1. LAYOUT & HEADER
@@ -6,288 +28,491 @@
 .mp-wrapper {
   width: 100%;
   max-width: 1150px;
+  min-width: 0;
   margin: 0 auto;
-  padding: 30px 24px;
+  padding: 28px 24px 40px;
   box-sizing: border-box;
 }
 
-.mp-header-box {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 15px;
-}
+.mp-head { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
 
 .mp-title {
-  font-size: 22px;
+  font-size: clamp(20px, 2.4vw, 24px);
   font-weight: 700;
-  color: var(--compreng-text);
-  margin: 0 0 4px 0;
   letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0 0 4px;
 }
-
 .mp-subtitle {
   font-size: 13px;
-  color: var(--compreng-text-secondary);
+  line-height: 1.5;
   margin: 0;
+  color: var(--compreng-text-secondary);
 }
 
+.mp-stats { display: flex; flex-wrap: wrap; gap: 6px; }
+.mp-stat {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 4px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  border: 1px solid var(--mp-line);
+  background: color-mix(in srgb, var(--compreng-surface-soft) 60%, transparent);
+  color: var(--compreng-text-secondary);
+  font-size: 11.5px;
+  line-height: 1.6;
+}
+.mp-stat b { color: var(--compreng-text); font-weight: 700; font-variant-numeric: tabular-nums; }
+
 /* =========================================
-   2. TOOLBAR (SEARCH & MODERN FILTER)
+   2. TOOLBAR: CARI, FILTER, TAMBAH
    ========================================= */
-.mp-toolbar {
+#admin-pengajar .mp-toolbar {
   display: flex;
-  justify-content: flex-start;
+  flex-wrap: nowrap;
   align-items: center;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
+  margin-bottom: 14px;
 }
 
-/* Kotak Pencarian */
-.mp-search-wrapper {
-  position: relative;
-  width: 280px;
-  max-width: 100%;
-}
-
-.mp-search-input {
-  width: 100%;
-  padding: 8px 12px 8px 36px;
-  border-radius: 8px; /* Lebih tumpul sedikit */
-  border: 1px solid var(--compreng-border);
-  background: var(--compreng-surface);
-  color: var(--compreng-text);
-  font-size: 13px;
-  outline: none;
+/* --- Kotak kontrol bersama (cari & filter): putih, ada border + bayangan tipis --- */
+#admin-pengajar .mp-search-wrapper,
+#admin-pengajar .mp-filter-trigger {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--mp-ctl-h) !important;
+  min-height: 0 !important;
+  min-width: 0;
+  margin: 0;
+  padding: 0 11px !important;
   box-sizing: border-box;
-  transition: all 0.2s ease;
-}
-
-.mp-search-input:focus {
-  border-color: var(--compreng-text-muted);
-  box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
-}
-
-.mp-search-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--compreng-text-muted);
-}
-
-/* Kotak Filter (Modern UI) */
-.mp-filter-wrapper {
-  position: relative;
-  width: 240px;
-  max-width: 100%;
-}
-
-.mp-filter-icon {
-  position: absolute;
-  left: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--compreng-text-muted);
-  pointer-events: none;
-}
-
-.mp-filter-select {
-  width: 100%;
-  padding: 8px 36px; /* Ruang untuk Ikon Kiri & Kanan */
-  border-radius: 8px; /* Konsisten dengan search */
-  border: 1px solid var(--compreng-border);
-  background: var(--compreng-surface);
+  background: var(--mp-field-bg) !important;
+  border: 1px solid var(--compreng-border) !important;
+  border-radius: var(--mp-ctl-radius) !important;
+  box-shadow: var(--mp-field-shadow) !important;
   color: var(--compreng-text);
-  font-size: 13px;
+  font-size: var(--mp-ctl-font) !important;
   font-weight: 500;
+  line-height: 1;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background-color 0.15s ease;
+}
+#admin-pengajar .mp-search-wrapper:hover,
+#admin-pengajar .mp-filter-trigger:hover {
+  border-color: color-mix(in srgb, var(--compreng-text-secondary) 45%, var(--compreng-border)) !important;
+}
+#admin-pengajar .mp-search-wrapper:focus-within,
+#admin-pengajar .mp-filter-trigger:focus-visible,
+#admin-pengajar .mp-filter-trigger.is-open {
   outline: none;
-  box-sizing: border-box;
-  appearance: none; /* Buang panah bawaan browser yang jelek */
-  cursor: pointer;
-  transition: all 0.2s ease;
+  border-color: var(--compreng-accent) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-accent) 18%, transparent) !important;
 }
 
-.mp-filter-select:hover {
-  background: var(--compreng-surface-soft);
-}
-
-.mp-filter-select:focus {
-  border-color: var(--compreng-text-muted);
-}
-
-/* Ikon Panah Bawah Buatan Sendiri (Biar Estetik) */
-.mp-filter-arrow {
-  position: absolute;
-  right: 12px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--compreng-text-muted);
+/* Ikon: masuk alur flex (bukan absolute) agar tidak pernah menimpa teks */
+#admin-pengajar .mp-search-wrapper > svg,
+#admin-pengajar .mp-filter-trigger > svg {
+  position: static !important;
+  inset: auto !important;
+  transform: none !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  flex: 0 0 auto;
+  width: 14px;
+  height: 14px;
+  min-width: 14px;
+  margin: 0;
+  color: var(--compreng-text-secondary);
   pointer-events: none;
 }
+#admin-pengajar .mp-filter-trigger > svg.mp-filter-arrow { transition: transform 0.18s ease; }
+#admin-pengajar .mp-filter-trigger.is-open > svg.mp-filter-arrow { transform: rotate(180deg) !important; }
+
+/* --- Cari --- */
+#admin-pengajar .mp-search-wrapper {
+  position: relative;
+  order: 1;
+  flex: 1 1 220px;
+  max-width: 240px;
+}
+#admin-pengajar .mp-search-wrapper input.mp-search-input {
+  flex: 1 1 0;
+  min-width: 0;
+  width: auto;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  outline: none !important;
+  box-shadow: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  color: var(--compreng-text);
+  font-size: var(--mp-ctl-font) !important;
+  font-weight: 500;
+  line-height: normal;
+  box-sizing: border-box;
+  -webkit-appearance: none;
+  appearance: none;
+}
+#admin-pengajar .mp-search-wrapper input.mp-search-input::placeholder {
+  color: var(--compreng-text-secondary);
+  opacity: 0.85;
+}
+
+/* --- Filter (dropdown kustom) --- */
+#admin-pengajar .mp-filter-wrapper {
+  position: relative;
+  order: 2;
+  flex: 0 1 190px;
+  min-width: 0;
+}
+#admin-pengajar .mp-filter-trigger {
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+#admin-pengajar .mp-filter-label {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+#admin-pengajar .mp-filter-trigger.is-active {
+  background: color-mix(in srgb, var(--compreng-accent) 8%, var(--mp-field-bg)) !important;
+  border-color: color-mix(in srgb, var(--compreng-accent) 55%, var(--compreng-border)) !important;
+}
+#admin-pengajar .mp-filter-trigger.is-active > svg.mp-filter-icon { color: var(--compreng-accent); }
+
+/* Menu dropdown */
+#admin-pengajar .mp-filter-backdrop { position: fixed; inset: 0; z-index: 60; background: transparent; }
+#admin-pengajar .mp-filter-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 61;
+  min-width: 100%;
+  width: max-content;
+  max-width: min(300px, 90vw);
+  max-height: 280px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: 6px;
+  box-sizing: border-box;
+  background: var(--mp-field-bg);
+  border: 1px solid var(--compreng-border);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px -14px rgba(0, 0, 0, 0.3), 0 2px 6px rgba(0, 0, 0, 0.06);
+  transform-origin: top left;
+  animation: mpPopIn 0.16s ease;
+}
+@keyframes mpPopIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes mpSheetIn { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes mpFadeIn  { from { opacity: 0; } to { opacity: 1; } }
+
+#admin-pengajar .mp-filter-sheet-title,
+#admin-pengajar .mp-filter-menu::before { display: none; }
+
+#admin-pengajar .mp-filter-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  height: auto !important;
+  min-height: 0 !important;
+  margin: 0;
+  padding: 8px 10px !important;
+  border: 0 !important;
+  border-radius: 9px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--compreng-text);
+  font-size: var(--mp-ctl-font) !important;
+  font-weight: 500;
+  line-height: 1.35;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+}
+#admin-pengajar .mp-filter-option:hover,
+#admin-pengajar .mp-filter-option:focus-visible {
+  outline: none;
+  background: var(--compreng-surface-soft) !important;
+}
+#admin-pengajar .mp-filter-option.is-selected {
+  color: var(--compreng-accent);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--compreng-accent) 10%, transparent) !important;
+}
+#admin-pengajar .mp-filter-option svg { flex: 0 0 auto; }
+
+/* Hapus massal (hanya admin, muncul saat filter aktif) */
+.mp-danger-btn {
+  order: 3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  height: var(--mp-ctl-h);
+  padding: 0 12px;
+  border-radius: var(--mp-ctl-radius);
+  border: 1px solid color-mix(in srgb, #dc2626 35%, transparent);
+  background: transparent;
+  color: #dc2626;
+  font-size: var(--mp-ctl-font);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+.mp-danger-btn:hover { background: color-mix(in srgb, #dc2626 10%, transparent); }
+
+/* Tombol Tambah (warna aksen dari tema, ukuran ringkas) */
+#admin-pengajar .mp-add-btn {
+  order: 4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex: 0 0 auto;
+  margin-left: auto;
+  height: var(--mp-ctl-h) !important;
+  min-height: 0 !important;
+  padding: 0 12px !important;
+  font-size: var(--mp-ctl-font) !important;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  border-radius: var(--mp-ctl-radius) !important;
+  box-shadow: none !important;
+  cursor: pointer;
+}
+#admin-pengajar .mp-add-btn svg { width: 14px; height: 14px; flex: 0 0 auto; }
+#admin-pengajar .mp-add-btn:hover { transform: none; box-shadow: none !important; filter: brightness(1.05); }
+#admin-pengajar .mp-add-btn:active { transform: scale(0.97); }
 
 /* =========================================
-   3. TABLE STYLES & HIDE SCROLLBAR
+   3. TABEL (tablet & desktop)
    ========================================= */
 .mp-table-card {
-  background-color: var(--compreng-surface);
-  border-radius: 8px;
-  border: 1px solid var(--compreng-border);
-  overflow-x: auto;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  max-width: 100%;
   margin-bottom: 40px;
-  width: 100%;
-  scrollbar-width: none; 
-  -ms-overflow-style: none; 
+  background: var(--compreng-surface);
+  border: 1px solid var(--compreng-border);
+  border-radius: var(--mp-radius);
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow) 50%, transparent);
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.mp-table-card::-webkit-scrollbar {
-  display: none; 
-}
+.mp-table-card::-webkit-scrollbar { display: none; }
 
-.mp-table {
-  width: 100%;
-  border-collapse: collapse;
-  text-align: left;
-  min-width: 800px;
-}
+.mp-table { width: 100%; min-width: 640px; border-collapse: collapse; text-align: left; }
 
 .mp-th {
-  padding: 12px 16px;
-  font-size: 13px;
+  padding: 11px 16px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--compreng-text-secondary);
-  border-bottom: 1px solid var(--compreng-border);
   white-space: nowrap;
-  background: var(--compreng-surface-soft);
+  border-bottom: 1px solid var(--compreng-border);
+  background: color-mix(in srgb, var(--compreng-surface-soft) 55%, transparent);
 }
+.mp-th-center, .mp-td-center { text-align: center; }
+.mp-th-action, .mp-td-action { width: 56px; text-align: center; }
 
 .mp-td {
-  padding: 14px 16px;
-  border-bottom: 1px solid var(--compreng-border);
+  padding: 10px 16px;
+  font-size: 13px;
   vertical-align: middle;
   color: var(--compreng-text);
-  font-size: 13px;
+  border-bottom: 1px solid var(--mp-line);
+  overflow-wrap: anywhere;
 }
+.mp-table tbody tr:last-child .mp-td { border-bottom: none; }
+.mp-tr { transition: background-color 0.15s ease; }
+.mp-tr:hover { background: color-mix(in srgb, var(--compreng-surface-soft) 55%, transparent); }
 
-.mp-tr {
-  transition: background 0.2s;
+.mp-person { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.mp-name { font-size: 13.5px; font-weight: 600; line-height: 1.35; color: var(--compreng-text); }
+.mp-role { font-size: 12.5px; color: var(--compreng-text-secondary); letter-spacing: 0.01em; }
+.mp-order { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--compreng-text-secondary); }
+
+.mp-avatar {
+  flex: 0 0 auto;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  box-shadow: 0 0 0 1px var(--compreng-border);
 }
-
-.mp-tr:hover {
-  background: var(--compreng-surface-soft);
-}
-
-/* =========================================
-   4. BADGES
-   ========================================= */
-.mp-badge-active {
-  display: inline-flex;
-  background: rgba(34, 197, 94, 0.15);
-  color: #16a34a;
-  border: 1px solid rgba(34, 197, 94, 0.3);
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.mp-badge-inactive {
-  display: inline-flex;
-  background: var(--compreng-surface-soft);
-  color: var(--compreng-text-muted);
-  border: 1px solid var(--compreng-border);
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
-}
-
-.mp-badge-role {
-  display: inline-block;
-  background: var(--compreng-surface-soft, #f1f5f9);
-  color: var(--compreng-accent, #2563eb);
-  border: 1px solid #bfdbfe;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-}
-
-/* =========================================
-   5. DROPDOWN ACTIONS (SMART POSITIONING)
-   ========================================= */
-.mp-action-btn {
-  background: transparent;
-  border: none;
-  cursor: pointer;
-  padding: 6px;
-  border-radius: 6px;
-  color: var(--compreng-text-secondary);
+.mp-avatar-fallback {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s;
+  font-size: 14px;
+  font-weight: 700;
+  background: color-mix(in srgb, var(--compreng-accent) 16%, var(--compreng-surface));
+  color: var(--compreng-accent);
 }
 
-.mp-action-btn:hover {
-  background: var(--compreng-surface-soft);
-  color: var(--compreng-text);
+/* Label kepala sekolah */
+.mp-chip {
+  display: inline-flex;
+  align-items: center;
+  max-width: 100%;
+  padding: 2px 8px;
+  border-radius: 6px;
+  border: 1px solid color-mix(in srgb, var(--compreng-accent) 32%, transparent);
+  background: color-mix(in srgb, var(--compreng-accent) 12%, transparent);
+  color: var(--compreng-accent);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
 }
+
+/* Status tampil */
+.mp-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 9px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.6;
+  white-space: nowrap;
+}
+.mp-pill::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+.mp-pill-on {
+  color: color-mix(in srgb, #16a34a 75%, var(--compreng-text));
+  background: color-mix(in srgb, #22c55e 14%, transparent);
+  border: 1px solid color-mix(in srgb, #22c55e 28%, transparent);
+}
+.mp-pill-off {
+  color: var(--compreng-text-secondary);
+  background: color-mix(in srgb, var(--compreng-surface-soft) 70%, transparent);
+  border: 1px solid var(--compreng-border);
+}
+
+.mp-sr {
+  position: absolute; width: 1px; height: 1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap;
+}
+
+/* =========================================
+   4. TOMBOL AKSI & DROPDOWN
+   ========================================= */
+.mp-action-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--compreng-text-secondary);
+  cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.mp-action-btn:hover { background: var(--compreng-surface-soft); color: var(--compreng-text); }
+.mp-action-btn:focus-visible,
+.mp-danger-btn:focus-visible,
+#admin-pengajar .mp-add-btn:focus-visible { outline: 2px solid var(--compreng-accent); outline-offset: 2px; }
 
 .mp-dropdown-menu {
+  width: 156px;
+  padding: 4px;
   background: var(--compreng-surface);
   border: 1px solid var(--compreng-border);
-  border-radius: 8px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  width: 150px;
-  padding: 6px;
-  z-index: 9999;
-  animation: dropdownFadeIn 0.2s ease;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px -8px rgba(0, 0, 0, 0.25);
+  animation: mpMenuIn 0.16s ease;
 }
-
-@keyframes dropdownFadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
+@keyframes mpMenuIn {
+  from { opacity: 0; transform: translateY(-4px) scale(0.98); }
+  to   { opacity: 1; transform: none; }
 }
-
 .mp-dropdown-item {
   display: flex;
   align-items: center;
   gap: 8px;
   width: 100%;
   padding: 8px 10px;
-  background: transparent;
   border: none;
-  text-align: left;
-  cursor: pointer;
-  border-radius: 6px;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--compreng-text);
   font-size: 12.5px;
   font-weight: 500;
-  color: var(--compreng-text);
-  text-decoration: none;
-  transition: background 0.2s;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
 }
+.mp-dropdown-item:hover { background: var(--compreng-surface-soft); }
+.mp-dropdown-item.danger { color: #dc2626; }
+.mp-dropdown-item.danger:hover { background: color-mix(in srgb, #dc2626 10%, transparent); }
 
-.mp-dropdown-item:hover {
+/* =========================================
+   5. KOSONG & LOADING
+   ========================================= */
+.mp-td-empty { padding: 0; }
+.mp-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 44px 16px; text-align: center; }
+.mp-empty-icon {
+  display: flex; align-items: center; justify-content: center;
+  width: 44px; height: 44px; margin-bottom: 4px;
+  border-radius: 50%;
   background: var(--compreng-surface-soft);
+  color: var(--compreng-text-secondary);
 }
+.mp-empty-title { font-size: 14px; font-weight: 600; color: var(--compreng-text); }
+.mp-empty-text { margin: 0; max-width: 280px; font-size: 12.5px; line-height: 1.5; color: var(--compreng-text-secondary); }
 
-.mp-dropdown-item.danger {
-  color: #dc2626;
+.mp-skel {
+  border: 1px solid var(--compreng-border);
+  border-radius: var(--mp-radius);
+  background: var(--compreng-surface);
+  overflow: hidden;
 }
-
-.mp-dropdown-item.danger:hover {
-  background: var(--compreng-surface-soft, #f1f5f9);
+.mp-sk-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--mp-line); }
+.mp-sk-row:last-child { border-bottom: none; }
+.mp-sk-col { display: flex; flex-direction: column; gap: 7px; flex: 1; }
+.mp-sk-av, .mp-sk-bar {
+  background: linear-gradient(90deg,
+    var(--compreng-surface-soft) 25%,
+    color-mix(in srgb, var(--compreng-border) 70%, var(--compreng-surface-soft)) 50%,
+    var(--compreng-surface-soft) 75%);
+  background-size: 200% 100%;
+  animation: mpShimmer 1.3s linear infinite;
+}
+.mp-sk-av { width: 36px; height: 36px; border-radius: 50%; flex: 0 0 auto; }
+.mp-sk-bar { border-radius: 6px; max-width: 100%; }
+.mp-head > .mp-sk-bar { margin-bottom: 4px; }
+@keyframes mpShimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .mp-sk-av, .mp-sk-bar, .mp-dropdown-menu { animation: none; }
+  #admin-pengajar .mp-search-wrapper,
+  #admin-pengajar .mp-filter-trigger { transition: none; }
+  #admin-pengajar .mp-filter-menu,
+  #admin-pengajar .mp-filter-backdrop { animation: none !important; }
 }
 
 /* =========================================
-   6. STANDARISASI TOMBOL MODERN
+   6. TOMBOL FORM MODAL (dipakai modal tambah/edit, jangan dihapus)
    ========================================= */
 .btn-modern-primary {
   display: inline-flex;
@@ -305,12 +530,7 @@
   transition: all 0.2s ease;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
-.btn-modern-primary:hover {
-  opacity: 0.85;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
-}
+.btn-modern-primary:hover { opacity: 0.85; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15); }
 
 .btn-modern-secondary {
   display: inline-flex;
@@ -327,181 +547,125 @@
   cursor: pointer;
   transition: all 0.2s ease;
 }
-
-.btn-modern-secondary:hover {
-  background-color: var(--compreng-border);
-  color: var(--compreng-text);
-}
-
-/* ==========================================
-   FIX: LATAR PUTIH DI HEADER (JUDUL + TOMBOL TAMBAH)
-   Class ".mp-header-box" mengandung kata "-box", jadi ikut kena aturan wildcard
-   theme.css ([class*="-box"] { background-color: var(--compreng-surface) !important })
-   yang membuat blok judul & tombol jadi kotak putih di atas latar halaman.
-   Dikunci transparan pakai ID (#admin-pengajar) supaya spesifisitasnya pasti menang
-   di semua tema, sehingga warnanya ikut latar halaman/tema yang dipakai.
-   ========================================== */
-#admin-pengajar .mp-header-box {
-  background: transparent !important;
-  background-color: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
+.btn-modern-secondary:hover { background-color: var(--compreng-border); color: var(--compreng-text); }
 
 /* =========================================
-   RESPONSIF: DESKTOP RAPI + CARD LIST MOBILE
-   Selector dikunci dengan ID (#admin-pengajar) agar menang atas wildcard
-   theme.css & admin-responsive.css.
+   7. RESPONSIF
    ========================================= */
+.mp-mlist { display: none; }
 
-/* Default (desktop/tablet): card list & tombol mobile disembunyikan */
-.mp-mlist,
-.mp-add-mobile { display: none; }
+/* Layar sedang */
+@media (max-width: 1024px) {
+  #admin-pengajar .mp-filter-wrapper { flex-basis: 170px; }
+}
 
-/* Desktop: tabel tidak boleh meluap dari kartunya */
-.mp-wrapper { min-width: 0; }
-.mp-table-card { max-width: 100%; }
-.mp-table { min-width: 640px; }
-.mp-td { overflow-wrap: anywhere; }
-
+/* Mobile: tabel diganti daftar kartu */
 @media (max-width: 768px) {
-  #admin-pengajar .mp-header-box { margin-bottom: 12px; gap: 0; }
-  #admin-pengajar .mp-add-desktop { display: none !important; }
+  #admin-pengajar { --mp-ctl-h: 32px; --mp-ctl-radius: 10px; }
 
-  /* --- Control bar: baris 1 = Search + Tambah, baris 2 = Filter mapel --- */
-  #admin-pengajar .mp-toolbar {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    align-items: stretch;
-    gap: 8px !important;
-    margin-bottom: 14px;
-  }
+  .mp-wrapper { padding: 18px 14px 32px; }
+  .mp-head { gap: 8px; margin-bottom: 14px; }
+  .mp-title { font-size: 20px; }
+  .mp-subtitle { font-size: 12.5px; }
+
+  /* Baris 1: search penuh. Baris 2: filter (melebar) + Tambah. Baris 3: hapus massal (jika ada) */
+  #admin-pengajar .mp-toolbar { flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+
   #admin-pengajar .mp-search-wrapper {
     order: 1;
-    flex: 1 1 0 !important;
-    width: auto !important;
-    min-width: 0 !important;
-    max-width: none !important;
-  }
-  #admin-pengajar .mp-add-mobile {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    height: 42px;               /* sama dengan tinggi input search (theme.css) */
-    padding: 0 14px;
-    border: 1px solid var(--compreng-accent, #2563eb);
-    border-radius: 999px;
-    background: var(--compreng-accent, #2563eb);
-    color: var(--compreng-accent-text, #ffffff);
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
-    cursor: pointer;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    transition: transform .15s ease, background-color .15s ease;
-    order: 2;
-  }
-  #admin-pengajar .mp-add-mobile:active { transform: scale(0.96); }
-  #admin-pengajar .mp-toolbar .mp-filter-wrapper {
-    order: 3;
-    flex: 1 1 100% !important;
-    width: 100% !important;
-  }
-  #admin-pengajar .mp-toolbar > button:not(.mp-add-mobile) {
-    order: 4;
     flex: 1 1 100%;
-    justify-content: center;
-    height: 40px;
+    max-width: none;
+    width: 100%;
+  }
+  #admin-pengajar .mp-filter-wrapper { order: 2; flex: 1 1 0; width: auto; }
+  #admin-pengajar .mp-add-btn { order: 3; margin-left: 0; padding: 0 12px !important; }
+  .mp-danger-btn { order: 4; flex: 1 1 100%; height: 30px; font-size: 12px; }
+
+  /* Cari: ikon + kata "Cari" di tengah (seperti kolom cari di X), pindah ke kiri saat diketuk */
+  #admin-pengajar .mp-search-wrapper { justify-content: center; }
+  #admin-pengajar .mp-search-wrapper input.mp-search-input:placeholder-shown:not(:focus) {
+    flex: 0 0 auto;
+    width: 4.2ch;
+    text-align: left;
   }
 
-  /* --- Sembunyikan tabel, tampilkan Card List --- */
-  #admin-pengajar .mp-table-card { display: none !important; }
-  #admin-pengajar .mp-mlist {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-bottom: 24px;
+  /* Filter: menu jadi bottom sheet */
+  #admin-pengajar .mp-filter-backdrop {
+    background: rgba(0, 0, 0, 0.4);
+    animation: mpFadeIn 0.18s ease;
   }
+  #admin-pengajar .mp-filter-menu {
+    position: fixed;
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+    max-height: 65vh;
+    padding: 8px 10px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-width: 1px 0 0;
+    border-radius: 20px 20px 0 0;
+    transform-origin: bottom;
+    animation: mpSheetIn 0.22s ease;
+  }
+  #admin-pengajar .mp-filter-menu::before {
+    content: "";
+    display: block;
+    width: 36px;
+    height: 4px;
+    margin: 2px auto 8px;
+    border-radius: 999px;
+    background: var(--compreng-border);
+  }
+  #admin-pengajar .mp-filter-sheet-title {
+    display: block;
+    padding: 2px 10px 8px;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--compreng-text);
+  }
+  #admin-pengajar .mp-filter-option { padding: 11px 12px !important; }
+
+  #admin-pengajar .mp-table-card { display: none !important; }
+  #admin-pengajar .mp-mlist { display: flex; flex-direction: column; gap: 8px; margin-bottom: 24px; }
 
   #admin-pengajar .mp-mcard {
     display: flex;
-    flex-direction: column;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 12px;
     padding: 12px;
+    min-width: 0;
+    box-sizing: border-box;
     background: var(--compreng-surface);
     border: 1px solid var(--compreng-border);
-    border-radius: 14px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-    box-sizing: border-box;
-    min-width: 0;
+    border-radius: var(--mp-radius);
   }
-  #admin-pengajar .mp-mtop { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  #admin-pengajar .mp-mpic {
-    flex: 0 0 auto;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid var(--compreng-border);
-    box-sizing: border-box;
-  }
-  #admin-pengajar .mp-mpic-fallback {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: var(--compreng-green);
-    color: var(--compreng-accent-text, #ffffff);
-    font-weight: 700;
-    font-size: 16px;
-  }
+  #admin-pengajar .mp-mcard .mp-avatar { width: 40px; height: 40px; }
   #admin-pengajar .mp-mbody {
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 4px;
+    gap: 3px;
   }
-  #admin-pengajar .mp-mname {
-    max-width: 100%;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.3;
-    color: var(--compreng-text);
-    overflow-wrap: anywhere;
-  }
-  #admin-pengajar .mp-mrole {
-    max-width: 100%;
-    font-size: 12px;
-    line-height: 1.4;
-    color: var(--compreng-text-secondary);
-    overflow-wrap: anywhere;
-  }
-  #admin-pengajar .mp-mcard .mp-action-btn { flex: 0 0 auto; margin: 0; }
-  #admin-pengajar .mp-mmeta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid var(--compreng-border);
-  }
-  #admin-pengajar .mp-morder {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--compreng-text-secondary);
-  }
+  #admin-pengajar .mp-mname { max-width: 100%; font-size: 13.5px; font-weight: 600; line-height: 1.3; color: var(--compreng-text); overflow-wrap: anywhere; }
+  #admin-pengajar .mp-mrole { max-width: 100%; font-size: 12px; line-height: 1.4; color: var(--compreng-text-secondary); overflow-wrap: anywhere; }
+  #admin-pengajar .mp-mmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+  #admin-pengajar .mp-morder { font-size: 11.5px; font-weight: 600; color: var(--compreng-text-secondary); }
+  #admin-pengajar .mp-mcard .mp-action-btn { flex: 0 0 auto; margin: -4px -4px 0 0; }
 
   #admin-pengajar .mp-mempty {
-    padding: 32px 16px;
-    text-align: center;
-    font-size: 13px;
-    color: var(--compreng-text-muted);
     background: var(--compreng-surface);
     border: 1px dashed var(--compreng-border);
-    border-radius: 14px;
+    border-radius: var(--mp-radius);
   }
+}
+
+/* HP sangat kecil: sembunyikan teks "Tambah" tidak perlu, cukup rapatkan */
+@media (max-width: 360px) {
+  #admin-pengajar .mp-add-btn { padding: 0 10px !important; gap: 4px; }
+  #admin-pengajar .mp-filter-trigger { padding: 0 8px !important; gap: 6px; }
 }

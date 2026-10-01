@@ -177,7 +177,6 @@
 
   /* --- Padding ganda: main-content-area sudah punya padding, wrapper halaman tidak perlu lagi --- */
   .dashboard-container .mp-wrapper,
-  .dashboard-container .mjp-wrapper,
   .dashboard-container .ip-wrapper,
   .dashboard-container .testi-wrapper,
   .dashboard-container .galeri-wrapper { padding: 4px 0 24px; }
