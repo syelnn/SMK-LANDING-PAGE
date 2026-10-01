@@ -215,7 +215,7 @@ const AchievementSection = () => {
             Kelola seluruh prestasi siswa SMK Negeri Compreng di sini.
           </p>
         </div>
-        <button className="btn-primary" onClick={handleOpenAddModal}>
+        <button className="btn-primary ach-add-desktop" onClick={handleOpenAddModal}>
           <Plus size={18} /> Tambah Prestasi
         </button>
       </div>
@@ -232,6 +232,10 @@ const AchievementSection = () => {
             className="search-input"
           />
         </div>
+        {/* Tombol ringkas khusus mobile: sebaris dengan Search (aksi sama dengan tombol desktop) */}
+        <button type="button" className="ach-add-mobile" onClick={handleOpenAddModal} aria-label="Tambah Prestasi">
+          <Plus size={16} /> Tambah
+        </button>
       </div>
 
       {/* Tabel */}
@@ -345,6 +349,96 @@ const AchievementSection = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Tampilan Card List (mobile) - data & tombol aksi sama dengan tabel */}
+      <div className="ach-mlist">
+        {loading ? (
+          <div className="ach-mempty">
+            <Loader2 className="animate-spin" size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+            Memuat data...
+          </div>
+        ) : filteredAchievements.length === 0 ? (
+          <div className="ach-mempty">Belum ada data prestasi yang ditemukan.</div>
+        ) : (
+          filteredAchievements.map((item) => (
+            <div key={item.id} className="ach-mcard">
+              <div className="ach-mtop">
+                {item.photo ? (
+                  <img
+                    src={getImageUrl(item.photo)}
+                    alt={item.student_name}
+                    className="ach-mpic"
+                    onError={(e) => {
+                      e.target.style.display = 'none';
+                    }}
+                  />
+                ) : (
+                  <div className="ach-mpic ach-mpic-fallback">
+                    {item.student_name ? item.student_name.charAt(0).toUpperCase() : '?'}
+                  </div>
+                )}
+                <div className="ach-mbody">
+                  <div className="student-name-text">{item.student_name}</div>
+                  <div className="student-class-text">{item.class_name || '-'}</div>
+                </div>
+                {/* MENU DROPDOWN AKSI (versi card). Ref hanya dipegang jika card list sedang terlihat,
+                    supaya klik-di-luar tetap benar baik di desktop (tabel) maupun mobile (card). */}
+                <div
+                  className="dropdown-action-wrapper ach-mmenu"
+                  ref={(el) => {
+                    if (activeMenuId === item.id && el && el.offsetParent !== null) menuRef.current = el;
+                  }}
+                >
+                  <button
+                    type="button"
+                    className="btn-more-action"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveMenuId(activeMenuId === item.id ? null : item.id);
+                    }}
+                    title="Opsi"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+
+                  {activeMenuId === item.id && (
+                    <div className="action-dropdown-menu">
+                      <button
+                        type="button"
+                        className="dropdown-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenEditModal(item);
+                        }}
+                      >
+                        <Edit3 size={14} /> Edit Data
+                      </button>
+                      <button
+                        type="button"
+                        className="dropdown-item delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(item.id);
+                        }}
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="ach-mtext">{item.achievement}</div>
+              <div className="ach-mmeta">
+                <span className="badge badge-category">{item.level || 'Nasional'}</span>
+                <span className="ach-myear">{item.year}</span>
+                <span className={`badge ${item.show === 1 ? 'badge-success' : 'badge-warning'}`}>
+                  {item.show === 1 ? 'Tampil' : 'Sembunyi'}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Modal Form Tambah/Edit */}

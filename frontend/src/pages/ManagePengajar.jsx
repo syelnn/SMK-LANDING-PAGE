@@ -185,7 +185,7 @@ export default function ManagePengajar() {
           <p className="mp-subtitle">Kelola daftar guru, kepala sekolah, dan staf pengajar.</p>
         </div>
         {(userRole === 'admin' || userRole === 'editor') && (
-          <button className="btn-modern-primary" onClick={openAdd}>
+          <button className="btn-modern-primary mp-add-desktop" onClick={openAdd}>
             <Plus size={16} /> Tambah Pengajar
           </button>
         )}
@@ -202,6 +202,12 @@ export default function ManagePengajar() {
             className="mp-search-input"
           />
         </div>
+        {/* Tombol ringkas khusus mobile: sebaris dengan Search (aksi sama dengan tombol desktop) */}
+        {(userRole === 'admin' || userRole === 'editor') && (
+          <button type="button" className="mp-add-mobile" onClick={openAdd} aria-label="Tambah Pengajar">
+            <Plus size={16} /> Tambah
+          </button>
+        )}
         
         {/* Tambahan Filter Dropdown Mapel (Modern UI) */}
         <div className="mp-filter-wrapper">
@@ -299,6 +305,51 @@ export default function ManagePengajar() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Tampilan Card List (mobile) - data & tombol aksi sama dengan tabel */}
+      <div className="mp-mlist">
+        {filteredTeachers.length === 0 ? (
+          <div className="mp-mempty">
+            {searchTerm || filterRole ? `Tidak ditemukan data yang sesuai kriteria pencarian.` : 'Belum ada data pengajar.'}
+          </div>
+        ) : (
+          filteredTeachers.map((item) => (
+            <div key={item.id} className="mp-mcard">
+              <div className="mp-mtop">
+                {item.photo ? (
+                  <img className="mp-mpic" src={getImageUrl(item.photo)} alt="Foto" />
+                ) : (
+                  <div className="mp-mpic mp-mpic-fallback">
+                    {item.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <div className="mp-mbody">
+                  <div className="mp-mname">{item.name}</div>
+                  {item.role.toUpperCase().includes('KEPALA') ? (
+                    <span className="mp-badge-role">{item.role.toUpperCase()}</span>
+                  ) : (
+                    <div className="mp-mrole">{item.role.toUpperCase()}</div>
+                  )}
+                </div>
+                {(userRole === 'admin' || userRole === 'editor') && (
+                  <button
+                    onClick={(e) => handleDropdownClick(e, item.id)}
+                    className="mp-action-btn"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                )}
+              </div>
+              <div className="mp-mmeta">
+                <span className={item.show === 1 ? 'mp-badge-active' : 'mp-badge-inactive'}>
+                  {item.show === 1 ? 'Ditampilkan' : 'Disembunyikan'}
+                </span>
+                <span className="mp-morder">Urutan {item.sort_order ?? item.sortOrder}</span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {dropdownConfig.id && (

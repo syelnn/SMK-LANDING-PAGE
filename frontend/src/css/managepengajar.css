@@ -347,3 +347,161 @@
   border: none !important;
   box-shadow: none !important;
 }
+
+/* =========================================
+   RESPONSIF: DESKTOP RAPI + CARD LIST MOBILE
+   Selector dikunci dengan ID (#admin-pengajar) agar menang atas wildcard
+   theme.css & admin-responsive.css.
+   ========================================= */
+
+/* Default (desktop/tablet): card list & tombol mobile disembunyikan */
+.mp-mlist,
+.mp-add-mobile { display: none; }
+
+/* Desktop: tabel tidak boleh meluap dari kartunya */
+.mp-wrapper { min-width: 0; }
+.mp-table-card { max-width: 100%; }
+.mp-table { min-width: 640px; }
+.mp-td { overflow-wrap: anywhere; }
+
+@media (max-width: 768px) {
+  #admin-pengajar .mp-header-box { margin-bottom: 12px; gap: 0; }
+  #admin-pengajar .mp-add-desktop { display: none !important; }
+
+  /* --- Control bar: baris 1 = Search + Tambah, baris 2 = Filter mapel --- */
+  #admin-pengajar .mp-toolbar {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    align-items: stretch;
+    gap: 8px !important;
+    margin-bottom: 14px;
+  }
+  #admin-pengajar .mp-search-wrapper {
+    order: 1;
+    flex: 1 1 0 !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  #admin-pengajar .mp-add-mobile {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 42px;               /* sama dengan tinggi input search (theme.css) */
+    padding: 0 14px;
+    border: 1px solid var(--compreng-accent, #2563eb);
+    border-radius: 999px;
+    background: var(--compreng-accent, #2563eb);
+    color: var(--compreng-accent-text, #ffffff);
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform .15s ease, background-color .15s ease;
+    order: 2;
+  }
+  #admin-pengajar .mp-add-mobile:active { transform: scale(0.96); }
+  #admin-pengajar .mp-toolbar .mp-filter-wrapper {
+    order: 3;
+    flex: 1 1 100% !important;
+    width: 100% !important;
+  }
+  #admin-pengajar .mp-toolbar > button:not(.mp-add-mobile) {
+    order: 4;
+    flex: 1 1 100%;
+    justify-content: center;
+    height: 40px;
+  }
+
+  /* --- Sembunyikan tabel, tampilkan Card List --- */
+  #admin-pengajar .mp-table-card { display: none !important; }
+  #admin-pengajar .mp-mlist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+
+  #admin-pengajar .mp-mcard {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 12px;
+    background: var(--compreng-surface);
+    border: 1px solid var(--compreng-border);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    box-sizing: border-box;
+    min-width: 0;
+  }
+  #admin-pengajar .mp-mtop { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  #admin-pengajar .mp-mpic {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 1px solid var(--compreng-border);
+    box-sizing: border-box;
+  }
+  #admin-pengajar .mp-mpic-fallback {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--compreng-green);
+    color: var(--compreng-accent-text, #ffffff);
+    font-weight: 700;
+    font-size: 16px;
+  }
+  #admin-pengajar .mp-mbody {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+  }
+  #admin-pengajar .mp-mname {
+    max-width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--compreng-text);
+    overflow-wrap: anywhere;
+  }
+  #admin-pengajar .mp-mrole {
+    max-width: 100%;
+    font-size: 12px;
+    line-height: 1.4;
+    color: var(--compreng-text-secondary);
+    overflow-wrap: anywhere;
+  }
+  #admin-pengajar .mp-mcard .mp-action-btn { flex: 0 0 auto; margin: 0; }
+  #admin-pengajar .mp-mmeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--compreng-border);
+  }
+  #admin-pengajar .mp-morder {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--compreng-text-secondary);
+  }
+
+  #admin-pengajar .mp-mempty {
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--compreng-text-muted);
+    background: var(--compreng-surface);
+    border: 1px dashed var(--compreng-border);
+    border-radius: 14px;
+  }
+}

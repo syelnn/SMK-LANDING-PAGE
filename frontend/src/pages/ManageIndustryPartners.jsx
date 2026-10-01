@@ -149,7 +149,7 @@ export default function ManageIndustryPartners() {
           <p className="ip-subtitle">Kelola logo perusahaan/industri.</p>
         </div>
         {(userRole === 'admin' || userRole === 'editor') && (
-          <button className="btn-modern-primary" onClick={openAdd}>
+          <button className="btn-modern-primary ip-add-desktop" onClick={openAdd}>
             <Plus size={16} /> Tambah Mitra
           </button>
         )}
@@ -166,6 +166,12 @@ export default function ManageIndustryPartners() {
             className="ip-search-input"
           />
         </div>
+        {/* Tombol ringkas khusus mobile: sebaris dengan Search (aksi sama dengan tombol desktop) */}
+        {(userRole === 'admin' || userRole === 'editor') && (
+          <button type="button" className="ip-add-mobile" onClick={openAdd} aria-label="Tambah Mitra">
+            <Plus size={16} /> Tambah
+          </button>
+        )}
       </div>
 
       <div className="ip-table-card">
@@ -228,6 +234,45 @@ export default function ManageIndustryPartners() {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Tampilan Card List (mobile) - data & tombol aksi sama dengan tabel */}
+      <div className="ip-mlist">
+        {filteredPartners.length === 0 ? (
+          <div className="ip-mempty">
+            {searchTerm ? 'Tidak ditemukan data yang sesuai kriteria pencarian.' : 'Belum ada data mitra industri.'}
+          </div>
+        ) : (
+          filteredPartners.map((item) => {
+            const logoUrl = item.logoUrl ?? item.logo_url;
+            const isActive = item.isActive ?? item.is_active;
+            return (
+              <div key={item.id} className="ip-mcard">
+                <div className="ip-mpic">
+                  {logoUrl ? (
+                    <img src={getImageUrl(logoUrl)} alt={item.name} />
+                  ) : (
+                    <ImageIcon size={18} />
+                  )}
+                </div>
+                <div className="ip-mbody">
+                  <div className="ip-mname">{item.name}</div>
+                  <span className={isActive ? 'ip-badge-active' : 'ip-badge-inactive'}>
+                    {isActive ? 'Ditampilkan' : 'Disembunyikan'}
+                  </span>
+                </div>
+                {(userRole === 'admin' || userRole === 'editor') && (
+                  <button
+                    onClick={(e) => handleDropdownClick(e, item.id)}
+                    className="ip-action-btn"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                )}
+              </div>
+            );
+          })
+        )}
       </div>
 
       {dropdownConfig.id && (

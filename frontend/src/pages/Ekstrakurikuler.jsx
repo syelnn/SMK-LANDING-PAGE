@@ -294,15 +294,23 @@ export default function Ekstrakurikuler() {
       </div>
 
       {/* TOOLBAR (SEARCH) — di luar table card, selaras dengan pola halaman lain */}
-      <div className="ekskul-search-wrapper">
-        <Search size={16} className="ekskul-search-icon" />
-        <input
-          type="text"
-          placeholder="Cari nama atau deskripsi ekstrakurikuler..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="ekskul-search-input"
-        />
+      <div className="ekskul-controls">
+        <div className="ekskul-search-wrapper">
+          <Search size={16} className="ekskul-search-icon" />
+          <input
+            type="text"
+            placeholder="Cari nama atau deskripsi ekstrakurikuler..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="ekskul-search-input"
+          />
+        </div>
+        {/* Tombol ringkas khusus mobile: sebaris dengan Search (aksi sama dengan tombol desktop) */}
+        {canAccessCRUD && (
+          <button type="button" className="ekskul-add-mobile" onClick={handleOpenAdd} aria-label="Tambah Ekskul">
+            <Plus size={16} /> Tambah
+          </button>
+        )}
       </div>
 
       {/* TABLE CARD */}
@@ -374,6 +382,45 @@ export default function Ekstrakurikuler() {
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Tampilan Card List (mobile) - data & tombol aksi sama dengan tabel */}
+      <div className="ekskul-mlist">
+        {filteredList.length === 0 ? (
+          <div className="ekskul-mempty">
+            {searchQuery ? `Tidak ditemukan ekstrakurikuler dengan kata kunci "${searchQuery}"` : 'Belum ada data ekstrakurikuler.'}
+          </div>
+        ) : (
+          filteredList.map((item) => (
+            <div key={item.id} className="ekskul-mcard">
+              <div className="ekskul-mtop">
+                <div className="ekskul-table-icon ekskul-mpic">
+                  {renderIcon(item.icon)}
+                </div>
+                <div className="ekskul-mbody">
+                  <div className="ekskul-mtitle">{item.title}</div>
+                  <div className="ekskul-mmeta">
+                    <span className={`badge-status ${Number(item.show) === 1 ? 'show' : 'hide'}`}>
+                      {Number(item.show) === 1 ? 'Tampil' : 'Sembunyi'}
+                    </span>
+                    <span className="badge-status ekskul-morder">Urutan {item.sort_order || item.sortOrder || 1}</span>
+                  </div>
+                </div>
+                {canAccessCRUD && (
+                  <div className="dropdown-action-wrapper">
+                    <button
+                      onClick={(e) => handleDropdownClick(e, item.id)}
+                      className="btn-more-action"
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
+                  </div>
+                )}
+              </div>
+              {item.description && <p className="ekskul-mtext">{item.description}</p>}
+            </div>
+          ))
+        )}
       </div>
 
       {/* DROPDOWN MENU (PORTAL-STYLE POSITIONING) */}
