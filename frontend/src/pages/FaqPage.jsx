@@ -118,7 +118,7 @@ const FaqPage = () => {
 
   const handleDelete = (id) => {
     setActiveDropdown(null); // Tutup dropdown
-    if (window.confirm('Yakin ingin menghapus FAQ ini? Urutan FAQ lainnya akan otomatis disesuaikan.')) {
+    if (window.confirm('Yakin ingin menghapus FAQ ini?')) {
       fetch(`https://smkn-compreng-api-pi.vercel.app/api/faqs/${id}`, { method: 'DELETE' })
         .then((res) => res.json())
         .then((data) => {
@@ -150,7 +150,7 @@ const FaqPage = () => {
             Kelola seluruh daftar pertanyaan yang sering diajukan di sini.
           </p>
         </div>
-        <button className="btn-primary" onClick={() => handleOpenModal()}>
+        <button className="btn-primary faq-add-desktop" onClick={() => handleOpenModal()}>
           <Plus size={18} /> Tambah FAQ
         </button>
       </div>
@@ -167,6 +167,10 @@ const FaqPage = () => {
             className="search-input"
           />
         </div>
+        {/* Tombol ringkas khusus mobile: sebaris dengan Search (aksi sama dengan tombol desktop) */}
+        <button type="button" className="btn-primary faq-add-mobile" onClick={() => handleOpenModal()} aria-label="Tambah FAQ">
+          <Plus size={16} /> Tambah
+        </button>
       </div>
 
       {/* Tabel */}
@@ -263,6 +267,74 @@ const FaqPage = () => {
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Tampilan Card List (mobile) - data & tombol aksi sama dengan tabel */}
+      <div className="faq-mlist">
+        {loading ? (
+          <div className="faq-mempty">
+            <Loader2 className="animate-spin" size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} />
+            Memuat data...
+          </div>
+        ) : filteredFaqs.length === 0 ? (
+          <div className="faq-mempty">Tidak ada FAQ ditemukan.</div>
+        ) : (
+          filteredFaqs.map((faq, index) => (
+            <div key={faq.id} className="faq-mcard">
+              <div className="faq-mtop">
+                <span className="faq-mnum">{index + 1}</span>
+                <div className="faq-mq">{faq.question}</div>
+                {/* MENU DROPDOWN AKSI (versi card) */}
+                <div className="faq-dropdown-wrapper faq-mmenu">
+                  <button
+                    type="button"
+                    className="btn-action-more"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveDropdown(activeDropdown === faq.id ? null : faq.id);
+                    }}
+                    title="Opsi"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+
+                  {activeDropdown === faq.id && (
+                    <div className="action-dropdown-menu">
+                      <button
+                        type="button"
+                        className="dropdown-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleOpenModal(faq);
+                        }}
+                      >
+                        <Edit3 size={14} /> Edit Data
+                      </button>
+                      <button
+                        type="button"
+                        className="dropdown-item delete"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(faq.id);
+                        }}
+                      >
+                        <Trash2 size={14} /> Delete
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="faq-manswer">{faq.answer}</div>
+              <div className="faq-mmeta">
+                <span className="badge badge-category">{faq.category || 'Umum'}</span>
+                <span className="faq-msort">Urutan {faq.sortOrder || index + 1}</span>
+                <span className={`badge ${faq.show === 1 ? 'badge-success' : 'badge-warning'}`}>
+                  {faq.show === 1 ? 'Tampil' : 'Sembunyi'}
+                </span>
+              </div>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Modal Form Tambah/Edit */}

@@ -322,7 +322,7 @@ export default function ManageIndustryPartners() {
             <form onSubmit={handleSubmit} className={`form-modern-layout${submitting ? ' ip-form-busy' : ''}`} aria-busy={submitting}>
               <div className="form-group-modern">
                 <label>NAMA PERUSAHAAN / INDUSTRI</label>
-                <input type="text" placeholder="Contoh: PT Telkom Indonesia" className="input-modern" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                <input type="text" placeholder="Contoh: PT Winter Access" className="input-modern" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
               </div>
 
               <div className="form-group-modern">

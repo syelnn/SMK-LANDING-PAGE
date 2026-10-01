@@ -563,59 +563,133 @@
     margin-bottom: 24px;
   }
 
+  /* Kartu mengikuti gaya Kelola Pengguna / Berita / Ekstrakurikuler: gradasi lembut,
+     foto membulat berbingkai, judul prestasi di panel info, chip tingkat/tahun/status.
+     !important karena theme.css memaksa warna semua elemen "-card", "badge" & "status". */
   #admin-prestasi .ach-mcard {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 12px;
-    background: var(--compreng-surface);
-    border: 1px solid var(--compreng-border);
-    border-radius: 14px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    gap: 12px;
+    padding: 14px;
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 55%, var(--compreng-surface, #ffffff)),
+      var(--compreng-surface, #ffffff)
+    ) !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+    border-radius: 20px;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow, rgba(0, 0, 0, 0.2)) 60%, transparent),
+                0 12px 24px -18px var(--compreng-shadow, rgba(0, 0, 0, 0.3));
     box-sizing: border-box;
     min-width: 0;
+    overflow: hidden;
+    transition: transform 0.18s ease;
   }
-  #admin-prestasi .ach-mtop { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  #admin-prestasi .ach-mcard:active { transform: scale(0.992); }
+
+  #admin-prestasi .ach-mtop { display: flex; align-items: center; gap: 14px; min-width: 0; }
   #admin-prestasi .ach-mpic {
     flex: 0 0 auto;
-    width: 56px;
-    height: 42px;
-    border-radius: 8px;
+    width: 64px;
+    height: 64px;
+    margin: 2px;
+    border-radius: 16px;
     object-fit: cover;
     background-color: var(--compreng-surface-soft, #f1f5f9);
+    box-shadow: 0 0 0 2px var(--compreng-surface, #ffffff),
+                0 0 0 3.5px color-mix(in srgb, var(--compreng-accent, #2563eb) 35%, transparent);
     box-sizing: border-box;
   }
   #admin-prestasi .ach-mpic-fallback {
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--compreng-text-secondary, #475569);
-    font-weight: 700;
-    font-size: 15px;
+    color: var(--compreng-accent, #2563eb);
+    background-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 14%, var(--compreng-surface-soft, #f1f5f9));
+    font-weight: 800;
+    font-size: 22px;
   }
-  #admin-prestasi .ach-mbody { flex: 1 1 auto; min-width: 0; }
-  #admin-prestasi .ach-mbody .student-name-text { font-size: 14px; line-height: 1.3; overflow-wrap: anywhere; }
-  #admin-prestasi .ach-mbody .student-class-text { overflow-wrap: anywhere; }
-  #admin-prestasi .ach-mmenu { position: relative; flex: 0 0 auto; }
-  #admin-prestasi .ach-mtext {
-    font-size: 13px;
-    font-weight: 500;
-    line-height: 1.5;
-    color: var(--compreng-text-secondary, #475569);
+  #admin-prestasi .ach-mbody { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+  #admin-prestasi .ach-mbody .student-name-text {
+    font-size: 15.5px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
     overflow-wrap: anywhere;
   }
+  #admin-prestasi .ach-mbody .student-class-text {
+    margin-top: 0;
+    font-size: 12.5px;
+    overflow-wrap: anywhere;
+  }
+  #admin-prestasi .ach-mmenu { position: relative; flex: 0 0 auto; align-self: flex-start; }
+  #admin-prestasi .ach-mmenu .btn-more-action {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 80%, transparent);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+  }
+  /* judul prestasi / kejuaraan di panel info */
+  #admin-prestasi .ach-mtext {
+    padding: 11px 13px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--compreng-bg, #f8fafc) 55%, var(--compreng-surface-soft, #f1f5f9));
+    border: 1px solid color-mix(in srgb, var(--compreng-border, #e2e8f0) 80%, transparent);
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--compreng-text, #0f172a);
+    overflow-wrap: anywhere;
+  }
+  /* chip: tingkat | tahun | status (pil bertitik) */
   #admin-prestasi .ach-mmeta {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 8px;
-    padding-top: 10px;
-    border-top: 1px solid var(--compreng-border, #e2e8f0);
+    gap: 6px;
+    padding: 0;
+    border: none;
   }
-  #admin-prestasi .ach-myear {
-    font-size: 12px;
-    font-weight: 600;
+  #admin-prestasi .ach-mmeta .badge,
+  #admin-prestasi .ach-mmeta .ach-myear {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 11px;
+    border-radius: 999px !important;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  #admin-prestasi .ach-mmeta .badge-category {
+    background-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 30%, transparent) !important;
+    color: color-mix(in srgb, var(--compreng-accent, #2563eb) 75%, var(--compreng-text, #0f172a)) !important;
+  }
+  #admin-prestasi .ach-mmeta .ach-myear {
+    background-color: var(--compreng-surface-soft, #f1f5f9);
+    border: 1px solid var(--compreng-border, #e2e8f0);
     color: var(--compreng-text-secondary, #475569);
+    font-weight: 600;
+  }
+  #admin-prestasi .ach-mmeta .badge-success,
+  #admin-prestasi .ach-mmeta .badge-warning {
+    --ac-dot: #22c55e;
+    background-color: color-mix(in srgb, var(--ac-dot) 14%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--ac-dot) 35%, transparent) !important;
+    color: color-mix(in srgb, var(--ac-dot) 70%, var(--compreng-text, #0f172a)) !important;
+  }
+  #admin-prestasi .ach-mmeta .badge-warning { --ac-dot: #f59e0b; }
+  #admin-prestasi .ach-mmeta .badge-success::before,
+  #admin-prestasi .ach-mmeta .badge-warning::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ac-dot);
+    flex: 0 0 auto;
   }
 
   #admin-prestasi .ach-mempty {
@@ -627,4 +701,256 @@
     border: 1px dashed var(--compreng-border, #e2e8f0);
     border-radius: 14px;
   }
+}
+
+
+/* ==========================================
+   FORM TAMBAH / EDIT PRESTASI DI HP — dialog di tengah (sama seperti Ekstrakurikuler)
+   Dikunci ke #admin-prestasi; desktop (>768px) tidak berubah.
+   Tombol Batal & Simpan dibuat SAMA PERSIS: tinggi, radius, font, border, tanpa bayangan.
+   ========================================== */
+@media (max-width: 768px) {
+  #admin-prestasi .modal-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  #admin-prestasi .modal-overlay .modal-content.modern-modal {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 480px !important;
+    margin: auto;
+    max-height: calc(100dvh - 40px);
+    padding: 0;
+    overflow: hidden;
+    border-radius: 22px !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  }
+  /* header & area tombol: netralkan kotak/bayangan paksaan theme.css */
+  #admin-prestasi .modal-header-modern,
+  #admin-prestasi .modal-actions-modern {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  #admin-prestasi .modal-header-modern {
+    margin: 0;
+    padding: 16px 18px;
+    flex: 0 0 auto;
+    border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
+  }
+  #admin-prestasi .modal-header-modern h3 { font-size: 1.05rem; }
+  #admin-prestasi .btn-close-modal {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
+  }
+  #admin-prestasi .form-modern-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    gap: 16px;
+    padding: 16px 18px 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+  #admin-prestasi .form-row-modern {
+    flex-direction: column;
+    gap: 16px !important;
+  }
+  #admin-prestasi .form-row-modern .form-group-modern {
+    flex: none !important;
+    width: 100%;
+  }
+  #admin-prestasi .form-modern-layout .input-modern {
+    border-radius: 12px !important;
+    padding: 11px 14px;
+  }
+  #admin-prestasi .upload-section {
+    padding: 14px;
+    border-radius: 14px;
+    background-color: var(--compreng-bg, #f8fafc);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+  }
+
+  /* Tombol Batal & Simpan: grid 2 kolom sama lebar, bentuk identik */
+  #admin-prestasi .modal-actions-modern {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 4px !important;
+    padding: 4px 0 0;
+  }
+  #admin-prestasi .modal-actions-modern .btn-modern-secondary,
+  #admin-prestasi .modal-actions-modern .btn-modern-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    height: 46px;
+    margin: 0;
+    padding: 0 10px;
+    border-width: 1px !important;
+    border-style: solid !important;
+    border-radius: 12px !important;
+    font-size: 13.5px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1;
+  }
+  #admin-prestasi .modal-actions-modern .btn-modern-secondary {
+    background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+    border-color: var(--compreng-border, #e2e8f0) !important;
+    color: var(--compreng-text, #0f172a) !important;
+  }
+  #admin-prestasi .modal-actions-modern .btn-modern-primary {
+    background-color: var(--compreng-accent, #2563eb) !important;
+    border-color: var(--compreng-accent, #2563eb) !important;
+    color: var(--compreng-accent-text, #ffffff) !important;
+  }
+  #admin-prestasi .modal-actions-modern button:disabled { opacity: 0.7; cursor: not-allowed; }
+}
+
+@media (max-width: 380px) {
+  #admin-prestasi .modal-overlay { padding: 14px; }
+  #admin-prestasi .modal-overlay .modal-content.modern-modal {
+    max-height: calc(100dvh - 28px);
+    border-radius: 18px !important;
+  }
+  #admin-prestasi .modal-header-modern { padding: 14px; }
+  #admin-prestasi .form-modern-layout { padding: 14px 14px 18px; }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  #admin-prestasi .modal-overlay { padding: 8px 20px; }
+  #admin-prestasi .modal-overlay .modal-content.modern-modal { max-height: calc(100dvh - 16px); }
+}
+
+/* ==========================================
+   PRESTASI DI HP — tampilan lebih modern + form seragam dengan Berita & Mitra
+   Hanya CSS & khusus <=768px; desktop, struktur JSX, dan logika tidak berubah.
+   Ukuran foto (.ach-mpic 64px) sengaja tidak diubah.
+   ========================================== */
+@keyframes achCardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  /* --- Form tambah/edit: bayangan header jatuh ke area isi (sama seperti laptop, Berita & Mitra) --- */
+  #admin-prestasi .modal-header-modern {
+    background-color: var(--compreng-surface, #ffffff) !important;
+    box-shadow: 0 25px 50px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.4)) !important;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* --- Kartu: kilau aksen halus di pojok kanan atas + gradasi lembut --- */
+  #admin-prestasi .ach-mcard {
+    padding: 16px 16px 16px 18px;
+    background:
+      radial-gradient(120% 90% at 100% 0%,
+        color-mix(in srgb, var(--compreng-accent, #2563eb) 9%, transparent),
+        transparent 58%),
+      linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 55%, var(--compreng-surface, #ffffff)),
+        var(--compreng-surface, #ffffff)
+      ) !important;
+    animation: achCardIn 0.35s ease both;
+  }
+  #admin-prestasi .ach-mcard:nth-child(2) { animation-delay: 0.04s; }
+  #admin-prestasi .ach-mcard:nth-child(3) { animation-delay: 0.08s; }
+  #admin-prestasi .ach-mcard:nth-child(4) { animation-delay: 0.12s; }
+  #admin-prestasi .ach-mcard:nth-child(n+5) { animation-delay: 0.16s; }
+
+  /* aksen tipis di tepi kiri; prestasi yang disembunyikan berwarna amber */
+  #admin-prestasi .ach-mcard::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    bottom: 16px;
+    width: 3px;
+    border-radius: 0 4px 4px 0;
+    background: var(--compreng-accent, #2563eb);
+    opacity: 0.85;
+  }
+  #admin-prestasi .ach-mcard:has(.badge-warning)::before { background: #f59e0b; }
+  #admin-prestasi .ach-mcard:has(.badge-warning) .ach-mpic { opacity: 0.8; }
+
+  /* foto: ukuran tetap, hanya bingkai yang dipercantik */
+  #admin-prestasi .ach-mpic {
+    box-shadow: 0 0 0 2px var(--compreng-surface, #ffffff),
+                0 0 0 3.5px color-mix(in srgb, var(--compreng-accent, #2563eb) 40%, transparent),
+                0 8px 16px -8px var(--compreng-shadow, rgba(0, 0, 0, 0.35));
+  }
+  #admin-prestasi .ach-mpic-fallback {
+    background-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--compreng-accent, #2563eb) 22%, var(--compreng-surface-soft, #f1f5f9)),
+      color-mix(in srgb, var(--compreng-accent, #2563eb) 8%, var(--compreng-surface-soft, #f1f5f9))
+    );
+  }
+
+  /* judul prestasi: panel dengan garis aksen di kiri */
+  #admin-prestasi .ach-mtext {
+    border-radius: 12px 14px 14px 12px;
+    border-left: 3px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 55%, transparent);
+    box-shadow: inset 0 1px 0 color-mix(in srgb, var(--compreng-surface, #ffffff) 70%, transparent);
+  }
+
+  /* chip: dipisah garis tipis dari panel; tahun didorong ke kanan */
+  #admin-prestasi .ach-mmeta {
+    padding-top: 12px;
+    border-top: 1px solid color-mix(in srgb, var(--compreng-border, #e2e8f0) 70%, transparent);
+  }
+  #admin-prestasi .ach-mmeta .ach-myear { margin-left: auto; order: 3; }
+  #admin-prestasi .ach-mmeta .badge-success,
+  #admin-prestasi .ach-mmeta .badge-warning { order: 2; }
+
+  #admin-prestasi .ach-mmenu .btn-more-action { transition: transform 0.15s ease, background-color 0.15s ease; }
+  #admin-prestasi .ach-mmenu .btn-more-action:active { transform: scale(0.92); }
+}
+
+@media (max-width: 380px) {
+  #admin-prestasi .ach-mcard { padding: 14px 14px 14px 16px; gap: 10px; }
+  #admin-prestasi .ach-mtop { gap: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-prestasi .ach-mcard { animation: none !important; }
+}
+
+/* ==========================================================================
+   Tombol Batal & Simpan Data di modal: bentuk & ukuran sama (pill)
+   ========================================================================== */
+#admin-prestasi .modal-actions-modern .btn-modern-secondary,
+#admin-prestasi .modal-actions-modern .btn-modern-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 18px !important;
+  border-radius: 999px !important;
+  font-size: 14px;
+  font-weight: 600 !important;
+  line-height: 1;
+}
+#admin-prestasi .modal-actions-modern .btn-modern-secondary {
+  border: 1px solid var(--compreng-border, #e2e8f0);
 }

@@ -641,42 +641,113 @@
     margin-bottom: 24px;
   }
 
+  /* Kartu mengikuti gaya Kelola Pengguna / Berita / Mitra: gradasi lembut,
+     ikon di kotak membulat, status pil bertitik, deskripsi di panel info.
+     !important karena theme.css memaksa warna semua elemen "-card" & "status". */
   #admin-ekskul .ekskul-mcard {
+    position: relative;
     display: flex;
     flex-direction: column;
-    gap: 10px;
-    padding: 12px;
-    background: var(--compreng-surface, #ffffff);
-    border: 1px solid var(--compreng-border, #e2e8f0);
-    border-radius: 14px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+    gap: 12px;
+    padding: 14px;
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 55%, var(--compreng-surface, #ffffff)),
+      var(--compreng-surface, #ffffff)
+    ) !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+    border-radius: 20px;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow, rgba(0, 0, 0, 0.2)) 60%, transparent),
+                0 12px 24px -18px var(--compreng-shadow, rgba(0, 0, 0, 0.3));
     box-sizing: border-box;
     min-width: 0;
+    overflow: hidden;
+    transition: transform 0.18s ease;
   }
-  #admin-ekskul .ekskul-mtop { display: flex; align-items: center; gap: 12px; min-width: 0; }
-  #admin-ekskul .ekskul-mpic { flex: 0 0 auto; width: 44px; height: 44px; border-radius: 10px; }
+  #admin-ekskul .ekskul-mcard:active { transform: scale(0.992); }
+  #admin-ekskul .ekskul-mcard:has(.badge-status.hide) .ekskul-mpic { opacity: 0.75; }
+
+  #admin-ekskul .ekskul-mtop { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  #admin-ekskul .ekskul-mpic {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    margin: 2px;
+    background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    box-shadow: 0 0 0 2px var(--compreng-surface, #ffffff),
+                0 0 0 3.5px color-mix(in srgb, var(--compreng-accent, #2563eb) 35%, transparent);
+    box-sizing: border-box;
+  }
+  #admin-ekskul .ekskul-mpic .ekskul-icon { width: 24px; height: 24px; }
+  #admin-ekskul .ekskul-mpic img { width: 70% !important; height: 70% !important; object-fit: contain !important; }
   #admin-ekskul .ekskul-mbody {
     flex: 1 1 auto;
     min-width: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 6px;
+    gap: 8px;
   }
   #admin-ekskul .ekskul-mtitle {
     max-width: 100%;
-    font-size: 14px;
-    font-weight: 600;
-    line-height: 1.3;
+    font-size: 15.5px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.25;
     color: var(--compreng-text, #0f172a);
     overflow-wrap: anywhere;
   }
   #admin-ekskul .ekskul-mmeta { display: flex; flex-wrap: wrap; gap: 6px; }
-  #admin-ekskul .ekskul-mcard .badge-status { font-size: 11px; padding: 2px 8px; }
-  #admin-ekskul .ekskul-mcard .dropdown-action-wrapper { flex: 0 0 auto; }
+  /* status = pil bertitik (hijau tampil / abu disembunyikan); urutan = pil netral */
+  #admin-ekskul .ekskul-mcard .badge-status {
+    --ek-dot: #22c55e;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 11px;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.25;
+    border-radius: 999px !important;
+    background-color: color-mix(in srgb, var(--ek-dot) 14%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--ek-dot) 35%, transparent) !important;
+    color: color-mix(in srgb, var(--ek-dot) 70%, var(--compreng-text, #0f172a)) !important;
+  }
+  #admin-ekskul .ekskul-mcard .badge-status.hide { --ek-dot: #94a3b8; }
+  #admin-ekskul .ekskul-mcard .badge-status.show::before,
+  #admin-ekskul .ekskul-mcard .badge-status.hide::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--ek-dot);
+    flex: 0 0 auto;
+  }
+  #admin-ekskul .ekskul-mcard .badge-status.ekskul-morder {
+    background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+    border-color: var(--compreng-border, #e2e8f0) !important;
+    color: var(--compreng-text-secondary, #475569) !important;
+    font-weight: 600;
+  }
+  /* tombol titik tiga: kotak membulat */
+  #admin-ekskul .ekskul-mcard .dropdown-action-wrapper { flex: 0 0 auto; align-self: flex-start; }
+  #admin-ekskul .ekskul-mcard .btn-more-action {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 80%, transparent);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+  }
+  /* deskripsi di panel info */
   #admin-ekskul .ekskul-mtext {
     margin: 0;
-    font-size: 12.5px;
+    padding: 11px 13px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--compreng-bg, #f8fafc) 55%, var(--compreng-surface-soft, #f1f5f9));
+    border: 1px solid color-mix(in srgb, var(--compreng-border, #e2e8f0) 80%, transparent);
+    font-size: 13px;
     line-height: 1.55;
     color: var(--compreng-text-secondary, #475569);
     display: -webkit-box;
@@ -696,4 +767,108 @@
     border: 1px dashed var(--compreng-border, #e2e8f0);
     border-radius: 14px;
   }
+}
+
+
+/* ==========================================
+   FORM TAMBAH / EDIT EKSTRAKURIKULER DI HP — dialog di tengah (sama seperti Mitra Industri & Berita)
+   Sebelumnya bottom-sheet penuh menempel kiri-kanan (admin-responsive.css).
+   Dikunci ke #admin-ekskul; desktop (>768px) tidak berubah.
+   ========================================== */
+@media (max-width: 768px) {
+  #admin-ekskul .ekskul-modal-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  #admin-ekskul .ekskul-modal-overlay .ekskul-modal-box {
+    width: 100%;
+    max-width: 480px !important;
+    margin: auto;
+    max-height: calc(100dvh - 40px);
+    border-radius: 22px !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  }
+  /* header & area tombol: netralkan kotak/bayangan paksaan theme.css */
+  #admin-ekskul .ekskul-modal-header,
+  #admin-ekskul .ekskul-modal-actions {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border: none !important;
+  }
+  #admin-ekskul .ekskul-modal-header {
+    padding: 16px 18px;
+    flex: 0 0 auto;
+    border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
+  }
+  #admin-ekskul .ekskul-modal-header h3 { font-size: 1.05rem; }
+  #admin-ekskul .ekskul-close-btn { width: 32px; height: 32px; border-radius: 50% !important; }
+  /* Bayangan header jatuh ke area isi form (sama seperti di laptop) */
+  #admin-ekskul .ekskul-modal-header {
+    background-color: var(--compreng-surface, #ffffff) !important;
+    box-shadow: 0 25px 50px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.4)) !important;
+    position: relative;
+    z-index: 1;
+  }
+
+  #admin-ekskul .ekskul-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 16px 18px 20px;
+    min-height: 0;
+    -webkit-overflow-scrolling: touch;
+  }
+  #admin-ekskul .ekskul-form-group { margin-bottom: 0; }
+  #admin-ekskul .ekskul-form-label { margin-bottom: 6px; }
+  #admin-ekskul .ekskul-form-input,
+  #admin-ekskul .ekskul-form-textarea {
+    border-radius: 12px !important;
+    padding: 11px 14px;
+  }
+  #admin-ekskul .ekskul-logo-box {
+    margin-bottom: 0;
+    padding: 14px;
+    border-radius: 14px !important;
+  }
+  /* Tombol Batal & Simpan berdampingan sama lebar (Batal di kiri) */
+  #admin-ekskul .ekskul-modal-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-top: 0;
+    padding: 4px 0 0;
+  }
+  #admin-ekskul .ekskul-modal-actions .ekskul-btn-cancel { order: 0; }
+  #admin-ekskul .ekskul-modal-actions button {
+    width: 100%;
+    min-width: 0;
+    padding: 12px;
+    border-radius: 12px;
+  }
+}
+
+/* Urutan & Status bertumpuk di layar sempit (grid 2 kolom diset inline di JSX) */
+@media (max-width: 480px) {
+  #admin-ekskul .ekskul-modal-body > div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+  }
+}
+
+@media (max-width: 380px) {
+  #admin-ekskul .ekskul-modal-overlay { padding: 14px; }
+  #admin-ekskul .ekskul-modal-overlay .ekskul-modal-box {
+    max-height: calc(100dvh - 28px);
+    border-radius: 18px !important;
+  }
+  #admin-ekskul .ekskul-modal-header { padding: 14px; }
+  #admin-ekskul .ekskul-modal-body { padding: 14px 14px 18px; }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  #admin-ekskul .ekskul-modal-overlay { padding: 8px 20px; }
+  #admin-ekskul .ekskul-modal-overlay .ekskul-modal-box { max-height: calc(100dvh - 16px); }
 }
