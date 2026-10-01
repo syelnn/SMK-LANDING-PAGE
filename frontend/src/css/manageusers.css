@@ -138,9 +138,11 @@
 }
 
 .mu-th {
-  padding: 12px 14px;
-  font-size: 12px;
-  font-weight: 600;
+  padding: 13px 14px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   color: var(--compreng-text-secondary);
   border-bottom: 1px solid var(--compreng-border);
   white-space: nowrap;
@@ -156,17 +158,66 @@
   font-size: 13px;
 }
 
-/* Satu baris per data. EMAIL TIDAK PERNAH DIPOTONG (nowrap, tanpa ellipsis).
-   Last Login juga satu baris. Hanya Name yang boleh turun baris (di spasi antar kata). */
-.mu-table .mu-th:nth-child(1), .mu-table .mu-td:nth-child(1),
-.mu-table .mu-th:nth-child(8), .mu-table .mu-td:nth-child(8) { width: 1%; white-space: nowrap; }
-.mu-table .mu-td:nth-child(2),
-.mu-table .mu-td:nth-child(4),
-.mu-table .mu-td:nth-child(5),
-.mu-table .mu-td:nth-child(6),
-.mu-table .mu-td:nth-child(7) { white-space: nowrap; overflow-wrap: normal; }
-.mu-table .mu-td:nth-child(3) { white-space: normal; overflow-wrap: break-word; min-width: 90px; }
-.mu-table .mu-td:nth-child(5) { color: var(--compreng-text-secondary); }
+/* ---- Layout tabel: SELALU muat di kartunya (tanpa geser mendatar) ----
+   table-layout: fixed + lebar kolom persen. Kolom dirangkum sesuai lebar kartu
+   (container query pada .mu-table-card, bukan lebar layar, karena sidebar ikut memakan ruang). */
+.mu-table-card { container-type: inline-size; container-name: mutable; overflow-x: hidden; }
+.mu-table { table-layout: fixed; width: 100%; }
+.mu-th, .mu-td { padding: 12px 12px; }
+.mu-table .mu-th:nth-child(1) { width: 24%; }
+.mu-table .mu-th:nth-child(2) { width: 30%; }
+.mu-table .mu-th:nth-child(3) { width: 17%; }
+.mu-table .mu-th:nth-child(4) { width: 12%; }
+.mu-table .mu-th:nth-child(5) { width: 11%; }
+.mu-table .mu-th:nth-child(6) { width: 52px; }
+.mu-col-act { text-align: center; }
+.mu-td { overflow: hidden; }
+
+/* Sel User: foto + nama + @username */
+.mu-tuser { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.mu-ttext { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.mu-tname {
+  font-size: 13.5px; font-weight: 700; line-height: 1.3; color: var(--compreng-text);
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; overflow-wrap: anywhere;
+}
+.mu-thandle { font-size: 12px; line-height: 1.3; color: var(--compreng-text-secondary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mu-tsub { display: none; font-size: 11.5px; line-height: 1.3; color: var(--compreng-text-muted); }
+
+/* Email: satu baris; huruf mengecil otomatis mengikuti lebar kolom. Cadangan terakhir untuk
+   email yang luar biasa panjang: baru boleh pecah baris (tetap tanpa scrollbar). */
+.mu-tmail { container-type: inline-size; min-width: 0; }
+.mu-tmail b {
+  display: block;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--compreng-text);
+  overflow-wrap: anywhere;
+}
+@supports (width: 1cqw) {
+  .mu-tmail b { font-size: clamp(11px, calc(100cqw / var(--len, 24) * 1.9), 13px); }
+}
+.mu-tlogin { font-size: 12.5px; line-height: 1.4; color: var(--compreng-text-secondary); }
+
+/* Kartu < 900px: kolom Last Login dilipat ke bawah @username supaya Email & Role tetap lega */
+@container mutable (max-width: 899px) {
+  .mu-col-login { display: none; }
+  .mu-tsub { display: block; }
+  .mu-table .mu-th:nth-child(1) { width: 29%; }
+  .mu-table .mu-th:nth-child(2) { width: 36%; }
+  .mu-table .mu-th:nth-child(4) { width: 18%; }
+  .mu-table .mu-th:nth-child(5) { width: 15%; }
+  .mu-th, .mu-td { padding: 11px 10px; }
+}
+/* Kartu sangat sempit (tablet kecil): chip lebih ringkas */
+@container mutable (max-width: 720px) {
+  .mu-table .mu-th:nth-child(4) { width: 20%; }
+  .mu-table .mu-th:nth-child(5) { width: 17%; }
+  .mu-table .mu-th:nth-child(1) { width: 27%; }
+  .mu-table .mu-th:nth-child(2) { width: 34%; }
+  .mu-table .mu-ustate, .mu-table .mu-urole { height: 24px; padding: 0 8px; font-size: 11.5px; gap: 5px; }
+  .mu-table .mu-urole svg { width: 13px; height: 13px; }
+  .mu-tuser { gap: 9px; }
+}
 
 .mu-tr { transition: background 0.2s; }
 .mu-tr:hover { background: var(--compreng-surface-soft); }
@@ -195,28 +246,57 @@
 /* =========================================
    4. BADGE & ROLE
    ========================================= */
-.mu-wrapper .mu-badge-active,
-.mu-wrapper .mu-badge-inactive {
+/* Pill status & role: dibuat dari <div>/<i> (bukan <span>) dan nama class tanpa
+   "status"/"badge" supaya tidak tertimpa selector rakus theme.css.
+   Warna dicampur dengan --compreng-text agar kontras aman di light, dark, system & custom. */
+.mu-wrapper .mu-ustate,
+.mu-wrapper .mu-urole {
   display: inline-flex;
   align-items: center;
-  padding: 2px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 600;
+  gap: 6px;
+  height: 26px;
+  padding: 0 11px 0 9px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
   white-space: nowrap;
+  text-transform: capitalize;
+  box-sizing: border-box;
 }
-.mu-wrapper .mu-badge-active {
-  background: color-mix(in srgb, #22c55e 16%, transparent) !important;
-  color: #15803d !important;
-  border: 1px solid color-mix(in srgb, #22c55e 38%, transparent) !important;
+.mu-wrapper .mu-ustate i {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: currentColor; flex: 0 0 auto;
 }
-.mu-wrapper .mu-badge-inactive {
-  background: color-mix(in srgb, #ef4444 14%, transparent) !important;
-  color: #dc2626 !important;
-  border: 1px solid color-mix(in srgb, #ef4444 38%, transparent) !important;
+.mu-wrapper .mu-ustate.on {
+  color: color-mix(in srgb, #16a34a 72%, var(--compreng-text)) !important;
+  background: color-mix(in srgb, #22c55e 14%, transparent) !important;
+  border: 1px solid color-mix(in srgb, #22c55e 34%, transparent) !important;
 }
-[data-theme='dark'] .mu-wrapper .mu-badge-active { color: #4ade80 !important; }
-[data-theme='dark'] .mu-wrapper .mu-badge-inactive { color: #f87171 !important; }
+.mu-wrapper .mu-ustate.on i { box-shadow: 0 0 0 2px color-mix(in srgb, #22c55e 22%, transparent); }
+.mu-wrapper .mu-ustate.off {
+  color: color-mix(in srgb, #dc2626 72%, var(--compreng-text)) !important;
+  background: color-mix(in srgb, #ef4444 13%, transparent) !important;
+  border: 1px solid color-mix(in srgb, #ef4444 34%, transparent) !important;
+}
+.mu-wrapper .mu-urole {
+  padding: 0 11px 0 8px;
+  color: var(--compreng-text-secondary) !important;
+  background: color-mix(in srgb, var(--compreng-text) 7%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--compreng-text) 16%, var(--compreng-border)) !important;
+}
+.mu-wrapper .mu-urole svg { flex: 0 0 auto; }
+.mu-wrapper .mu-urole.r-admin {
+  color: color-mix(in srgb, var(--compreng-accent, #2563eb) 78%, var(--compreng-text)) !important;
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 13%, transparent) !important;
+  border-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 34%, transparent) !important;
+}
+.mu-wrapper .mu-urole.r-editor {
+  color: color-mix(in srgb, #8b5cf6 70%, var(--compreng-text)) !important;
+  background: color-mix(in srgb, #8b5cf6 13%, transparent) !important;
+  border-color: color-mix(in srgb, #8b5cf6 34%, transparent) !important;
+}
 
 .mu-role-icon {
   display: inline-flex;
@@ -282,7 +362,7 @@
 /* =========================================
    6. PAGINATION
    ========================================= */
-.mu-pagination-wrapper {
+.mu-pager {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -291,7 +371,7 @@
   gap: 14px;
   padding: 0 4px;
 }
-.mu-page-select-box { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--compreng-text-secondary); }
+.mu-rows { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--compreng-text-secondary); }
 .mu-page-select {
   padding: 4px 8px;
   border-radius: 6px;
@@ -302,7 +382,9 @@
   cursor: pointer;
   outline: none;
 }
-.mu-page-info { display: flex; align-items: center; gap: 20px; font-size: 13px; color: var(--compreng-text); }
+.mu-page-info { display: flex; align-items: center; gap: 14px; font-size: 13px; color: var(--compreng-text); }
+.mu-page-text { font-size: 13px; color: var(--compreng-text-secondary); white-space: nowrap; }
+.mu-page-text b { color: var(--compreng-text); font-weight: 800; }
 .mu-page-btn-group { display: flex; align-items: center; gap: 4px; }
 .mu-page-btn {
   padding: 6px;
@@ -320,52 +402,143 @@
 .mu-page-btn:disabled { color: var(--compreng-text-muted); cursor: not-allowed; opacity: 0.5; }
 
 /* =========================================
-   7. DAFTAR KARTU MOBILE (disembunyikan di desktop)
+   7. DAFTAR PENGGUNA MOBILE (disembunyikan di desktop)
+   Kepala (foto + nama) -> chip role/status -> panel info (email SATU baris penuh + last login)
    ========================================= */
 .mu-ulist { display: none; }
+.mu-chips { display: none; }
+
 .mu-urow {
-  background: var(--compreng-surface) !important;
-  border: 1px solid var(--compreng-border) !important;
-  border-radius: 16px;
-  padding: 14px;
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  padding: 14px;
+  border-radius: 20px;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--compreng-surface-soft) 55%, var(--compreng-surface)),
+    var(--compreng-surface)
+  ) !important;
+  border: 1px solid var(--compreng-border) !important;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow, rgba(0,0,0,.2)) 60%, transparent),
+              0 12px 24px -18px var(--compreng-shadow, rgba(0, 0, 0, 0.3));
+  overflow: hidden;
+  transition: transform 0.18s ease, border-color 0.18s ease;
 }
-.mu-urow-main { display: flex; align-items: center; gap: 12px; }
-.mu-urow-text { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; gap: 2px 8px; }
-.mu-uhandle { font-size: 12.5px; color: var(--compreng-text-secondary); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mu-urow::before {               /* aksen tipis di tepi kiri, mengikuti warna aksen tema */
+  content: '';
+  position: absolute;
+  left: 0; top: 16px; bottom: 16px;
+  width: 3px;
+  border-radius: 0 4px 4px 0;
+  background: var(--compreng-accent, #2563eb);
+  opacity: 0.85;
+}
+.mu-urow.is-off::before { background: #ef4444; }
+.mu-urow.is-off .mu-uphoto { opacity: 0.8; }
+.mu-urow:active { transform: scale(0.992); }
+
+.mu-uhead { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.mu-uphoto { position: relative; flex: 0 0 auto; line-height: 0; }
+.mu-uphoto .mu-pic,
+.mu-uphoto .mu-pic-init {
+  box-shadow: 0 0 0 2px var(--compreng-surface), 0 0 0 3.5px color-mix(in srgb, var(--compreng-accent, #2563eb) 45%, transparent);
+}
+.mu-udot {
+  position: absolute;
+  right: -1px; bottom: -1px;
+  width: 13px; height: 13px;
+  border-radius: 50%;
+  border: 2.5px solid var(--compreng-surface);
+  box-sizing: border-box;
+  background: #94a3b8;
+}
+.mu-udot.on { background: #22c55e; }
+.mu-udot.off { background: #ef4444; }
+
+.mu-utext { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
 .mu-uname {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 15.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.25;
+  color: var(--compreng-text);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow-wrap: anywhere;
+}
+.mu-uhandle {
+  font-size: 12.5px;
+  line-height: 1.3;
+  color: var(--compreng-text-secondary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.mu-urow .mu-action-btn {
+  flex: 0 0 auto;
+  width: 38px; height: 38px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--compreng-surface-soft) 80%, transparent);
+  border: 1px solid var(--compreng-border);
+}
+
+.mu-uchips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.mu-uinfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--compreng-bg) 55%, var(--compreng-surface-soft));
+  border: 1px solid color-mix(in srgb, var(--compreng-border) 80%, transparent);
+  overflow: hidden;
+}
+.mu-umail,
+.mu-utime {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  min-width: 0;
+  color: var(--compreng-text-secondary);
+}
+.mu-umail svg,
+.mu-utime svg { flex: 0 0 auto; color: var(--compreng-text-muted); opacity: 0.9; }
+.mu-utime { border-top: 1px dashed var(--compreng-border); }
+.mu-utime div { font-size: 12.5px; line-height: 1.35; color: var(--compreng-text-secondary); }
+
+/* EMAIL: selalu SATU baris, tidak pernah turun ke bawah & tidak dipotong "...".
+   Ukuran huruf mengecil otomatis sesuai panjang email (var --len diisi dari JSX)
+   dan lebar kartu (cqw). Cadangan terakhir: bisa digeser mendatar tanpa scrollbar. */
+.mu-umail {
+  container-type: inline-size;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.mu-umail::-webkit-scrollbar { display: none; }
+/* email sangat panjang: tetap satu baris, bisa digeser; ujung kanan memudar sebagai petunjuk */
+.mu-umail.is-long {
+  -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  mask-image: linear-gradient(90deg, #000 calc(100% - 28px), transparent);
+  padding-right: 26px;
+}
+.mu-umail b {
+  font-weight: 650;
+  font-size: 13px;
+  letter-spacing: 0;
   color: var(--compreng-text);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  overflow-wrap: normal;
+  word-break: keep-all;
+  font-variant-numeric: tabular-nums;
 }
-.mu-udetails {
-  display: grid;
-  grid-template-columns: minmax(0, 1.45fr) minmax(0, 1fr);
-  gap: 14px 16px;
-  padding-top: 12px;
-  border-top: 1px dashed var(--compreng-border);
-}
-.mu-ufield { font-size: 13px; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; min-width: 0; }
-.mu-ufield-full { grid-column: 1 / -1; }
-.mu-ulabel {
-  font-size: 10.5px;
-  font-weight: 600;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  color: var(--compreng-text-muted);
-}
-.mu-uvalue {
-  font-size: 13px;
-  color: var(--compreng-text);
-  min-width: 0;
-  max-width: 100%;
-  overflow-wrap: anywhere;
+@supports (width: 1cqw) {
+  .mu-umail b {
+    font-size: clamp(10px, calc((100cqw - 28px) / var(--len, 24) * 1.95), 13.5px);
+  }
 }
 .mu-uempty {
   text-align: center;
@@ -846,44 +1019,103 @@
   .mu-title { font-size: 20px; }
   .mu-subtitle { font-size: 13px; }
 
-  /* Toolbar HP: kompak, tersusun vertikal (filter Role di atas, kolom search di bawahnya) */
-  .mu-wrapper .mu-toolbar { flex-direction: column; align-items: flex-start; gap: 10px; }
-  .mu-wrapper .mu-toolbar .mu-toolbar-group { order: 1; width: auto; max-width: 100%; }
+  /* Toolbar HP: pencarian penuh di atas, filter role berupa chip geser di bawahnya */
+  /* theme.css memaksa toolbar flex-wrap: wrap -> pada kolom, lebar item = lebar isi terpanjang
+     (baris chip jadi 380px & seluruh halaman ikut geser mendatar). nowrap + lebar 100% memperbaikinya. */
+  .mu-wrapper { overflow-x: clip; }
+  .mu-wrapper .mu-toolbar { flex-direction: column; flex-wrap: nowrap !important; align-items: stretch; gap: 12px; width: 100%; max-width: 100%; }
+  .mu-wrapper .mu-toolbar .mu-toolbar-group { display: none; }
   .mu-wrapper .mu-toolbar .mu-search-wrapper {
-    order: 2;
-    flex: 0 1 auto !important;
+    order: 1;
+    flex: 1 1 auto !important;
     width: 100% !important;
-    max-width: 260px !important;
+    max-width: 100% !important;
   }
-  .mu-wrapper .mu-toolbar .mu-search-input {
-    height: 36px;
-    padding: 0 12px 0 32px;
-    font-size: 13px;
-    border-radius: 8px;
+  .mu-wrapper .mu-toolbar .mu-search-input { height: 46px; border-radius: 16px !important; }
+  .mu-wrapper .mu-toolbar .mu-search-icon { left: 15px; width: 17px; height: 17px; }
+  .dashboard-container .mu-wrapper .mu-toolbar .mu-search-input { font-size: 14px !important; }
+
+  .mu-wrapper .mu-chips {
+    order: 2;
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    padding: 2px 2px 12px;
+    margin-bottom: -8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    overscroll-behavior-x: contain;   /* geser filter tidak "menular" ke halaman */
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
   }
-  .mu-wrapper .mu-toolbar .mu-search-icon { left: 10px; width: 14px; height: 14px; }
-  .mu-wrapper .mu-toolbar .mu-filter-select {
-    width: auto;
+  .mu-wrapper .mu-chip {
+    flex: 1 0 auto;               /* 4 chip mengisi lebar penuh; baru bisa digeser di layar sangat sempit */
+    justify-content: center;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
     height: 36px;
-    padding: 0 12px;
-    font-size: 13px;
-    font-weight: 600;
-    border-radius: 8px;
+    padding: 0 5px 0 10px;
+    border-radius: 999px;
+    font-family: inherit;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    color: var(--compreng-text-secondary);
+    background: color-mix(in srgb, var(--compreng-surface-soft) 70%, transparent);
+    border: 1px solid var(--compreng-border);
+    transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease, transform 0.12s ease;
+  }
+  .mu-wrapper .mu-chip em {
+    font-style: normal;
+    min-width: 21px;
+    height: 21px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--compreng-text-secondary);
+    background: color-mix(in srgb, var(--compreng-text) 9%, transparent);
     box-sizing: border-box;
   }
-
-  /* admin-responsive.css memaksa semua input/select jadi 16px !important (anti-zoom iOS).
-     Untuk toolbar ini kita timpa ke 13px dengan spesifisitas lebih tinggi. */
-  .dashboard-container .mu-wrapper .mu-toolbar .mu-filter-select,
-  .dashboard-container .mu-wrapper .mu-toolbar .mu-search-input { font-size: 13px !important; }
+  .mu-wrapper .mu-chip:active { transform: scale(0.96); }
+  .mu-wrapper .mu-chip.is-on {
+    color: var(--compreng-accent-text, #fff);
+    background: var(--compreng-accent, #2563eb);
+    border-color: var(--compreng-accent, #2563eb);
+    box-shadow: 0 8px 18px -10px var(--compreng-accent, #2563eb);
+  }
+  .mu-wrapper .mu-chip.is-on em {
+    color: var(--compreng-accent-text, #fff);
+    background: color-mix(in srgb, var(--compreng-accent-text, #fff) 22%, transparent);
+  }
 
   /* Tabel diganti daftar kartu di HP */
   .mu-wrapper .mu-table-card { display: none; }
-  .mu-wrapper .mu-ulist { display: flex; flex-direction: column; gap: 10px; }
+  .mu-wrapper .mu-ulist { display: flex; flex-direction: column; gap: 12px; }
 
-  .mu-pagination-wrapper { flex-direction: column; align-items: stretch; gap: 12px; }
-  .mu-page-select-box { justify-content: space-between; }
-  .mu-page-info { justify-content: space-between; gap: 12px; }
+  /* Pagination HP: satu panel rapi */
+  .mu-wrapper .mu-pager {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    margin-top: 14px;
+    padding: 12px;
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--compreng-surface-soft) 60%, var(--compreng-surface)) !important;
+    border: 1px solid var(--compreng-border);
+  }
+  .mu-pager .mu-rows { justify-content: space-between; font-weight: 600; }
+  .mu-pager .mu-page-select { height: 36px; min-width: 76px; border-radius: 12px; padding: 0 10px; font-weight: 700; }
+  .mu-pager .mu-page-info { justify-content: space-between; gap: 8px; }
+  .mu-pager .mu-page-btn { width: 40px; height: 40px; border-radius: 12px; }
+  .mu-pager .mu-page-text { flex: 1; text-align: center; }
 
   /* Dialog jadi bottom-sheet di HP */
   .um-overlay { padding: 0; align-items: flex-end; }
@@ -958,4 +1190,122 @@
 .btn-modern-secondary:hover {
   background-color: var(--compreng-border);
   color: var(--compreng-text);
+}
+
+/* =========================================
+   10. PAGINATION MODERN (override) — lembut, tidak bold, sedikit transparan
+   Selector diberi prefix .mu-wrapper + !important karena theme.css memaksa
+   style global pada <select> dan <button>.
+   ========================================= */
+.mu-wrapper .mu-pager {
+  --mu-muted: color-mix(in srgb, var(--compreng-text) 58%, transparent);
+  --mu-glass: color-mix(in srgb, var(--compreng-surface-soft) 55%, transparent);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px 16px;
+  margin-top: 18px;
+  padding: 0 2px;
+  font-weight: 400;
+}
+.mu-wrapper .mu-rows {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 400;
+  color: var(--mu-muted);
+}
+.mu-wrapper .mu-page-select {
+  appearance: none;
+  -webkit-appearance: none;
+  height: 34px;
+  min-width: 64px;
+  padding: 0 30px 0 14px !important;
+  border-radius: 999px !important;
+  border: 1px solid color-mix(in srgb, var(--compreng-border) 85%, transparent) !important;
+  background-color: var(--mu-glass) !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 11px center;
+  color: color-mix(in srgb, var(--compreng-text) 78%, transparent) !important;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500 !important;
+  cursor: pointer;
+  transition: border-color .18s ease, background-color .18s ease;
+}
+.mu-wrapper .mu-page-select:hover { border-color: color-mix(in srgb, var(--compreng-text) 28%, var(--compreng-border)) !important; }
+
+.mu-wrapper .mu-page-info { display: flex; align-items: center; gap: 12px; }
+.mu-wrapper .mu-page-btn-group { display: flex; align-items: center; gap: 6px; }
+
+.mu-wrapper .mu-page-text {
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: 0.01em;
+  color: var(--mu-muted);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+/* halaman aktif: TIDAK bold, abu & agak transparan */
+.mu-wrapper .mu-page-text .mu-page-now {
+  font-weight: 500;
+  color: color-mix(in srgb, var(--compreng-text) 72%, transparent);
+}
+
+.mu-wrapper .mu-page-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--compreng-border) 85%, transparent);
+  background: var(--mu-glass);
+  color: color-mix(in srgb, var(--compreng-text) 75%, transparent);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .12s ease;
+}
+.mu-wrapper .mu-page-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 14%, transparent);
+  border-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 45%, transparent);
+  color: var(--compreng-text);
+}
+.mu-wrapper .mu-page-btn:active:not(:disabled) { transform: scale(0.92); }
+.mu-wrapper .mu-page-btn:disabled { opacity: 0.32; cursor: not-allowed; }
+.mu-wrapper .mu-page-btn:focus-visible,
+.mu-wrapper .mu-page-select:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 60%, transparent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  /* satu panel kaca: baris atas "Rows per page", baris bawah navigasi merata */
+  .mu-wrapper .mu-pager {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    margin-top: 16px;
+    padding: 14px 16px;
+    border-radius: 22px;
+    border: 1px solid color-mix(in srgb, var(--compreng-border) 80%, transparent);
+    background: color-mix(in srgb, var(--compreng-surface-soft) 45%, transparent) !important;
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+  }
+  .mu-wrapper .mu-pager .mu-rows {
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 400;
+    padding-bottom: 14px;
+    border-bottom: 1px dashed color-mix(in srgb, var(--compreng-border) 85%, transparent);
+  }
+  .mu-wrapper .mu-pager .mu-page-select { height: 38px; min-width: 80px; font-size: 14px; }
+  .mu-wrapper .mu-pager .mu-page-info { justify-content: space-between; gap: 6px; }
+  .mu-wrapper .mu-pager .mu-page-btn-group { gap: 8px; }
+  .mu-wrapper .mu-pager .mu-page-btn { width: 40px; height: 40px; border-radius: 14px; }
+  .mu-wrapper .mu-pager .mu-page-text { flex: 1; text-align: center; font-size: 13.5px; }
 }

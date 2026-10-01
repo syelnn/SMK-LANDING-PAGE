@@ -5,7 +5,7 @@ import {
   Users, ShieldCheck, MoreHorizontal, Edit,
   KeyRound, Trash2, X, UserCog, Search, Camera, UserRound, Lock,
   ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight,
-  Mail, Eye, EyeOff, Check, CheckCircle2, AlertCircle, Loader2, ShieldAlert, Upload, Link2
+  Mail, Eye, EyeOff, Check, CheckCircle2, AlertCircle, Loader2, ShieldAlert, Upload, Link2, Clock
 } from 'lucide-react';
 import { verifySession } from '../utils/auth';
 import '../css/manageusers.css';
@@ -31,6 +31,13 @@ const maskEmail = (email = '') => {
   const shown = name.slice(0, Math.min(2, name.length));
   return `${shown}${'*'.repeat(Math.max(2, name.length - shown.length))}@${domain}`;
 };
+
+const ROLE_TABS = [
+  { key: 'all', label: 'All' },
+  { key: 'admin', label: 'Admin' },
+  { key: 'editor', label: 'Editor' },
+  { key: 'viewer', label: 'Viewer' },
+];
 
 const isValidUrl = (v) => /^https?:\/\/[^\s]+$/i.test(v);
 const initialOf = (name) => (name || '?').trim().charAt(0).toUpperCase();
@@ -158,14 +165,16 @@ export default function ManageUsers() {
   }, [anyModalOpen, isEditOpen, saving, resetUser, resetBusy]);
 
   const q = searchTerm.toLowerCase();
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      (user.username?.toLowerCase() || '').includes(q) ||
-      (user.fullName?.toLowerCase() || user.full_name?.toLowerCase() || '').includes(q) ||
-      (user.email?.toLowerCase() || '').includes(q);
-    const matchesRole = roleFilter === 'all' || user.role === roleFilter;
-    return matchesSearch && matchesRole;
-  });
+  const searchMatches = users.filter((user) => (
+    (user.username?.toLowerCase() || '').includes(q) ||
+    (user.fullName?.toLowerCase() || user.full_name?.toLowerCase() || '').includes(q) ||
+    (user.email?.toLowerCase() || '').includes(q)
+  ));
+  const roleCounts = searchMatches.reduce(
+    (acc, u) => { acc.all += 1; acc[u.role || 'viewer'] = (acc[u.role || 'viewer'] || 0) + 1; return acc; },
+    { all: 0, admin: 0, editor: 0, viewer: 0 }
+  );
+  const filteredUsers = searchMatches.filter((user) => roleFilter === 'all' || (user.role || 'viewer') === roleFilter);
 
   const totalPages = Math.ceil(filteredUsers.length / itemsPerPage) || 1;
   const startIndex = (currentPage - 1) * itemsPerPage;
@@ -397,6 +406,19 @@ export default function ManageUsers() {
             <option value="viewer">Viewer</option>
           </select>
         </div>
+        <div className="mu-chips" role="group" aria-label="Filter role">
+          {ROLE_TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              className={`mu-chip ${roleFilter === t.key ? 'is-on' : ''}`}
+              onClick={() => setRoleFilter(t.key)}
+              aria-pressed={roleFilter === t.key}
+            >
+              {t.label}<em>{roleCounts[t.key] ?? 0}</em>
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading ? (
@@ -408,46 +430,57 @@ export default function ManageUsers() {
             <table className="mu-table">
               <thead>
                 <tr>
-                  <th className="mu-th"></th>
-                  <th className="mu-th">Username</th>
-                  <th className="mu-th">Name</th>
+                  <th className="mu-th">User</th>
                   <th className="mu-th">Email</th>
-                  <th className="mu-th">Last Login</th>
+                  <th className="mu-th mu-col-login">Last Login</th>
                   <th className="mu-th">Status</th>
                   <th className="mu-th">Role</th>
-                  <th className="mu-th" style={{ textAlign: 'center' }}></th>
+                  <th className="mu-th" aria-label="Aksi"></th>
                 </tr>
               </thead>
               <tbody>
                 {currentUsers.length === 0 ? (
                   <tr>
-                    <td colSpan="8" style={{ textAlign: 'center', padding: '30px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
+                    <td colSpan="6" style={{ textAlign: 'center', padding: '30px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
                       Tidak ada pengguna yang cocok dengan pencarian.
                     </td>
                   </tr>
                 ) : (
-                  currentUsers.map((user) => (
-                    <tr key={user.id} className="mu-tr">
-                      <td className="mu-td"><Pic src={user.avatar} name={getName(user)} /></td>
-                      <td className="mu-td" style={{ fontWeight: 600 }}>{user.username}</td>
-                      <td className="mu-td" title={getName(user)}>{user.fullName || user.full_name || '-'}</td>
-                      <td className="mu-td" title={user.email || ''}>{user.email || '-'}</td>
-                      <td className="mu-td" style={{ color: 'var(--compreng-text-secondary)' }}>{lastSeenText(user)}</td>
-                      <td className="mu-td">
-                        <span className={isActiveUser(user) ? 'mu-badge-active' : 'mu-badge-inactive'}>
-                          {isActiveUser(user) ? 'Active' : 'Suspended'}
-                        </span>
-                      </td>
-                      <td className="mu-td">
-                        <div className="mu-role-icon"><RoleIcon role={user.role} /><b>{user.role || 'Viewer'}</b></div>
-                      </td>
-                      <td className="mu-td" style={{ textAlign: 'center' }}>
-                        <button onClick={(e) => handleDropdownClick(e, user.id)} className="mu-action-btn" aria-label="Aksi pengguna">
-                          <MoreHorizontal size={18} />
-                        </button>
-                      </td>
-                    </tr>
-                  ))
+                  currentUsers.map((user) => {
+                    const active = isActiveUser(user);
+                    const mail = user.email || '-';
+                    return (
+                      <tr key={user.id} className="mu-tr">
+                        <td className="mu-td">
+                          <div className="mu-tuser">
+                            <Pic src={user.avatar} name={getName(user)} size={40} />
+                            <div className="mu-ttext">
+                              <div className="mu-tname" title={getName(user)}>{getName(user)}</div>
+                              <div className="mu-thandle">@{user.username}</div>
+                              <div className="mu-tsub">{lastSeenText(user)}</div>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="mu-td">
+                          <div className="mu-tmail" style={{ '--len': Math.max(mail.length, 12) }} title={mail}><b>{mail}</b></div>
+                        </td>
+                        <td className="mu-td mu-col-login">
+                          <div className="mu-tlogin">{lastSeenText(user)}</div>
+                        </td>
+                        <td className="mu-td">
+                          <div className={`mu-ustate ${active ? 'on' : 'off'}`}><i />{active ? 'Active' : 'Suspended'}</div>
+                        </td>
+                        <td className="mu-td">
+                          <div className={`mu-urole r-${user.role || 'viewer'}`}><RoleIcon role={user.role} />{user.role || 'viewer'}</div>
+                        </td>
+                        <td className="mu-td mu-col-act">
+                          <button onClick={(e) => handleDropdownClick(e, user.id)} className="mu-action-btn" aria-label="Aksi pengguna">
+                            <MoreHorizontal size={18} />
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
                 )}
               </tbody>
             </table>
@@ -458,40 +491,44 @@ export default function ManageUsers() {
             {currentUsers.length === 0 ? (
               <div className="mu-uempty">Tidak ada pengguna yang cocok dengan pencarian.</div>
             ) : (
-              currentUsers.map((user) => (
-                <div key={user.id} className="mu-urow">
-                  <div className="mu-urow-main">
-                    <Pic src={user.avatar} name={getName(user)} size={44} />
-                    <div className="mu-urow-text">
-                      <div className="mu-uname">{getName(user)}</div>
-                      <div className="mu-uhandle">@{user.username}</div>
+              currentUsers.map((user) => {
+                const active = isActiveUser(user);
+                const role = user.role || 'viewer';
+                const mail = user.email || '-';
+                return (
+                  <div key={user.id} className={`mu-urow ${active ? '' : 'is-off'}`}>
+                    <div className="mu-uhead">
+                      <div className="mu-uphoto">
+                        <Pic src={user.avatar} name={getName(user)} size={48} />
+                        <i className={`mu-udot ${active ? 'on' : 'off'}`} aria-hidden="true" />
+                      </div>
+                      <div className="mu-utext">
+                        <div className="mu-uname">{getName(user)}</div>
+                        <div className="mu-uhandle">@{user.username}</div>
+                      </div>
+                      <button onClick={(e) => handleDropdownClick(e, user.id)} className="mu-action-btn" aria-label="Aksi pengguna">
+                        <MoreHorizontal size={18} />
+                      </button>
                     </div>
-                    <button onClick={(e) => handleDropdownClick(e, user.id)} className="mu-action-btn" aria-label="Aksi pengguna">
-                      <MoreHorizontal size={18} />
-                    </button>
+
+                    <div className="mu-uchips">
+                      <div className={`mu-urole r-${role}`}><RoleIcon role={role} />{role}</div>
+                      <div className={`mu-ustate ${active ? 'on' : 'off'}`}><i />{active ? 'Active' : 'Suspended'}</div>
+                    </div>
+
+                    <div className="mu-uinfo">
+                      <div className={`mu-umail ${mail.length > 38 ? 'is-long' : ''}`} style={{ '--len': Math.max(mail.length, 12) }} title={mail}>
+                        <Mail size={15} />
+                        <b>{mail}</b>
+                      </div>
+                      <div className="mu-utime">
+                        <Clock size={15} />
+                        <div>{lastSeenText(user)}</div>
+                      </div>
+                    </div>
                   </div>
-                  <div className="mu-udetails">
-                    <div className="mu-ufield">
-                      <span className="mu-ulabel">Email</span>
-                      <span className="mu-uvalue">{user.email || '-'}</span>
-                    </div>
-                    <div className="mu-ufield">
-                      <span className="mu-ulabel">Status</span>
-                      <span className={isActiveUser(user) ? 'mu-badge-active' : 'mu-badge-inactive'}>
-                        {isActiveUser(user) ? 'Active' : 'Suspended'}
-                      </span>
-                    </div>
-                    <div className="mu-ufield">
-                      <span className="mu-ulabel">Last Login</span>
-                      <span className="mu-uvalue">{lastSeenText(user)}</span>
-                    </div>
-                    <div className="mu-ufield">
-                      <span className="mu-ulabel">Role</span>
-                      <div className="mu-role-icon"><RoleIcon role={user.role} /><b>{user.role || 'Viewer'}</b></div>
-                    </div>
-                  </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
@@ -524,8 +561,8 @@ export default function ManageUsers() {
           )}
 
           {/* PAGINATION */}
-          <div className="mu-pagination-wrapper">
-            <div className="mu-page-select-box">
+          <div className="mu-pager">
+            <div className="mu-rows">
               Rows per page
               <select value={itemsPerPage} onChange={(e) => setItemsPerPage(Number(e.target.value))} className="mu-page-select">
                 <option value={10}>10</option>
@@ -534,12 +571,14 @@ export default function ManageUsers() {
               </select>
             </div>
             <div className="mu-page-info">
-              <span>Page {currentPage} of {totalPages}</span>
               <div className="mu-page-btn-group">
-                <button onClick={() => goToPage(1)} disabled={currentPage === 1} className="mu-page-btn"><ChevronsLeft size={16} /></button>
-                <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="mu-page-btn"><ChevronLeft size={16} /></button>
-                <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="mu-page-btn"><ChevronRight size={16} /></button>
-                <button onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages} className="mu-page-btn"><ChevronsRight size={16} /></button>
+                <button onClick={() => goToPage(1)} disabled={currentPage === 1} className="mu-page-btn" aria-label="Halaman pertama"><ChevronsLeft size={16} /></button>
+                <button onClick={() => goToPage(currentPage - 1)} disabled={currentPage === 1} className="mu-page-btn" aria-label="Sebelumnya"><ChevronLeft size={16} /></button>
+              </div>
+              <div className="mu-page-text" aria-live="polite">Page <span className="mu-page-now">{currentPage}</span> of {totalPages}</div>
+              <div className="mu-page-btn-group">
+                <button onClick={() => goToPage(currentPage + 1)} disabled={currentPage === totalPages} className="mu-page-btn" aria-label="Berikutnya"><ChevronRight size={16} /></button>
+                <button onClick={() => goToPage(totalPages)} disabled={currentPage === totalPages} className="mu-page-btn" aria-label="Halaman terakhir"><ChevronsRight size={16} /></button>
               </div>
             </div>
           </div>
