@@ -11,6 +11,8 @@ import {
   Cpu,
   Plus,
   Edit,
+  Eye,
+  EyeOff,
   Trash2,
   X,
   Search,
@@ -139,7 +141,7 @@ export default function Ekstrakurikuler() {
 
     const rect = e.currentTarget.getBoundingClientRect();
     const windowHeight = window.innerHeight;
-    const dropdownHeight = 90;
+    const dropdownHeight = 140;
 
     const spaceBelow = windowHeight - rect.bottom;
     const openUpwards = spaceBelow < dropdownHeight;
@@ -234,6 +236,36 @@ export default function Ekstrakurikuler() {
       alert('Terjadi kesalahan pada server');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Sembunyikan / Tampilkan langsung dari menu aksi
+  const handleToggleShow = async (item) => {
+    setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+    const newShow = Number(item.show) === 1 ? 0 : 1;
+    try {
+      const fd = new FormData();
+      fd.append('title', item.title || '');
+      fd.append('description', item.description || '');
+      fd.append('sort_order', Number(item.sort_order || item.sortOrder || 1));
+      fd.append('sortOrder', Number(item.sort_order || item.sortOrder || 1));
+      fd.append('show', newShow);
+      fd.append('icon', item.icon || '');
+
+      const response = await fetch(`https://smkn-compreng-api-pi.vercel.app/api/extracurriculars/${item.id}`, {
+        method: 'PUT',
+        body: fd
+      });
+      const result = await response.json();
+
+      if (result.success) {
+        fetchEkskul();
+      } else {
+        alert(result.message || 'Gagal merubah status');
+      }
+    } catch (error) {
+      console.error('Error saat merubah status:', error);
+      alert('Terjadi kesalahan pada server');
     }
   };
 
@@ -446,11 +478,15 @@ export default function Ekstrakurikuler() {
               if (!targetItem) return null;
               return (
                 <>
+                  <button onClick={() => handleToggleShow(targetItem)} className="dropdown-item">
+                    {Number(targetItem.show) === 1 ? <EyeOff size={14} /> : <Eye size={14} />}
+                    {Number(targetItem.show) === 1 ? 'Sembunyikan' : 'Tampilkan'}
+                  </button>
                   <button onClick={() => handleOpenEdit(targetItem)} className="dropdown-item">
                     <Edit size={14} /> Edit Data
                   </button>
                   <button onClick={() => handleDelete(targetItem.id)} className="dropdown-item danger">
-                    <Trash2 size={14} /> Delete
+                    <Trash2 size={14} /> Hapus
                   </button>
                 </>
               );

@@ -5,6 +5,8 @@ import {
   MoreHorizontal, 
   Edit3, 
   Trash2, 
+  Eye, 
+  EyeOff, 
   Plus, 
   Search, 
   X, 
@@ -159,6 +161,28 @@ const AchievementSection = () => {
       alert(`Gagal menyimpan data!\nDetail Error: ${errorMessage}`);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Sembunyikan / Tampilkan langsung dari menu aksi
+  const handleToggleShow = async (item) => {
+    setActiveMenuId(null);
+    const newShow = Number(item.show) === 1 ? 0 : 1;
+    try {
+      const fd = new FormData();
+      fd.append('student_name', item.student_name || '');
+      fd.append('class_name', item.class_name || '');
+      fd.append('achievement', item.achievement || '');
+      fd.append('level', item.level || '');
+      fd.append('year', parseInt(item.year, 10) || new Date().getFullYear());
+      fd.append('sort_order', parseInt(item.sort_order, 10) || 1);
+      fd.append('show', newShow);
+      fd.append('photo', item.photo || '');
+      await axios.put(`${API_URL}/${item.id}`, fd);
+      fetchAchievements();
+    } catch (err) {
+      console.error('Error toggling show:', err);
+      alert('Gagal merubah status');
     }
   };
 
@@ -325,6 +349,17 @@ const AchievementSection = () => {
                             className="dropdown-item"
                             onClick={(e) => {
                               e.stopPropagation();
+                              handleToggleShow(item);
+                            }}
+                          >
+                            {Number(item.show) === 1 ? <EyeOff size={14} /> : <Eye size={14} />}
+                            {Number(item.show) === 1 ? 'Sembunyikan' : 'Tampilkan'}
+                          </button>
+                          <button
+                            type="button"
+                            className="dropdown-item"
+                            onClick={(e) => {
+                              e.stopPropagation();
                               handleOpenEditModal(item);
                             }}
                           >
@@ -338,7 +373,7 @@ const AchievementSection = () => {
                               handleDelete(item.id);
                             }}
                           >
-                            <Trash2 size={14} /> Delete
+                            <Trash2 size={14} /> Hapus
                           </button>
                         </div>
                       )}
@@ -409,6 +444,17 @@ const AchievementSection = () => {
                         className="dropdown-item"
                         onClick={(e) => {
                           e.stopPropagation();
+                          handleToggleShow(item);
+                        }}
+                      >
+                        {Number(item.show) === 1 ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {Number(item.show) === 1 ? 'Sembunyikan' : 'Tampilkan'}
+                      </button>
+                      <button
+                        type="button"
+                        className="dropdown-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleOpenEditModal(item);
                         }}
                       >
@@ -422,7 +468,7 @@ const AchievementSection = () => {
                           handleDelete(item.id);
                         }}
                       >
-                        <Trash2 size={14} /> Delete
+                        <Trash2 size={14} /> Hapus
                       </button>
                     </div>
                   )}

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2, Edit, Link as LinkIcon, Upload, MoreHorizontal, Search, FileText, Download, X } from 'lucide-react';
+import { Plus, Trash2, Edit, Eye, EyeOff, Link as LinkIcon, Upload, MoreHorizontal, Search, FileText, Download, X } from 'lucide-react';
 import { getDownloadFileUrl, downloadFileDirect } from '../utils/media';
 import '../css/DownloadPage.css';
 import '../App.css';
@@ -88,7 +88,7 @@ export default function DownloadPage() {
 
     const rect = e.currentTarget.getBoundingClientRect();
     const windowHeight = window.innerHeight;
-    const dropdownHeight = 90;
+    const dropdownHeight = 140;
     
     const spaceBelow = windowHeight - rect.bottom;
     const openUpwards = spaceBelow < dropdownHeight;
@@ -206,6 +206,35 @@ export default function DownloadPage() {
     setDownloadingId(item.id);
     await downloadFileDirect(getDownloadFileUrl(item), item.title);
     setDownloadingId(null);
+  };
+
+  // Sembunyikan / Tampilkan langsung dari menu aksi (field yang dikirim sama persis dengan form Edit)
+  const handleToggleShow = async (item) => {
+    setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+    const newShow = Number(item.show) === 1 ? 0 : 1;
+    try {
+      const sortOrder = Number(item.sort_order ?? item.sortOrder ?? 1);
+      const fd = new FormData();
+      fd.append('title', item.title || '');
+      fd.append('category', item.category || '');
+      fd.append('description', item.description || '');
+      fd.append('sort_order', sortOrder);
+      fd.append('sortOrder', sortOrder);
+      fd.append('show', newShow);
+      fd.append('file_size', item.file_size || item.fileSize || '');
+      fd.append('url', getDownloadFileUrl(item) || '');
+
+      const res = await fetch(`${API_URL}/${item.id}`, { method: 'PUT', body: fd });
+      if (res.ok) {
+        fetchDownloads();
+      } else {
+        const resData = await res.json().catch(() => ({}));
+        alert(`Gagal merubah status: ${resData.message || 'Terjadi kesalahan'}`);
+      }
+    } catch (err) {
+      console.error('Error toggling show:', err);
+      alert('Gagal terhubung ke server.');
+    }
   };
 
   const handleDelete = async (id, title) => {
@@ -453,12 +482,16 @@ export default function DownloadPage() {
               if (!targetItem) return null;
               return (
                 <>
+                  <button onClick={() => handleToggleShow(targetItem)} className="mp-dropdown-item">
+                    {Number(targetItem.show) === 1 ? <EyeOff size={14} color="var(--compreng-text-secondary)" /> : <Eye size={14} color="var(--compreng-text-secondary)" />}
+                    {Number(targetItem.show) === 1 ? 'Sembunyikan' : 'Tampilkan'}
+                  </button>
                   <button onClick={() => { setDropdownConfig({ id: null, right: null, top: null, bottom: null }); handleOpenModal(targetItem); }} className="mp-dropdown-item">
                     <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Berkas
                   </button>
                   <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
                   <button onClick={() => handleDelete(targetItem.id, targetItem.title)} className="mp-dropdown-item danger">
-                    <Trash2 size={14} color="currentColor" /> Delete
+                    <Trash2 size={14} color="currentColor" /> Hapus
                   </button>
                 </>
               );

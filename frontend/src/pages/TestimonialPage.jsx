@@ -183,7 +183,7 @@ const TestimonialPage = () => {
               <h2 className="testi-title">Manajemen Testimoni</h2>
               <p className="testi-subtitle">Kelola persetujuan (approval) dan data kutipan yang tampil di halaman depan.</p>
             </div>
-            <button className="btn-modern-primary" onClick={openAddModal}>
+            <button className="btn-modern-primary testi-add-desktop" onClick={openAddModal}>
               <Plus size={16} /> Tambah Data
             </button>
           </div>
@@ -199,6 +199,10 @@ const TestimonialPage = () => {
                 className="testi-search-input"
               />
             </div>
+            {/* Tombol ringkas khusus mobile: sebaris dengan Search (aksi sama dengan tombol desktop) */}
+            <button type="button" className="testi-add-mobile" onClick={openAddModal} aria-label="Tambah Data">
+              <Plus size={16} /> Tambah
+            </button>
           </div>
 
           <div className="testi-table-card">
@@ -254,6 +258,43 @@ const TestimonialPage = () => {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* Tampilan Card List (mobile) - data & aksi sama dengan tabel */}
+          <div className="testi-mlist">
+            {filteredTestimonials.length === 0 ? (
+              <div className="testi-mempty">
+                {searchTerm ? `Tidak ditemukan data untuk "${searchTerm}"` : 'Belum ada data testimoni.'}
+              </div>
+            ) : (
+              filteredTestimonials.map(t => (
+                <div key={t.id} className="testi-mcard">
+                  <div className="testi-mcard-top">
+                    {t.photo ? (
+                      <img src={getImageUrl(t.photo)} alt="pic" className="testi-mavatar" />
+                    ) : (
+                      <div className="testi-mavatar testi-mavatar-initial">
+                        {(t.name || '?').charAt(0).toUpperCase()}
+                      </div>
+                    )}
+                    <div className="testi-mbody">
+                      <div className="testi-mname">{t.name}</div>
+                      <div className="testi-mrole">{t.role}</div>
+                    </div>
+                    <button
+                      onClick={(e) => handleDropdownClick(e, t.id)}
+                      className="testi-action-btn testi-mmore"
+                    >
+                      <MoreHorizontal size={18} />
+                    </button>
+                  </div>
+                  {t.quote && <p className="testi-mquote">{t.quote}</p>}
+                  <span className={t.show === 1 ? 'testi-badge-active' : 'testi-badge-pending'}>
+                    {t.show === 1 ? 'Ditampilkan' : 'Pending'}
+                  </span>
+                </div>
+              ))
+            )}
           </div>
 
           {/* DROPDOWN MENU */}

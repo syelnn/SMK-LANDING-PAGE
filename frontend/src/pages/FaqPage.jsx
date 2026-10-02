@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Edit3, Trash2, X, Loader2, CheckCircle, Search, MoreHorizontal, HelpCircle } from 'lucide-react';
+import { Plus, Edit3, Trash2, Eye, EyeOff, X, Loader2, CheckCircle, Search, MoreHorizontal, HelpCircle } from 'lucide-react';
 import '../css/FaqPage.css';
 import '../App.css';
 
@@ -113,6 +113,35 @@ const FaqPage = () => {
       .catch((err) => {
         console.error('Error saat submit:', err);
         alert('Terjadi kesalahan koneksi ke server');
+      });
+  };
+
+  // Sembunyikan / Tampilkan langsung dari menu aksi
+  const handleToggleShow = (faq) => {
+    setActiveDropdown(null);
+    const newShow = Number(faq.show) === 1 ? 0 : 1;
+    fetch(`https://smkn-compreng-api-pi.vercel.app/api/faqs/${faq.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question: faq.question,
+        answer: faq.answer,
+        category: faq.category || 'Umum',
+        sortOrder: Number(faq.sortOrder) || 1,
+        show: newShow
+      })
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.success) {
+          fetchFaqs();
+        } else {
+          alert(data.message || 'Gagal merubah status');
+        }
+      })
+      .catch((err) => {
+        console.error('Error saat toggle status:', err);
+        alert('Gagal merubah status');
       });
   };
 
@@ -238,6 +267,17 @@ const FaqPage = () => {
 
                       {activeDropdown === faq.id && (
                         <div className="action-dropdown-menu">
+                          <button
+                            type="button"
+                            className="dropdown-item"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleToggleShow(faq);
+                            }}
+                          >
+                            {Number(faq.show) === 1 ? <EyeOff size={14} /> : <Eye size={14} />}
+                            {Number(faq.show) === 1 ? 'Sembunyikan' : 'Tampilkan'}
+                          </button>
                           <button 
                             type="button" 
                             className="dropdown-item" 
@@ -256,7 +296,7 @@ const FaqPage = () => {
                               handleDelete(faq.id);
                             }}
                           >
-                            <Trash2 size={14} /> Delete
+                            <Trash2 size={14} /> Hapus
                           </button>
                         </div>
                       )}
@@ -305,6 +345,17 @@ const FaqPage = () => {
                         className="dropdown-item"
                         onClick={(e) => {
                           e.stopPropagation();
+                          handleToggleShow(faq);
+                        }}
+                      >
+                        {Number(faq.show) === 1 ? <EyeOff size={14} /> : <Eye size={14} />}
+                        {Number(faq.show) === 1 ? 'Sembunyikan' : 'Tampilkan'}
+                      </button>
+                      <button
+                        type="button"
+                        className="dropdown-item"
+                        onClick={(e) => {
+                          e.stopPropagation();
                           handleOpenModal(faq);
                         }}
                       >
@@ -318,7 +369,7 @@ const FaqPage = () => {
                           handleDelete(faq.id);
                         }}
                       >
-                        <Trash2 size={14} /> Delete
+                        <Trash2 size={14} /> Hapus
                       </button>
                     </div>
                   )}

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../utils/media';
 import axios from 'axios';
-import { Plus, Edit3, Trash2, X, Loader2, CheckCircle, AlertCircle, Search, MoreHorizontal, Tag } from 'lucide-react';
+import { Plus, Edit3, Trash2, Eye, EyeOff, X, Loader2, CheckCircle, AlertCircle, Search, MoreHorizontal, Tag } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
 import '../css/managenews.css';
 import '../App.css';
@@ -167,6 +167,41 @@ const handleOpenEdit = (item) => {
       showNotification('Gagal menyimpan berita. Coba lagi.', 'error');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Sembunyikan / Tampilkan langsung dari menu aksi
+  const handleToggleStatus = async (item) => {
+    setOpenMenuId(null);
+    const isPublished = item.status === 'published';
+    const newStatus = isPublished ? 'draft' : 'published';
+    let tagsStr = '';
+    if (Array.isArray(item.tags)) {
+      tagsStr = item.tags.join(',');
+    } else if (typeof item.tags === 'string') {
+      try {
+        const parsed = JSON.parse(item.tags);
+        tagsStr = Array.isArray(parsed) ? parsed.join(',') : item.tags;
+      } catch {
+        tagsStr = item.tags;
+      }
+    }
+    const fd = new FormData();
+    fd.append('title', item.title || '');
+    fd.append('category', item.category || '');
+    fd.append('excerpt', item.excerpt || '');
+    fd.append('content', item.content || '');
+    fd.append('author', 'Admin');
+    fd.append('status', newStatus);
+    fd.append('tags', tagsStr);
+    fd.append('image', item.image || '');
+    try {
+      await axios.put(`${API_URL}/${item.id || item._id}`, fd);
+      showNotification(newStatus === 'published' ? 'Berita ditampilkan!' : 'Berita disembunyikan!', 'success');
+      fetchNews();
+    } catch (err) {
+      console.error('Error toggling news status:', err);
+      showNotification('Gagal merubah status berita', 'error');
     }
   };
 
@@ -356,6 +391,17 @@ const handleOpenEdit = (item) => {
                               className="dropdown-item"
                               onClick={(e) => {
                                 e.stopPropagation();
+                                handleToggleStatus(item);
+                              }}
+                            >
+                              {item.status === 'published' ? <EyeOff size={14} /> : <Eye size={14} />}
+                              {item.status === 'published' ? 'Sembunyikan' : 'Tampilkan'}
+                            </button>
+                            <button
+                              type="button"
+                              className="dropdown-item"
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 handleOpenEdit(item);
                               }}
                             >
@@ -369,7 +415,7 @@ const handleOpenEdit = (item) => {
                                 handleDelete(itemId);
                               }}
                             >
-                              <Trash2 size={14} /> Delete
+                              <Trash2 size={14} /> Hapus
                             </button>
                           </div>
                         )}
@@ -441,6 +487,17 @@ const handleOpenEdit = (item) => {
                           className="dropdown-item"
                           onClick={(e) => {
                             e.stopPropagation();
+                            handleToggleStatus(item);
+                          }}
+                        >
+                          {item.status === 'published' ? <EyeOff size={14} /> : <Eye size={14} />}
+                          {item.status === 'published' ? 'Sembunyikan' : 'Tampilkan'}
+                        </button>
+                        <button
+                          type="button"
+                          className="dropdown-item"
+                          onClick={(e) => {
+                            e.stopPropagation();
                             handleOpenEdit(item);
                           }}
                         >
@@ -454,7 +511,7 @@ const handleOpenEdit = (item) => {
                             handleDelete(itemId);
                           }}
                         >
-                          <Trash2 size={14} /> Delete
+                          <Trash2 size={14} /> Hapus
                         </button>
                       </div>
                     )}

@@ -1,7 +1,7 @@
 import React, { useContext } from 'react';
 import { getImageUrl } from '../utils/media';
 import { SettingsContext } from '../context/SettingsContext';
-import defaultSchoolPhoto from '../assets/visi.jpg'; // Jadikan sebagai cadangan (fallback)
+import defaultSchoolPhoto from '../assets/visi.jpeg'; // Jadikan sebagai cadangan (fallback)
 
 export default function ProfilSekolah() {
   const { settings } = useContext(SettingsContext);

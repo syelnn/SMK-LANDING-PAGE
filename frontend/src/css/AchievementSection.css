@@ -230,7 +230,7 @@
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
   border-radius: 8px;
   z-index: 999;
-  width: 130px;
+  width: 155px;
   padding: 4px;
   display: flex;
   flex-direction: column;
@@ -953,4 +953,163 @@
 }
 #admin-prestasi .modal-actions-modern .btn-modern-secondary {
   border: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+/* ==========================================================================
+   PRESTASI DI HP — kartu disamakan dengan kartu Testimoni
+   Foto bulat berbingkai, nama + kelas, judul prestasi sebagai teks polos
+   (maks. 3 baris), chip tingkat/tahun/status satu baris. Hanya CSS & khusus
+   <=768px; desktop, struktur JSX, dan logika tidak berubah.
+   ========================================================================== */
+@media (max-width: 768px) {
+  #admin-prestasi .ach-mlist {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  #admin-prestasi .ach-mcard {
+    align-items: flex-start;
+    gap: 10px;
+    padding: 14px 14px 14px 18px;
+    border-radius: 20px;
+    background: linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 55%, var(--compreng-surface, #ffffff)),
+      var(--compreng-surface, #ffffff)
+    ) !important;
+  }
+  #admin-prestasi .ach-mtop {
+    width: 100%;
+    gap: 12px;
+  }
+  /* foto bulat 46px, sama seperti avatar Testimoni */
+  #admin-prestasi .ach-mpic {
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    box-shadow: 0 0 0 2px var(--compreng-surface, #ffffff),
+                0 0 0 3.5px color-mix(in srgb, var(--compreng-accent, #2563eb) 35%, transparent);
+  }
+  #admin-prestasi .ach-mpic-fallback {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--compreng-text, #0f172a);
+    background-color: var(--compreng-surface-soft, #f1f5f9);
+    background-image: none;
+  }
+  #admin-prestasi .ach-mbody { gap: 2px; }
+  #admin-prestasi .ach-mbody .student-name-text {
+    font-size: 15px;
+    line-height: 1.3;
+  }
+  #admin-prestasi .ach-mbody .student-class-text {
+    font-size: 12.5px;
+    line-height: 1.35;
+  }
+  #admin-prestasi .ach-mmenu { align-self: center; }
+
+  /* judul prestasi: teks polos, maks. 3 baris (tanpa panel) */
+  #admin-prestasi .ach-mtext {
+    width: 100%;
+    padding: 0;
+    border: none;
+    border-left: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    overflow: hidden;
+  }
+  /* chip: tanpa garis pemisah, tahun tidak lagi didorong ke kanan */
+  #admin-prestasi .ach-mmeta {
+    padding-top: 0;
+    border-top: none;
+    gap: 6px;
+  }
+  #admin-prestasi .ach-mmeta .ach-myear { margin-left: 0; order: 0; }
+  #admin-prestasi .ach-mmeta .badge-success,
+  #admin-prestasi .ach-mmeta .badge-warning { order: 0; }
+  #admin-prestasi .ach-mmeta .badge,
+  #admin-prestasi .ach-mmeta .ach-myear {
+    padding: 4px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ==========================================================================
+   DROPDOWN (Status Tampil, Kategori, dst) DI FORM TAMBAH / EDIT
+   Popup <select> bawaan Chrome menggambar kotak putih di luar form. Dengan
+   `appearance: base-select` popup-nya jadi elemen CSS biasa (top layer) yang
+   bisa dirapikan & mengikuti tema. Hanya CSS; browser yang belum mendukung
+   tetap memakai dropdown bawaan (tidak rusak).
+   ========================================================================== */
+@supports (appearance: base-select) {
+  #admin-prestasi .form-modern-layout select,
+  #admin-prestasi .form-modern-layout select::picker(select) {
+    appearance: base-select;
+  }
+
+  #admin-prestasi .form-modern-layout select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+  }
+  /* panah: berputar saat dibuka */
+  #admin-prestasi .form-modern-layout select::picker-icon {
+    color: var(--compreng-text-secondary, #475569);
+    transition: rotate 0.2s ease;
+  }
+  #admin-prestasi .form-modern-layout select:open::picker-icon { rotate: 180deg; }
+
+  /* daftar pilihan */
+  #admin-prestasi .form-modern-layout select::picker(select) {
+    /* selalu buka ke BAWAH kolom; hanya membalik ke atas kalau benar-benar tidak muat */
+    position-area: block-end span-inline-end;
+    position-try-order: normal;
+    position-try-fallbacks: flip-block;
+    box-sizing: border-box;
+    margin-block: 6px;
+    padding: 6px;
+    max-height: 260px;
+    background: var(--compreng-surface, #ffffff);
+    color: var(--compreng-text, #0f172a);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    border-radius: 12px;
+    box-shadow: 0 16px 32px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.35));
+  }
+
+  /* tiap pilihan */
+  #admin-prestasi .form-modern-layout select option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: transparent !important;
+    color: var(--compreng-text, #0f172a) !important;
+  }
+  #admin-prestasi .form-modern-layout select option:hover,
+  #admin-prestasi .form-modern-layout select option:focus {
+    background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  }
+  #admin-prestasi .form-modern-layout select option:checked {
+    font-weight: 700;
+    color: var(--compreng-accent, #2563eb) !important;
+  }
+  #admin-prestasi .form-modern-layout select option::checkmark {
+    order: 2;
+    margin-left: auto;
+    color: var(--compreng-accent, #2563eb);
+  }
 }

@@ -1,6 +1,6 @@
 import React, { useContext } from 'react';
 import { SettingsContext } from "../../context/SettingsContext";
-import schoolPhoto from '../../assets/visi.jpg'; 
+import schoolPhoto from '../../assets/visi.jpeg'; 
 import { getImageUrl } from '../../utils/media';
 import '../../css/viewer/profileSection.css';
 

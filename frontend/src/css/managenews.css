@@ -426,7 +426,7 @@ tr.row-featured {
   right: 0;
   top: 100%;
   margin-top: 4px;
-  width: 140px;
+  width: 155px;
   background: var(--compreng-surface, #ffffff);
   border-radius: 10px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
@@ -830,6 +830,7 @@ tr.row-featured {
 }
 #admin-berita .action-dropdown-menu .dropdown-item:nth-child(1) { animation-delay: 0.03s; }
 #admin-berita .action-dropdown-menu .dropdown-item:nth-child(2) { animation-delay: 0.07s; }
+#admin-berita .action-dropdown-menu .dropdown-item:nth-child(3) { animation-delay: 0.11s; }
 
 @media (prefers-reduced-motion: reduce) {
   #admin-berita .action-dropdown-menu,
@@ -1232,4 +1233,132 @@ tr.row-featured {
 }
 #admin-berita .modal-actions-modern .btn-modern-secondary {
   border: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+/* ==========================================================================
+   DROPDOWN (Status Tampil, Kategori, dst) DI FORM TAMBAH / EDIT
+   Popup <select> bawaan Chrome menggambar kotak putih di luar form. Dengan
+   `appearance: base-select` popup-nya jadi elemen CSS biasa (top layer) yang
+   bisa dirapikan & mengikuti tema. Hanya CSS; browser yang belum mendukung
+   tetap memakai dropdown bawaan (tidak rusak).
+   ========================================================================== */
+@supports (appearance: base-select) {
+  #admin-berita .form-modern-layout select,
+  #admin-berita .form-modern-layout select::picker(select) {
+    appearance: base-select;
+  }
+
+  #admin-berita .form-modern-layout select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+  }
+  /* panah: berputar saat dibuka */
+  #admin-berita .form-modern-layout select::picker-icon {
+    color: var(--compreng-text-secondary, #475569);
+    transition: rotate 0.2s ease;
+  }
+  #admin-berita .form-modern-layout select:open::picker-icon { rotate: 180deg; }
+
+  /* daftar pilihan */
+  #admin-berita .form-modern-layout select::picker(select) {
+    /* selalu buka ke BAWAH kolom; hanya membalik ke atas kalau benar-benar tidak muat */
+    position-area: block-end span-inline-end;
+    position-try-order: normal;
+    position-try-fallbacks: flip-block;
+    box-sizing: border-box;
+    margin-block: 6px;
+    padding: 6px;
+    max-height: 260px;
+    background: var(--compreng-surface, #ffffff);
+    color: var(--compreng-text, #0f172a);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    border-radius: 12px;
+    box-shadow: 0 16px 32px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.35));
+  }
+
+  /* tiap pilihan */
+  #admin-berita .form-modern-layout select option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: transparent !important;
+    color: var(--compreng-text, #0f172a) !important;
+  }
+  #admin-berita .form-modern-layout select option:hover,
+  #admin-berita .form-modern-layout select option:focus {
+    background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  }
+  #admin-berita .form-modern-layout select option:checked {
+    font-weight: 700;
+    color: var(--compreng-accent, #2563eb) !important;
+  }
+  #admin-berita .form-modern-layout select option::checkmark {
+    order: 2;
+    margin-left: auto;
+    color: var(--compreng-accent, #2563eb);
+  }
+}
+
+/* ==========================================================================
+   MENU AKSI (titik tiga) — disamakan dengan menu aksi halaman Testimoni
+   Lebar 170px, sudut 8px, item 12.5px dengan ikon abu-abu, garis pemisah
+   di atas "Delete", animasi muncul sederhana. Hanya CSS; JSX & logika tetap.
+   ID dipakai agar menang atas theme.css yang memakai !important.
+   ========================================================================== */
+@keyframes newsActionFadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+#admin-berita .action-dropdown-menu {
+  width: 170px;
+  margin-top: 4px;
+  gap: 0;
+  padding: 6px !important;
+  background-color: var(--compreng-surface, #ffffff) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  transform-origin: top right;
+  animation: newsActionFadeIn 0.2s ease both;
+}
+#admin-berita .action-dropdown-menu .dropdown-item {
+  gap: 10px;
+  padding: 8px 12px !important;
+  font-size: 12.5px;
+  font-weight: 500;
+  border-radius: 6px !important;
+  color: var(--compreng-text, #0f172a) !important;
+  background: transparent !important;
+  animation: none;
+  transition: all 0.2s;
+}
+#admin-berita .action-dropdown-menu .dropdown-item svg { color: var(--compreng-text-secondary, #475569); }
+#admin-berita .action-dropdown-menu .dropdown-item:hover {
+  background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+}
+/* Delete: merah + garis pemisah di atasnya (seperti "Hapus Permanen" di Testimoni) */
+#admin-berita .action-dropdown-menu .dropdown-item.delete {
+  position: relative;
+  margin-top: 9px;
+  color: #dc2626 !important;
+}
+#admin-berita .action-dropdown-menu .dropdown-item.delete::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -5px;
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
+}
+#admin-berita .action-dropdown-menu .dropdown-item.delete svg { color: currentColor; }
+#admin-berita .action-dropdown-menu .dropdown-item.delete:hover {
+  background-color: #fef2f2 !important;
+  color: #dc2626 !important;
 }

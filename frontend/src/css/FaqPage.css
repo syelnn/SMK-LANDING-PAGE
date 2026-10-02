@@ -316,7 +316,7 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
   padding: 6px;
   z-index: 100;
-  min-width: 130px;
+  min-width: 155px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1102,4 +1102,75 @@
 }
 #admin-faq .modal-actions-modern .btn-modern-secondary {
   border: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+/* ==========================================================================
+   DROPDOWN (Status Tampil, Kategori, dst) DI FORM TAMBAH / EDIT
+   Popup <select> bawaan Chrome menggambar kotak putih di luar form. Dengan
+   `appearance: base-select` popup-nya jadi elemen CSS biasa (top layer) yang
+   bisa dirapikan & mengikuti tema. Hanya CSS; browser yang belum mendukung
+   tetap memakai dropdown bawaan (tidak rusak).
+   ========================================================================== */
+@supports (appearance: base-select) {
+  #admin-faq .form-modern-layout select,
+  #admin-faq .form-modern-layout select::picker(select) {
+    appearance: base-select;
+  }
+
+  #admin-faq .form-modern-layout select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+  }
+  /* panah: berputar saat dibuka */
+  #admin-faq .form-modern-layout select::picker-icon {
+    color: var(--compreng-text-secondary, #475569);
+    transition: rotate 0.2s ease;
+  }
+  #admin-faq .form-modern-layout select:open::picker-icon { rotate: 180deg; }
+
+  /* daftar pilihan */
+  #admin-faq .form-modern-layout select::picker(select) {
+    /* selalu buka ke BAWAH kolom; hanya membalik ke atas kalau benar-benar tidak muat */
+    position-area: block-end span-inline-end;
+    position-try-order: normal;
+    position-try-fallbacks: flip-block;
+    box-sizing: border-box;
+    margin-block: 6px;
+    padding: 6px;
+    max-height: 260px;
+    background: var(--compreng-surface, #ffffff);
+    color: var(--compreng-text, #0f172a);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    border-radius: 12px;
+    box-shadow: 0 16px 32px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.35));
+  }
+
+  /* tiap pilihan */
+  #admin-faq .form-modern-layout select option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: transparent !important;
+    color: var(--compreng-text, #0f172a) !important;
+  }
+  #admin-faq .form-modern-layout select option:hover,
+  #admin-faq .form-modern-layout select option:focus {
+    background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  }
+  #admin-faq .form-modern-layout select option:checked {
+    font-weight: 700;
+    color: var(--compreng-accent, #2563eb) !important;
+  }
+  #admin-faq .form-modern-layout select option::checkmark {
+    order: 2;
+    margin-left: auto;
+    color: var(--compreng-accent, #2563eb);
+  }
 }
