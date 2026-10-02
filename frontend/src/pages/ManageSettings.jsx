@@ -1,12 +1,14 @@
 // src/pages/ManageSettings.jsx
-import React, { useState, useContext, useEffect, useRef } from 'react';
+import React, { useState, useContext, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from 'react';
 import { getImageUrl } from '../utils/media';
 import axios from 'axios';
 import { Routes, Route, NavLink, Navigate, useLocation } from 'react-router-dom';
 import {
-  Check, Loader2, CheckCircle, XCircle, RotateCcw,
-  School, Award, ImageIcon, Sparkles, Palette, SlidersHorizontal, FileText, Target, Monitor,
+  Check, Loader2, CheckCircle, XCircle, RotateCcw, Undo2,
+  School, Award, ImageIcon, Sparkles, Palette, SlidersHorizontal, Target, Monitor,
+  Sun, Moon, Pipette, Eye, Type, ChevronDown, MapPin, Phone, Mail, Share2, Database,
 } from 'lucide-react';
+import { FaFacebookF, FaInstagram, FaTiktok, FaXTwitter, FaYoutube } from 'react-icons/fa6';
 import { SettingsContext } from '../context/SettingsContext';
 import ThemePreview from '../components/ThemePreview';
 import DatabaseBackupPanel from '../components/DatabaseBackupPanel';
@@ -60,11 +62,33 @@ const buildForm = (settings = {}, footer = {}) => {
 };
 
 const THEME_CARDS = [
-  { value: 'system', label: 'System' },
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'custom', label: 'Custom' },
+  { value: 'system', label: 'System', note: 'Warna hijau-kuning sekolah', icon: Monitor },
+  { value: 'light', label: 'Light', note: 'Terang dan bersih', icon: Sun },
+  { value: 'dark', label: 'Dark', note: 'Gelap, nyaman di mata', icon: Moon },
+  { value: 'custom', label: 'Custom', note: 'Atur warna sendiri', icon: Pipette },
 ];
+
+const NAV_ITEMS = [
+  { key: 'profile', to: '/admin/settings/profile', label: 'Profile', note: 'Identitas, logo, dan hero', icon: School },
+  { key: 'appearance', to: '/admin/settings/appearance', label: 'Appearance', note: 'Tema, font, dan warna', icon: Palette },
+  { key: 'contact', to: '/admin/settings/contact', label: 'Contact & Maps', note: 'Kontak, peta, dan sosial', icon: MapPin },
+  { key: 'database', to: '/admin/settings/database', label: 'Database', note: 'Backup data website', icon: Database },
+];
+
+const SOCIAL_FIELDS = [
+  ['social_facebook', 'Facebook', FaFacebookF, 'https://facebook.com/...'],
+  ['social_instagram', 'Instagram', FaInstagram, 'https://instagram.com/...'],
+  ['social_youtube', 'YouTube', FaYoutube, 'https://youtube.com/@...'],
+  ['social_tiktok', 'TikTok', FaTiktok, 'https://tiktok.com/@...'],
+  ['social_twitter', 'X (Twitter)', FaXTwitter, 'https://x.com/...'],
+];
+
+// true kalau ada nilai yang berbeda antara form sekarang dan data tersimpan
+const hasChanges = (a, b) => {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  for (const k of keys) if (String(a[k] ?? '') !== String(b[k] ?? '')) return true;
+  return false;
+};
 
 const CUSTOM_GROUPS = [
   { title: 'Halaman & Kartu', fields: [
@@ -148,6 +172,71 @@ const Field = ({ label, hint, children }) => (
   </div>
 );
 
+/* ---- Intro judul tiap tab ---- */
+const TabIntro = ({ icon: Icon, pill, title, desc }) => (
+  <div className="pf-intro">
+    <span className="pf-pill"><Icon size={13} /> {pill}</span>
+    <h3>{title}</h3>
+    <p>{desc}</p>
+  </div>
+);
+
+/* ---- Navigasi tab: segmented control (HP) / rail vertikal (lebar), indikator meluncur ---- */
+const SettingsNav = ({ pathname }) => {
+  const navRef = useRef(null);
+  const firstMeasure = useRef(true);
+  const [ind, setInd] = useState(null);
+  const activeKey = (NAV_ITEMS.find((i) => pathname.endsWith(`/${i.key}`)) || NAV_ITEMS[0]).key;
+
+  const measure = useCallback(() => {
+    const el = navRef.current?.querySelector('[data-active="true"]');
+    if (!el) return;
+    setInd({ x: el.offsetLeft, y: el.offsetTop, w: el.offsetWidth, h: el.offsetHeight, anim: !firstMeasure.current });
+    firstMeasure.current = false;
+  }, []);
+
+  useLayoutEffect(() => { measure(); }, [activeKey, measure]);
+
+  // Tab aktif selalu terlihat di tengah saat daftar tab bisa digeser (HP)
+  useEffect(() => {
+    const nav = navRef.current;
+    const el = nav?.querySelector('[data-active="true"]');
+    if (!nav || !el || nav.scrollWidth <= nav.clientWidth + 1) return;
+    nav.scrollTo({ left: el.offsetLeft - (nav.clientWidth - el.offsetWidth) / 2, behavior: 'smooth' });
+  }, [activeKey]);
+
+  // Ukur ulang saat lebar berubah, font selesai dimuat, atau ukuran font HP diubah
+  useEffect(() => {
+    const nav = navRef.current;
+    if (!nav) return undefined;
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    if (ro) { ro.observe(nav); nav.querySelectorAll('.st-tab').forEach((t) => ro.observe(t)); }
+    window.addEventListener('resize', measure);
+    document.fonts?.ready?.then(measure);
+    return () => { ro?.disconnect(); window.removeEventListener('resize', measure); };
+  }, [measure]);
+
+  return (
+    <div className="st-rail">
+      <nav className="st-nav" ref={navRef} aria-label="Menu pengaturan website">
+        {ind && (
+          <i
+            className={`st-tab-ind ${ind.anim ? 'is-anim' : ''}`} aria-hidden="true"
+            style={{ '--ix': `${ind.x}px`, '--iy': `${ind.y}px`, '--iw': `${ind.w}px`, '--ih': `${ind.h}px` }}
+          />
+        )}
+        {NAV_ITEMS.map(({ key, to, label, note, icon: Icon }) => (
+          <NavLink key={key} to={to} data-active={key === activeKey} className={`st-tab ${key === activeKey ? 'is-on' : ''}`}>
+            <Icon size={16} className="st-tab-ico" aria-hidden="true" />
+            <b className="st-tab-label">{label}</b>
+            <em className="st-tab-note">{note}</em>
+          </NavLink>
+        ))}
+      </nav>
+    </div>
+  );
+};
+
 /* ---------- Live preview: tampilan mini hero beranda ---------- */
 const HeroLivePreview = ({ data }) => {
   const bg = getImageUrl(data.hero_bg_image, bgSekolah);
@@ -194,6 +283,7 @@ export default function ManageSettings() {
   const [pendingImageFiles, setPendingImageFiles] = useState({}); // { school_logo: File, school_profile_image: File }
   const [footerSeed, setFooterSeed] = useState(null); // data footer lama (null = belum dimuat)
   const [formData, setFormData] = useState(() => buildForm(settings, {}));
+  const [baseline, setBaseline] = useState(() => buildForm(settings, {})); // data tersimpan, pembanding "belum disimpan"
   const touchedTheme = useRef(false); // true = admin sedang mengubah tema (belum disimpan)
 
   // Ambil data footer lama sekali (nilai awal kontak)
@@ -208,7 +298,9 @@ export default function ManageSettings() {
   // Isi form dari data tersimpan
   useEffect(() => {
     if (footerSeed === null) return;
-    setFormData(buildForm(settings, footerSeed));
+    const next = buildForm(settings, footerSeed);
+    setFormData(next);
+    setBaseline(next);
   }, [settings, footerSeed]);
 
   // Muat semua font sekali supaya kotak pilihan font tampil benar
@@ -255,10 +347,12 @@ export default function ManageSettings() {
     touchedTheme.current = true;
     setFormData((prev) => ({ ...prev, ...DEFAULT_CUSTOM }));
   };
-  const discardTheme = () => {
+  // Batalkan SEMUA perubahan yang belum disimpan (teks, gambar, tema)
+  const discardChanges = () => {
     touchedTheme.current = false;
     clearPreview();
-    setFormData(buildForm(settings, footerSeed || {}));
+    setPendingImageFiles({});
+    setFormData(baseline);
   };
 
   const handleSubmit = async (e) => {
@@ -303,6 +397,7 @@ export default function ManageSettings() {
       };
       await saveSettings(payload); // langsung berlaku di seluruh website
       setFormData(payload);
+      setBaseline(payload);
       setPendingImageFiles({});
       touchedTheme.current = false;
       showToast('Pengaturan tersimpan dan langsung tampil di website.', 'success');
@@ -314,9 +409,11 @@ export default function ManageSettings() {
     }
   };
 
-  const isAppearance = location.pathname.endsWith('/appearance');
   const isDatabase = location.pathname.endsWith('/database');
-  const isProfile = location.pathname.endsWith('/profile');
+  const isDirty = useMemo(
+    () => Object.keys(pendingImageFiles).length > 0 || hasChanges(formData, baseline),
+    [formData, baseline, pendingImageFiles],
+  );
   const resolved = resolveCustom(formData);
   const mapSrc = useDebounced(toMapEmbedSrc(formData.contact_map_embed_url, formData.contact_address));
 
@@ -337,353 +434,382 @@ export default function ManageSettings() {
   };
 
   return (
-    <div className="ms-wrapper">
-      <div className="ms-page-header">
-        <h2 className="ms-page-title">Settings</h2>
-        <p className="ms-page-subtitle">Manage your school identity, appearance, and contact preferences.</p>
-      </div>
+    <div className="st-root">
+      <header className="st-head">
+        <h2 className="st-title">Settings</h2>
+        <p className="st-sub">Manage your school identity, appearance, and contact preferences.</p>
+      </header>
 
-      <div className="ms-layout-flex">
-        {/* SIDEBAR NAV */}
-        <div className="ms-sidebar">
-          <NavLink to="/admin/settings/profile" className={({ isActive }) => `ms-nav-link ${isActive ? 'active' : ''}`}>Profile</NavLink>
-          <NavLink to="/admin/settings/appearance" className={({ isActive }) => `ms-nav-link ${isActive ? 'active' : ''}`}>Appearance</NavLink>
-          <NavLink to="/admin/settings/contact" className={({ isActive }) => `ms-nav-link ${isActive ? 'active' : ''}`}>Contact & Maps</NavLink>
-          <NavLink to="/admin/settings/database" className={({ isActive }) => `ms-nav-link ${isActive ? 'active' : ''}`}>Database</NavLink>
-        </div>
+      <div className="st-frame">
+        <div className="st-layout">
+          <SettingsNav pathname={location.pathname} />
 
-        {/* CONTENT AREA ROUTING */}
-        <div className={`ms-content-area ${isAppearance ? 'wide' : ''} ${isProfile ? 'profile' : ''}`}>
-          <form onSubmit={handleSubmit} noValidate>
-            <Routes>
-              <Route path="/" element={<Navigate to="profile" replace />} />
+          <div className="st-main">
+            <form onSubmit={handleSubmit} noValidate>
+              <div className="st-pane" key={location.pathname}>
+                <Routes>
+                  <Route path="/" element={<Navigate to="profile" replace />} />
 
-              {/* ============ TAB 1: IDENTITAS + HERO ============ */}
-              <Route path="profile" element={
-                <div className="pf">
-                  <div className="pf-intro">
-                    <span className="pf-pill"><Sparkles size={13} /> Identitas & Tampilan</span>
-                    <h3>Profile Sekolah</h3>
-                    <p>Atur bagaimana sekolah tampil di website — dari nama, logo, sampai foto sampul beranda.</p>
-                  </div>
+                  {/* ============ TAB 1: IDENTITAS + HERO ============ */}
+                  <Route path="profile" element={
+                    <div className="pf">
+                      <TabIntro
+                        icon={Sparkles} pill="Identitas & Tampilan" title="Profile Sekolah"
+                        desc="Atur bagaimana sekolah tampil di website — dari nama, logo, sampai foto sampul beranda."
+                      />
 
-                  {/* ============ IDENTITAS ============ */}
-                  <section className="pf-block">
-                    <CardHead icon={School} title="Identitas Sekolah" desc="Nama resmi, tagline navbar/sidebar, dan badge akreditasi hero — masing-masing terpisah supaya tidak tertukar." />
-                    <div className="pf-grid">
-                      <Field label="Nama Sekolah" hint="Muncul di navbar, sidebar admin, footer, dan judul hero.">
-                        <input type="text" name="school_name" value={formData.school_name} onChange={handleChange} className="pf-input" />
-                      </Field>
-                      <Field label="Tagline Navbar & Sidebar" hint="Teks kecil di bawah nama sekolah pada navbar (website) dan sidebar (dashboard admin).">
-                        <div className="pf-input-icon">
-                          <Monitor size={15} />
-                          <input type="text" name="site_tagline" value={formData.site_tagline} onChange={handleChange} className="pf-input" />
-                        </div>
-                      </Field>
-                      <Field label="Badge Akreditasi (Hero)" hint="Hanya tampil sebagai badge kecil di atas judul hero beranda, tidak memengaruhi navbar/sidebar.">
-                        <div className="pf-input-icon">
-                          <Award size={15} />
-                          <input type="text" name="school_accreditation" value={formData.school_accreditation} onChange={handleChange} className="pf-input" />
-                        </div>
-                      </Field>
-                    </div>
-                  </section>
-
-                  {/* ============ LOGO & FOTO UTAMA ============ */}
-                  <section className="pf-block">
-                    <CardHead icon={ImageIcon} title="Logo & Foto Profil" desc="Logo dipakai di navbar. Foto utama dipakai di bagian Profil Sekolah." />
-                    <div className="pf-grid">
-                      <Field label="Logo Sekolah (Icon)">
-                        <ImageUploader
-                          value={formData.school_logo}
-                          onChange={(r) => handleImageChange('school_logo', r)}
-                          aspect={1}
-                          maxSizeMB={2}
-                          previewLabel="Logo"
-                          urlPlaceholder="/src/assets/logo1.png atau https://..."
-                          editorTitle="Edit Logo Sekolah"
-                          previewMaxWidth={220}
-                        />
-                      </Field>
-                      <Field label="Foto Utama / Profil">
-                        <ImageUploader
-                          value={formData.school_profile_image}
-                          onChange={(r) => handleImageChange('school_profile_image', r)}
-                          aspect={4 / 3}
-                          maxSizeMB={2}
-                          previewLabel="Foto profil"
-                          urlPlaceholder="/src/assets/visi.jpg atau https://..."
-                          editorTitle="Edit Foto Utama / Profil"
-                          previewMaxWidth={320}
-                        />
-                      </Field>
-                    </div>
-                  </section>
-
-                  {/* ============ HERO BERANDA ============ */}
-                  <section className="pf-block pf-block-cover">
-                    <CardHead
-                      icon={Sparkles}
-                      title="Hero Beranda"
-                      desc="Ganti foto latar hero dan atur warna transparan di atasnya. Lihat hasilnya langsung di preview."
-                      aside={<span className="pf-live-chip"><i /> Live</span>}
-                    />
-
-                    <HeroLivePreview data={formData} />
-
-                    <div className="pf-media-grid">
-                      {/* --- Foto latar (CRUD) --- */}
-                      <div className="pf-well">
-                        <div className="pf-well-title"><ImageIcon size={15} /> Foto Latar Hero</div>
-                        <ImageUploader
-                          value={formData.hero_bg_image}
-                          onChange={(r) => handleImageChange('hero_bg_image', r)}
-                          aspect={16 / 9}
-                          aspectOptions={['free', '16:9', '4:3', 'full']}
-                          maxSizeMB={3}
-                          outputMaxWidth={1920}
-                          fit="cover"
-                          previewLabel="Foto hero"
-                          previewMaxWidth={420}
-                          urlPlaceholder="https://... (kosong = foto bawaan)"
-                          editorTitle="Edit Foto Latar Hero"
-                          uploadText="Pilih atau tarik foto hero ke sini"
-                        />
-                        {!formData.hero_bg_image && (
-                          <p className="pf-hint">Belum ada foto khusus — beranda memakai foto bawaan sekolah. Disarankan foto landscape minimal 1600px.</p>
-                        )}
-                      </div>
-
-                      {/* --- Warna transparan (overlay) --- */}
-                      <div className="pf-well">
-                        <div className="pf-well-title">
-                          <Palette size={15} /> Warna Transparan
-                          {overlayChanged && (
-                            <button type="button" className="pf-reset" onClick={resetHeroOverlay}><RotateCcw size={12} /> Reset</button>
-                          )}
-                        </div>
-
-                        <div className="pf-sub">Warna</div>
-                        <div className="pf-swatches">
-                          {HERO_OVERLAY_SWATCHES.map((s) => (
-                            <button
-                              key={s.color} type="button" title={s.label} aria-label={s.label}
-                              className={`pf-swatch ${heroColor === s.color ? 'on' : ''}`}
-                              style={{ background: s.color }}
-                              onClick={() => setField('hero_overlay_color', s.color)}
-                            />
-                          ))}
-                          <label className="pf-swatch pf-swatch-custom" title="Warna sendiri">
-                            <input type="color" value={heroColor} onChange={(e) => setField('hero_overlay_color', e.target.value)} />
-                          </label>
-                        </div>
-                        <input
-                          type="text" className="pf-input pf-mono" value={formData.hero_overlay_color || ''} spellCheck={false}
-                          placeholder="#0f172a" maxLength={7}
-                          onChange={(e) => setField('hero_overlay_color', e.target.value)}
-                          onBlur={(e) => setField('hero_overlay_color', normalizeHex(e.target.value))}
-                        />
-
-                        <div className="pf-sub pf-sub-row">
-                          <span><SlidersHorizontal size={13} /> Kekuatan warna</span>
-                          <b>{heroOpacity}%</b>
-                        </div>
-                        <input
-                          type="range" min="0" max="100" step="1" value={heroOpacity} className="pf-range"
-                          style={{ '--pf-fill': `${heroOpacity}%` }}
-                          onChange={(e) => setField('hero_overlay_opacity', e.target.value)}
-                          aria-label="Kekuatan warna transparan"
-                        />
-                        <div className="pf-range-legend"><span>Foto jelas</span><span>Foto gelap</span></div>
-
-                        <div className="pf-sub">Arah gradasi</div>
-                        <div className="pf-seg" role="radiogroup">
-                          {HERO_OVERLAY_STYLES.map((o) => (
-                            <button
-                              key={o.value} type="button" role="radio" aria-checked={(formData.hero_overlay_style || 'left') === o.value}
-                              className={(formData.hero_overlay_style || 'left') === o.value ? 'on' : ''}
-                              onClick={() => setField('hero_overlay_style', o.value)}
-                            >{o.label}</button>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <Field label="Deskripsi Singkat (Hero)" hint="Kalimat di bawah judul beranda.">
-                      <textarea name="hero_description" value={formData.hero_description} onChange={handleChange} className="pf-input pf-textarea" rows={3} />
-                    </Field>
-                  </section>
-
-                  {/* ============ VISI MISI ============ */}
-                  <section className="pf-block">
-                    <CardHead icon={Target} title="Visi & Misi" desc="Arah dan tujuan sekolah." />
-                    <div className="pf-grid">
-                      <Field label="Visi">
-                        <textarea name="school_vision" value={formData.school_vision} onChange={handleChange} className="pf-input pf-textarea tall" rows={5} />
-                      </Field>
-                      <Field label="Misi (gunakan titik koma ; atau baris baru)">
-                        <textarea name="school_mission" value={formData.school_mission} onChange={handleChange} className="pf-input pf-textarea tall" rows={5} />
-                      </Field>
-                    </div>
-                  </section>
-                </div>
-              } />
-
-              {/* ============ TAB 2: TEMA & TAMPILAN ============ */}
-              <Route path="appearance" element={
-                <div>
-                  <div className="ms-section-header">
-                    <h3 className="ms-section-title">Appearance</h3>
-                    <p className="ms-section-desc">Perubahan langsung terlihat di seluruh website. Klik “Simpan Pengaturan” agar permanen.</p>
-                  </div>
-
-                  {/* --- PILIH TEMA --- */}
-                  <div className="ms-input-group" style={{ marginBottom: 0 }}>
-                    <label className="ms-label">Theme</label>
-                    <p className="ms-helper-text" style={{ marginTop: '-4px' }}>Pilih tema untuk dashboard dan website publik.</p>
-                    <div className="shadcn-theme-container">
-                      {THEME_CARDS.map(({ value, label }) => {
-                        const on = formData.theme_mode === value;
-                        const pal = value === 'custom' ? resolveCustom(formData) : PRESETS[value];
-                        return (
-                          <div key={value} className="ms-theme-pick" onClick={() => setField('theme_mode', value)}>
-                            <div className={`ms-theme-frame ${on ? 'is-on' : ''}`}>
-                              {on && <div className="ms-tick"><Check size={14} strokeWidth={3} /></div>}
-                              <ThemeMock p={pal} />
+                      {/* ============ IDENTITAS ============ */}
+                      <section className="pf-block">
+                        <CardHead icon={School} title="Identitas Sekolah" desc="Nama resmi, tagline navbar/sidebar, dan badge akreditasi hero — masing-masing terpisah supaya tidak tertukar." />
+                        <div className="pf-grid">
+                          <Field label="Nama Sekolah" hint="Muncul di navbar, sidebar admin, footer, dan judul hero.">
+                            <input type="text" name="school_name" value={formData.school_name} onChange={handleChange} className="pf-input" />
+                          </Field>
+                          <Field label="Tagline Navbar & Sidebar" hint="Teks kecil di bawah nama sekolah pada navbar (website) dan sidebar (dashboard admin).">
+                            <div className="pf-input-icon">
+                              <Monitor size={15} />
+                              <input type="text" name="site_tagline" value={formData.site_tagline} onChange={handleChange} className="pf-input" />
                             </div>
-                            <div className="ms-theme-name">{label}</div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* --- PREVIEW LANGSUNG --- */}
-                  <ThemePreview data={formData} />
-
-                  {/* --- FONT (4 pilihan) --- */}
-                  <div className="ms-input-group" style={{ marginTop: '32px' }}>
-                    <label className="ms-label">Typography / Font</label>
-                    <div className="ms-font-row">
-                      {FONT_OPTIONS.map((f) => (
-                        <div
-                          key={f.value} role="radio" aria-checked={formData.font_family === f.value} tabIndex={0}
-                          className={`ms-font-opt ${formData.font_family === f.value ? 'is-on' : ''}`}
-                          onClick={() => setField('font_family', f.value)}
-                          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setField('font_family', f.value); } }}
-                        >
-                          <div className="ms-font-aa" data-own-font style={{ fontFamily: f.stack }}>Aa</div>
-                          <div className="ms-font-name" data-own-font style={{ fontFamily: f.stack }}>{f.label}</div>
-                          <div className="ms-font-hint">{f.hint}</div>
+                          </Field>
+                          <Field label="Badge Akreditasi (Hero)" hint="Hanya tampil sebagai badge kecil di atas judul hero beranda, tidak memengaruhi navbar/sidebar.">
+                            <div className="pf-input-icon">
+                              <Award size={15} />
+                              <input type="text" name="school_accreditation" value={formData.school_accreditation} onChange={handleChange} className="pf-input" />
+                            </div>
+                          </Field>
                         </div>
-                      ))}
+                      </section>
+
+                      {/* ============ LOGO & FOTO UTAMA ============ */}
+                      <section className="pf-block">
+                        <CardHead icon={ImageIcon} title="Logo & Foto Profil" desc="Logo dipakai di navbar. Foto utama dipakai di bagian Profil Sekolah." />
+                        <div className="pf-grid">
+                          <Field label="Logo Sekolah (Icon)">
+                            <ImageUploader
+                              value={formData.school_logo}
+                              onChange={(r) => handleImageChange('school_logo', r)}
+                              aspect={1}
+                              maxSizeMB={2}
+                              previewLabel="Logo"
+                              urlPlaceholder="/src/assets/logo1.png atau https://..."
+                              editorTitle="Edit Logo Sekolah"
+                              previewMaxWidth={220}
+                            />
+                          </Field>
+                          <Field label="Foto Utama / Profil">
+                            <ImageUploader
+                              value={formData.school_profile_image}
+                              onChange={(r) => handleImageChange('school_profile_image', r)}
+                              aspect={4 / 3}
+                              maxSizeMB={2}
+                              previewLabel="Foto profil"
+                              urlPlaceholder="/src/assets/visi.jpg atau https://..."
+                              editorTitle="Edit Foto Utama / Profil"
+                              previewMaxWidth={320}
+                            />
+                          </Field>
+                        </div>
+                      </section>
+
+                      {/* ============ HERO BERANDA ============ */}
+                      <section className="pf-block pf-block-cover">
+                        <CardHead
+                          icon={Sparkles}
+                          title="Hero Beranda"
+                          desc="Ganti foto latar hero dan atur warna transparan di atasnya. Lihat hasilnya langsung di preview."
+                          aside={<span className="pf-live-chip"><i /> Live</span>}
+                        />
+
+                        <HeroLivePreview data={formData} />
+
+                        <div className="pf-media-grid">
+                          {/* --- Foto latar (CRUD) --- */}
+                          <div className="pf-well">
+                            <div className="pf-well-title"><ImageIcon size={15} /> Foto Latar Hero</div>
+                            <ImageUploader
+                              value={formData.hero_bg_image}
+                              onChange={(r) => handleImageChange('hero_bg_image', r)}
+                              aspect={16 / 9}
+                              aspectOptions={['free', '16:9', '4:3', 'full']}
+                              maxSizeMB={3}
+                              outputMaxWidth={1920}
+                              fit="cover"
+                              previewLabel="Foto hero"
+                              previewMaxWidth={420}
+                              urlPlaceholder="https://... (kosong = foto bawaan)"
+                              editorTitle="Edit Foto Latar Hero"
+                              uploadText="Pilih atau tarik foto hero ke sini"
+                            />
+                            {!formData.hero_bg_image && (
+                              <p className="pf-hint">Belum ada foto khusus — beranda memakai foto bawaan sekolah. Disarankan foto landscape minimal 1600px.</p>
+                            )}
+                          </div>
+
+                          {/* --- Warna transparan (overlay) --- */}
+                          <div className="pf-well">
+                            <div className="pf-well-title">
+                              <Palette size={15} /> Warna Transparan
+                              {overlayChanged && (
+                                <button type="button" className="pf-reset" onClick={resetHeroOverlay}><RotateCcw size={12} /> Reset</button>
+                              )}
+                            </div>
+
+                            <div className="pf-sub">Warna</div>
+                            <div className="pf-swatches">
+                              {HERO_OVERLAY_SWATCHES.map((s) => (
+                                <button
+                                  key={s.color} type="button" title={s.label} aria-label={s.label}
+                                  className={`pf-swatch ${heroColor === s.color ? 'on' : ''}`}
+                                  style={{ background: s.color }}
+                                  onClick={() => setField('hero_overlay_color', s.color)}
+                                />
+                              ))}
+                              <label className="pf-swatch pf-swatch-custom" title="Warna sendiri">
+                                <input type="color" value={heroColor} onChange={(e) => setField('hero_overlay_color', e.target.value)} />
+                              </label>
+                            </div>
+                            <input
+                              type="text" className="pf-input pf-mono" value={formData.hero_overlay_color || ''} spellCheck={false}
+                              placeholder="#0f172a" maxLength={7}
+                              onChange={(e) => setField('hero_overlay_color', e.target.value)}
+                              onBlur={(e) => setField('hero_overlay_color', normalizeHex(e.target.value))}
+                            />
+
+                            <div className="pf-sub pf-sub-row">
+                              <span><SlidersHorizontal size={13} /> Kekuatan warna</span>
+                              <b>{heroOpacity}%</b>
+                            </div>
+                            <input
+                              type="range" min="0" max="100" step="1" value={heroOpacity} className="pf-range"
+                              style={{ '--pf-fill': `${heroOpacity}%` }}
+                              onChange={(e) => setField('hero_overlay_opacity', e.target.value)}
+                              aria-label="Kekuatan warna transparan"
+                            />
+                            <div className="pf-range-legend"><span>Foto jelas</span><span>Foto gelap</span></div>
+
+                            <div className="pf-sub">Arah gradasi</div>
+                            <div className="pf-seg" role="radiogroup">
+                              {HERO_OVERLAY_STYLES.map((o) => (
+                                <button
+                                  key={o.value} type="button" role="radio" aria-checked={(formData.hero_overlay_style || 'left') === o.value}
+                                  className={(formData.hero_overlay_style || 'left') === o.value ? 'on' : ''}
+                                  onClick={() => setField('hero_overlay_style', o.value)}
+                                >{o.label}</button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <Field label="Deskripsi Singkat (Hero)" hint="Kalimat di bawah judul beranda.">
+                          <textarea name="hero_description" value={formData.hero_description} onChange={handleChange} className="pf-input pf-textarea" rows={3} />
+                        </Field>
+                      </section>
+
+                      {/* ============ VISI MISI ============ */}
+                      <section className="pf-block">
+                        <CardHead icon={Target} title="Visi & Misi" desc="Arah dan tujuan sekolah." />
+                        <div className="pf-grid">
+                          <Field label="Visi">
+                            <textarea name="school_vision" value={formData.school_vision} onChange={handleChange} className="pf-input pf-textarea tall" rows={5} />
+                          </Field>
+                          <Field label="Misi (gunakan titik koma ; atau baris baru)">
+                            <textarea name="school_mission" value={formData.school_mission} onChange={handleChange} className="pf-input pf-textarea tall" rows={5} />
+                          </Field>
+                        </div>
+                      </section>
                     </div>
-                  </div>
+                  } />
 
-                  {/* --- EDITOR WARNA CUSTOM --- */}
-                  {formData.theme_mode === 'custom' && (
-                    <div className="ms-custom-zone">
-                      <div className="ms-custom-head">
-                        <p className="ms-custom-title" style={{ margin: 0 }}>Kustomisasi Warna Detail</p>
-                        <button type="button" className="ms-mini-btn" onClick={resetCustom}>Reset ke awal</button>
-                      </div>
-                      <p className="ms-helper-text">
-                        Berlaku untuk dashboard admin &amp; halaman publik. Kolom bertanda “otomatis” dihitung dari warna dasar —
-                        isi hanya jika ingin mengatur sendiri.
-                      </p>
+                  {/* ============ TAB 2: TEMA & TAMPILAN ============ */}
+                  <Route path="appearance" element={
+                    <div className="pf">
+                      <TabIntro
+                        icon={Palette} pill="Tema & Font" title="Appearance"
+                        desc="Perubahan langsung terlihat di seluruh website. Klik “Simpan Pengaturan” agar permanen."
+                      />
 
-                      <div className="ms-preset-row">
-                        <span className="ms-helper-text" style={{ margin: 0 }}>Mulai dari:</span>
-                        <button type="button" className="ms-mini-btn" onClick={() => copyPreset('light')}>Light</button>
-                        <button type="button" className="ms-mini-btn" onClick={() => copyPreset('dark')}>Dark</button>
-                        <button type="button" className="ms-mini-btn" onClick={() => copyPreset('system')}>System</button>
-                      </div>
+                      {/* --- PILIH TEMA --- */}
+                      <section className="pf-block">
+                        <CardHead icon={Palette} title="Tema" desc="Pilih tema untuk dashboard dan website publik." />
+                        <div className="st-themes" role="radiogroup" aria-label="Pilih tema">
+                          {THEME_CARDS.map(({ value, label, note, icon: Icon }) => {
+                            const on = formData.theme_mode === value;
+                            const pal = value === 'custom' ? resolveCustom(formData) : PRESETS[value];
+                            return (
+                              <button
+                                key={value} type="button" role="radio" aria-checked={on}
+                                className={`st-theme ${on ? 'is-on' : ''}`}
+                                onClick={() => setField('theme_mode', value)}
+                              >
+                                <span className="st-theme-frame">
+                                  <ThemeMock p={pal} />
+                                  {on && <i className="st-tick"><Check size={12} strokeWidth={3} /></i>}
+                                </span>
+                                <span className="st-theme-meta"><Icon size={14} /><b>{label}</b></span>
+                                <em className="st-theme-note">{note}</em>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </section>
 
-                      {CUSTOM_GROUPS.map((g) => (
-                        <div key={g.title}>
-                          <div className="ms-group-title">{g.title}</div>
-                          <div className="ms-color-group">
-                            {g.fields.map(([name, label, auto]) => (
-                              <ColorField
-                                key={name} name={name} label={label} auto={!!auto}
-                                value={formData[name]} resolved={resolved[CUSTOM_FIELD_MAP[name]]} onChange={setField}
-                              />
+                      {/* --- PREVIEW LANGSUNG --- */}
+                      <section className="pf-block">
+                        <CardHead
+                          icon={Eye} title="Preview Langsung" desc="Pratinjau memakai pilihan tema, font, dan warna di sini."
+                          aside={<span className="pf-live-chip"><i /> Live</span>}
+                        />
+                        <ThemePreview data={formData} />
+                      </section>
+
+                      {/* --- FONT (4 pilihan) --- */}
+                      <section className="pf-block">
+                        <CardHead icon={Type} title="Tipografi" desc="Font untuk dashboard dan website publik." />
+                        <div className="st-fonts" role="radiogroup" aria-label="Pilih font">
+                          {FONT_OPTIONS.map((f) => {
+                            const on = formData.font_family === f.value;
+                            return (
+                              <button
+                                key={f.value} type="button" role="radio" aria-checked={on}
+                                className={`st-font ${on ? 'is-on' : ''}`}
+                                onClick={() => setField('font_family', f.value)}
+                              >
+                                <b className="st-font-aa" data-own-font style={{ fontFamily: f.stack }}>Aa</b>
+                                <b className="st-font-name" data-own-font style={{ fontFamily: f.stack }}>{f.label}</b>
+                                <em className="st-font-hint">{f.hint}</em>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </section>
+
+                      {/* --- EDITOR WARNA CUSTOM --- */}
+                      {formData.theme_mode === 'custom' && (
+                        <section className="pf-block">
+                          <CardHead
+                            icon={Pipette} title="Kustomisasi Warna"
+                            desc="Berlaku untuk dashboard admin dan halaman publik. Kolom “otomatis” dihitung dari warna dasar — isi hanya jika ingin mengatur sendiri."
+                            aside={<button type="button" className="ms-mini-btn" onClick={resetCustom}><RotateCcw size={12} /> Reset</button>}
+                          />
+                          <div className="ms-preset-row">
+                            <span className="pf-hint">Mulai dari:</span>
+                            <button type="button" className="ms-mini-btn" onClick={() => copyPreset('light')}>Light</button>
+                            <button type="button" className="ms-mini-btn" onClick={() => copyPreset('dark')}>Dark</button>
+                            <button type="button" className="ms-mini-btn" onClick={() => copyPreset('system')}>System</button>
+                          </div>
+                          <div className="st-folds">
+                            {CUSTOM_GROUPS.map((g, i) => (
+                              <details className="st-fold" key={g.title} open={i === 0}>
+                                <summary><b>{g.title}</b><ChevronDown size={16} /></summary>
+                                <div className="ms-color-group">
+                                  {g.fields.map(([name, label, auto]) => (
+                                    <ColorField
+                                      key={name} name={name} label={label} auto={!!auto}
+                                      value={formData[name]} resolved={resolved[CUSTOM_FIELD_MAP[name]]} onChange={setField}
+                                    />
+                                  ))}
+                                </div>
+                              </details>
                             ))}
                           </div>
+                        </section>
+                      )}
+                    </div>
+                  } />
+
+                  {/* ============ TAB 3: KONTAK & MAPS ============ */}
+                  <Route path="contact" element={
+                    <div className="pf">
+                      <TabIntro
+                        icon={MapPin} pill="Kontak & Lokasi" title="Contact & Maps"
+                        desc="Perbarui kontak dan lokasi sekolah. Setelah disimpan, footer website langsung berubah."
+                      />
+
+                      <section className="pf-block">
+                        <CardHead icon={Phone} title="Kontak Sekolah" desc="Telepon, email, dan alamat yang tampil di footer." />
+                        <div className="pf-grid">
+                          <Field label="Telepon">
+                            <div className="pf-input-icon">
+                              <Phone size={15} />
+                              <input type="text" inputMode="tel" name="contact_phone" value={formData.contact_phone} onChange={handleChange} className="pf-input" placeholder="0260 7547733" />
+                            </div>
+                          </Field>
+                          <Field label="Email">
+                            <div className="pf-input-icon">
+                              <Mail size={15} />
+                              <input type="text" inputMode="email" name="contact_email" value={formData.contact_email} onChange={handleChange} className="pf-input" placeholder="info@smkncompreng.sch.id" />
+                            </div>
+                          </Field>
                         </div>
-                      ))}
+                        <Field label="Alamat" hint="Tampil di footer dan menjadi tautan ke Google Maps.">
+                          <textarea name="contact_address" value={formData.contact_address} onChange={handleChange} className="pf-input pf-textarea" rows={3} placeholder="Jl. Compreng, Kec. Compreng, Kabupaten Subang, Jawa Barat 41258" />
+                        </Field>
+                      </section>
+
+                      <section className="pf-block">
+                        <CardHead icon={MapPin} title="Peta Lokasi" desc="Peta Google Maps yang tampil di footer." />
+                        <Field
+                          label="Kode embed / link Google Maps"
+                          hint="Google Maps → Bagikan → Sematkan peta → salin HTML <iframe> lalu tempel di sini. Jika dikosongkan, peta dibuat otomatis dari alamat."
+                        >
+                          <input
+                            type="text" name="contact_map_embed_url" value={formData.contact_map_embed_url} onChange={handleChange}
+                            className="pf-input" placeholder="Tempel kode embed / link Google Maps (boleh kosong)"
+                          />
+                        </Field>
+                        {mapSrc ? (
+                          <div className="ms-map-frame">
+                            <iframe title="Preview peta" src={mapSrc} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
+                          </div>
+                        ) : (
+                          <p className="pf-hint">Isi alamat atau link peta untuk melihat preview.</p>
+                        )}
+                      </section>
+
+                      <section className="pf-block">
+                        <CardHead icon={Share2} title="Media Sosial" desc="Kosongkan kolom untuk menyembunyikan ikon sosial media tersebut di footer." />
+                        <div className="pf-grid">
+                          {SOCIAL_FIELDS.map(([name, label, Icon, placeholder]) => (
+                            <Field key={name} label={label}>
+                              <div className="pf-input-icon">
+                                <Icon size={15} />
+                                <input type="url" name={name} value={formData[name]} onChange={handleChange} className="pf-input" placeholder={placeholder} />
+                              </div>
+                            </Field>
+                          ))}
+                        </div>
+                      </section>
                     </div>
-                  )}
-                </div>
-              } />
+                  } />
+                  <Route path="database" element={<DatabaseBackupPanel />} />
+                </Routes>
+              </div>
 
-              {/* ============ TAB 3: KONTAK & MAPS ============ */}
-              <Route path="contact" element={
-                <div>
-                  <div className="ms-section-header">
-                    <h3 className="ms-section-title">Contact & Maps</h3>
-                    <p className="ms-section-desc">Perbarui kontak dan lokasi sekolah. Setelah disimpan, footer website langsung berubah.</p>
+              {!isDatabase && (
+                <div className={`st-bar ${isDirty ? 'is-dirty' : ''}`} role="region" aria-label="Simpan pengaturan">
+                  <div className="st-bar-info" aria-live="polite">
+                    <i className="st-dot" aria-hidden="true" />
+                    <b>{isDirty ? 'Belum disimpan' : 'Tersimpan'}</b>
+                    <em className="st-msg">{isDirty ? 'Ada perubahan yang belum disimpan.' : 'Semua perubahan sudah tersimpan.'}</em>
                   </div>
-
-                  <div className="ms-grid">
-                    <div className="ms-input-group">
-                      <label className="ms-label">Telepon</label>
-                      <input type="text" inputMode="tel" name="contact_phone" value={formData.contact_phone} onChange={handleChange} className="ms-input" placeholder="0260 7547733" />
-                    </div>
-                    <div className="ms-input-group">
-                      <label className="ms-label">Email</label>
-                      <input type="text" inputMode="email" name="contact_email" value={formData.contact_email} onChange={handleChange} className="ms-input" placeholder="info@smkncompreng.sch.id" />
-                    </div>
-                  </div>
-
-                  <div className="ms-input-group">
-                    <label className="ms-label">Alamat</label>
-                    <textarea name="contact_address" value={formData.contact_address} onChange={handleChange} className="ms-textarea short" placeholder="Jl. Compreng, Kec. Compreng, Kabupaten Subang, Jawa Barat 41258" />
-                    <p className="ms-helper-text">Tampil di footer dan menjadi tautan ke Google Maps.</p>
-                  </div>
-
-                  <div className="ms-input-group">
-                    <label className="ms-label">Peta Lokasi (Google Maps)</label>
-                    <input
-                      type="text" name="contact_map_embed_url" value={formData.contact_map_embed_url} onChange={handleChange}
-                      className="ms-input" placeholder="Tempel kode embed / link Google Maps (boleh kosong)"
-                    />
-                    <p className="ms-helper-text">
-                      Google Maps → Bagikan → Sematkan peta → salin HTML {'<iframe>'} lalu tempel di sini. Jika dikosongkan, peta dibuat otomatis dari alamat.
-                    </p>
-                    {mapSrc ? (
-                      <div className="ms-map-frame">
-                        <iframe title="Preview peta" src={mapSrc} loading="lazy" referrerPolicy="no-referrer-when-downgrade" />
-                      </div>
-                    ) : (
-                      <p className="ms-helper-text">Isi alamat atau link peta untuk melihat preview.</p>
+                  <div className="st-bar-actions">
+                    {isDirty && (
+                      <button type="button" className="st-ghost" onClick={discardChanges} disabled={isSaving} aria-label="Batalkan perubahan">
+                        <Undo2 size={15} /><em className="st-ghost-label">Batalkan</em>
+                      </button>
                     )}
+                    <button type="submit" className="st-save" disabled={isSaving}>
+                      {isSaving ? (
+                        <><Loader2 className="animate-spin" size={16} /><b>Menyimpan...</b></>
+                      ) : (
+                        <><b className="st-long">Simpan Pengaturan</b><b className="st-short">Simpan</b></>
+                      )}
+                    </button>
                   </div>
-
-                  <div className="ms-grid">
-                    <div className="ms-input-group"><label className="ms-label">Facebook</label><input type="url" name="social_facebook" value={formData.social_facebook} onChange={handleChange} className="ms-input" placeholder="https://facebook.com/..." /></div>
-                    <div className="ms-input-group"><label className="ms-label">Instagram</label><input type="url" name="social_instagram" value={formData.social_instagram} onChange={handleChange} className="ms-input" placeholder="https://instagram.com/..." /></div>
-                    <div className="ms-input-group"><label className="ms-label">YouTube</label><input type="url" name="social_youtube" value={formData.social_youtube} onChange={handleChange} className="ms-input" placeholder="https://youtube.com/@..." /></div>
-                    <div className="ms-input-group"><label className="ms-label">TikTok</label><input type="url" name="social_tiktok" value={formData.social_tiktok} onChange={handleChange} className="ms-input" placeholder="https://tiktok.com/@..." /></div>
-                    <div className="ms-input-group"><label className="ms-label">X (Twitter)</label><input type="url" name="social_twitter" value={formData.social_twitter} onChange={handleChange} className="ms-input" placeholder="https://x.com/..." /></div>
-                  </div>
-                  <p className="ms-helper-text" style={{ marginTop: '-12px' }}>Kosongkan kolom untuk menyembunyikan ikon sosial media tersebut di footer.</p>
                 </div>
-              } />
-              <Route path="database" element={<DatabaseBackupPanel />} />
-            </Routes>
-
-            {!isDatabase && (
-            <div className="ms-submit-area">
-              <button type="submit" className="btn-modern-primary" disabled={isSaving}>
-                {isSaving ? (<><Loader2 className="animate-spin" size={18} />Menyimpan Perubahan...</>) : 'Simpan Pengaturan'}
-              </button>
-              {isAppearance && (
-                <button type="button" className="ms-ghost-btn" onClick={discardTheme} disabled={isSaving}>Batalkan perubahan</button>
               )}
-            </div>
-            )}
-          </form>
+            </form>
+          </div>
         </div>
       </div>
 

@@ -418,3 +418,240 @@
   .dashboard-container .dashboard-sidebar,
   .dashboard-container .sidebar-overlay { transition: none !important; animation: none !important; }
 }
+
+/* ==========================================================================
+   TOPBAR ADMIN BARU — breadcrumb, pencarian, tombol "Lihat Website", pill profil
+   + tombol "Download Report" yang rapi di HP.
+   Semua warna lewat token tema (--compreng-*) sehingga ikut Light/Dark/System/Custom.
+   Ditaruh paling bawah (file ini dimuat terakhir) supaya menang atas theme.css.
+   ========================================================================== */
+
+/* Garis aksen gradasi di tepi bawah topbar */
+.dashboard-container .topbar {
+  position: relative;
+  gap: 16px;
+}
+.dashboard-container .topbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    var(--compreng-accent, #16a34a) 0%,
+    var(--compreng-nav-accent, #a3e635) 55%,
+    transparent 100%
+  );
+  opacity: .85;
+}
+
+.dashboard-container .topbar-left { min-width: 0; gap: 14px; }
+.dashboard-container .topbar-right { gap: 10px; flex-shrink: 0; }
+
+/* Tombol toggle sidebar: kotak lembut seperti desain */
+.dashboard-container .btn-sidebar-toggle {
+  width: 40px;
+  height: 40px;
+  justify-content: center;
+  border-radius: 12px;
+  flex-shrink: 0;
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #16a34a) 22%, var(--compreng-border, #e2e8f0));
+  background: color-mix(in srgb, var(--compreng-accent, #16a34a) 9%, var(--compreng-surface, #fff));
+  color: var(--compreng-accent, #16a34a);
+  transition: background-color .15s ease, border-color .15s ease;
+}
+.dashboard-container .btn-sidebar-toggle:hover {
+  background: color-mix(in srgb, var(--compreng-accent, #16a34a) 16%, var(--compreng-surface, #fff));
+}
+.dashboard-container .topbar .btn-sidebar-toggle svg { color: currentColor; }
+
+/* Breadcrumb */
+.dashboard-container .topbar-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  flex-shrink: 1;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.dashboard-container .topbar-breadcrumb .topbar-crumb-root {
+  color: var(--compreng-text-secondary, #475569) !important;
+  text-decoration: none;
+  border-radius: 6px;
+  padding: 2px 4px;
+}
+.dashboard-container .topbar-breadcrumb .topbar-crumb-root:hover {
+  color: var(--compreng-accent, #16a34a) !important;
+}
+.dashboard-container .topbar-breadcrumb .topbar-crumb-sep {
+  flex-shrink: 0;
+  color: var(--compreng-text-muted, #94a3b8);
+}
+.dashboard-container .topbar-breadcrumb .topbar-crumb-current {
+  color: var(--compreng-text, #0f172a) !important;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+}
+
+/* Pencarian cepat: tinted lembut seperti desain */
+.dashboard-container .qs-trigger {
+  width: 320px;
+  flex-shrink: 1;
+  border-color: color-mix(in srgb, var(--compreng-accent, #16a34a) 20%, var(--compreng-border, #e2e8f0));
+  background: color-mix(in srgb, var(--compreng-accent, #16a34a) 7%, var(--compreng-surface, #fff));
+}
+.dashboard-container .qs-trigger .qs-trigger-glyph { color: var(--compreng-accent, #16a34a); }
+
+/* Tombol "Lihat Website" */
+.dashboard-container .topbar-site-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #16a34a) 20%, var(--compreng-border, #e2e8f0));
+  background: color-mix(in srgb, var(--compreng-accent, #16a34a) 7%, var(--compreng-surface, #fff));
+  color: var(--compreng-text, #0f172a);
+  font-size: 13.5px;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background-color .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+.dashboard-container .topbar-site-link .topbar-site-link-text { color: inherit !important; }
+.dashboard-container .topbar-site-link svg { color: var(--compreng-accent, #16a34a); flex-shrink: 0; }
+.dashboard-container .topbar-site-link:hover {
+  background: color-mix(in srgb, var(--compreng-accent, #16a34a) 14%, var(--compreng-surface, #fff));
+  border-color: color-mix(in srgb, var(--compreng-accent, #16a34a) 45%, var(--compreng-border, #e2e8f0));
+  box-shadow: 0 1px 2px var(--compreng-shadow, rgba(15, 23, 42, .08));
+}
+.dashboard-container .topbar-site-link:focus-visible,
+.dashboard-container .topbar-user-btn:focus-visible,
+.dashboard-container .btn-sidebar-toggle:focus-visible {
+  outline: 2px solid var(--compreng-accent, #16a34a);
+  outline-offset: 2px;
+}
+
+/* Pill profil: nama + email di kiri, avatar bulat di kanan */
+.dashboard-container .topbar-user-btn {
+  padding: 3px 4px 3px 16px;
+  gap: 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #16a34a) 20%, var(--compreng-border, #e2e8f0));
+  background: color-mix(in srgb, var(--compreng-accent, #16a34a) 7%, var(--compreng-surface, #fff));
+  max-width: 260px;
+}
+.dashboard-container .topbar-user-btn:hover {
+  background: color-mix(in srgb, var(--compreng-accent, #16a34a) 14%, var(--compreng-surface, #fff));
+}
+.dashboard-container .topbar-user-btn .topbar-user-initial {
+  width: 38px;
+  height: 38px;
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--compreng-accent, #16a34a) 35%, transparent);
+}
+.dashboard-container .topbar-user-btn .topbar-user-initial {
+  --ring: color-mix(in srgb, var(--compreng-accent, #16a34a) 7%, var(--compreng-surface, #fff));
+}
+.dashboard-container .topbar-user-photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* ---------- Download Report ---------- */
+.dashboard-container .dash-btn-download {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.dashboard-container .dash-btn-download svg { flex-shrink: 0; }
+.dashboard-container .dash-btn-download span { color: inherit !important; }
+
+/* ---------- RESPONSIF TOPBAR ---------- */
+/* Kiri (toggle + breadcrumb) boleh menyusut; kanan (pencarian, situs, profil) tetap utuh */
+.dashboard-container .topbar-left { flex: 1 1 auto; }
+.dashboard-container .topbar-breadcrumb { flex: 1 1 auto; }
+
+@media (max-width: 1100px) {
+  .dashboard-container .qs-trigger { width: 240px; }
+  .dashboard-container .topbar-user-btn { max-width: 210px; }
+}
+
+/* Tablet: pencarian, situs, dan profil jadi ringkas */
+@media (max-width: 900px) {
+  .dashboard-container .qs-trigger { width: 40px; padding: 0; justify-content: center; }
+  .dashboard-container .qs-trigger .qs-trigger-label,
+  .dashboard-container .qs-trigger .qs-trigger-keys { display: none; }
+  .dashboard-container .topbar-site-link { width: 40px; padding: 0; }
+  .dashboard-container .topbar-site-link .topbar-site-link-text { display: none; }
+  .dashboard-container .topbar-user-btn { padding: 3px; gap: 0; max-width: none; border-radius: 50%; }
+  .dashboard-container .topbar-user-btn .topbar-user-info { display: none; }
+}
+
+/* HP: baris tunggal rapi -> [menu] Judul halaman ........ [cari] [web] [avatar] */
+@media (max-width: 640px) {
+  .dashboard-container .topbar { height: 60px; padding: 0 12px; gap: 8px; }
+  .dashboard-container .topbar-left { gap: 10px; }
+  .dashboard-container .topbar-right { gap: 6px; }
+
+  /* Hanya nama halaman aktif (dengan titik-titik bila panjang) */
+  .dashboard-container .topbar-breadcrumb .topbar-crumb-root,
+  .dashboard-container .topbar-breadcrumb .topbar-crumb-sep { display: none; }
+  .dashboard-container .topbar-breadcrumb { font-size: 15px; min-width: 0; }
+  .dashboard-container .topbar-breadcrumb .topbar-crumb-current {
+    display: block;
+    max-width: 100%;
+    font-weight: 700;
+  }
+
+  /* Semua tombol ikon seragam 38px */
+  .dashboard-container .btn-sidebar-toggle,
+  .dashboard-container .qs-trigger,
+  .dashboard-container .topbar-site-link { width: 38px; height: 38px; border-radius: 11px; }
+  .dashboard-container .topbar-user-btn { padding: 2px; }
+  .dashboard-container .topbar-user-btn .topbar-user-initial { width: 36px; height: 36px; }
+
+  /* Header Dashboard: judul di atas, tombol Download Report lebar penuh & mudah ditekan */
+  .dashboard-container .dash-header { flex-direction: column; align-items: stretch; gap: 14px; }
+  .dashboard-container .dash-title { flex: 0 0 auto; }
+  .dashboard-container .dash-btn-download {
+    width: 100%;
+    min-height: 46px;
+    padding: 12px 16px;
+    font-size: 14px;
+    font-weight: 600;
+    border-radius: 12px;
+  }
+}
+
+/* HP sangat kecil (<= 360px): tombol lebih kecil agar judul halaman tetap terbaca */
+@media (max-width: 360px) {
+  .dashboard-container .topbar { padding: 0 8px; gap: 6px; }
+  .dashboard-container .topbar-left { gap: 8px; }
+  .dashboard-container .topbar-right { gap: 4px; }
+  .dashboard-container .btn-sidebar-toggle,
+  .dashboard-container .qs-trigger,
+  .dashboard-container .topbar-site-link { width: 36px; height: 36px; }
+  .dashboard-container .topbar-user-btn .topbar-user-initial { width: 34px; height: 34px; }
+  .dashboard-container .topbar-breadcrumb { font-size: 14px; }
+}
+
+/* Cetak/PDF: topbar tidak ikut tercetak */
+@media print {
+  .dashboard-container .topbar { display: none !important; }
+}

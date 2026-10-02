@@ -7,7 +7,7 @@ import axios from 'axios';
 import { 
   PanelLeft, Search, Sun, Moon, Monitor, LogOut, Users as UsersIcon, Settings as SettingsIcon,
   TrendingUp, Activity, Newspaper, BookOpen, GraduationCap, Trophy, MessageSquare, 
-  Image as ImageIcon, LayoutTemplate, PlusCircle, LayoutDashboard
+  Image as ImageIcon, LayoutTemplate, PlusCircle, LayoutDashboard, ExternalLink, ChevronRight, Download
 } from 'lucide-react';
 import LandingPage from './pages/viewer/LandingPage'; 
 import DetailKurikulumViewer from './pages/viewer/DetailKurikulum';
@@ -94,8 +94,9 @@ import './css/admin-responsive.css'; // RESPONSIVE ADMIN/EDITOR (harus paling ak
     <div className="dash-wrapper">
       <div className="dash-header">
         <h2 className="dash-title">Dashboard Overview</h2>
-        <button className="dash-btn-download" onClick={() => window.print()}>
-          Download Report
+        <button type="button" className="dash-btn-download" onClick={() => window.print()}>
+          <Download size={16} aria-hidden="true" />
+          <span>Download Report</span>
         </button>
       </div>
 
@@ -437,6 +438,27 @@ const DashboardLayout = () => {
 
   const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
+  // Label breadcrumb di topbar (Admin > Nama Halaman) mengikuti URL aktif
+  const BREADCRUMB_LABELS = {
+    dashboard: 'Dashboard',
+    profil: 'Profil Sekolah',
+    berita: 'Berita & Artikel',
+    jurusan: 'Jurusan & Program',
+    ekstrakurikuler: 'Ekstrakurikuler',
+    pengajar: 'Tenaga Pengajar',
+    prestasi: 'Karya & Prestasi',
+    'mitra-industri': 'Mitra Industri',
+    testimoni: 'Testimoni',
+    galeri: 'Galeri Sekolah',
+    faq: 'FAQ',
+    downloads: 'Unduhan',
+    users: 'Kelola Pengguna',
+    settings: 'Pengaturan',
+  };
+  const currentSegment = location.pathname.replace(/^\/admin\/?/, '').split('/')[0] || 'dashboard';
+  const currentPageLabel = BREADCRUMB_LABELS[currentSegment]
+    || currentSegment.charAt(0).toUpperCase() + currentSegment.slice(1).replace(/-/g, ' ');
+
   // ==============================================
   // LOGIKA COMMAND PALETTE (CTRL + K)
   // ==============================================
@@ -506,7 +528,16 @@ const DashboardLayout = () => {
             >
               <PanelLeft size={20} />
             </button>
-            
+
+            {/* Breadcrumb: Admin > Halaman aktif (disembunyikan di layar kecil) */}
+            <nav className="topbar-breadcrumb" aria-label="Breadcrumb">
+              <NavLink to="/admin/dashboard" className="topbar-crumb-root">Admin</NavLink>
+              <ChevronRight size={14} className="topbar-crumb-sep" aria-hidden="true" />
+              <span className="topbar-crumb-current" aria-current="page">{currentPageLabel}</span>
+            </nav>
+          </div>
+          
+          <div className="topbar-right">
             {/* Global Search Bar (Trigger Command Palette) */}
             <button
               type="button"
@@ -522,9 +553,20 @@ const DashboardLayout = () => {
                 <kbd>K</kbd>
               </span>
             </button>
-          </div>
-          
-          <div className="topbar-right">
+
+            {/* Lihat Website: buka halaman publik di tab baru */}
+            <a
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="topbar-site-link"
+              aria-label="Lihat Website (buka di tab baru)"
+              title="Lihat Website"
+            >
+              <ExternalLink size={16} aria-hidden="true" />
+              <span className="topbar-site-link-text">Lihat Website</span>
+            </a>
+
             {/* Profile Dropdown */}
             <div style={{ position: 'relative' }}>
               <button onClick={() => setIsTopUserMenuOpen(!isTopUserMenuOpen)} className="topbar-user-btn">

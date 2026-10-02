@@ -1,258 +1,25 @@
-/* src/css/managesetting.css */
+/* src/css/managesetting.css
+   Halaman Pengaturan Website (/admin/settings/*) — SATU file untuk semua tab.
 
-/* =========================================
-   1. LAYOUT UTAMA
-   ========================================= */
-.ms-wrapper {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 40px 30px 80px 30px;
-  font-family: var(--theme-font, sans-serif);
-}
+   Isi:
+   A. Komponen dasar yang masih dipakai (label, input warna, mockup tema, spinner, toast)
+   B. Blok form "pf-*" (kartu, input, preview hero, swatch, slider)
+   C. Layout modern "st-*" (navigasi tab, pane, tema, font, bar simpan, penyesuaian per tema)
 
-.ms-page-header {
-  margin-bottom: 32px;
-  border-bottom: 1px solid var(--compreng-border);
-  padding-bottom: 24px;
-}
+   Catatan: nama class sengaja menghindari pola -card, -box, -panel, -item, -section, -line, -tag,
+   desc, subtitle, badge, status, thumb, dst. karena theme.css punya selector wildcard !important.
+   Layout memakai CONTAINER QUERY (@container st) karena lebar konten tergantung sidebar dashboard.
+   Semua warna lewat token tema (--compreng-*) -> otomatis benar di light / dark / system / custom. */
 
-.ms-page-title {
-  font-size: 24px;
-  font-weight: 700;
-  color: var(--compreng-text);
-  margin: 0 0 8px 0;
-  letter-spacing: -0.02em;
-}
-
-.ms-page-subtitle {
-  font-size: 14px;
-  color: var(--compreng-text-muted);
-  margin: 0;
-}
-
-.ms-layout-flex {
-  display: flex;
-  gap: 48px;
-  align-items: flex-start;
-  flex-wrap: wrap;
-}
-
-/* =========================================
-   2. SIDEBAR NAVIGASI
-   ========================================= */
-.ms-sidebar {
-  width: 220px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  flex-shrink: 0;
-}
-
-.ms-nav-link {
-  padding: 8px 16px;
-  border-radius: 6px;
-  text-decoration: none;
-  font-size: 13px;
-  font-weight: 500;
-  transition: all 0.2s ease;
-  color: var(--compreng-text-secondary);
-  background: transparent;
-}
-
-.ms-nav-link:hover {
-  background-color: var(--compreng-surface-soft);
-  color: var(--compreng-text);
-}
-
-.ms-nav-link.active {
-  background-color: var(--compreng-surface-soft);
-  color: var(--compreng-text);
-  font-weight: 600;
-}
-
-/* =========================================
-   3. KONTEN FORM
-   ========================================= */
-.ms-content-area {
-  flex: 1;
-  min-width: 300px;
-  max-width: 700px;
-}
-
-.ms-section-header {
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 1px solid var(--compreng-border);
-}
-
-.ms-section-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--compreng-text);
-  margin: 0 0 6px 0;
-  letter-spacing: -0.01em;
-}
-
-.ms-section-desc {
-  font-size: 13px;
-  color: var(--compreng-text-muted);
-  margin: 0;
-  line-height: 1.5;
-}
-
-/* =========================================
-   4. FORM INPUTS & GRID
-   ========================================= */
-.ms-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 24px;
-}
-
-.ms-input-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 28px;
-}
-
-.ms-input-group.medium {
-  max-width: 400px;
-}
-
+/* =====================================================================
+   A. KOMPONEN DASAR
+   ===================================================================== */
 .ms-label {
   font-size: 13px;
   font-weight: 500;
   color: var(--compreng-text);
 }
 
-.ms-helper-text {
-  font-size: 12.5px;
-  color: var(--compreng-text-muted);
-  margin-top: 4px;
-  line-height: 1.4;
-}
-
-.ms-input {
-  padding: 10px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--compreng-border);
-  width: 100%;
-  box-sizing: border-box;
-  background-color: var(--compreng-bg);
-  color: var(--compreng-text);
-  font-size: 13px;
-  outline: none;
-  transition: border 0.2s, box-shadow 0.2s;
-}
-
-.ms-input:focus {
-  border-color: var(--compreng-text-muted);
-  box-shadow: 0 0 0 3px var(--compreng-surface-soft);
-}
-
-.ms-textarea {
-  padding: 12px 14px;
-  border-radius: 6px;
-  border: 1px solid var(--compreng-border);
-  width: 100%;
-  min-height: 100px;
-  resize: vertical;
-  box-sizing: border-box;
-  background-color: var(--compreng-bg);
-  color: var(--compreng-text);
-  font-size: 13px;
-  outline: none;
-  transition: border 0.2s, box-shadow 0.2s;
-}
-
-.ms-textarea:focus {
-  border-color: var(--compreng-text-muted);
-  box-shadow: 0 0 0 3px var(--compreng-surface-soft);
-}
-
-.ms-textarea.tall { min-height: 120px; }
-.ms-textarea.short { min-height: 80px; }
-
-/* =========================================
-   5. TOGGLE Tombol URL / UPLOAD
-   ========================================= */
-.ms-toggle-row {
-  display: flex;
-  gap: 6px;
-}
-
-.ms-toggle-btn {
-  font-size: 11px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  font-weight: 500;
-  background: var(--compreng-surface-soft);
-  color: var(--compreng-text-muted);
-  transition: all 0.2s;
-}
-
-.ms-toggle-btn:hover {
-  background: var(--compreng-border);
-  color: var(--compreng-text);
-}
-
-.ms-toggle-btn.active {
-  background: var(--compreng-text);
-  color: var(--compreng-bg);
-}
-
-.ms-preview-img {
-  width: 60px;
-  height: 60px;
-  object-fit: contain;
-  border-radius: 6px;
-  border: 1px solid var(--compreng-border);
-  margin-top: 10px;
-  background-color: var(--compreng-bg);
-  padding: 4px;
-}
-
-.ms-preview-img.hero {
-  width: 100px;
-  object-fit: cover;
-}
-
-/* =========================================
-   6. CUSTOM THEME COLORS BOX
-   ========================================= */
-.ms-custom-panel {
-  margin-top: 30px;
-  background-color: var(--compreng-bg);
-  padding: 24px;
-  border-radius: 8px;
-  border: 1px solid var(--compreng-border);
-}
-
-.ms-custom-title {
-  font-size: 14px;
-  margin-bottom: 20px;
-  font-weight: 600;
-  color: var(--compreng-text);
-}
-
-.ms-color-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 20px;
-}
-
-.ms-color-box {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  background-color: var(--compreng-bg);
-  border: 1px solid var(--compreng-border);
-  border-radius: 6px;
-  padding: 6px 10px;
-}
 
 .ms-color-picker {
   border: none;
@@ -271,233 +38,6 @@
   font-size: 13px;
 }
 
-/* =========================================
-   7. THEME DROPDOWN (SHADCN SELECT)
-   ========================================= */
-.ms-theme-wrapper {
-  position: relative;
-  width: 100%;
-  max-width: 400px;
-  margin-top: 4px;
-}
-
-.ms-theme-trigger {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
-}
-
-.ms-theme-trigger-content {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.ms-theme-menu {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  z-index: 100;
-  background: var(--compreng-surface);
-  border: 1px solid var(--compreng-border);
-  border-radius: 6px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-  max-height: 300px;
-  overflow-y: auto;
-  margin-top: 5px;
-}
-
-.ms-theme-group-label {
-  padding: 8px 12px;
-  background: var(--compreng-bg);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--compreng-text-muted);
-  text-transform: uppercase;
-}
-
-.ms-theme-item {
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  border-bottom: 1px solid var(--compreng-border);
-  background: transparent;
-  transition: background 0.2s;
-}
-
-.ms-theme-item:hover {
-  background: var(--compreng-surface-soft);
-}
-
-.ms-theme-item.active {
-  background: var(--compreng-bg);
-}
-
-.ms-theme-item-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.ms-theme-item-text {
-  font-size: 13px;
-  color: var(--compreng-text);
-}
-
-/* =========================================
-   8. FOOTER / SUBMIT BUTTON
-   ========================================= */
-.ms-submit-area {
-  margin-top: 20px;
-  padding-top: 10px;
-  display: flex;
-  justify-content: flex-start;
-}
-
-/* Standarisasi Tombol Modern (Di-copy dari file yang sudah disepakati) */
-.btn-modern-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background-color: var(--compreng-text);
-  color: var(--compreng-bg);
-  padding: 12px 24px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 14px;
-  border: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-}
-
-.btn-modern-primary:hover {
-  opacity: 0.85;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
-}
-
-/* =========================================
-   BENTO THEME CARDS
-   ========================================= */
-.bento-theme-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 16px;
-  margin-top: 10px;
-}
-
-.bento-card {
-  background: var(--compreng-surface);
-  border: 2px solid var(--compreng-border);
-  border-radius: 16px;
-  padding: 20px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  position: relative;
-}
-
-.bento-card:hover {
-  border-color: var(--compreng-border, #e2e8f0);
-  transform: translateY(-2px);
-}
-
-.bento-card.active {
-  border-color: var(--compreng-accent, #2563eb);
-  background: var(--compreng-surface-soft, #f1f5f9); /* Background biru sangat soft jika aktif */
-}
-
-/* Mengubah warna jika mode gelap aktif */
-[data-theme='dark'] .bento-card.active {
-  background: var(--compreng-accent-hover, #1d4ed8);
-}
-
-.bento-icon {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 16px;
-}
-
-.bento-card h4 {
-  margin: 0 0 6px 0;
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--compreng-text);
-}
-
-.bento-card p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--compreng-text-secondary);
-  line-height: 1.4;
-}
-
-/* =========================================
-   SHADCN STYLE THEME SELECTOR
-   ========================================= */
-.shadcn-theme-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 24px;
-  margin-top: 16px;
-}
-
-.shadcn-theme-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-}
-
-.shadcn-theme-box {
-  position: relative;
-  width: 160px;
-  height: 104px;
-  border: 2px solid var(--compreng-border);
-  border-radius: 10px;
-  background-color: var(--compreng-surface-soft); /* Warna abu-abu background luar */
-  padding: 8px;
-  transition: all 0.2s ease;
-}
-
-/* Warna border aktif (Hitam di Light Mode, Putih di Dark Mode) */
-.shadcn-theme-box.active {
-  border-color: var(--compreng-text); 
-}
-
-/* Icon Checklist Shadcn (muncul saat aktif) */
-.shadcn-check-icon {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  background-color: var(--compreng-text);
-  color: var(--compreng-bg);
-  border-radius: 50%;
-  padding: 2px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-.shadcn-theme-label {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--compreng-text);
-}
 
 /* =========================================
    MOCKUP UI (WIREFRAME MINI)
@@ -556,6 +96,7 @@
   flex: 1;
   border-radius: 4px;
 }
+
 
 /* =========================================
    ANIMASI SPINNER LOADING (LUCIDE)
@@ -616,12 +157,10 @@
   100% { transform: translateY(0); opacity: 1; }
 }
 
-/* src/css/profilesettings.css — tab Profile (Settings) versi modern.
-   Prefix "pf-". Nama class sengaja tidak memakai "-card/-panel/-box/-item/-tag/-desc/hero"
-   karena theme.css punya selector wildcard [class*="..."] yang memaksa warna. */
 
-.ms-content-area.profile { max-width: none; min-width: 0; }
-
+/* =====================================================================
+   B. BLOK FORM (pf-*)
+   ===================================================================== */
 .pf {
   --pf-r: 20px;
   --pf-tint: color-mix(in srgb, var(--compreng-accent, #2563eb) 10%, transparent);
@@ -781,14 +320,398 @@
 .pf-seg button:hover { color: var(--compreng-text); }
 .pf-seg button.on { color: var(--compreng-accent-text, #fff); background: var(--compreng-accent); box-shadow: 0 4px 12px -4px var(--compreng-accent); }
 
-/* ---------- Tombol simpan melayang ---------- */
-.ms-content-area.profile .ms-submit-area {
-  position: sticky; bottom: 16px; z-index: 20; margin-top: 24px; padding: 12px 14px; border-radius: 18px;
-  background: color-mix(in srgb, var(--compreng-surface, #fff) 82%, transparent);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-  border: 1px solid var(--compreng-border); box-shadow: 0 16px 40px -16px rgba(15,23,42,.35);
+@media (prefers-reduced-motion: reduce) { .pf-live-chip i { animation: none; } .pf-live-overlay, .pf-block { transition: none; } }
+/* =====================================================================
+   C. LAYOUT MODERN (st-*)
+   ===================================================================== */
+/* =====================================================================
+   0. ROOT + SKALA TEKS
+   Skala teks sengaja kecil & rapat di HP (banyak pengguna memakai ukuran font sistem besar),
+   lalu naik di layar >= 641px. Semua elemen boleh membungkus baris & tidak ada tinggi tetap,
+   jadi layout tetap utuh walau teks diperbesar dari pengaturan HP.
+   ===================================================================== */
+.st-root {
+  --st-gutter: 16px;                       /* = padding .main-content-area di HP/tablet */
+  --st-tint: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent);
+  --st-tint-strong: color-mix(in srgb, var(--compreng-accent, #2563eb) 26%, transparent);
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 0 0 40px;
+  font-family: var(--theme-font, inherit);
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+.st-root *, .st-root *::before, .st-root *::after { box-sizing: border-box; }
+@media (min-width: 1025px) { .st-root { --st-gutter: 30px; } }
+@media (max-width: 480px)  { .st-root { --st-gutter: 12px; } }
+
+.st-head { margin: 0 0 14px; }
+.st-title { margin: 0 0 4px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; line-height: 1.2; }
+.st-sub { margin: 0; max-width: 62ch; font-size: 12.5px; line-height: 1.5; }
+
+@media (min-width: 641px) {
+  .st-head { margin-bottom: 22px; }
+  .st-title { font-size: 26px; }
+  .st-sub { font-size: 14px; }
 }
 
-@media (max-width: 900px) { .pf-media-grid { grid-template-columns: 1fr; } }
-@media (max-width: 560px) { .pf-block { padding: 16px; } .pf-intro h3 { font-size: 22px; } }
-@media (prefers-reduced-motion: reduce) { .pf-live-chip i { animation: none; } .pf-live-overlay, .pf-block { transition: none; } }
+/* =====================================================================
+   1. FRAME + LAYOUT (container query)
+   ===================================================================== */
+.st-frame { container: st / inline-size; }
+.st-layout { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; align-items: start; }
+.st-main { min-width: 0; }
+
+@container st (min-width: 880px) {
+  .st-layout { grid-template-columns: 250px minmax(0, 1fr); gap: 32px; }
+}
+
+/* =====================================================================
+   2. NAVIGASI TAB
+   Mobile / sempit : segmented control (geser horizontal di dalam dirinya sendiri), menempel di atas.
+   Lebar          : rail vertikal dengan ikon + keterangan.
+   Indikator aktif meluncur (JS mengisi --ix --iy --iw --ih).
+   ===================================================================== */
+.st-rail {
+  position: sticky; top: 0; z-index: 25;
+  margin-inline: calc(var(--st-gutter) * -1);
+  padding: 6px var(--st-gutter) 8px;
+  background: color-mix(in srgb, var(--compreng-bg, #f8fafc) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.3);
+  backdrop-filter: blur(14px) saturate(1.3);
+}
+
+.st-nav {
+  position: relative;
+  display: flex; gap: 2px; padding: 4px;
+  border-radius: 16px;
+  background: var(--compreng-surface-soft, #f1f5f9);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  overflow-x: auto; overflow-y: hidden;
+  overscroll-behavior-x: contain;          /* geser tab TIDAK menggeser halaman */
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  scroll-snap-type: x proximity;
+}
+.st-nav::-webkit-scrollbar { display: none; }
+
+.st-root a.st-tab {
+  position: relative; z-index: 1;
+  flex: 1 0 auto;
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  padding: 8px 14px; border-radius: 12px;
+  text-decoration: none; white-space: nowrap;
+  color: var(--compreng-text-secondary, #475569);
+  -webkit-tap-highlight-color: transparent;
+  scroll-snap-align: center;
+  transition: color .2s ease;
+}
+.st-root a.st-tab:hover { color: var(--compreng-text, #0f172a); }
+.st-root a.st-tab.is-on { color: var(--compreng-text, #0f172a); }
+.st-root a.st-tab:focus-visible { outline: 2px solid var(--compreng-accent); outline-offset: 2px; }
+
+.st-tab-ico { flex: none; opacity: .75; transition: color .2s, opacity .2s; }
+.st-tab.is-on .st-tab-ico { color: var(--compreng-accent); opacity: 1; }
+.st-tab-label { font-size: 13px; font-weight: 600; letter-spacing: -.005em; line-height: 1.2; }
+.st-tab-note { display: none; font-style: normal; }
+
+.st-tab-ind {
+  position: absolute; top: 0; left: 0; z-index: 0; pointer-events: none;
+  width: var(--iw, 0px); height: var(--ih, 0px);
+  transform: translate3d(var(--ix, 0px), var(--iy, 0px), 0);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 14%, var(--compreng-surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 34%, transparent);
+  box-shadow: 0 6px 16px -10px var(--compreng-accent, #2563eb);
+}
+.st-tab-ind.is-anim {
+  transition: transform .4s cubic-bezier(.22, 1, .36, 1), width .4s cubic-bezier(.22, 1, .36, 1), height .4s cubic-bezier(.22, 1, .36, 1);
+}
+
+/* HP sangat sempit: sembunyikan ikon supaya 4 tab muat tanpa banyak geser */
+@container st (max-width: 419px) {
+  .st-tab-ico { display: none; }
+  .st-root a.st-tab { padding: 8px 12px; }
+}
+
+/* Layar lebar: rail vertikal */
+@container st (min-width: 880px) {
+  .st-rail { top: 8px; margin-inline: 0; padding: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .st-nav {
+    flex-direction: column; gap: 4px; padding: 8px; border-radius: 22px;
+    background: var(--compreng-surface, #fff);
+    overflow: visible; scroll-snap-type: none;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, .04), 0 12px 32px -18px rgba(15, 23, 42, .18);
+  }
+  .st-root a.st-tab {
+    flex: none; display: grid; grid-template-columns: 34px minmax(0, 1fr); column-gap: 12px; row-gap: 1px;
+    align-items: center; justify-content: stretch;
+    padding: 10px 12px; border-radius: 15px; white-space: normal; text-align: left;
+  }
+  .st-tab-ico {
+    display: block; grid-row: 1 / span 2; width: 34px; height: 34px; padding: 8px; border-radius: 11px; opacity: 1;
+    background: var(--compreng-surface-soft, #f1f5f9); color: var(--compreng-text-secondary);
+  }
+  .st-tab.is-on .st-tab-ico { background: var(--compreng-accent); color: var(--compreng-accent-text, #fff); }
+  .st-tab-label { font-size: 13.5px; }
+  .st-tab-note { display: block; grid-column: 2; font-size: 11.5px; line-height: 1.35; color: var(--compreng-text-secondary); }
+  .st-tab-ind { border-radius: 15px; }
+}
+
+/* =====================================================================
+   3. PANE (animasi saat pindah tab) + INTRO
+   ===================================================================== */
+.st-pane { animation: st-in .34s cubic-bezier(.22, 1, .36, 1) backwards; }
+@keyframes st-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+.st-root .pf { gap: 14px; }
+.st-root .pf-intro h3 { margin: 8px 0 4px; font-size: 19px; line-height: 1.2; }
+.st-root .pf-intro p { font-size: 12.5px; line-height: 1.55; max-width: 60ch; }
+.st-root .pf-pill { font-size: 11px; padding: 4px 10px; color: var(--compreng-accent) !important; }
+
+@media (min-width: 641px) {
+  .st-root .pf { gap: 20px; }
+  .st-root .pf-intro h3 { font-size: 26px; }
+  .st-root .pf-intro p { font-size: 13.5px; }
+  .st-root .pf-pill { font-size: 11.5px; padding: 5px 11px; }
+}
+
+/* =====================================================================
+   4. KARTU BLOK + FORM  (dipakai semua tab -> tampilan seragam)
+   ===================================================================== */
+.st-root .pf-block { padding: 14px; border-radius: 18px; gap: 14px; }
+.st-root .pf-bhead { gap: 12px; align-items: flex-start; }
+.st-root .pf-bicon { width: 34px; height: 34px; border-radius: 10px; }
+.st-root .pf-btitles h4 { font-size: 14px; line-height: 1.25; }
+.st-root .pf-btitles p { font-size: 12px; line-height: 1.5; }
+
+.st-root .pf-field { gap: 6px; }
+.st-root .pf-label { font-size: 12.5px; }
+.st-root .pf-hint { font-size: 11.5px; line-height: 1.5; }
+.st-root .pf-input { font-size: 14px; padding: 10px 12px; border-radius: 12px; }
+.st-root .pf-input-icon .pf-input { padding-left: 40px !important; }
+.st-root .pf-input-icon > svg { left: 13px !important; }
+.st-root .pf-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 14px; }
+
+.st-root .pf-well { padding: 14px; border-radius: 14px; }
+.st-root .pf-media-grid { grid-template-columns: minmax(0, 1fr); }
+.st-root .pf-swatch { width: 30px; height: 30px; }
+
+@media (min-width: 641px) {
+  .st-root .pf-block { padding: 22px; border-radius: 20px; gap: 18px; }
+  .st-root .pf-bhead { align-items: center; gap: 14px; }
+  .st-root .pf-bicon { width: 40px; height: 40px; border-radius: 12px; }
+  .st-root .pf-btitles h4 { font-size: 15.5px; }
+  .st-root .pf-btitles p { font-size: 12.5px; }
+  .st-root .pf-label { font-size: 13px; }
+  .st-root .pf-hint { font-size: 12px; }
+  .st-root .pf-input { padding: 11px 14px; }
+  .st-root .pf-input-icon .pf-input { padding-left: 44px !important; }
+  .st-root .pf-input-icon > svg { left: 14px !important; }
+  .st-root .pf-grid { gap: 18px; }
+  .st-root .pf-well { padding: 16px; border-radius: 16px; }
+}
+
+@container st (min-width: 760px) {
+  .st-root .pf-media-grid { grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); }
+}
+
+/* iOS Safari zoom otomatis kalau font input < 16px -> khusus iOS saja dinaikkan */
+@supports (-webkit-touch-callout: none) {
+  .st-root input.pf-input, .st-root textarea.pf-input,
+  .st-root .ms-color-input { font-size: 16px; }
+}
+
+/* =====================================================================
+   5. APPEARANCE: pilihan tema, font, preview, editor warna
+   ===================================================================== */
+.st-themes, .st-fonts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@container st (min-width: 620px) {
+  .st-themes, .st-fonts { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+}
+
+.st-root button.st-theme, .st-root button.st-font {
+  display: flex; flex-direction: column; align-items: stretch; gap: 8px;
+  width: 100%; min-width: 0; padding: 8px; margin: 0; text-align: left; cursor: pointer;
+  font: inherit; color: var(--compreng-text);
+  background: var(--compreng-surface, #fff);
+  border: 1.5px solid var(--compreng-border, #e2e8f0);
+  border-radius: 16px;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease, background-color .2s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.st-root button.st-theme:hover, .st-root button.st-font:hover {
+  border-color: color-mix(in srgb, var(--compreng-accent) 45%, var(--compreng-border));
+}
+.st-root button.st-theme:focus-visible, .st-root button.st-font:focus-visible { outline: 2px solid var(--compreng-accent); outline-offset: 2px; }
+.st-root button.st-theme.is-on, .st-root button.st-font.is-on {
+  border-color: var(--compreng-accent);
+  background: color-mix(in srgb, var(--compreng-accent) 7%, var(--compreng-surface, #fff));
+  box-shadow: 0 0 0 3px var(--st-tint-strong);
+}
+@media (hover: hover) {
+  .st-root button.st-theme:hover, .st-root button.st-font:hover { transform: translateY(-2px); }
+}
+
+.st-theme-frame {
+  position: relative; display: block; aspect-ratio: 16 / 10; padding: 6px; overflow: hidden;
+  border-radius: 10px; background: var(--compreng-surface-soft, #f1f5f9);
+}
+.st-theme-frame .mock-ui { box-shadow: none; }
+.st-tick {
+  position: absolute; top: 6px; right: 6px; width: 20px; height: 20px; border-radius: 50%;
+  display: grid; place-items: center;
+  background: var(--compreng-accent); color: var(--compreng-accent-text, #fff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, .28);
+  animation: st-pop .3s cubic-bezier(.34, 1.56, .64, 1);
+}
+.st-tick svg { color: var(--compreng-accent-text, #fff) !important; stroke: currentColor !important; }
+@keyframes st-pop { from { transform: scale(.4); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+
+.st-theme-meta { display: flex; align-items: center; gap: 6px; padding: 0 4px; }
+.st-theme-meta svg { flex: none; color: var(--compreng-accent); }
+.st-theme-meta b { font-size: 13px; font-weight: 700; color: var(--compreng-text); }
+.st-theme-note { display: block; padding: 0 4px 4px; font-style: normal; font-size: 11.5px; line-height: 1.4; color: var(--compreng-text-secondary); }
+
+/* font */
+.st-root button.st-font { gap: 2px; padding: 12px 14px; border-radius: 14px; }
+.st-font-aa { font-size: 24px; font-weight: 700; line-height: 1.1; color: var(--compreng-text); }
+.st-font-name { margin-top: 4px; font-size: 13px; font-weight: 700; color: var(--compreng-text); }
+.st-font-hint { font-style: normal; font-size: 11.5px; line-height: 1.4; color: var(--compreng-text-secondary); }
+@media (min-width: 641px) { .st-font-aa { font-size: 30px; } }
+
+/* preview langsung berada di dalam blok -> hilangkan margin lama */
+.st-root .ms-live-frame { margin-top: 0; border-radius: 14px; }
+.st-root .ms-live-bar { flex-wrap: wrap; padding: 8px 12px; }
+.st-root .ms-live-title { font-size: 12.5px; }
+.st-root .ms-tab-pill { padding: 5px 12px; }
+
+/* editor warna: accordion */
+.st-folds { display: grid; gap: 10px; }
+.st-fold { border: 1px solid var(--compreng-border); border-radius: 14px; background: var(--compreng-surface, #fff); overflow: hidden; }
+.st-fold > summary {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 12px 14px; cursor: pointer; list-style: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.st-fold > summary::-webkit-details-marker { display: none; }
+.st-fold > summary:focus-visible { outline: 2px solid var(--compreng-accent); outline-offset: -2px; }
+.st-fold > summary b { font-size: 11.5px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--compreng-text-secondary); }
+.st-fold > summary svg { flex: none; color: var(--compreng-text-secondary); transition: transform .25s ease; }
+.st-fold[open] > summary { border-bottom: 1px solid var(--compreng-border); }
+.st-fold[open] > summary svg { transform: rotate(180deg); }
+.st-root .st-fold .ms-color-group { padding: 14px; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); }
+.st-root .ms-color-cell .ms-label { font-size: 12.5px; flex-wrap: wrap; }
+.st-root .ms-preset-row { margin: 0; }
+.st-root .ms-mini-btn { display: inline-flex; align-items: center; gap: 5px; padding: 6px 12px; font-size: 12px; }
+
+/* peta */
+.st-root .ms-map-frame { margin-top: 0; border-radius: 14px; }
+.st-root .ms-map-frame iframe { height: 200px; }
+@container st (min-width: 620px) { .st-root .ms-map-frame iframe { height: 260px; } }
+
+/* =====================================================================
+   6. BAR SIMPAN (melayang di bawah)
+   ===================================================================== */
+.st-bar {
+  position: sticky; bottom: max(10px, env(safe-area-inset-bottom)); z-index: 30;
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin-top: 16px; padding: 6px 6px 6px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--compreng-surface, #fff) 86%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.4);
+  backdrop-filter: blur(14px) saturate(1.4);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  box-shadow: 0 14px 34px -14px var(--compreng-shadow, rgba(15, 23, 42, .4));
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+.st-bar.is-dirty {
+  border-color: color-mix(in srgb, var(--compreng-accent) 45%, var(--compreng-border));
+  box-shadow: 0 14px 34px -14px var(--compreng-shadow, rgba(15, 23, 42, .4)), 0 0 0 3px var(--st-tint);
+}
+.st-bar-info { display: flex; align-items: center; gap: 9px; min-width: 0; }
+.st-dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: #22c55e; transition: background .2s; }
+.st-bar.is-dirty .st-dot { background: #f59e0b; animation: st-pulse 1.8s ease-out infinite; }
+@keyframes st-pulse { 0% { box-shadow: 0 0 0 0 rgba(245, 158, 11, .55); } 100% { box-shadow: 0 0 0 8px rgba(245, 158, 11, 0); } }
+.st-bar-info b { font-size: 12.5px; font-weight: 700; color: var(--compreng-text); white-space: nowrap; }
+.st-msg { display: none; font-style: normal; font-size: 12px; color: var(--compreng-text-secondary); }
+.st-bar-actions { display: flex; align-items: center; gap: 6px; flex: none; }
+
+.st-root button.st-ghost {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 38px; padding: 0 12px; border-radius: 999px; cursor: pointer;
+  font: inherit; font-size: 12.5px; font-weight: 600;
+  color: var(--compreng-text-secondary); background: transparent;
+  border: 1px solid var(--compreng-border);
+  transition: color .2s, border-color .2s, background-color .2s;
+}
+.st-root button.st-ghost:hover { color: var(--compreng-text); border-color: var(--compreng-text-secondary); background: var(--compreng-surface-soft); }
+.st-root button.st-ghost:disabled { opacity: .5; cursor: not-allowed; }
+.st-root button.st-ghost .st-ghost-label { font-style: normal; }
+
+/* tombol submit tetap dikelola theme.css (warna aksen, bentuk pil); di sini hanya ukuran */
+.st-root button.st-save {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  min-height: 38px; font-size: 13px; cursor: pointer; white-space: nowrap;
+  padding: 0 18px !important;
+}
+.st-root button.st-save:disabled { opacity: .7; cursor: progress; transform: none; }
+.st-save b { font-weight: 700; color: inherit; }
+.st-save .st-long { display: none; }
+
+/* HP: tombol Batalkan jadi ikon bulat */
+@container st (max-width: 519px) {
+  .st-root button.st-ghost { width: 38px; padding: 0; }
+  .st-root button.st-ghost .st-ghost-label { display: none; }
+}
+@container st (min-width: 520px) {
+  .st-bar { padding: 8px 8px 8px 20px; margin-top: 20px; }
+  .st-bar-info b { font-size: 13px; }
+  .st-root button.st-ghost, .st-root button.st-save { min-height: 42px; }
+  .st-root button.st-save { font-size: 13.5px; padding: 0 22px !important; }
+  .st-save .st-long { display: inline; }
+  .st-save .st-short { display: none; }
+}
+@container st (min-width: 700px) {
+  .st-msg { display: inline; }
+}
+
+/* =====================================================================
+   7. TOAST DI HP
+   ===================================================================== */
+@media (max-width: 640px) {
+  .st-root .modern-toast-card { left: 12px; right: 12px; bottom: 84px; min-width: 0; padding: 12px 16px; }
+  .st-root .modern-toast-content h4 { font-size: 14px; }
+  .st-root .modern-toast-content p { font-size: 12.5px; }
+}
+
+/* =====================================================================
+   8. TEMA — penyesuaian halus per tema (selain token warna otomatis)
+   ===================================================================== */
+/* Dark: kartu & latar sama-sama sangat gelap -> garis tipis + bayangan dimatikan supaya bersih */
+[data-theme='dark'] .st-root .pf-block,
+[data-theme='dark'] .st-nav,
+[data-theme='dark'] .st-bar { box-shadow: none; }
+[data-theme='dark'] .st-bar { box-shadow: 0 14px 34px -14px rgba(0, 0, 0, .8); }
+[data-theme='dark'] .st-bar.is-dirty { box-shadow: 0 14px 34px -14px rgba(0, 0, 0, .8), 0 0 0 3px var(--st-tint); }
+[data-theme='dark'] .st-root button.st-theme.is-on,
+[data-theme='dark'] .st-root button.st-font.is-on { background: color-mix(in srgb, var(--compreng-accent) 10%, var(--compreng-surface)); }
+
+/* System (hijau-kuning sekolah): rail memakai latar lime lembut supaya terasa "brand" */
+[data-theme='system'] .st-nav { background: var(--compreng-surface, #fff); }
+[data-theme='system'] .st-tab-ind {
+  background: color-mix(in srgb, var(--compreng-surface-soft) 85%, var(--compreng-surface));
+  border-color: color-mix(in srgb, var(--compreng-accent) 40%, transparent);
+}
+
+@container st (max-width: 879px) {
+  [data-theme='system'] .st-nav { background: color-mix(in srgb, var(--compreng-surface-soft) 70%, var(--compreng-surface)); }
+}
+
+/* =====================================================================
+   9. AKSESIBILITAS
+   ===================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  .st-pane, .st-tick, .st-bar.is-dirty .st-dot { animation: none; }
+  .st-tab-ind.is-anim, .st-root button.st-theme, .st-root button.st-font, .st-fold > summary svg { transition: none; }
+}
