@@ -1,4 +1,3 @@
-//app.jsx
 import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { getImageUrl } from './utils/media';
 import { SettingsContext, SettingsProvider } from './context/SettingsContext';
@@ -373,6 +372,7 @@ const DashboardLayout = () => {
   }, []);
 
   const userData = getExactUser();
+  const isAdmin = userData.role === 'ADMIN'; // hanya ADMIN yang boleh Kelola Pengguna & Pengaturan di navbar admin
 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isSidebarVisible, setIsSidebarVisible] = useState(true); 
@@ -382,7 +382,7 @@ const DashboardLayout = () => {
   // RESPONSIVE: di layar <= 1024px sidebar berubah jadi drawer (geser dari kiri).
   // Tombol di topbar membuka/menutup drawer (isMobileMenuOpen), sedangkan di desktop
   // tombol yang sama tetap mengecilkan/melebarkan sidebar (isSidebarVisible).
-  // Batas 1024px HARUS sama dengan media query di css/admin-responsive.css.
+
   // ==============================================
   const [isMobile, setIsMobile] = useState(() =>
     typeof window !== 'undefined' && window.matchMedia(ADMIN_MOBILE_QUERY).matches
@@ -479,19 +479,22 @@ const DashboardLayout = () => {
   // Daftar Navigasi dan Aksi Cepat untuk Command Palette
   const COMMAND_ITEMS = [
     { title: 'Dashboard Overview', type: 'halaman', url: '/admin/dashboard', icon: <LayoutDashboard size={16}/> },
-    { title: 'Kelola Pengguna', type: 'halaman', url: '/admin/users', icon: <UsersIcon size={16}/> },
+    { title: 'Kelola Pengguna', type: 'halaman', url: '/admin/users', icon: <UsersIcon size={16}/>, adminOnly: true },
     { title: 'Berita & Artikel', type: 'halaman', url: '/admin/berita', icon: <Newspaper size={16}/> },
     { title: 'Jurusan & Program', type: 'halaman', url: '/admin/jurusan', icon: <BookOpen size={16}/> },
     { title: 'Ekstrakurikuler', type: 'halaman', url: '/admin/ekstrakurikuler', icon: <Activity size={16}/> },
-    { title: 'Tenaga Pengajar', type: 'halaman', url: '/admin/pengajar', icon: <GraduationCap size={16}/> },
+    { title: 'Tenaga Pengajar', type: 'halaman', url: '/admin/pengajar', icon: <GraduationCap size={16}/>, adminOnly: true },
     { title: 'Karya & Prestasi', type: 'halaman', url: '/admin/prestasi', icon: <Trophy size={16}/> },
     { title: 'Testimoni', type: 'halaman', url: '/admin/testimoni', icon: <MessageSquare size={16}/> },
     { title: 'Galeri Sekolah', type: 'halaman', url: '/admin/galeri', icon: <ImageIcon size={16}/> },
-    { title: 'Pengaturan Profile & Identitas', type: 'pengaturan', url: '/admin/settings/profile', icon: <SettingsIcon size={16}/> },
-    { title: 'Pengaturan Tema Web', type: 'pengaturan', url: '/admin/settings/appearance', icon: <SettingsIcon size={16}/> },
+    { title: 'Pengaturan Profile & Identitas', type: 'pengaturan', url: '/admin/settings/profile', icon: <SettingsIcon size={16}/>, adminOnly: true },
+    { title: 'Pengaturan Tema Web', type: 'pengaturan', url: '/admin/settings/appearance', icon: <SettingsIcon size={16}/>, adminOnly: true },
     { title: 'Tambah Berita Baru', type: 'aksi', url: '/admin/berita', icon: <PlusCircle size={16}/> },
-    { title: 'Tambah Pengguna', type: 'aksi', url: '/admin/users', icon: <PlusCircle size={16}/> },
+    { title: 'Tambah Pengguna', type: 'aksi', url: '/admin/users', icon: <PlusCircle size={16}/>, adminOnly: true },
   ];
+
+  // Editor tidak melihat item yang hanya boleh diakses ADMIN
+  const visibleCommandItems = COMMAND_ITEMS.filter((item) => !item.adminOnly || isAdmin);
 
   const handleCommandSelect = (cmd) => {
     setIsCommandOpen(false);
@@ -611,15 +614,20 @@ const DashboardLayout = () => {
                       </div>
                     </div>
                     
-                    <button onClick={() => { setIsTopUserMenuOpen(false); navigate('/admin/users'); }} className="topbar-dropdown-item">
-                      <UsersIcon size={16} /> Kelola Pengguna
-                    </button>
-                    
-                    <button onClick={() => { setIsTopUserMenuOpen(false); navigate('/admin/settings'); }} className="topbar-dropdown-item">
-                      <SettingsIcon size={16} /> Pengaturan
-                    </button>
+                    {/* Kelola Pengguna & Pengaturan hanya untuk ADMIN (editor langsung ke Log out) */}
+                    {isAdmin && (
+                      <>
+                        <button onClick={() => { setIsTopUserMenuOpen(false); navigate('/admin/users'); }} className="topbar-dropdown-item">
+                          <UsersIcon size={16} /> Kelola Pengguna
+                        </button>
+                        
+                        <button onClick={() => { setIsTopUserMenuOpen(false); navigate('/admin/settings'); }} className="topbar-dropdown-item">
+                          <SettingsIcon size={16} /> Pengaturan
+                        </button>
 
-                    <div style={{ margin: '4px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
+                        <div style={{ margin: '4px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
+                      </>
+                    )}
 
                     <button onClick={handleLogout} className="topbar-dropdown-item danger">
                       <LogOut size={16} /> Log out
@@ -636,7 +644,7 @@ const DashboardLayout = () => {
             ============================================== */}
         <CommandPalette
           open={isCommandOpen}
-          items={COMMAND_ITEMS}
+          items={visibleCommandItems}
           onSelect={handleCommandSelect}
           onClose={() => setIsCommandOpen(false)}
         />
