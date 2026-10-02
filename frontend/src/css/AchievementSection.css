@@ -1113,3 +1113,128 @@
     color: var(--compreng-accent, #2563eb);
   }
 }
+
+/* ==========================================================================
+   FIX MENU AKSI (titik 3) DI HP — tidak terpotong, tampilan seperti Testimoni
+   Penyebab: .ach-mcard memakai overflow:hidden sehingga menu absolute terpotong,
+   dan animasi kartu membuat stacking context sehingga menu tertutup kartu di bawahnya.
+   Hanya CSS & khusus <=768px; desktop (tabel), JSX, dan logika tidak berubah.
+   ========================================================================== */
+@media (max-width: 768px) {
+  /* 1. Izinkan menu keluar dari kartu (konten dalam sudah punya min-width:0 + overflow-wrap) */
+  #admin-prestasi .ach-mcard { overflow: visible; }
+
+  /* 2. Kartu yang menunya terbuka tampil di atas kartu lain */
+  #admin-prestasi .ach-mcard:has(.action-dropdown-menu) { z-index: 30; }
+
+  /* 3. Tampilan menu: lebih lega, sudut membulat, rapi seperti menu Testimoni */
+  #admin-prestasi .ach-mmenu .action-dropdown-menu {
+    top: calc(100% + 6px);
+    right: 0;
+    left: auto;
+    width: 190px;
+    max-width: calc(100vw - 48px);
+    padding: 6px;
+    gap: 2px;
+    border-radius: 16px;
+    z-index: 999;
+    overflow: visible;
+    box-shadow: 0 16px 32px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.35)),
+                0 4px 10px -4px var(--compreng-shadow, rgba(0, 0, 0, 0.2));
+  }
+  #admin-prestasi .ach-mmenu .action-dropdown-menu .dropdown-item {
+    gap: 12px;
+    padding: 10px 12px;
+    min-height: 40px;
+    border-radius: 10px;
+    font-size: 13.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    color: var(--compreng-text, #0f172a);
+  }
+  #admin-prestasi .ach-mmenu .action-dropdown-menu .dropdown-item svg { flex: 0 0 auto; }
+
+  /* 4. Item hapus: merah + garis pemisah tipis di atasnya (sama seperti menu Berita).
+        !important wajib karena theme.css memaksa warna .dropdown-item dengan !important. */
+  #admin-prestasi .ach-mmenu .action-dropdown-menu .dropdown-item svg { color: var(--compreng-text-secondary, #475569); }
+  #admin-prestasi .ach-mmenu .action-dropdown-menu .dropdown-item.delete {
+    position: relative;
+    margin-top: 9px;
+    color: #dc2626 !important;
+  }
+  #admin-prestasi .ach-mmenu .action-dropdown-menu .dropdown-item.delete::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -5px;
+    border-top: 1px solid var(--compreng-border, #e2e8f0);
+  }
+  #admin-prestasi .ach-mmenu .action-dropdown-menu .dropdown-item.delete svg { color: currentColor; }
+  #admin-prestasi .ach-mmenu .action-dropdown-menu .dropdown-item.delete:hover {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
+  }
+}
+
+
+/* ==========================================================================
+   MENU AKSI (titik tiga) DI LAPTOP/DESKTOP — disamakan dengan halaman Berita
+   Lebar 170px, sudut 8px, item 12.5px dengan ikon abu-abu, "Hapus" merah dengan
+   garis pemisah di atasnya, animasi muncul sederhana. Hanya CSS & khusus >768px
+   (tampilan HP tidak berubah). !important karena theme.css memaksa gaya menu.
+   ========================================================================== */
+@keyframes prestasiActionFadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@media (min-width: 769px) {
+  #admin-prestasi .action-dropdown-menu {
+    width: 170px;
+    margin-top: 4px;
+    gap: 0;
+    padding: 6px !important;
+    background-color: var(--compreng-surface, #ffffff) !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+    transform-origin: top right;
+    animation: prestasiActionFadeIn 0.2s ease both;
+  }
+  #admin-prestasi .action-dropdown-menu .dropdown-item {
+    gap: 10px;
+    padding: 8px 12px !important;
+    font-size: 12.5px;
+    font-weight: 500;
+    border-radius: 6px !important;
+    color: var(--compreng-text, #0f172a) !important;
+    background: transparent !important;
+    transition: all 0.2s;
+  }
+  #admin-prestasi .action-dropdown-menu .dropdown-item svg { color: var(--compreng-text-secondary, #475569); }
+  #admin-prestasi .action-dropdown-menu .dropdown-item:hover {
+    background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  }
+  /* Hapus: merah + garis pemisah di atasnya */
+  #admin-prestasi .action-dropdown-menu .dropdown-item.delete {
+    position: relative;
+    margin-top: 9px;
+    color: #dc2626 !important;
+  }
+  #admin-prestasi .action-dropdown-menu .dropdown-item.delete::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: -5px;
+    border-top: 1px solid var(--compreng-border, #e2e8f0);
+  }
+  #admin-prestasi .action-dropdown-menu .dropdown-item.delete svg { color: currentColor; }
+  #admin-prestasi .action-dropdown-menu .dropdown-item.delete:hover {
+    background-color: #fef2f2 !important;
+    color: #dc2626 !important;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #admin-prestasi .action-dropdown-menu { animation: none !important; }
+}

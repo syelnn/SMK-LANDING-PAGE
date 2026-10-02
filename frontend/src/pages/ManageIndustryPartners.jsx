@@ -197,7 +197,7 @@ export default function ManageIndustryPartners() {
               <th className="ip-th">Logo</th>
               <th className="ip-th">Nama Mitra</th>
               <th className="ip-th">Status Tampil</th>
-              <th className="ip-th" style={{ textAlign: 'center' }}></th>
+              <th className="ip-th" style={{ textAlign: 'center' }}>Aksi</th>
             </tr>
           </thead>
           <tbody>

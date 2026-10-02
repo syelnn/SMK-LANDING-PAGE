@@ -766,38 +766,171 @@ nav.viewer-navbar li.nv-user .nv-user__chevron { display: none; }
     border-radius: 14px !important;
     font-size: .92rem !important;
   }
-  nav.viewer-navbar .navbar-menu .dropdown-btn .arrow {
-    margin-left: auto;
-    transition: transform .25s ease;
+  /* --- Menu "Lainnya" di HP ---
+     Susunan baris:  [ Label ⌄ ................ ● ]
+     - Chevron menempel di label; buletan penanda selalu di ujung kanan (kolom sama dgn menu lain).
+     - Saat dropdown DIBUKA, penanda (pil + buletan) pindah ke "Lainnya" dan menu lain
+       (mis. Beranda) melepas penandanya; saat ditutup kembali normal.
+     - ANIMASI MULUS: hanya properti ringan (opacity, transform, warna, tinggi) yang dianimasikan.
+       Buletan tidak lagi mengubah lebar (tidak memicu layout ulang) dan chevron hanya memakai
+       transform, jadi tetap halus di HP kelas menengah ke bawah.
+     !important dipakai karena theme.css memaksa warna/latar .dropdown-btn & .dropdown-menu. */
+  nav.viewer-navbar .navbar-menu {
+    --nv-ease: cubic-bezier(.32, .72, 0, 1);
+    --nv-ease-soft: cubic-bezier(.4, 0, .2, 1);
   }
-  nav.viewer-navbar .navbar-menu .dropdown-btn.active-pill .arrow { transform: rotate(180deg); }
-  nav.viewer-navbar .navbar-menu .dropdown-btn .nav-dot { order: 2; }
-  nav.viewer-navbar .navbar-menu .dropdown-btn.active .nav-dot { margin-left: auto; margin-right: 8px; }
+  nav.viewer-navbar .navbar-menu .nav-link,
+  nav.viewer-navbar .navbar-menu .dropdown-btn {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: color .3s var(--nv-ease-soft), background-color .3s var(--nv-ease-soft);
+  }
+  nav.viewer-navbar .navbar-menu .dropdown-btn { text-align: left; }
 
-  /* --- Submenu (Lainnya) --- */
-  nav.viewer-navbar .navbar-menu .dropdown-menu {
-    position: static;
-    margin: 4px 0 4px 14px;
-    padding: 2px 0 2px 10px;
-    background: transparent;
-    border: none;
-    border-left: 2px solid color-mix(in srgb, var(--compreng-nav-text, #f8fafc) 14%, transparent);
-    border-radius: 0;
+  /* buletan: lebar tetap, hanya fade + skala (compositor-only) */
+  nav.viewer-navbar .navbar-menu .nav-dot {
+    width: 7px;
+    margin-left: auto;
+    will-change: opacity, transform;
+    transition: opacity .3s var(--nv-ease-soft),
+                transform .4s cubic-bezier(.34, 1.56, .64, 1),
+                box-shadow .3s var(--nv-ease-soft);
+  }
+  nav.viewer-navbar .navbar-menu .dropdown-btn .nav-dot { order: 2; }
+
+  /* chevron CSS: hanya transform (tanpa mengubah margin -> tidak ada layout shift) */
+  nav.viewer-navbar .navbar-menu .dropdown-btn .arrow {
+    order: 1;
+    flex: 0 0 auto;
+    box-sizing: border-box;
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    margin: 0 0 0 10px;
+    font-size: 0;            /* glyph "▾" disembunyikan; diganti chevron CSS yang konsisten di semua HP */
+    line-height: 0;
+    border-right: 2px solid currentColor;
+    border-bottom: 2px solid currentColor;
+    border-radius: 1px;
+    opacity: .85;
+    transform: translateY(-2px) rotate(45deg);
+    transition: transform .35s var(--nv-ease);
+    will-change: transform;
+  }
+  nav.viewer-navbar .navbar-menu .dropdown-btn.active-pill .arrow {
+    transform: translateY(2px) rotate(-135deg);
+  }
+
+  /* Lainnya terbuka = tampil aktif (pil aksen + buletan menyala) */
+  nav.viewer-navbar .navbar-menu .dropdown-btn.active-pill {
+    color: color-mix(in srgb, var(--compreng-nav-accent) 78%, var(--compreng-nav-text)) !important;
+    background-color: color-mix(in srgb, var(--compreng-nav-accent) 16%, transparent) !important;
+  }
+  nav.viewer-navbar .navbar-menu .dropdown-btn.active-pill .nav-dot {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-nav-accent) 22%, transparent),
+                0 0 12px 1px color-mix(in srgb, var(--compreng-nav-accent) 65%, transparent);
+    animation: comprengDotPulse 2.2s ease-in-out infinite;
+  }
+  /* penanda menu lain dilepas selama Lainnya terbuka (memudar halus, bukan lompat) */
+  nav.viewer-navbar .navbar-menu:has(.dropdown-btn.active-pill) .nav-link.active {
+    color: color-mix(in srgb, var(--compreng-nav-text) 78%, transparent) !important;
+    background-color: transparent !important;
+  }
+  nav.viewer-navbar .navbar-menu:has(.dropdown-btn.active-pill) .nav-link.active .nav-dot {
+    opacity: 0;
+    transform: scale(.3);
     box-shadow: none;
-    transform: none;
+    animation: none;
+  }
+
+  /* --- Submenu (Lainnya): menyatu dengan drawer gelap & membuka/menutup MULUS ---
+     Dulu display:none <-> block (tanpa animasi, terasa "loncat"). Sekarang selalu ada di DOM
+     tetapi tinggi 0 + transparan + tak bisa disentuh saat tertutup; buka = tinggi mengembang. */
+  nav.viewer-navbar .navbar-menu .dropdown-menu {
+    display: block;
+    position: static;
     width: calc(100% - 14px);
+    min-width: 0 !important;
+    max-height: 0;
+    margin: 0 0 0 14px !important;
+    padding: 0 0 0 10px !important;
+    overflow: hidden;
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transform: none;
+    background: transparent !important;
+    border: none !important;
+    border-left: 2px solid color-mix(in srgb, var(--compreng-nav-text, #f8fafc) 14%, transparent) !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    transition: max-height .4s var(--nv-ease),
+                margin .4s var(--nv-ease),
+                padding .4s var(--nv-ease),
+                opacity .28s var(--nv-ease-soft),
+                visibility 0s linear .4s;
   }
+  nav.viewer-navbar .navbar-menu .dropdown-menu.show {
+    max-height: 30rem;
+    margin: 4px 0 6px 14px !important;
+    padding: 2px 0 2px 10px !important;
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transform: none;
+    transition: max-height .45s var(--nv-ease),
+                margin .45s var(--nv-ease),
+                padding .45s var(--nv-ease),
+                opacity .3s var(--nv-ease-soft) .05s,
+                visibility 0s;
+  }
+  /* item masuk berurutan tipis-tipis (fade + geser sedikit) */
   nav.viewer-navbar .navbar-menu .dropdown-menu li {
-    padding: .62rem .8rem;
+    padding: 0;
     border-radius: 10px;
+    opacity: 0;
+    transform: translateY(-4px);
+    transition: opacity .2s ease, transform .2s ease;
   }
+  nav.viewer-navbar .navbar-menu .dropdown-menu.show li {
+    opacity: 1;
+    transform: none;
+    transition: opacity .32s var(--nv-ease-soft), transform .4s var(--nv-ease);
+  }
+  nav.viewer-navbar .navbar-menu .dropdown-menu.show li:nth-child(1) { transition-delay: .04s; }
+  nav.viewer-navbar .navbar-menu .dropdown-menu.show li:nth-child(2) { transition-delay: .08s; }
+  nav.viewer-navbar .navbar-menu .dropdown-menu.show li:nth-child(3) { transition-delay: .12s; }
+  nav.viewer-navbar .navbar-menu .dropdown-menu.show li:nth-child(4) { transition-delay: .16s; }
+  nav.viewer-navbar .navbar-menu .dropdown-menu.show li:nth-child(n+5) { transition-delay: .2s; }
+
+  nav.viewer-navbar .navbar-menu .dropdown-menu li,
   nav.viewer-navbar .navbar-menu .dropdown-menu li:hover,
   nav.viewer-navbar .navbar-menu .dropdown-menu li:active {
-    background: color-mix(in srgb, var(--compreng-nav-text, #f8fafc) 8%, transparent);
+    background: transparent !important;
   }
   nav.viewer-navbar .navbar-menu .dropdown-link {
-    font-size: .86rem;
-    color: color-mix(in srgb, var(--compreng-nav-text, #f8fafc) 80%, transparent);
+    display: block;
+    padding: .7rem .8rem !important;
+    border-radius: 10px !important;
+    font-size: .88rem;
+    line-height: 1.3;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    color: color-mix(in srgb, var(--compreng-nav-text, #f8fafc) 82%, transparent) !important;
+    background: transparent !important;
+    transform: none !important;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+    transition: background-color .2s var(--nv-ease-soft), color .2s var(--nv-ease-soft) !important;
+  }
+  nav.viewer-navbar .navbar-menu .dropdown-menu li:hover .dropdown-link,
+  nav.viewer-navbar .navbar-menu .dropdown-menu li:active .dropdown-link,
+  nav.viewer-navbar .navbar-menu .dropdown-link:hover {
+    background-color: color-mix(in srgb, var(--compreng-nav-text, #f8fafc) 8%, transparent) !important;
+    color: color-mix(in srgb, var(--compreng-nav-accent) 78%, var(--compreng-nav-text)) !important;
+    transform: none !important;
   }
 
   /* --- Login / Profil: menempel di bawah drawer --- */
@@ -920,4 +1053,86 @@ nav.viewer-navbar li.nv-user .nv-user__chevron { display: none; }
   nav.viewer-navbar .navbar-menu,
   .nv-backdrop,
   nav.viewer-navbar li.nv-user .nv-user__menu { transition: none; animation: none; }
+}
+
+/* Drawer di layar pendek (HP landscape / jendela kecil): baris dipadatkan agar menu tetap muat */
+@media (max-width: 868px) and (max-height: 560px) {
+  nav.viewer-navbar .navbar-menu {
+    padding-top: calc(env(safe-area-inset-top, 0px) + 4rem) !important;
+    gap: 2px !important;
+  }
+  nav.viewer-navbar .navbar-menu .nav-link,
+  nav.viewer-navbar .navbar-menu .dropdown-btn { padding: .6rem 1rem !important; }
+  nav.viewer-navbar .navbar-menu .dropdown-link { padding: .55rem .8rem !important; }
+}
+@media (max-width: 360px) {
+  nav.viewer-navbar .navbar-menu .nav-link,
+  nav.viewer-navbar .navbar-menu .dropdown-btn { font-size: .88rem !important; }
+}
+
+/* Browser modern (Chrome/Edge/Android 129+): tinggi submenu mengembang TEPAT sesuai isinya
+   (tanpa tebakan max-height) -> animasi buka/tutup lebih akurat. Browser lain memakai max-height di atas. */
+@supports (interpolate-size: allow-keywords) {
+  @media (max-width: 868px) {
+    nav.viewer-navbar .navbar-menu { interpolate-size: allow-keywords; }
+    nav.viewer-navbar .navbar-menu .dropdown-menu {
+      height: 0;
+      max-height: none;
+      transition: height .4s var(--nv-ease),
+                  margin .4s var(--nv-ease),
+                  padding .4s var(--nv-ease),
+                  opacity .28s var(--nv-ease-soft),
+                  visibility 0s linear .4s;
+    }
+    nav.viewer-navbar .navbar-menu .dropdown-menu.show {
+      height: auto;
+      max-height: none;
+      transition: height .45s var(--nv-ease),
+                  margin .45s var(--nv-ease),
+                  padding .45s var(--nv-ease),
+                  opacity .3s var(--nv-ease-soft) .05s,
+                  visibility 0s;
+    }
+  }
+}
+
+/* ==========================================================================
+   DROPDOWN "LAINNYA" DI LAPTOP/DESKTOP (>868px)
+   Sebelumnya display:none <-> block sehingga transisi opacity/transform tidak pernah terlihat.
+   Sekarang elemen tetap ada, disembunyikan dengan visibility + pointer-events.
+   ========================================================================== */
+@media (min-width: 869px) {
+  .viewer-navbar .dropdown-menu {
+    display: block;
+    visibility: hidden;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px) scale(.98);
+    transform-origin: top center;
+    transition: opacity .22s cubic-bezier(.4, 0, .2, 1),
+                transform .28s cubic-bezier(.32, .72, 0, 1),
+                visibility 0s linear .28s;
+    will-change: opacity, transform;
+  }
+  .viewer-navbar .dropdown-menu.show {
+    visibility: visible;
+    pointer-events: auto;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+    transition: opacity .22s cubic-bezier(.4, 0, .2, 1),
+                transform .28s cubic-bezier(.32, .72, 0, 1),
+                visibility 0s;
+  }
+}
+
+/* pengguna yang mematikan animasi di perangkatnya */
+@media (prefers-reduced-motion: reduce) {
+  nav.viewer-navbar .navbar-menu .dropdown-menu,
+  nav.viewer-navbar .navbar-menu .dropdown-menu li,
+  nav.viewer-navbar .navbar-menu .dropdown-btn .arrow,
+  nav.viewer-navbar .navbar-menu .nav-dot,
+  .viewer-navbar .dropdown-menu {
+    transition: none !important;
+    animation: none !important;
+  }
 }
