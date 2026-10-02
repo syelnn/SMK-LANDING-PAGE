@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Plus, Trash2, Edit, Link as LinkIcon, Upload, MoreHorizontal, Search, FileText, Download, X } from 'lucide-react';
+import { Plus, Trash2, Edit, Eye, EyeOff, Link as LinkIcon, Upload, MoreHorizontal, Search, FileText, Download, X } from 'lucide-react';
 import { getDownloadFileUrl, downloadFileDirect } from '../utils/media';
 import '../css/DownloadPage.css';
 import '../App.css';
@@ -88,7 +88,7 @@ export default function DownloadPage() {
 
     const rect = e.currentTarget.getBoundingClientRect();
     const windowHeight = window.innerHeight;
-    const dropdownHeight = 90;
+    const dropdownHeight = 140;
     
     const spaceBelow = windowHeight - rect.bottom;
     const openUpwards = spaceBelow < dropdownHeight;
@@ -208,6 +208,35 @@ export default function DownloadPage() {
     setDownloadingId(null);
   };
 
+  // Sembunyikan / Tampilkan langsung dari menu aksi (field yang dikirim sama persis dengan form Edit)
+  const handleToggleShow = async (item) => {
+    setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+    const newShow = Number(item.show) === 1 ? 0 : 1;
+    try {
+      const sortOrder = Number(item.sort_order ?? item.sortOrder ?? 1);
+      const fd = new FormData();
+      fd.append('title', item.title || '');
+      fd.append('category', item.category || '');
+      fd.append('description', item.description || '');
+      fd.append('sort_order', sortOrder);
+      fd.append('sortOrder', sortOrder);
+      fd.append('show', newShow);
+      fd.append('file_size', item.file_size || item.fileSize || '');
+      fd.append('url', getDownloadFileUrl(item) || '');
+
+      const res = await fetch(`${API_URL}/${item.id}`, { method: 'PUT', body: fd });
+      if (res.ok) {
+        fetchDownloads();
+      } else {
+        const resData = await res.json().catch(() => ({}));
+        alert(`Gagal merubah status: ${resData.message || 'Terjadi kesalahan'}`);
+      }
+    } catch (err) {
+      console.error('Error toggling show:', err);
+      alert('Gagal terhubung ke server.');
+    }
+  };
+
   const handleDelete = async (id, title) => {
     setDropdownConfig({ id: null, right: null, top: null, bottom: null });
     if (window.confirm(`Apakah Anda yakin ingin menghapus berkas "${title || 'ini'}"?`)) {
@@ -236,7 +265,7 @@ export default function DownloadPage() {
   });
 
   return (
-    <div className="download-page mp-wrapper">
+    <div className="download-page mp-wrapper" id="admin-download">
 
       {/* Header Simpel */}
       <div className="simple-page-header">
@@ -247,7 +276,7 @@ export default function DownloadPage() {
           </p>
         </div>
         {isAdmin && (
-          <button className="btn-modern-primary" onClick={() => handleOpenModal()}>
+          <button className="btn-modern-primary dl-add-desktop" onClick={() => handleOpenModal()}>
             <Plus size={16} /> Tambah Berkas Baru
           </button>
         )}
@@ -265,11 +294,26 @@ export default function DownloadPage() {
             className="mp-search-input"
           />
         </div>
+        {/* Tombol ringkas khusus mobile: sebaris dengan Search (aksi sama dengan tombol desktop) */}
+        {isAdmin && (
+          <button type="button" className="btn-modern-primary dl-add-mobile" onClick={() => handleOpenModal()} aria-label="Tambah Berkas Baru">
+            <Plus size={16} /> Tambah
+          </button>
+        )}
       </div>
 
       {/* Table Berkas */}
-      <div className="mp-table-card">
-        <table className="mp-table">
+      <div className="mp-table-card dl-table-card">
+        <table className="mp-table dl-table">
+          <colgroup>
+            <col className="dl-w1" />
+            <col className="dl-w2" />
+            <col className="dl-w3" />
+            <col className="dl-w4" />
+            <col className="dl-w5" />
+            <col className="dl-w6" />
+            {isAdmin && <col className="dl-w7" />}
+          </colgroup>
           <thead>
             <tr>
               <th className="mp-th">Judul & Deskripsi Berkas</th>
@@ -277,19 +321,20 @@ export default function DownloadPage() {
               <th className="mp-th" style={{ textAlign: 'center' }}>Ukuran</th>
               <th className="mp-th" style={{ textAlign: 'center' }}>Urutan</th>
               <th className="mp-th">Status Tampil</th>
-              <th className="mp-th" style={{ textAlign: 'center' }}>Aksi / Unduh</th>
+              <th className="mp-th" style={{ textAlign: 'center' }}>Unduh</th>
+              {isAdmin && <th className="mp-th" style={{ textAlign: 'center' }}>Aksi</th>}
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '30px', color: 'var(--compreng-text-muted)' }}>
+                <td colSpan={isAdmin ? 7 : 6} style={{ textAlign: 'center', padding: '30px', color: 'var(--compreng-text-muted)' }}>
                   Memuat data berkas...
                 </td>
               </tr>
             ) : filteredDownloads.length === 0 ? (
               <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
+                <td colSpan={isAdmin ? 7 : 6} style={{ textAlign: 'center', padding: '40px', color: 'var(--compreng-text-muted)', fontSize: '13px' }}>
                   {searchTerm ? `Tidak ditemukan berkas dengan kata kunci "${searchTerm}"` : 'Belum ada berkas yang diunggah.'}
                 </td>
               </tr>
@@ -316,7 +361,7 @@ export default function DownloadPage() {
                     </span>
                   </td>
 
-                  <td className="mp-td" style={{ textAlign: 'center', fontSize: '13px', color: 'var(--compreng-text-secondary)' }}>
+                  <td className="mp-td dl-td-nowrap" style={{ textAlign: 'center', fontSize: '13px', color: 'var(--compreng-text-secondary)' }}>
                     {item.file_size || item.fileSize || '-'}
                   </td>
                   
@@ -325,38 +370,93 @@ export default function DownloadPage() {
                   </td>
                   
                   <td className="mp-td">
-                    <span className={item.show === 1 ? 'mp-badge-active' : 'mp-badge-inactive'}>
+                    <span className={`${item.show === 1 ? 'mp-badge-active dl-pill-on' : 'mp-badge-inactive dl-pill-off'} dl-pill`}>
                       {item.show === 1 ? 'Ditampilkan' : 'Disembunyikan'}
                     </span>
                   </td>
                   
-                  <td className="mp-td" style={{ textAlign: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <td className="mp-td dl-td-actions" style={{ textAlign: 'center' }}>
+                    <div className="dl-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <a 
                         href={getDownloadFileUrl(item)} 
                         onClick={(e) => handleDownload(e, item)}
                         download
-                        className="btn-modern-secondary" 
+                        className="btn-modern-secondary dl-unduh" 
                         style={{ padding: '6px 12px', fontSize: '12px', gap: '4px', textDecoration: 'none', opacity: downloadingId === item.id ? 0.6 : 1 }}
                       >
                         <Download size={14} /> {downloadingId === item.id ? 'Mengunduh...' : 'Unduh'}
                       </a>
+                    </div>
+                  </td>
 
-                      {isAdmin && (
+                  {isAdmin && (
+                    <td className="mp-td dl-td-actions" style={{ textAlign: 'center' }}>
+                      <div className="dl-actions" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <button 
                           onClick={(e) => handleDropdownClick(e, item.id)}
                           className="mp-action-btn"
+                          title="Opsi"
                         >
                           <MoreHorizontal size={18} />
                         </button>
-                      )}
-                    </div>
-                  </td>
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))
             )}
           </tbody>
         </table>
+      </div>
+
+      {/* Tampilan Card List (mobile) - data & aksi sama dengan tabel */}
+      <div className="dl-mlist">
+        {loading ? (
+          <div className="dl-mempty">Memuat data berkas...</div>
+        ) : filteredDownloads.length === 0 ? (
+          <div className="dl-mempty">
+            {searchTerm ? `Tidak ditemukan berkas dengan kata kunci "${searchTerm}"` : 'Belum ada berkas yang diunggah.'}
+          </div>
+        ) : (
+          filteredDownloads.map((item) => (
+            <div key={item.id} className="dl-mcard">
+              <div className="dl-mtop">
+                <div className="dl-mfile"><FileText size={22} /></div>
+                <div className="dl-mbody">
+                  <div className="dl-mtitle">{item.title}</div>
+                  <div className="dl-mdesc">{item.description || 'Tidak ada deskripsi.'}</div>
+                </div>
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={(e) => handleDropdownClick(e, item.id)}
+                    className="dl-mmore"
+                    title="Opsi"
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                )}
+              </div>
+              <div className="dl-mmeta">
+                <span className="dl-mchip dl-mchip-cat">{item.category || 'Lainnya'}</span>
+                <span className="dl-mchip dl-mchip-info">{item.file_size || item.fileSize || '-'}</span>
+                <span className="dl-mchip dl-mchip-info">Urutan {item.sort_order ?? item.sortOrder ?? '-'}</span>
+                <span className={`dl-mchip ${item.show === 1 ? 'dl-mchip-on' : 'dl-mchip-off'}`}>
+                  {item.show === 1 ? 'Ditampilkan' : 'Disembunyikan'}
+                </span>
+              </div>
+              <a
+                href={getDownloadFileUrl(item)}
+                onClick={(e) => handleDownload(e, item)}
+                download
+                className="dl-mget"
+                style={{ opacity: downloadingId === item.id ? 0.6 : 1 }}
+              >
+                <Download size={16} /> {downloadingId === item.id ? 'Mengunduh...' : 'Unduh Berkas'}
+              </a>
+            </div>
+          ))
+        )}
       </div>
 
       {/* DROPDOWN MENU OUTSIDE TABLE */}
@@ -382,12 +482,16 @@ export default function DownloadPage() {
               if (!targetItem) return null;
               return (
                 <>
+                  <button onClick={() => handleToggleShow(targetItem)} className="mp-dropdown-item">
+                    {Number(targetItem.show) === 1 ? <EyeOff size={14} color="var(--compreng-text-secondary)" /> : <Eye size={14} color="var(--compreng-text-secondary)" />}
+                    {Number(targetItem.show) === 1 ? 'Sembunyikan' : 'Tampilkan'}
+                  </button>
                   <button onClick={() => { setDropdownConfig({ id: null, right: null, top: null, bottom: null }); handleOpenModal(targetItem); }} className="mp-dropdown-item">
                     <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Berkas
                   </button>
                   <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
                   <button onClick={() => handleDelete(targetItem.id, targetItem.title)} className="mp-dropdown-item danger">
-                    <Trash2 size={14} color="currentColor" /> Delete
+                    <Trash2 size={14} color="currentColor" /> Hapus
                   </button>
                 </>
               );
@@ -549,7 +653,7 @@ export default function DownloadPage() {
               <div className="modal-actions-modern" style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '16px' }}>
                 <button type="button" onClick={() => setShowModal(false)} className="btn-modern-secondary" disabled={submitting}>Batal</button>
                 <button type="submit" className="btn-modern-primary" disabled={submitting}>
-                  {submitting ? 'Mengunggah ke Cloudinary...' : 'Simpan Data'}
+                  {submitting ? 'Mengunggah...' : 'Simpan Data'}
                 </button>
               </div>
             </form>

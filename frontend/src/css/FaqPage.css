@@ -316,7 +316,7 @@
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
   padding: 6px;
   z-index: 100;
-  min-width: 130px;
+  min-width: 155px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -742,4 +742,435 @@
 
 @media (prefers-reduced-motion: reduce) {
   #admin-faq .action-dropdown-menu { animation: none; }
+}
+
+/* ==========================================================================
+   FAQ DI HP (<=768px) — kontrol bar seperti Berita, Card List modern, form seragam
+   Semua aturan dikunci ke #admin-faq; desktop (>768px), logika & struktur JSX tidak berubah.
+   ========================================================================== */
+#admin-faq .faq-add-mobile,
+#admin-faq .faq-mlist { display: none; }
+
+@keyframes faqCardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 768px) {
+  /* --- 1. Header & kontrol: tombol Tambah pindah ke sebelah Search (sama seperti Berita) --- */
+  #admin-faq .admin-page-header { margin-bottom: 14px; gap: 6px; }
+  #admin-faq .admin-page-header > .faq-add-desktop { display: none !important; }
+
+  #admin-faq .table-toolbar {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    align-items: stretch;
+    gap: 8px !important;
+    margin-bottom: 14px;
+  }
+  #admin-faq .table-toolbar .search-input-wrapper {
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+  #admin-faq .table-toolbar .search-input {
+    height: 40px;
+    padding: 0 12px 0 36px !important;
+    border-radius: 10px !important;
+  }
+  #admin-faq .table-toolbar .faq-add-mobile {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: auto !important;
+    height: 40px;
+    padding: 0 14px !important;
+    border-radius: 10px !important;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* --- 2. Tabel disembunyikan, tampilkan Card List --- */
+  #admin-faq .table-wrapper { display: none !important; }
+  #admin-faq .faq-mlist {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  /* Kartu: gradasi lembut + kilau aksen halus + garis aksen kiri.
+     !important karena theme.css memaksa warna semua elemen "-card", "badge" & "status". */
+  #admin-faq .faq-mcard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 14px 14px 18px;
+    background:
+      radial-gradient(120% 90% at 100% 0%,
+        color-mix(in srgb, var(--compreng-accent, #2563eb) 9%, transparent),
+        transparent 58%),
+      linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 55%, var(--compreng-surface, #ffffff)),
+        var(--compreng-surface, #ffffff)
+      ) !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+    border-radius: 20px;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow, rgba(0, 0, 0, 0.2)) 60%, transparent),
+                0 12px 24px -18px var(--compreng-shadow, rgba(0, 0, 0, 0.3));
+    box-sizing: border-box;
+    min-width: 0;
+    /* overflow dibiarkan visible agar menu Edit/Delete tidak terpotong */
+    animation: faqCardIn 0.35s ease both;
+    transition: transform 0.18s ease;
+  }
+  #admin-faq .faq-mcard:nth-child(2) { animation-delay: 0.04s; }
+  #admin-faq .faq-mcard:nth-child(3) { animation-delay: 0.08s; }
+  #admin-faq .faq-mcard:nth-child(4) { animation-delay: 0.12s; }
+  #admin-faq .faq-mcard:nth-child(n+5) { animation-delay: 0.16s; }
+  #admin-faq .faq-mcard:active { transform: scale(0.992); }
+  /* kartu yang menunya terbuka naik di atas kartu lain */
+  #admin-faq .faq-mcard:has(.action-dropdown-menu) { z-index: 5; }
+
+  #admin-faq .faq-mcard::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    bottom: 16px;
+    width: 3px;
+    border-radius: 0 4px 4px 0;
+    background: var(--compreng-accent, #2563eb);
+    opacity: 0.85;
+  }
+  #admin-faq .faq-mcard:has(.badge-warning)::before { background: #f59e0b; }
+  #admin-faq .faq-mcard:has(.badge-warning) .faq-mq { opacity: 0.75; }
+
+  #admin-faq .faq-mtop { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+  #admin-faq .faq-mnum {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 36px;
+    height: 36px;
+    padding: 0 6px;
+    box-sizing: border-box;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 800;
+    background: color-mix(in srgb, var(--compreng-accent, #2563eb) 14%, var(--compreng-surface-soft, #f1f5f9)) !important;
+    border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 30%, transparent) !important;
+    color: color-mix(in srgb, var(--compreng-accent, #2563eb) 75%, var(--compreng-text, #0f172a)) !important;
+  }
+  #admin-faq .faq-mq {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-top: 1px;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.35;
+    color: var(--compreng-text, #0f172a);
+    overflow-wrap: anywhere;
+  }
+  #admin-faq .faq-mmenu { flex: 0 0 auto; align-self: flex-start; }
+  #admin-faq .faq-mmenu .btn-action-more {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 80%, transparent) !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+  }
+  #admin-faq .faq-mmenu .btn-action-more:active { transform: scale(0.92); }
+  #admin-faq .faq-mmenu .action-dropdown-menu { right: 0; top: calc(100% + 6px); }
+
+  /* jawaban: panel dengan garis aksen, tampil penuh tanpa dipotong */
+  #admin-faq .faq-manswer {
+    padding: 11px 13px;
+    border-radius: 12px 14px 14px 12px;
+    background: color-mix(in srgb, var(--compreng-bg, #f8fafc) 55%, var(--compreng-surface-soft, #f1f5f9));
+    border: 1px solid color-mix(in srgb, var(--compreng-border, #e2e8f0) 80%, transparent);
+    border-left: 3px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 55%, transparent);
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--compreng-text-secondary, #475569);
+    white-space: pre-line;      /* jawaban tampil penuh, baris baru dari admin tetap dihormati */
+    overflow: visible;
+    overflow-wrap: anywhere;
+  }
+
+  /* chip: kategori | urutan | status (status didorong ke kanan) */
+  #admin-faq .faq-mmeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding-top: 12px;
+    border-top: 1px solid color-mix(in srgb, var(--compreng-border, #e2e8f0) 70%, transparent);
+  }
+  #admin-faq .faq-mmeta .badge,
+  #admin-faq .faq-mmeta .faq-msort {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 11px;
+    border-radius: 999px !important;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
+  #admin-faq .faq-mmeta .badge-category {
+    background-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 30%, transparent) !important;
+    color: color-mix(in srgb, var(--compreng-accent, #2563eb) 75%, var(--compreng-text, #0f172a)) !important;
+  }
+  #admin-faq .faq-mmeta .faq-msort {
+    background-color: var(--compreng-surface-soft, #f1f5f9);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    color: var(--compreng-text-secondary, #475569);
+    font-weight: 600;
+  }
+  #admin-faq .faq-mmeta .badge-success,
+  #admin-faq .faq-mmeta .badge-warning {
+    --fq-dot: #22c55e;
+    margin-left: auto;
+    background-color: color-mix(in srgb, var(--fq-dot) 14%, transparent) !important;
+    border: 1px solid color-mix(in srgb, var(--fq-dot) 35%, transparent) !important;
+    color: color-mix(in srgb, var(--fq-dot) 70%, var(--compreng-text, #0f172a)) !important;
+  }
+  #admin-faq .faq-mmeta .badge-warning { --fq-dot: #f59e0b; }
+  #admin-faq .faq-mmeta .badge-success::before,
+  #admin-faq .faq-mmeta .badge-warning::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--fq-dot);
+    flex: 0 0 auto;
+  }
+
+  #admin-faq .faq-mempty {
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--compreng-text-muted, #64748b);
+    background: var(--compreng-surface, #ffffff);
+    border: 1px dashed var(--compreng-border, #e2e8f0);
+    border-radius: 14px;
+  }
+
+  /* --- 3. Form tambah/edit: dialog di tengah, sama seperti Berita & Mitra --- */
+  #admin-faq .modal-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  #admin-faq .modal-overlay .modal-content.modern-modal {
+    width: 100%;
+    max-width: 480px !important;
+    margin: auto;
+    max-height: calc(100dvh - 40px);
+    padding: 0;
+    overflow: hidden;
+    border-radius: 22px !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  }
+  /* header & area tombol: netralkan kotak paksaan theme.css */
+  #admin-faq .modal-header-modern,
+  #admin-faq .modal-actions-modern {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    border-bottom: none !important;
+  }
+  #admin-faq .modal-header-modern {
+    margin: 0;
+    padding: 16px 18px;
+    flex: 0 0 auto;
+    border-top: none !important;
+    border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
+  }
+  #admin-faq .modal-header-modern h3 { font-size: 1.05rem; }
+  /* Bayangan header jatuh ke area isi form (gradasi seperti laptop, Berita & Mitra) */
+  #admin-faq .modal-header-modern {
+    background-color: var(--compreng-surface, #ffffff) !important;
+    box-shadow: 0 25px 50px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.4)) !important;
+    position: relative;
+    z-index: 1;
+  }
+  #admin-faq .btn-close-modal {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
+  }
+  #admin-faq .form-modern-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    gap: 16px;
+    padding: 16px 18px 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+  #admin-faq .form-row-modern {
+    flex-direction: column;
+    gap: 16px !important;
+  }
+  #admin-faq .form-row-modern .form-group-modern {
+    flex: none !important;
+    width: 100%;
+  }
+  #admin-faq .form-modern-layout .input-modern {
+    border-radius: 12px !important;
+    padding: 11px 14px;
+  }
+  /* Tombol Batal & Simpan berdampingan, sama lebar (seperti Berita) */
+  #admin-faq .modal-actions-modern {
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-top: 4px !important;
+    padding: 4px 0 0;
+    border-top: none !important;
+  }
+  #admin-faq .modal-actions-modern button {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  #admin-faq .table-toolbar .faq-add-mobile { padding: 0 10px !important; }
+  #admin-faq .faq-mcard { padding: 14px 12px 12px 16px; gap: 10px; }
+  #admin-faq .faq-mtop { gap: 10px; }
+  #admin-faq .modal-overlay { padding: 14px; }
+  #admin-faq .modal-overlay .modal-content.modern-modal {
+    max-height: calc(100dvh - 28px);
+    border-radius: 18px !important;
+  }
+  #admin-faq .modal-header-modern { padding: 14px; }
+  #admin-faq .form-modern-layout { padding: 14px 14px 18px; }
+}
+
+/* HP landscape: tinggi layar kecil, kurangi jarak atas-bawah */
+@media (max-height: 480px) and (orientation: landscape) {
+  #admin-faq .modal-overlay { padding: 8px 20px; }
+  #admin-faq .modal-overlay .modal-content.modern-modal { max-height: calc(100dvh - 16px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-faq .faq-mcard { animation: none !important; }
+}
+
+/* ==========================================================================
+   Tombol Batal & Simpan Data di modal: bentuk & ukuran sama (pill)
+   ========================================================================== */
+#admin-faq .modal-actions-modern .btn-modern-secondary,
+#admin-faq .modal-actions-modern .btn-modern-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 18px !important;
+  border-radius: 999px !important;
+  font-size: 14px;
+  font-weight: 600 !important;
+  line-height: 1;
+}
+#admin-faq .modal-actions-modern .btn-modern-secondary {
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+
+/* ==========================================================================
+   DROPDOWN (Status Tampil, Kategori, dst) DI FORM TAMBAH / EDIT
+   Popup <select> bawaan Chrome menggambar kotak putih di luar form. Dengan
+   `appearance: base-select` popup-nya jadi elemen CSS biasa (top layer) yang
+   bisa dirapikan & mengikuti tema. Hanya CSS; browser yang belum mendukung
+   tetap memakai dropdown bawaan (tidak rusak).
+   ========================================================================== */
+@supports (appearance: base-select) {
+  #admin-faq .form-modern-layout select,
+  #admin-faq .form-modern-layout select::picker(select) {
+    appearance: base-select;
+  }
+
+  #admin-faq .form-modern-layout select {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    cursor: pointer;
+  }
+  /* panah: berputar saat dibuka */
+  #admin-faq .form-modern-layout select::picker-icon {
+    color: var(--compreng-text-secondary, #475569);
+    transition: rotate 0.2s ease;
+  }
+  #admin-faq .form-modern-layout select:open::picker-icon { rotate: 180deg; }
+
+  /* daftar pilihan */
+  #admin-faq .form-modern-layout select::picker(select) {
+    /* selalu buka ke BAWAH kolom; hanya membalik ke atas kalau benar-benar tidak muat */
+    position-area: block-end span-inline-end;
+    position-try-order: normal;
+    position-try-fallbacks: flip-block;
+    box-sizing: border-box;
+    margin-block: 6px;
+    padding: 6px;
+    max-height: 260px;
+    background: var(--compreng-surface, #ffffff);
+    color: var(--compreng-text, #0f172a);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    border-radius: 12px;
+    box-shadow: 0 16px 32px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.35));
+  }
+
+  /* tiap pilihan */
+  #admin-faq .form-modern-layout select option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: transparent !important;
+    color: var(--compreng-text, #0f172a) !important;
+  }
+  #admin-faq .form-modern-layout select option:hover,
+  #admin-faq .form-modern-layout select option:focus {
+    background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+  }
+  #admin-faq .form-modern-layout select option:checked {
+    font-weight: 700;
+    color: var(--compreng-accent, #2563eb) !important;
+  }
+  #admin-faq .form-modern-layout select option::checkmark {
+    order: 2;
+    margin-left: auto;
+    color: var(--compreng-accent, #2563eb);
+  }
 }

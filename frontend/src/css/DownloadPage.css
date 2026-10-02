@@ -324,7 +324,7 @@
   border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 8px;
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-  width: 150px;
+  width: 155px;
   padding: 6px;
   z-index: 9999;
   animation: downloadDropdownFadeIn 0.2s ease;
@@ -375,4 +375,480 @@
   .mp-search-wrapper {
     width: 100%;
   }
+}
+
+/* ==========================================================================
+   DOWNLOAD — rapikan Status & Aksi (laptop) + tampilan HP modern + form seragam
+   Semua aturan dikunci ke #admin-download. Logika & struktur JSX tidak berubah.
+   ========================================================================== */
+#admin-download .dl-add-mobile,
+#admin-download .dl-mlist { display: none; }
+
+/* --- LAPTOP: kolom Status & Aksi tidak lagi pecah ("Ditampilka|n", "Un|duh") --- */
+#admin-download .mp-td { overflow-wrap: normal; }          /* aturan global memperbolehkan patah di tengah kata */
+#admin-download .mp-td:first-child { overflow-wrap: anywhere; }
+/* --- TABEL RAPI & TIDAK BISA DIGESER --- */
+#admin-download .dl-table-card {
+  overflow-x: hidden !important;
+  overflow-y: visible;
+  touch-action: pan-y;
+}
+#admin-download .dl-table {
+  width: 100%;
+  min-width: 0 !important;
+  table-layout: fixed;
+}
+#admin-download .dl-w1 { width: auto; }
+#admin-download .dl-w2 { width: 19%; }
+#admin-download .dl-w3 { width: 8%; }
+#admin-download .dl-w4 { width: 7%; }
+#admin-download .dl-w5 { width: 16%; }
+#admin-download .dl-w6 { width: 12%; }
+#admin-download .dl-w7 { width: 7%; }
+/* <col> hanya untuk lebar. Nama class netral karena theme.css punya selector
+   [class*="status"] dll yang memberi latar & garis ke elemen apa pun (kolom Status jadi beda warna di mode gelap) */
+#admin-download .dl-table col {
+  background: none !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+#admin-download .dl-table .mp-th,
+#admin-download .dl-table .mp-td {
+  padding: 12px 10px;
+  overflow: hidden;
+}
+#admin-download .dl-table .mp-th:first-child,
+#admin-download .dl-table .mp-td:first-child { padding-left: 16px; }
+#admin-download .dl-table .mp-th { text-align: left; }
+#admin-download .dl-table .mp-th[style*="center"] { text-align: center !important; }
+#admin-download .dl-table .mp-td:first-child > div { min-width: 0; }
+#admin-download .dl-table .mp-td:first-child > div > div:last-child { min-width: 0; }
+#admin-download .dl-table .mp-td:first-child > div > div:last-child > div:last-child {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* Kategori: pill satu baris, seragam dengan pill Status (bukan kotak) */
+#admin-download .dl-table .mp-badge-role {
+  display: inline-block;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 4px 12px !important;
+  border-radius: 16px !important;
+  background-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 30%, transparent) !important;
+  color: var(--compreng-text, #0f172a) !important;
+  font-size: 12px;
+  font-weight: 600 !important;
+  line-height: 1.25;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  white-space: normal;      /* tidak pernah dipotong: kalau kolom sempit, teks turun ke baris kedua */
+  overflow-wrap: break-word;
+  vertical-align: middle;
+  box-shadow: none !important;
+}
+#admin-download .dl-td-nowrap { white-space: nowrap; }
+#admin-download .dl-td-actions { white-space: nowrap; }
+#admin-download .dl-actions { flex-wrap: nowrap; }
+#admin-download .dl-unduh {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+#admin-download .dl-actions .mp-action-btn { flex: 0 0 auto; width: 32px; height: 32px; padding: 0; }
+
+/* status: pil bertitik, satu baris. !important karena theme.css memaksa warna semua "badge" */
+#admin-download .dl-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 4px 12px;
+  border-radius: 999px !important;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+#admin-download .dl-pill::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--dl-dot, #22c55e);
+  flex: 0 0 auto;
+}
+#admin-download .dl-pill-on,
+#admin-download .dl-pill-off {
+  --dl-dot: #22c55e;
+  background-color: color-mix(in srgb, var(--dl-dot) 14%, transparent) !important;
+  border: 1px solid color-mix(in srgb, var(--dl-dot) 35%, transparent) !important;
+  color: color-mix(in srgb, var(--dl-dot) 70%, var(--compreng-text, #0f172a)) !important;
+}
+#admin-download .dl-pill-off { --dl-dot: #f59e0b; }
+
+@keyframes dlCardIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* --- HP (<=768px) --- */
+@media (max-width: 768px) {
+  /* Kontrol: tombol Tambah ringkas sebaris dengan Search (sama seperti Berita & FAQ) */
+  #admin-download .simple-page-header { margin-bottom: 14px; gap: 6px; }
+  #admin-download .simple-page-header > .dl-add-desktop { display: none !important; }
+  #admin-download .simple-toolbar {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  #admin-download .simple-toolbar .mp-search-wrapper {
+    flex: 1 1 auto;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0;
+  }
+  #admin-download .simple-toolbar .mp-search-input {
+    height: 40px;
+    padding: 0 12px 0 36px !important;
+    border-radius: 10px !important;
+  }
+  #admin-download .simple-toolbar .dl-add-mobile {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    width: auto !important;
+    height: 40px;
+    padding: 0 14px !important;
+    border-radius: 10px !important;
+    font-size: 13px;
+    line-height: 1;
+    white-space: nowrap;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Tabel disembunyikan, tampilkan Card List */
+  #admin-download .dl-table-card { display: none !important; }
+  #admin-download .dl-mlist {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  /* Kartu: gradasi lembut + kilau aksen halus + garis aksen kiri */
+  #admin-download .dl-mcard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 16px 14px 14px 18px;
+    background:
+      radial-gradient(120% 90% at 100% 0%,
+        color-mix(in srgb, var(--compreng-accent, #2563eb) 9%, transparent),
+        transparent 58%),
+      linear-gradient(
+        160deg,
+        color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 55%, var(--compreng-surface, #ffffff)),
+        var(--compreng-surface, #ffffff)
+      ) !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+    border-radius: 20px;
+    box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow, rgba(0, 0, 0, 0.2)) 60%, transparent),
+                0 12px 24px -18px var(--compreng-shadow, rgba(0, 0, 0, 0.3));
+    box-sizing: border-box;
+    min-width: 0;
+    animation: dlCardIn 0.35s ease both;
+  }
+  #admin-download .dl-mcard:nth-child(2) { animation-delay: 0.04s; }
+  #admin-download .dl-mcard:nth-child(3) { animation-delay: 0.08s; }
+  #admin-download .dl-mcard:nth-child(4) { animation-delay: 0.12s; }
+  #admin-download .dl-mcard:nth-child(n+5) { animation-delay: 0.16s; }
+  #admin-download .dl-mcard::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 16px;
+    bottom: 16px;
+    width: 3px;
+    border-radius: 0 4px 4px 0;
+    background: var(--compreng-accent, #2563eb);
+    opacity: 0.85;
+  }
+  #admin-download .dl-mcard:has(.dl-mchip-off)::before { background: #f59e0b; }
+  #admin-download .dl-mcard:has(.dl-mchip-off) .dl-mfile { opacity: 0.75; }
+
+  #admin-download .dl-mtop { display: flex; align-items: flex-start; gap: 12px; min-width: 0; }
+  #admin-download .dl-mfile {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    box-sizing: border-box;
+    color: var(--compreng-accent, #2563eb);
+    background-image: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--compreng-accent, #2563eb) 22%, var(--compreng-surface-soft, #f1f5f9)),
+      color-mix(in srgb, var(--compreng-accent, #2563eb) 8%, var(--compreng-surface-soft, #f1f5f9))
+    );
+    border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 28%, transparent);
+    box-shadow: 0 8px 16px -10px var(--compreng-shadow, rgba(0, 0, 0, 0.35));
+  }
+  #admin-download .dl-mbody { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+  #admin-download .dl-mtitle {
+    font-size: 15.5px;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    line-height: 1.3;
+    color: var(--compreng-text, #0f172a);
+    overflow-wrap: anywhere;
+  }
+  /* deskripsi tampil penuh, tanpa dipotong */
+  #admin-download .dl-mdesc {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--compreng-text-secondary, #475569);
+    white-space: pre-line;
+    overflow-wrap: anywhere;
+  }
+  #admin-download .dl-mmore {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--compreng-text-secondary, #475569);
+    background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 80%, transparent) !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+    transition: transform 0.15s ease, background-color 0.15s ease;
+  }
+  #admin-download .dl-mmore:active { transform: scale(0.92); }
+
+  /* chip: kategori | ukuran | urutan | status (status didorong ke kanan) */
+  #admin-download .dl-mmeta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 6px;
+    padding-top: 12px;
+    border-top: 1px solid color-mix(in srgb, var(--compreng-border, #e2e8f0) 70%, transparent);
+  }
+  #admin-download .dl-mchip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 11px;
+    border-radius: 999px;
+    font-size: 11.5px;
+    font-weight: 700;
+    line-height: 1.25;
+    white-space: nowrap;
+  }
+  #admin-download .dl-mchip-cat {
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 10.5px;
+    background-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent);
+    border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 30%, transparent);
+    color: color-mix(in srgb, var(--compreng-accent, #2563eb) 75%, var(--compreng-text, #0f172a));
+  }
+  #admin-download .dl-mchip-info {
+    font-weight: 600;
+    background-color: var(--compreng-surface-soft, #f1f5f9);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    color: var(--compreng-text-secondary, #475569);
+  }
+  #admin-download .dl-mchip-on,
+  #admin-download .dl-mchip-off {
+    --dl-dot: #22c55e;
+    background-color: color-mix(in srgb, var(--dl-dot) 14%, transparent);
+    border: 1px solid color-mix(in srgb, var(--dl-dot) 35%, transparent);
+    color: color-mix(in srgb, var(--dl-dot) 70%, var(--compreng-text, #0f172a));
+  }
+  #admin-download .dl-mchip-off { --dl-dot: #f59e0b; }
+  #admin-download .dl-mchip-on::before,
+  #admin-download .dl-mchip-off::before {
+    content: '';
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--dl-dot);
+    flex: 0 0 auto;
+  }
+
+  /* tombol Unduh: lebar penuh, mudah ditekan */
+  #admin-download .dl-mget {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 44px;
+    border-radius: 12px;
+    font-size: 13.5px;
+    font-weight: 700;
+    text-decoration: none !important;
+    box-sizing: border-box;
+    background-color: var(--compreng-accent, #2563eb) !important;
+    color: var(--compreng-accent-text, #ffffff) !important;
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 0.15s ease;
+  }
+  #admin-download .dl-mget:active { transform: scale(0.98); }
+
+  #admin-download .dl-mempty {
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--compreng-text-muted, #64748b);
+    background: var(--compreng-surface, #ffffff);
+    border: 1px dashed var(--compreng-border, #e2e8f0);
+    border-radius: 14px;
+  }
+
+  /* --- Form tambah/edit: dialog di tengah, header ber-bayangan gradasi (sama seperti Berita & Mitra) --- */
+  #admin-download .modal-overlay {
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+  }
+  #admin-download .modal-overlay .modal-content.modern-modal {
+    width: 100%;
+    max-width: 480px !important;
+    margin: auto;
+    max-height: calc(100dvh - 40px);
+    padding: 0;
+    overflow: hidden;
+    border-radius: 22px !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  }
+  #admin-download .modal-header-modern,
+  #admin-download .modal-actions-modern {
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
+  #admin-download .modal-actions-modern {
+    background: transparent !important;
+    box-shadow: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+  }
+  #admin-download .modal-header-modern {
+    margin: 0;
+    padding: 16px 18px;
+    flex: 0 0 auto;
+    border-top: none !important;
+    border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
+    background-color: var(--compreng-surface, #ffffff) !important;
+    box-shadow: 0 25px 50px -12px var(--compreng-shadow, rgba(0, 0, 0, 0.4)) !important;
+    position: relative;
+    z-index: 1;
+  }
+  #admin-download .modal-header-modern h3 { font-size: 1.05rem; }
+  #admin-download .btn-close-modal {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50% !important;
+  }
+  #admin-download .form-modern-layout {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    gap: 16px;
+    padding: 16px 18px 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+  #admin-download .form-row-modern { flex-direction: column; gap: 16px !important; }
+  #admin-download .form-row-modern .form-group-modern { flex: none !important; width: 100%; }
+  #admin-download .form-modern-layout .input-modern {
+    border-radius: 12px !important;
+    padding: 11px 14px;
+  }
+  /* Tombol Batal & Simpan berdampingan, sama lebar */
+  #admin-download .modal-actions-modern {
+    flex-direction: row !important;
+    flex-wrap: nowrap;
+    gap: 10px;
+    margin-top: 4px !important;
+    padding: 4px 0 0;
+  }
+  #admin-download .modal-actions-modern button {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+    padding-left: 12px;
+    padding-right: 12px;
+    border-radius: 12px;
+  }
+}
+
+@media (max-width: 380px) {
+  #admin-download .simple-toolbar .dl-add-mobile { padding: 0 10px !important; }
+  #admin-download .dl-mcard { padding: 14px 12px 12px 16px; gap: 10px; }
+  #admin-download .dl-mtop { gap: 10px; }
+  #admin-download .modal-overlay { padding: 14px; }
+  #admin-download .modal-overlay .modal-content.modern-modal {
+    max-height: calc(100dvh - 28px);
+    border-radius: 18px !important;
+  }
+  #admin-download .modal-header-modern { padding: 14px; }
+  #admin-download .form-modern-layout { padding: 14px 14px 18px; }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  #admin-download .modal-overlay { padding: 8px 20px; }
+  #admin-download .modal-overlay .modal-content.modern-modal { max-height: calc(100dvh - 16px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-download .dl-mcard { animation: none !important; }
+}
+
+/* Layar menengah: rapatkan isi kolom agar tetap muat tanpa geser */
+@media (min-width: 769px) and (max-width: 1200px) {
+  #admin-download .dl-table .mp-th,
+  #admin-download .dl-table .mp-td { padding: 10px 8px; font-size: 12.5px; }
+  #admin-download .dl-table .mp-th:first-child,
+  #admin-download .dl-table .mp-td:first-child { padding-left: 12px; }
+  #admin-download .dl-pill { padding: 3px 8px; gap: 5px; font-size: 11px; }
+  #admin-download .dl-actions { gap: 4px !important; }
+  #admin-download .dl-unduh { padding: 6px 8px !important; }
+}
+
+/* Tombol Batal & Simpan Data di modal: bentuk & ukuran sama (pill) */
+#admin-download .modal-actions-modern button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  height: 44px;
+  padding: 0 18px !important;
+  border-radius: 999px !important;
+  font-size: 14px;
+  font-weight: 600 !important;
+  line-height: 1;
+}
+#admin-download .modal-actions-modern .btn-modern-secondary {
+  border: 1px solid var(--compreng-border, #e2e8f0);
 }

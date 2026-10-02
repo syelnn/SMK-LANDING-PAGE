@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getImageUrl } from '../utils/media';
 import axios from 'axios';
-import { Plus, Trash2, Edit, Image as ImageIcon, X, MoreHorizontal, Search, Loader2 } from 'lucide-react';
+import { Plus, Trash2, Edit, Eye, EyeOff, Image as ImageIcon, X, MoreHorizontal, Search, Loader2 } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
 import '../css/manageindustrypartners.css';
 import '../App.css';
@@ -67,7 +67,7 @@ export default function ManageIndustryPartners() {
 
     const rect = e.currentTarget.getBoundingClientRect();
     const windowHeight = window.innerHeight;
-    const dropdownHeight = 90;
+    const dropdownHeight = 140;
 
     const spaceBelow = windowHeight - rect.bottom;
     const openUpwards = spaceBelow < dropdownHeight;
@@ -120,6 +120,22 @@ export default function ManageIndustryPartners() {
       alert(`Gagal menyimpan data: ${error.response?.data?.message || error.message}`);
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  // Sembunyikan / Tampilkan langsung dari menu aksi
+  const handleToggleShow = async (item) => {
+    setDropdownConfig({ id: null, right: null, top: null, bottom: null });
+    const currentActive = item.isActive ?? item.is_active ?? true;
+    try {
+      const fd = new FormData();
+      fd.append('name', item.name || '');
+      fd.append('is_active', !currentActive);
+      fd.append('logo_url', item.logoUrl ?? item.logo_url ?? '');
+      await axios.put(`${API_URL}/industry-partners/${item.id}`, fd);
+      fetchData();
+    } catch (error) {
+      alert('Gagal merubah status');
     }
   };
 
@@ -297,12 +313,21 @@ export default function ManageIndustryPartners() {
               if (!targetItem) return null;
               return (
                 <>
+                  {(() => {
+                    const targetActive = targetItem.isActive ?? targetItem.is_active;
+                    return (
+                      <button onClick={() => handleToggleShow(targetItem)} className="ip-dropdown-item">
+                        {targetActive ? <EyeOff size={14} color="var(--compreng-text-secondary)" /> : <Eye size={14} color="var(--compreng-text-secondary)" />}
+                        {targetActive ? 'Sembunyikan' : 'Tampilkan'}
+                      </button>
+                    );
+                  })()}
                   <button onClick={() => openEdit(targetItem)} className="ip-dropdown-item">
                     <Edit size={14} color="var(--compreng-text-secondary)" /> Edit Data
                   </button>
                   <div style={{ margin: '2px 0', borderTop: '1px solid var(--compreng-border)' }}></div>
                   <button onClick={() => handleDelete(targetItem.id, targetItem.name)} className="ip-dropdown-item danger">
-                    <Trash2 size={14} color="currentColor" /> Delete
+                    <Trash2 size={14} color="currentColor" /> Hapus
                   </button>
                 </>
               );
@@ -322,7 +347,7 @@ export default function ManageIndustryPartners() {
             <form onSubmit={handleSubmit} className={`form-modern-layout${submitting ? ' ip-form-busy' : ''}`} aria-busy={submitting}>
               <div className="form-group-modern">
                 <label>NAMA PERUSAHAAN / INDUSTRI</label>
-                <input type="text" placeholder="Contoh: PT Telkom Indonesia" className="input-modern" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
+                <input type="text" placeholder="Contoh: PT Winter Access" className="input-modern" value={formData.name} onChange={e => setFormData({ ...formData, name: e.target.value })} required />
               </div>
 
               <div className="form-group-modern">
