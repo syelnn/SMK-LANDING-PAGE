@@ -48,7 +48,7 @@ import './css/admin-responsive.css'; // RESPONSIVE ADMIN/EDITOR (harus paling ak
 // ==========================================
   // HALAMAN DASHBOARD ANALYTICS (REAL DATA)
   // ==========================================
-  const AdminDashboard = () => {
+  const AdminDashboard = ({ isAdmin = false }) => {
     const [stats, setStats] = useState({
       users: 0, teachers: 0, news: 0, jurusan: 0, program: 0, ekskul: 0, prestasi: 0, testimoni: 0
     });
@@ -72,6 +72,8 @@ import './css/admin-responsive.css'; // RESPONSIVE ADMIN/EDITOR (harus paling ak
         // Ini menyelamatkan database dari serangan koneksi mendadak!
         const token = localStorage.getItem('token');
         for (const { key, url } of endpoints) {
+          // Editor tidak punya akses data pengguna -> lewati request-nya
+          if (key === 'users' && !isAdmin) continue;
           try {
             const res = await axios.get(url, { headers: token ? { Authorization: `Bearer ${token}` } : {} });
             const count = res.data.data ? res.data.data.length : 0;
@@ -101,14 +103,17 @@ import './css/admin-responsive.css'; // RESPONSIVE ADMIN/EDITOR (harus paling ak
 
       {/* STATS CARDS (8 Kotak) */}
       <div className="dash-stats-grid">
-        <div className="dash-stat-card">
-          <div className="dash-stat-header">
-            <p className="dash-stat-title">Total Pengguna</p>
-            <UsersIcon size={18} className="dash-stat-icon" />
+        {/* Total Pengguna hanya untuk ADMIN (disembunyikan untuk editor) */}
+        {isAdmin && (
+          <div className="dash-stat-card">
+            <div className="dash-stat-header">
+              <p className="dash-stat-title">Total Pengguna</p>
+              <UsersIcon size={18} className="dash-stat-icon" />
+            </div>
+            <h3 className="dash-stat-value">{loading ? '...' : stats.users}</h3>
+            <p className="dash-stat-desc muted">Terdaftar di sistem</p>
           </div>
-          <h3 className="dash-stat-value">{loading ? '...' : stats.users}</h3>
-          <p className="dash-stat-desc muted">Terdaftar di sistem</p>
-        </div>
+        )}
 
         <div className="dash-stat-card">
           <div className="dash-stat-header">
@@ -532,9 +537,9 @@ const DashboardLayout = () => {
               <PanelLeft size={20} />
             </button>
 
-            {/* Breadcrumb: Admin > Halaman aktif (disembunyikan di layar kecil) */}
+            {/* Breadcrumb: Admin/Editor (sesuai role login) > Halaman aktif (disembunyikan di layar kecil) */}
             <nav className="topbar-breadcrumb" aria-label="Breadcrumb">
-              <NavLink to="/admin/dashboard" className="topbar-crumb-root">Admin</NavLink>
+              <NavLink to="/admin/dashboard" className="topbar-crumb-root">{isAdmin ? 'Admin' : 'Editor'}</NavLink>
               <ChevronRight size={14} className="topbar-crumb-sep" aria-hidden="true" />
               <span className="topbar-crumb-current" aria-current="page">{currentPageLabel}</span>
             </nav>
@@ -659,7 +664,7 @@ const DashboardLayout = () => {
               <Route index element={<Navigate to="dashboard" replace />} />
               
               {/* ROUTE LENGKAP HALAMAN ADMIN */}
-              <Route path="dashboard" element={<AdminDashboard />} />
+              <Route path="dashboard" element={<AdminDashboard isAdmin={isAdmin} />} />
               <Route path="profil" element={<ProfilSekolah />} />
               <Route path="berita" element={<ManageNews />} />
               <Route path="berita/:slug" element={<DetailNews />} />

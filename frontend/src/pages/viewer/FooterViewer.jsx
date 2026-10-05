@@ -136,7 +136,9 @@ const FooterViewer = () => {
             <li><a href="/galeri" onClick={(e) => handleQuickLink(e, '/galeri', 'section-galeri')}>Galeri</a></li>
             <li><a href="/testimoni" onClick={(e) => handleQuickLink(e, '/testimoni', 'section-testimoni')}>Testimoni</a></li>
             <li><a href="/faq" onClick={(e) => handleQuickLink(e, '/faq', 'section-faq')}>FAQ</a></li>
+            <li><a href="/mitra-industri" onClick={(e) => handleQuickLink(e, '/mitra-industri', 'section-mitra-industri')}>Mitra Industri</a></li>
             <li><a href="/download" onClick={(e) => handleQuickLink(e, '/download', null)}>Download</a></li>
+            <li><a href="/kontak" onClick={(e) => handleQuickLink(e, '/kontak', 'section-kontak')}>Kontak & Alamat</a></li>
           </ul>
         </div>
 

@@ -208,7 +208,19 @@ const Navbar = () => {
   }, [menuItems]);
 
   const getSubMenus = useCallback((parentId) => {
-    return menuItems.filter(item => item.parentId === parentId || item.parent_id === parentId);
+    const subs = menuItems.filter(item => item.parentId === parentId || item.parent_id === parentId);
+
+    // Tukar posisi "Mitra Industri" dan "Download" (Mitra Industri tampil lebih dulu)
+    const isMitra = (m) => `${m.title || ''} ${m.url || m.path || ''}`.toLowerCase().includes('mitra');
+    const isDownload = (m) => `${m.title || ''} ${m.url || m.path || ''}`.toLowerCase().includes('download');
+    const iMitra = subs.findIndex(isMitra);
+    const iDownload = subs.findIndex(isDownload);
+    if (iMitra > -1 && iDownload > -1 && iDownload < iMitra) {
+      const swapped = [...subs];
+      [swapped[iDownload], swapped[iMitra]] = [swapped[iMitra], swapped[iDownload]];
+      return swapped;
+    }
+    return subs;
   }, [menuItems]);
 
   // 4. SCROLL SPY PERBAIKAN URL AKURAT
