@@ -10,6 +10,10 @@ const toTitleCase = (str) => {
   return str.toLowerCase().replace(/(?:^|\s|-)\S/g, (m) => m.toUpperCase());
 };
 
+// Nilai "Prestasi" di database ditampilkan sebagai "Pendidikan" (alumni lulus perguruan tinggi).
+const LEVEL_LABELS = { prestasi: 'Pendidikan' };
+const getLevelLabel = (level) => LEVEL_LABELS[level?.toLowerCase()] || level || 'Nasional';
+
 const AchievementViewer = () => {
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -90,7 +94,7 @@ const AchievementViewer = () => {
 
                   {/* Top Level Badge */}
                   <span className={`card-top-level level-${item.level?.toLowerCase() || 'nasional'}`}>
-                    {item.level || 'Nasional'}
+                    {getLevelLabel(item.level)}
                   </span>
                 </div>
 

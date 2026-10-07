@@ -1238,3 +1238,80 @@
 @media (prefers-reduced-motion: reduce) {
   #admin-prestasi .action-dropdown-menu { animation: none !important; }
 }
+
+/* ==========================================================================
+   Dropdown kustom "Tingkat" (selalu terbuka ke bawah, tampilan seperti select bawaan)
+   ========================================================================== */
+#admin-prestasi .lvl-select { position: relative; }
+
+#admin-prestasi .lvl-select .lvl-select-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+#admin-prestasi .lvl-select .lvl-select-chevron { flex-shrink: 0; transition: transform 0.2s ease; }
+#admin-prestasi .lvl-select .lvl-select-chevron.open { transform: rotate(180deg); }
+
+#admin-prestasi .lvl-select .lvl-select-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  max-height: 260px;
+  overflow-y: auto;
+  padding: 6px;
+  background: #ffffff !important;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 12px;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+}
+
+/* Judul grup: teks tebal biasa, tanpa huruf kapital */
+#admin-prestasi .lvl-select .lvl-select-group {
+  padding: 8px 10px 4px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  text-transform: none;
+  letter-spacing: 0;
+  color: var(--compreng-text, #0f172a);
+  background: transparent !important;
+}
+
+/* Item: polos (putih) - override gaya tombol global tema */
+#admin-prestasi .lvl-select .lvl-select-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+  margin: 0;
+  padding: 10px 12px;
+  border: none !important;
+  border-radius: 8px;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 400;
+  text-align: left;
+  text-transform: none;
+  color: var(--compreng-text, #0f172a) !important;
+  cursor: pointer;
+}
+
+#admin-prestasi .lvl-select .lvl-select-option:hover {
+  background: var(--compreng-surface-soft, #f1f5f9) !important;
+}
+
+#admin-prestasi .lvl-select .lvl-select-option.selected {
+  background: var(--compreng-surface-soft, #f1f5f9) !important;
+  color: var(--compreng-accent, #2563eb) !important;
+  font-weight: 700;
+}

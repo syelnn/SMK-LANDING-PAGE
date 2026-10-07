@@ -85,7 +85,7 @@
 
 .achievement-viewer-container .achievement-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
   background-color: transparent !important;
   border-color: transparent !important;
@@ -144,12 +144,15 @@
   position: absolute;
   top: 12px;
   right: 12px;
+  max-width: calc(100% - 24px);
   padding: 4px 10px;
   border-radius: 6px;
-  font-size: 0.65rem;
-  font-weight: 800;
+  font-size: 0.68rem;
+  font-weight: 700;
+  line-height: 1.3;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  white-space: normal;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
   backdrop-filter: blur(4px);
 }
@@ -174,46 +177,64 @@
   color: var(--compreng-accent, #2563eb);
 }
 
+/* Khusus alumni: Prestasi (lulus perguruan tinggi) & Pencapaian (bekerja) */
+.achievement-viewer-container .level-prestasi {
+  background: rgba(224, 231, 255, 0.95);
+  color: #4338ca;
+}
+
+.achievement-viewer-container .level-pencapaian {
+  background: rgba(255, 228, 230, 0.95);
+  color: #be123c;
+}
+
 /* ==========================================================================
    CARD BODY & TYPOGRAPHY
    ========================================================================== */
 .achievement-viewer-container .card-body {
-  padding: 20px;
+  padding: 20px 22px 22px;
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-width: 0;
 }
 
 .achievement-viewer-container .student-name {
   font-size: 1.05rem;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--compreng-text, #0f172a);
-  margin-bottom: 2px;
-  line-height: 1.3;
+  margin: 0 0 4px;
+  line-height: 1.35;
+  letter-spacing: -0.005em;
+  overflow-wrap: anywhere;
 }
 
 .achievement-viewer-container .student-class {
   font-size: 0.78rem;
-  color: var(--compreng-text-secondary, #475569);
+  color: var(--compreng-accent, #2563eb);
   font-weight: 600;
   text-transform: uppercase;
-  margin-bottom: 12px;
+  letter-spacing: 0.03em;
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
 }
 
-/* JUDUL PRESTASI - Ukuran lebih kecil & font tidak terlalu tebal */
+/* JUDUL PRESTASI - tampil PENUH, tidak dipotong berapapun panjang teksnya.
+   Tinggi card mengikuti isi; card sebaris otomatis ikut sama tinggi (grid stretch),
+   dan tag tahun tetap menempel di bawah lewat margin-top:auto di .card-footer-tags. */
 .achievement-viewer-container .achievement-title {
-  font-size: 0.82rem;           /* Ukuran font diperkecil */
-  font-weight: 600;            /* Ketebalan font sedang (Semi-Bold) */
-  color: var(--compreng-text-secondary, #475569);              /* Warna abu-abu gelap agar tidak terlalu pekat */
-  line-height: 1.4;
-  margin-bottom: 12px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--compreng-text-secondary, #475569);
+  line-height: 1.6;
+  margin: 0 0 14px;
   text-transform: capitalize;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  min-height: 2.4em;
+  min-height: 3.2em;            /* minimal 2 baris supaya card pendek tetap rapi */
+  overflow: visible;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: normal;
+  hyphens: auto;
 }
 
 /* FOOTER TAGS (TAHUN) */
@@ -226,8 +247,8 @@
 }
 
 .achievement-viewer-container .footer-tag {
-  font-size: 0.7rem;
-  font-weight: 700;
+  font-size: 0.72rem;
+  font-weight: 600;
   padding: 3px 10px;
   border-radius: 6px;
 }
@@ -254,16 +275,41 @@
 /* RESPONSIVE DESIGN */
 @media (max-width: 992px) {
   .achievement-viewer-container .achievement-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
 
 @media (max-width: 600px) {
+  .achievement-viewer-container .achievement-grid-section {
+    padding: 0 16px;
+  }
+
+  .achievement-viewer-container .achievement-grid {
+    gap: 18px;
+  }
+
+  .achievement-viewer-container .card-image-box {
+    height: 210px;
+  }
+
+  .achievement-viewer-container .card-body {
+    padding: 18px 18px 20px;
+  }
+
+  .achievement-viewer-container .student-name {
+    font-size: 1rem;
+  }
+
+  .achievement-viewer-container .achievement-title {
+    font-size: 0.88rem;
+    min-height: 0;
+  }
+
   .achievement-viewer-container .hero-title17 {
     font-size: 1.5rem;
   }
 
   .achievement-viewer-container .achievement-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 }

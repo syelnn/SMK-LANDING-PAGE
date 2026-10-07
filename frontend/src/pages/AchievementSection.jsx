@@ -10,11 +10,23 @@ import {
   Plus, 
   Search, 
   X, 
-  Loader2 
+  Loader2,
+  ChevronDown,
+  Check
 } from 'lucide-react';
 import ImageUploader from '../components/ImageUploader';
 import '../css/AchievementSection.css';
 import '../App.css';
+
+// Nilai "Prestasi" di database ditampilkan sebagai "Pendidikan" (agar data lama tidak rusak).
+// Semua pilihan digabung dalam satu daftar tanpa grup "Khusus Alumni".
+const LEVEL_LABELS = {
+  Prestasi: 'Pendidikan',
+};
+const LEVEL_GROUPS = [
+  { label: '', options: ['Kecamatan', 'Kabupaten', 'Provinsi', 'Nasional', 'Internasional', 'Prestasi'] },
+];
+const getLevelLabel = (level) => LEVEL_LABELS[level] || level || 'Nasional';
 
 const AchievementSection = () => {
   const [achievements, setAchievements] = useState([]);
@@ -29,6 +41,9 @@ const AchievementSection = () => {
   const [activeMenuId, setActiveMenuId] = useState(null);
 
   const menuRef = useRef(null);
+  const [levelOpen, setLevelOpen] = useState(false);
+  const levelRef = useRef(null);
+  const levelListRef = useRef(null);
 
   const [formData, setFormData] = useState({
     student_name: '',
@@ -71,6 +86,23 @@ const AchievementSection = () => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Tutup dropdown Tingkat saat klik di luar / tekan Escape
+  useEffect(() => {
+    if (!levelOpen) return;
+    const onDown = (e) => {
+      if (levelRef.current && !levelRef.current.contains(e.target)) setLevelOpen(false);
+    };
+    const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); setLevelOpen(false); } };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('keydown', onKey);
+    // Pastikan daftar yang terbuka ke bawah selalu terlihat penuh di dalam modal
+    levelListRef.current?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [levelOpen]);
+
   const handleOpenAddModal = () => {
     setIsEditing(false);
     setSelectedId(null);
@@ -86,6 +118,7 @@ const AchievementSection = () => {
       photo: '',
       show: 1
     });
+    setLevelOpen(false);
     setIsModalOpen(true);
   };
 
@@ -317,7 +350,7 @@ const AchievementSection = () => {
                     <span className="achievement-title-text">{item.achievement}</span>
                   </td>
                   <td>
-                    <span className="badge badge-category">{item.level || 'Nasional'}</span>
+                    <span className="badge badge-category">{getLevelLabel(item.level)}</span>
                   </td>
                   <td>
                     <span className="year-text">{item.year}</span>
@@ -476,7 +509,7 @@ const AchievementSection = () => {
               </div>
               <div className="ach-mtext">{item.achievement}</div>
               <div className="ach-mmeta">
-                <span className="badge badge-category">{item.level || 'Nasional'}</span>
+                <span className="badge badge-category">{getLevelLabel(item.level)}</span>
                 <span className="ach-myear">{item.year}</span>
                 <span className={`badge ${item.show === 1 ? 'badge-success' : 'badge-warning'}`}>
                   {item.show === 1 ? 'Tampil' : 'Sembunyi'}
@@ -546,18 +579,45 @@ const AchievementSection = () => {
               <div className="form-row-modern" style={{ display: 'flex', gap: '12px' }}>
                 <div className="form-group-modern" style={{ flex: 1 }}>
                   <label>Tingkat</label>
-                  <select
-                    name="level"
-                    className="input-modern"
-                    value={formData.level}
-                    onChange={handleChange}
-                  >
-                    <option value="Kecamatan">Kecamatan</option>
-                    <option value="Kabupaten">Kabupaten</option>
-                    <option value="Provinsi">Provinsi</option>
-                    <option value="Nasional">Nasional</option>
-                    <option value="Internasional">Internasional</option>
-                  </select>
+                  {/* Dropdown kustom: selalu terbuka ke bawah (select bawaan browser bisa membuka ke atas) */}
+                  <div className="lvl-select" ref={levelRef}>
+                    <button
+                      type="button"
+                      className="input-modern lvl-select-trigger"
+                      aria-haspopup="listbox"
+                      aria-expanded={levelOpen}
+                      onClick={() => setLevelOpen((o) => !o)}
+                    >
+                      <span>{getLevelLabel(formData.level)}</span>
+                      <ChevronDown size={16} className={`lvl-select-chevron ${levelOpen ? 'open' : ''}`} />
+                    </button>
+
+                    {levelOpen && (
+                      <div className="lvl-select-list" role="listbox" ref={levelListRef}>
+                        {LEVEL_GROUPS.map((group) => (
+                          <div key={group.label || 'semua'}>
+                            {group.label && <div className="lvl-select-group">{group.label}</div>}
+                            {group.options.map((opt) => (
+                              <button
+                                type="button"
+                                role="option"
+                                aria-selected={formData.level === opt}
+                                key={opt}
+                                className={`lvl-select-option ${formData.level === opt ? 'selected' : ''}`}
+                                onClick={() => {
+                                  setFormData((prev) => ({ ...prev, level: opt }));
+                                  setLevelOpen(false);
+                                }}
+                              >
+                                <span>{getLevelLabel(opt)}</span>
+                                {formData.level === opt && <Check size={14} />}
+                              </button>
+                            ))}
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="form-group-modern" style={{ flex: 1 }}>
