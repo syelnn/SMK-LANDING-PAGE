@@ -528,7 +528,7 @@ input, select, textarea, input[type="file"] {
    Ditambahkan :not([class*="nav"]) & :not([class*="brand"]) agar 2 elemen itu
    dikecualikan dan tetap memakai warna --compreng-nav-bg dari parent-nya. */
 [class*="-wrapper"]:not(svg):not([class*="search"]):not([class*="filter"]):not([class*="toolbar"]):not([class*="title"]):not([class*="hero"]):not([class*="banner"]):not([class*="img"]):not([class*="image"]):not([class*="logo"]):not([class*="avatar"]):not([class*="btn"]):not([class*="badge"]):not([class*="nav"]):not([class*="brand"]):not([class*="icon"]),
-[class*="-container"]:not(svg):not([class*="hero"]):not([class*="banner"]):not([class*="img"]):not([class*="image"]):not([class*="logo"]):not([class*="modal"]):not([class*="nav"]),
+[class*="-container"]:not(svg):not([class*="progress"]):not([class*="hero"]):not([class*="banner"]):not([class*="img"]):not([class*="image"]):not([class*="logo"]):not([class*="modal"]):not([class*="nav"]),
 [class*="-page"]:not(svg):not([class*="hero"]),
 [class*="-section"]:not(svg):not([class*="hero"]):not([class*="banner"]):not([class*="tag"]):not([class*="badge"]) {
   background-color: var(--compreng-bg, #f8fafc) !important;
@@ -540,6 +540,22 @@ input, select, textarea, input[type="file"] {
 .navbar-container,
 .sidebar-brand-wrapper {
   background-color: transparent !important;
+}
+
+/* [FIX] Komposisi Konten & Kapasitas Akademik: .dash-progress-container dulu ikut
+   tertangkap selector [class*="-container"] sehingga dicat --compreng-bg (kotak
+   abu/krem di belakang bar) di tema Light/System/Custom. Di Dark nyaris tak
+   terlihat karena bg & surface hampir sama. Wadah bar harus transparan di ke-4 tema. */
+.dash-chart-card .dash-progress-container,
+.dash-progress-container > div {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+}
+.dash-chart-card .dash-progress-label,
+.dash-chart-card .dash-progress-label span {
+  background: transparent !important;
 }
 
 /* Kartu-kartu: selalu permukaan tema, tidak pernah putih paksa */

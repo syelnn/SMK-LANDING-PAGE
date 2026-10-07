@@ -1018,3 +1018,10 @@ body, html, #root {
   background: var(--compreng-surface-soft, #f1f5f9);
   color: var(--compreng-text, #0f172a);
 }
+
+/* [FIX] overflow-x:hidden pada html+body+#root membuat browser HP menganggapnya scroll
+   container -> navbar position:fixed bisa ikut "lompat/hilang" saat scroll mentok.
+   overflow-x:clip tetap mencegah geser samping tanpa efek samping itu. */
+@supports (overflow: clip) {
+  body, html, #root { overflow-x: clip; }
+}
