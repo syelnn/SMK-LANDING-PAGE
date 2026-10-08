@@ -4,10 +4,31 @@ import { Check, X, Plus, Search, Trash2, Loader2, ClipboardList } from 'lucide-r
 import '../css/managetracerstudy.css';
 import '../App.css'; // class modal-overlay, modern-modal, input-modern, dll (sama seperti halaman Testimoni)
 
-const API = 'https://smkn-compreng-api-pi.vercel.app/api/tracer-study';
+const BASE = 'https://smkn-compreng-api-pi.vercel.app/api';
+const API = `${BASE}/tracer-study`;
 const authHeaders = () => ({ headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } });
 
-const EMPTY_FORM = { fullName: '', angkatan: '', nisn: '', nik: '', birthDate: '', domicile: '', phone: '' };
+// Status kegiatan alumni. detail = label isian detail tempat (null => tidak ada, mis. Freelance).
+const KINDS = [
+  { key: 'Bekerja', color: '#3b82f6', detail: 'Nama perusahaan / instansi' },
+  { key: 'Wirausaha', color: '#f59e0b', detail: 'Nama usaha' },
+  { key: 'Kuliah', color: '#8b5cf6', detail: 'Nama kampus' },
+  { key: 'Freelance', color: '#14b8a6', detail: null },
+  { key: 'Pencari Kerja Aktif', color: '#f43f5e', detail: null },
+];
+const KIND_MAP = Object.fromEntries(KINDS.map((k) => [k.key, k]));
+const FALLBACK_JURUSAN = ['Agribisnis Tanaman Pangan dan Hortikultura', 'Teknik dan Bisnis Sepeda Motor'];
+
+const EMPTY_FORM = {
+  fullName: '', angkatan: '', jurusan: '', workStatus: '', detailTempat: '',
+  nisn: '', nik: '', birthDate: '', domicile: '', phone: '',
+};
+
+const APPROVAL = {
+  pending: { label: 'Menunggu', cls: 'is-pending' },
+  approved: { label: 'Disetujui', cls: 'is-ok' },
+  rejected: { label: 'Ditolak', cls: 'is-no' },
+};
 
 const fmtDate = (iso) =>
   iso ? new Date(iso).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' }) : '-';
@@ -17,12 +38,14 @@ const fmtSent = (iso) =>
 const ManageTracerStudy = () => {
   const [items, setItems] = useState([]);
   const [current, setCurrent] = useState(10);
+  const [jurusanList, setJurusanList] = useState(FALLBACK_JURUSAN);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
 
-  const [tab, setTab] = useState('pending'); // pending | approved | all
+  const [tab, setTab] = useState('pending'); // pending | approved | rejected | all
   const [query, setQuery] = useState('');
   const [angkatan, setAngkatan] = useState('all');
+  const [kind, setKind] = useState('all');
   const [busyId, setBusyId] = useState(null);
   const [notice, setNotice] = useState('');
   const noticeTimer = useRef(null);
@@ -51,21 +74,33 @@ const ManageTracerStudy = () => {
       setLoading(false);
     }
   };
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    fetchData();
+    axios
+      .get(`${BASE}/jurusan`)
+      .then((res) => {
+        const titles = (res.data?.data || []).map((j) => String(j.title || '').trim()).filter(Boolean);
+        if (titles.length) setJurusanList(titles);
+      })
+      .catch(() => {});
+  }, []);
 
-  const pendingCount = items.filter((i) => i.status === 'pending').length;
-  const approvedCount = items.filter((i) => i.status === 'approved').length;
+  const countOf = (s) => items.filter((i) => i.approvalStatus === s).length;
+  const pendingCount = countOf('pending');
+  const approvedCount = countOf('approved');
+  const rejectedCount = countOf('rejected');
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
     return items.filter((i) => {
-      if (tab !== 'all' && i.status !== tab) return false;
+      if (tab !== 'all' && i.approvalStatus !== tab) return false;
       if (angkatan !== 'all' && i.angkatan !== Number(angkatan)) return false;
+      if (kind !== 'all' && i.workStatus !== kind) return false;
       if (!q) return true;
-      return [i.fullName, i.nisn, i.domicile, i.phone, i.user?.username, i.user?.email]
+      return [i.fullName, i.nisn, i.domicile, i.phone, i.jurusan, i.workStatus, i.detailTempat, i.user?.username, i.user?.email]
         .some((v) => String(v || '').toLowerCase().includes(q));
     });
-  }, [items, tab, angkatan, query]);
+  }, [items, tab, angkatan, kind, query]);
 
   const approve = async (item) => {
     setBusyId(item.id);
@@ -81,12 +116,12 @@ const ManageTracerStudy = () => {
   };
 
   const reject = async (item) => {
-    if (!window.confirm(`Tolak data ${item.fullName}?\n\nData akan DIHAPUS permanen dan tidak tampil di tabel. Alumni bisa mengisi ulang.`)) return;
+    if (!window.confirm(`Tolak data ${item.fullName}?\n\nData tidak akan tampil di publik. Alumni bisa memperbaiki dan mengirim ulang.`)) return;
     setBusyId(item.id);
     try {
-      await axios.put(`${API}/${item.id}/reject`, {}, authHeaders());
-      setItems((prev) => prev.filter((i) => i.id !== item.id));
-      flash(`Data ${item.fullName} ditolak dan dihapus.`);
+      const res = await axios.put(`${API}/${item.id}/reject`, {}, authHeaders());
+      setItems((prev) => prev.map((i) => (i.id === item.id ? { ...i, ...res.data.data } : i)));
+      flash(`Data ${item.fullName} ditolak.`);
     } catch (err) {
       alert(err.response?.data?.message || 'Gagal menolak data.');
     } finally {
@@ -95,7 +130,7 @@ const ManageTracerStudy = () => {
   };
 
   const remove = async (item) => {
-    if (!window.confirm(`Hapus data ${item.fullName} dari tabel Tracer Study?`)) return;
+    if (!window.confirm(`Hapus permanen data ${item.fullName} dari Tracer Study?`)) return;
     setBusyId(item.id);
     try {
       await axios.delete(`${API}/${item.id}`, authHeaders());
@@ -115,13 +150,21 @@ const ManageTracerStudy = () => {
   };
   const setField = (k, v) => setForm((f) => ({ ...f, [k]: v }));
   const setDigits = (k, max) => (e) => setField(k, e.target.value.replace(/\D/g, '').slice(0, max));
+  const pickKind = (key) =>
+    setForm((f) => ({ ...f, workStatus: key, detailTempat: KIND_MAP[key]?.detail ? f.detailTempat : '' }));
+
+  const formKind = KIND_MAP[form.workStatus];
 
   const handleAdd = async (e) => {
     e.preventDefault();
     setFormError('');
     setSaving(true);
     try {
-      await axios.post(`${API}/admin`, { ...form, angkatan: Number(form.angkatan) }, authHeaders());
+      await axios.post(
+        `${API}/admin`,
+        { ...form, angkatan: Number(form.angkatan), detailTempat: formKind?.detail ? form.detailTempat : '' },
+        authHeaders()
+      );
       setIsModalOpen(false);
       flash('Data alumni ditambahkan dan langsung tampil di tabel publik.');
       fetchData();
@@ -137,39 +180,53 @@ const ManageTracerStudy = () => {
   const Actions = ({ item }) => {
     const busy = busyId === item.id;
     if (busy) return <div className="mt-acts"><Loader2 size={16} className="mt-spin" /></div>;
-    if (item.status === 'pending') {
-      return (
-        <div className="mt-acts">
-          <button type="button" className="mt-act mt-act-ok" onClick={() => approve(item)}><Check size={14} /> Accept</button>
-          <button type="button" className="mt-act mt-act-no" onClick={() => reject(item)}><X size={14} /> Reject</button>
-        </div>
-      );
-    }
+    const st = item.approvalStatus;
     return (
       <div className="mt-acts">
-        <button type="button" className="mt-act mt-act-no" onClick={() => remove(item)} aria-label={`Hapus ${item.fullName}`}>
-          <Trash2 size={14} /> Hapus
-        </button>
+        {st !== 'approved' && (
+          <button type="button" className="mt-act mt-act-ok" onClick={() => approve(item)}><Check size={14} /> Accept</button>
+        )}
+        {st === 'pending' && (
+          <button type="button" className="mt-act mt-act-no" onClick={() => reject(item)}><X size={14} /> Reject</button>
+        )}
+        {st !== 'pending' && (
+          <button type="button" className="mt-act mt-act-no" onClick={() => remove(item)} aria-label={`Hapus ${item.fullName}`}>
+            <Trash2 size={14} /> Hapus
+          </button>
+        )}
       </div>
     );
   };
 
-  const Pill = ({ status }) => (
-    <div className={`mt-pill ${status === 'approved' ? 'is-ok' : 'is-pending'}`}>
-      {status === 'approved' ? 'Disetujui' : 'Menunggu'}
-    </div>
-  );
+  const Pill = ({ status }) => {
+    const a = APPROVAL[status] || APPROVAL.pending;
+    return <div className={`mt-pill ${a.cls}`}>{a.label}</div>;
+  };
 
-  const emptyText = query || angkatan !== 'all'
+  const Kind = ({ item }) => {
+    const k = KIND_MAP[item.workStatus];
+    if (!k) return <div className="mt-minor">Belum diisi</div>;
+    return (
+      <div>
+        <div className="mt-kind" style={{ '--k': k.color }}>{k.key}</div>
+        {item.detailTempat && <div className="mt-detail">{item.detailTempat}</div>}
+      </div>
+    );
+  };
+
+  const hasFilter = query || angkatan !== 'all' || kind !== 'all';
+  const emptyText = hasFilter
     ? 'Tidak ada data yang cocok dengan pencarian.'
-    : tab === 'pending' ? 'Tidak ada data yang menunggu verifikasi.' : 'Belum ada data Tracer Study.';
+    : tab === 'pending' ? 'Tidak ada data yang menunggu verifikasi.'
+    : tab === 'rejected' ? 'Tidak ada data yang ditolak.'
+    : 'Belum ada data Tracer Study.';
 
   return (
     <div className="mt-page">
       <div className="mt-head">
         <div>
           <h2 className="mt-h">Tracer Study</h2>
-          <div className="mt-sub">Verifikasi data alumni yang diisi mandiri. Data yang di-Accept otomatis tampil di tabel publik, yang di-Reject dihapus.</div>
+          <div className="mt-sub">Verifikasi data alumni yang diisi mandiri. Data yang di-Accept tampil di tabel dan statistik publik. Data yang di-Reject tidak tampil, dan alumni bisa memperbaikinya lalu mengirim ulang.</div>
         </div>
         <button type="button" className="btn-modern-primary mt-add" onClick={openAdd}>
           <Plus size={16} /> Tambah Data
@@ -182,6 +239,7 @@ const ManageTracerStudy = () => {
         {[
           { key: 'pending', label: 'Menunggu verifikasi', n: pendingCount },
           { key: 'approved', label: 'Disetujui', n: approvedCount },
+          { key: 'rejected', label: 'Ditolak', n: rejectedCount },
           { key: 'all', label: 'Semua', n: items.length },
         ].map((s) => (
           <button
@@ -199,10 +257,14 @@ const ManageTracerStudy = () => {
           <Search size={16} className="mt-find-ico" />
           <input
             type="text" className="mt-find-input" value={query}
-            placeholder="Cari nama, NISN, domisili, atau akun…"
+            placeholder="Cari nama, NISN, jurusan, tempat, atau akun…"
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
+        <select className="mt-pick" value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Filter kegiatan">
+          <option value="all">Semua kegiatan</option>
+          {KINDS.map((k) => <option key={k.key} value={k.key}>{k.key}</option>)}
+        </select>
         <select className="mt-pick" value={angkatan} onChange={(e) => setAngkatan(e.target.value)} aria-label="Filter angkatan">
           <option value="all">Semua angkatan</option>
           {angkatanOptions.map((a) => <option key={a} value={a}>Angkatan {a}</option>)}
@@ -211,36 +273,41 @@ const ManageTracerStudy = () => {
 
       {loadError && <div className="mt-err" role="alert">{loadError}</div>}
 
-      {/* ===== Desktop: tabel ===== */}
+      {/* ===== Desktop & tablet: tabel ===== */}
       <div className="mt-sheet">
         <div className="mt-scroll">
           <table className="mt-grid">
             <thead>
               <tr>
-                <th>Nama</th><th>Angkatan</th><th>NISN</th><th>NIK</th><th>Tgl lahir</th>
-                <th>Domisili</th><th>No. HP</th><th>Dikirim</th><th>Status</th><th className="mt-th-act">Aksi</th>
+                <th>Nama</th><th>Angkatan</th><th>Jurusan</th><th>Kegiatan</th><th>NISN / NIK</th>
+                <th>Kecamatan</th><th>No. HP</th><th>Approval</th><th className="mt-th-act">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
-                <tr><td colSpan="10" className="mt-empty">Memuat data…</td></tr>
+                <tr><td colSpan="9" className="mt-empty">Memuat data…</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan="10" className="mt-empty">{emptyText}</td></tr>
+                <tr><td colSpan="9" className="mt-empty">{emptyText}</td></tr>
               ) : (
                 filtered.map((i) => (
                   <tr key={i.id}>
                     <td>
                       <div className="mt-name">{i.fullName}</div>
-                      <div className="mt-minor">{i.user?.username ? `@${i.user.username}` : 'Input admin'}</div>
+                      <div className="mt-minor">{i.user?.username ? `@${i.user.username}` : 'Input admin'} · Lahir {fmtDate(i.birthDate)}</div>
                     </td>
                     <td><div className="mt-gen">{i.angkatan}</div></td>
-                    <td><div className="mt-mono">{i.nisn}</div></td>
-                    <td><div className="mt-mono">{i.nik || '-'}</div></td>
-                    <td>{fmtDate(i.birthDate)}</td>
+                    <td><div>{i.jurusan || <div className="mt-minor">Belum diisi</div>}</div></td>
+                    <td><Kind item={i} /></td>
+                    <td>
+                      <div className="mt-mono">{i.nisn}</div>
+                      <div className="mt-minor mt-mono">{i.nik || 'NIK: -'}</div>
+                    </td>
                     <td>{i.domicile}</td>
                     <td><div className="mt-mono">{i.phone}</div></td>
-                    <td>{fmtSent(i.createdAt)}</td>
-                    <td><Pill status={i.status} /></td>
+                    <td>
+                      <Pill status={i.approvalStatus} />
+                      <div className="mt-minor">{fmtSent(i.createdAt)}</div>
+                    </td>
                     <td><Actions item={i} /></td>
                   </tr>
                 ))
@@ -260,12 +327,14 @@ const ManageTracerStudy = () => {
                 <div className="mt-name">{i.fullName}</div>
                 <div className="mt-minor">{i.user?.username ? `@${i.user.username}` : 'Input admin'} · Angkatan {i.angkatan}</div>
               </div>
-              <Pill status={i.status} />
+              <Pill status={i.approvalStatus} />
             </div>
+            <div className="mt-kv"><div>Jurusan</div><div>{i.jurusan || '-'}</div></div>
+            <div className="mt-kv"><div>Kegiatan</div><div><Kind item={i} /></div></div>
             <div className="mt-kv"><div>NISN</div><div className="mt-mono">{i.nisn}</div></div>
             <div className="mt-kv"><div>NIK</div><div className="mt-mono">{i.nik || '-'}</div></div>
             <div className="mt-kv"><div>Tgl lahir</div><div>{fmtDate(i.birthDate)}</div></div>
-            <div className="mt-kv"><div>Domisili</div><div>{i.domicile}</div></div>
+            <div className="mt-kv"><div>Kecamatan</div><div>{i.domicile}</div></div>
             <div className="mt-kv"><div>No. HP</div><div className="mt-mono">{i.phone}</div></div>
             <div className="mt-kv"><div>Dikirim</div><div>{fmtSent(i.createdAt)}</div></div>
             <Actions item={i} />
@@ -295,6 +364,27 @@ const ManageTracerStudy = () => {
                 </select>
               </div>
               <div className="form-group-modern">
+                <label>Jurusan (Program Keahlian)</label>
+                <select className="input-modern" value={form.jurusan} required onChange={(e) => setField('jurusan', e.target.value)}>
+                  <option value="">Pilih jurusan</option>
+                  {jurusanList.map((j) => <option key={j} value={j}>{j}</option>)}
+                </select>
+              </div>
+              <div className="form-group-modern">
+                <label>Kegiatan Saat Ini</label>
+                <select className="input-modern" value={form.workStatus} required onChange={(e) => pickKind(e.target.value)}>
+                  <option value="">Pilih status</option>
+                  {KINDS.map((k) => <option key={k.key} value={k.key}>{k.key}</option>)}
+                </select>
+              </div>
+              {formKind?.detail && (
+                <div className="form-group-modern">
+                  <label>{formKind.detail}</label>
+                  <input type="text" className="input-modern" value={form.detailTempat} maxLength={200} required
+                    onChange={(e) => setField('detailTempat', e.target.value)} />
+                </div>
+              )}
+              <div className="form-group-modern">
                 <label>NISN (10 digit)</label>
                 <input type="text" inputMode="numeric" className="input-modern" value={form.nisn} required
                   onChange={setDigits('nisn', 10)} />
@@ -310,9 +400,9 @@ const ManageTracerStudy = () => {
                   max={new Date().toISOString().slice(0, 10)} onChange={(e) => setField('birthDate', e.target.value)} />
               </div>
               <div className="form-group-modern">
-                <label>Domisili Saat Ini</label>
+                <label>Domisili (Kecamatan)</label>
                 <input type="text" className="input-modern" value={form.domicile} maxLength={200} required
-                  placeholder="Contoh: Bekasi, Jawa Barat" onChange={(e) => setField('domicile', e.target.value)} />
+                  placeholder="Contoh: Sukaseneng" onChange={(e) => setField('domicile', e.target.value)} />
               </div>
               <div className="form-group-modern">
                 <label>Nomor HP Aktif</label>

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Check, Loader2, Send } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Send, AlertTriangle } from 'lucide-react';
 import { getSession, clearSession, isStaff } from '../../utils/auth';
 import logoSekolah from '../../assets/logo1.png';
 import '../../css/viewer/tulisTestimoni.css'; // layout split-panel yang sama dengan form testimoni
@@ -10,6 +10,22 @@ import '../../css/viewer/isiTracerStudy.css';
 const API = 'https://smkn-compreng-api-pi.vercel.app';
 const authHeader = (token) => ({ Authorization: `Bearer ${token}` });
 const todayISO = () => new Date().toISOString().slice(0, 10);
+
+// Pilihan status kegiatan. detail = label isian "detail tempat" (null => tidak ada isian).
+const KINDS = [
+  { key: 'Bekerja', color: '#3b82f6', detail: 'Nama perusahaan / instansi', hint: 'Contoh: PT Astra Honda Motor' },
+  { key: 'Wirausaha', color: '#f59e0b', detail: 'Nama usaha', hint: 'Contoh: Bengkel Compreng Motor' },
+  { key: 'Kuliah', color: '#8b5cf6', detail: 'Nama kampus', hint: 'Contoh: Universitas Singaperbangsa Karawang' },
+  { key: 'Freelance', color: '#14b8a6', detail: null },
+  { key: 'Pencari Kerja Aktif', color: '#f43f5e', detail: null },
+];
+const KIND_MAP = Object.fromEntries(KINDS.map((k) => [k.key, k]));
+
+// Dipakai bila daftar jurusan dari server gagal dimuat
+const FALLBACK_JURUSAN = [
+  'Agribisnis Tanaman Pangan dan Hortikultura',
+  'Teknik dan Bisnis Sepeda Motor',
+];
 
 const normalizePhone = (v) => {
   let p = String(v || '').replace(/[\s\-().]/g, '');
@@ -27,7 +43,8 @@ export default function IsiTracerStudy() {
 
   const [checking, setChecking] = useState(true);
   const [entry, setEntry] = useState(null); // data milik user ini (kalau sudah pernah isi)
-  const [current, setCurrent] = useState(10); // angkatan terbaru (tahun ini)
+  const [current, setCurrent] = useState(10);
+  const [jurusanList, setJurusanList] = useState(FALLBACK_JURUSAN);
   const [justSent, setJustSent] = useState(false);
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +52,9 @@ export default function IsiTracerStudy() {
   const [form, setForm] = useState({
     fullName: session?.name || '',
     angkatan: '',
+    jurusan: '',
+    workStatus: '',
+    detailTempat: '',
     nisn: '',
     nik: '',
     birthDate: '',
@@ -47,6 +67,21 @@ export default function IsiTracerStudy() {
   const toLogin = () =>
     navigate('/login', { replace: true, state: { from: '/tracer-study/isi', reason: 'tracer' } });
   const goBack = () => navigate('/tracer-study');
+
+  // Isi ulang form dari data lama (dipakai saat data ditolak & alumni memperbaiki)
+  const prefill = (e) =>
+    setForm({
+      fullName: e.fullName || '',
+      angkatan: e.angkatan ? String(e.angkatan) : '',
+      jurusan: e.jurusan || '',
+      workStatus: e.workStatus || '',
+      detailTempat: e.detailTempat || '',
+      nisn: e.nisn || '',
+      nik: e.nik || '',
+      birthDate: e.birthDate ? String(e.birthDate).slice(0, 10) : '',
+      domicile: e.domicile || '',
+      phone: e.phone || '',
+    });
 
   // Penjaga halaman: wajib login (viewer/alumni). Admin/editor diarahkan ke dashboard.
   useEffect(() => {
@@ -61,11 +96,22 @@ export default function IsiTracerStudy() {
     }
 
     let alive = true;
+
+    axios
+      .get(`${API}/api/jurusan`)
+      .then((res) => {
+        const titles = (res.data?.data || []).map((j) => String(j.title || '').trim()).filter(Boolean);
+        if (alive && titles.length) setJurusanList(titles);
+      })
+      .catch(() => {});
+
     axios
       .get(`${API}/api/tracer-study/mine`, { headers: authHeader(session.token) })
       .then((res) => {
         if (!alive) return;
-        setEntry(res.data?.data?.entry || null);
+        const e = res.data?.data?.entry || null;
+        setEntry(e);
+        if (e?.approvalStatus === 'rejected') prefill(e);
         if (res.data?.data?.currentAngkatan) setCurrent(res.data.data.currentAngkatan);
       })
       .catch((err) => {
@@ -85,14 +131,27 @@ export default function IsiTracerStudy() {
 
   const firstName = (form.fullName.trim().split(' ')[0]) || session.name || 'kamu';
   const angkatanOptions = Array.from({ length: current }, (_, i) => current - i);
+  const kind = KIND_MAP[form.workStatus];
+  const needsDetail = !!kind?.detail;
+  // Jurusan lama yang sudah tidak ada di daftar tetap muncul agar tidak hilang saat memperbaiki data
+  const jurusanOptions = form.jurusan && !jurusanList.includes(form.jurusan)
+    ? [form.jurusan, ...jurusanList]
+    : jurusanList;
+
+  const pickKind = (key) => {
+    setForm((f) => ({ ...f, workStatus: key, detailTempat: KIND_MAP[key]?.detail ? f.detailTempat : '' }));
+  };
 
   const validate = () => {
     if (form.fullName.trim().length < 3) return 'Nama lengkap belum diisi.';
     if (!form.angkatan) return 'Pilih angkatanmu.';
+    if (!form.jurusan) return 'Pilih jurusan (program keahlian) kamu.';
+    if (!form.workStatus) return 'Pilih status kamu saat ini.';
+    if (needsDetail && form.detailTempat.trim().length < 2) return `${kind.detail} belum diisi.`;
     if (!/^\d{10}$/.test(form.nisn)) return 'NISN harus 10 digit angka.';
     if (form.nik && !/^\d{16}$/.test(form.nik)) return 'NIK harus 16 digit. Kosongkan jika belum punya KTP.';
     if (!form.birthDate) return 'Tanggal lahir belum diisi.';
-    if (form.domicile.trim().length < 3) return 'Domisili tempat tinggal saat ini belum diisi.';
+    if (form.domicile.trim().length < 3) return 'Kecamatan domisili belum diisi.';
     if (!/^08\d{8,12}$/.test(normalizePhone(form.phone))) return 'Nomor HP tidak valid. Contoh: 081234567890.';
     return '';
   };
@@ -110,6 +169,9 @@ export default function IsiTracerStudy() {
         {
           fullName: form.fullName.trim(),
           angkatan: Number(form.angkatan),
+          jurusan: form.jurusan,
+          workStatus: form.workStatus,
+          detailTempat: needsDetail ? form.detailTempat.trim() : '',
           nisn: form.nisn,
           nik: form.nik,
           birthDate: form.birthDate,
@@ -138,7 +200,11 @@ export default function IsiTracerStudy() {
     }
   };
 
-  const approved = entry?.status === 'approved';
+  const approval = entry?.approvalStatus; // pending | approved | rejected
+  const approved = approval === 'approved';
+  const rejected = approval === 'rejected';
+  const showForm = !entry || rejected;
+  const sentKind = KIND_MAP[entry?.workStatus];
 
   return (
     <div className="tw-shell">
@@ -164,10 +230,10 @@ export default function IsiTracerStudy() {
             <div className="tf-flow">
               <div className="tf-flow-row"><div className="tf-flow-n">1</div><div className="tf-flow-txt">Isi formulir dan kirim.</div></div>
               <div className="tf-flow-row"><div className="tf-flow-n">2</div><div className="tf-flow-txt">Admin sekolah memverifikasi datamu.</div></div>
-              <div className="tf-flow-row"><div className="tf-flow-n">3</div><div className="tf-flow-txt">Jika disetujui, namamu tampil di tabel alumni. Jika ditolak, data dihapus dan kamu bisa mengisi ulang.</div></div>
+              <div className="tf-flow-row"><div className="tf-flow-n">3</div><div className="tf-flow-txt">Jika disetujui, datamu masuk ke statistik dan tabel alumni. Jika ditolak, kamu bisa memperbaiki lalu mengirim ulang.</div></div>
             </div>
             <div className="tf-note">
-              NIK dan tanggal lahir tidak pernah ditampilkan ke publik. NISN dan nomor HP disamarkan di tabel.
+              NISN, NIK, tanggal lahir, dan nomor HP tidak pernah ditampilkan ke publik.
             </div>
           </div>
         </div>
@@ -178,8 +244,8 @@ export default function IsiTracerStudy() {
         <div className="tw-column">
           {checking ? (
             <div className="tw-loading"><Loader2 size={20} className="tw-spin" /> Memeriksa akunmu…</div>
-          ) : entry ? (
-            /* ---------- SUDAH MENGIRIM ---------- */
+          ) : !showForm ? (
+            /* ---------- SUDAH MENGIRIM (pending / approved) ---------- */
             <div className="tw-done">
               <div className="tw-tick"><Check size={28} strokeWidth={3} /></div>
               <h2 className="tw-done-heading">
@@ -187,7 +253,7 @@ export default function IsiTracerStudy() {
               </h2>
               <div className="tw-done-copy">
                 {approved
-                  ? 'Namamu sudah tampil di tabel alumni Tracer Study.'
+                  ? 'Datamu sudah masuk ke statistik dan tabel alumni Tracer Study.'
                   : 'Admin sekolah akan memeriksa datamu. Setelah disetujui, datamu otomatis tampil di tabel alumni.'}
               </div>
 
@@ -200,8 +266,16 @@ export default function IsiTracerStudy() {
               <div className="tf-recap">
                 <div className="tf-recap-row"><div>Nama</div><div>{entry.fullName}</div></div>
                 <div className="tf-recap-row"><div>Angkatan</div><div>{entry.angkatan}</div></div>
+                <div className="tf-recap-row"><div>Jurusan</div><div>{entry.jurusan || '-'}</div></div>
+                <div className="tf-recap-row">
+                  <div>Status</div>
+                  <div>{sentKind ? <div className="tf-kind" style={{ '--k': sentKind.color }}>{sentKind.key}</div> : '-'}</div>
+                </div>
+                {entry.detailTempat && (
+                  <div className="tf-recap-row"><div>{sentKind?.detail || 'Tempat'}</div><div>{entry.detailTempat}</div></div>
+                )}
                 <div className="tf-recap-row"><div>Tanggal lahir</div><div>{formatDate(entry.birthDate)}</div></div>
-                <div className="tf-recap-row"><div>Domisili</div><div>{entry.domicile}</div></div>
+                <div className="tf-recap-row"><div>Kecamatan</div><div>{entry.domicile}</div></div>
               </div>
 
               <button type="button" className="tw-go" onClick={goBack}>
@@ -209,8 +283,18 @@ export default function IsiTracerStudy() {
               </button>
             </div>
           ) : (
-            /* ---------- FORM ---------- */
+            /* ---------- FORM (baru, atau perbaikan data yang ditolak) ---------- */
             <form className="tw-form" onSubmit={handleSubmit} noValidate>
+              {rejected && (
+                <div className="tf-reject" role="alert">
+                  <AlertTriangle size={18} aria-hidden="true" />
+                  <div>
+                    Datamu sebelumnya ditolak admin. Periksa kembali isiannya (terutama NISN dan nama),
+                    perbaiki, lalu kirim ulang.
+                  </div>
+                </div>
+              )}
+
               <h2 className="tw-hello">Halo, {firstName}. Isi data dirimu ya.</h2>
               <div className="tw-hello-copy">
                 Pastikan datanya benar dan sesuai dokumen. Data baru tampil di tabel setelah diverifikasi admin.
@@ -239,6 +323,48 @@ export default function IsiTracerStudy() {
                   </select>
                 </div>
                 <div className="tw-field">
+                  <label className="tw-legend" htmlFor="ts-jurusan">Jurusan</label>
+                  <select
+                    id="ts-jurusan" className="tw-input" value={form.jurusan}
+                    onChange={(e) => set('jurusan', e.target.value)}
+                  >
+                    <option value="">Pilih jurusan</option>
+                    {jurusanOptions.map((j) => <option key={j} value={j}>{j}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* ----- Status kegiatan saat ini ----- */}
+              <div className="tw-field">
+                <div className="tw-legend" id="ts-status-lbl">Kegiatanmu saat ini</div>
+                <div className="tf-opts" role="radiogroup" aria-labelledby="ts-status-lbl">
+                  {KINDS.map((k) => (
+                    <button
+                      type="button" key={k.key} role="radio"
+                      aria-checked={form.workStatus === k.key}
+                      className={`tf-opt ${form.workStatus === k.key ? 'is-on' : ''}`}
+                      style={{ '--k': k.color }}
+                      onClick={() => pickKind(k.key)}
+                    >
+                      <div className="tf-opt-dot" aria-hidden="true" />
+                      <div>{k.key}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {needsDetail && (
+                <div className="tw-field">
+                  <label className="tw-legend" htmlFor="ts-detail">{kind.detail}</label>
+                  <input
+                    id="ts-detail" type="text" className="tw-input" value={form.detailTempat} maxLength={200}
+                    placeholder={kind.hint} onChange={(e) => set('detailTempat', e.target.value)}
+                  />
+                </div>
+              )}
+
+              <div className="tf-two">
+                <div className="tw-field">
                   <label className="tw-legend" htmlFor="ts-lahir">Tanggal lahir</label>
                   <input
                     id="ts-lahir" type="date" className="tw-input" value={form.birthDate}
@@ -246,7 +372,16 @@ export default function IsiTracerStudy() {
                     onChange={(e) => set('birthDate', e.target.value)}
                   />
                 </div>
+                <div className="tw-field">
+                  <label className="tw-legend" htmlFor="ts-domisili">Domisili (kecamatan)</label>
+                  <input
+                    id="ts-domisili" type="text" className="tw-input" value={form.domicile} maxLength={200}
+                    autoComplete="address-level3" placeholder="Contoh: Sukaseneng"
+                    onChange={(e) => set('domicile', e.target.value)}
+                  />
+                </div>
               </div>
+              <div className="tw-hint tf-hint-gap">Tinggal di luar daerah? Tulis kota atau kabupatennya.</div>
 
               <div className="tw-field">
                 <label className="tw-legend" htmlFor="ts-nisn">NISN</label>
@@ -254,7 +389,7 @@ export default function IsiTracerStudy() {
                   id="ts-nisn" type="text" inputMode="numeric" className="tw-input" value={form.nisn}
                   placeholder="10 digit angka" onChange={setDigits('nisn', 10)}
                 />
-                <div className="tw-hint">Nomor Induk Siswa Nasional, 10 digit. Ada di rapor atau kartu pelajar.</div>
+                <div className="tw-hint">Nomor Induk Siswa Nasional, 10 digit. Ada di rapor atau kartu pelajar. Hanya dipakai untuk verifikasi.</div>
               </div>
 
               <div className="tw-field">
@@ -269,15 +404,6 @@ export default function IsiTracerStudy() {
               </div>
 
               <div className="tw-field">
-                <label className="tw-legend" htmlFor="ts-domisili">Domisili tempat tinggal saat ini</label>
-                <input
-                  id="ts-domisili" type="text" className="tw-input" value={form.domicile} maxLength={200}
-                  autoComplete="address-level2" placeholder="Contoh: Bekasi, Jawa Barat"
-                  onChange={(e) => set('domicile', e.target.value)}
-                />
-              </div>
-
-              <div className="tw-field">
                 <label className="tw-legend" htmlFor="ts-hp">Nomor HP aktif</label>
                 <input
                   id="ts-hp" type="tel" inputMode="tel" className="tw-input" value={form.phone} maxLength={16}
@@ -289,7 +415,9 @@ export default function IsiTracerStudy() {
               {error && <div className="tw-error" role="alert">{error}</div>}
 
               <button type="submit" className="tw-go" disabled={sending}>
-                {sending ? <><Loader2 size={18} className="tw-spin" /> Mengirim…</> : <><Send size={18} /> Kirim data</>}
+                {sending
+                  ? <><Loader2 size={18} className="tw-spin" /> Mengirim…</>
+                  : <><Send size={18} /> {rejected ? 'Kirim ulang data' : 'Kirim data'}</>}
               </button>
               <div className="tw-fine">Data yang dikirim akan diperiksa admin sebelum ditampilkan.</div>
             </form>

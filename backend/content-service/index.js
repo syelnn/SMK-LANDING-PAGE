@@ -738,12 +738,23 @@ app.put('/api/testimonials/:id', ...requireStaff, uploadSingleSafe('photo'), res
 
 // ==========================================================================
 // TRACER STUDY (pelacakan alumni)
-// Alur: alumni/viewer login -> isi formulir -> status "pending" -> admin/editor
-// Accept ("approved", tampil di tabel publik) atau Reject (data langsung DIHAPUS).
+// Alur: alumni/viewer login -> isi formulir -> approval_status "pending" -> admin/editor
+// Accept ("approved", tampil di tabel publik) atau Reject ("rejected", tidak tampil,
+// alumni boleh memperbaiki & mengirim ulang).
 // ==========================================================================
 // Angkatan terbaru (tahun ini). Naikkan lewat env TRACER_CURRENT_ANGKATAN tiap tahun ajaran baru.
 const TRACER_CURRENT_ANGKATAN = parseInt(process.env.TRACER_CURRENT_ANGKATAN, 10) || 10;
 const TRACER_RECENT_RANGE = 2; // filter publik: angkatan terbaru + 2 tahun ke belakang
+
+// Status kegiatan alumni (kolom "status") & status persetujuan (kolom "approval_status")
+const TRACER_WORK_STATUSES = ['Bekerja', 'Wirausaha', 'Kuliah', 'Freelance', 'Pencari Kerja Aktif'];
+// Hanya status ini yang wajib punya detail_tempat (PT / usaha / kampus). Freelance & pencari kerja -> null.
+const TRACER_STATUS_WITH_DETAIL = ['Bekerja', 'Wirausaha', 'Kuliah'];
+const TRACER_DETAIL_ERROR = {
+  Bekerja: 'Nama perusahaan / instansi tempat bekerja wajib diisi.',
+  Wirausaha: 'Nama usaha wajib diisi.',
+  Kuliah: 'Nama kampus wajib diisi.',
+};
 
 const onlyDigits = (v) => String(v || '').replace(/\D/g, '');
 
@@ -755,21 +766,20 @@ const normalizePhone = (v) => {
   return p;
 };
 
-const maskMiddle = (v, keepStart, keepEnd) => {
-  const s = String(v || '');
-  if (s.length <= keepStart + keepEnd) return s;
-  return s.slice(0, keepStart) + '*'.repeat(s.length - keepStart - keepEnd) + s.slice(s.length - keepEnd);
-};
+const squash = (v) => String(v || '').trim().replace(/\s+/g, ' ');
 
 // Validasi + bersihkan body formulir (dipakai form alumni & form tambah manual admin)
 const parseTracerBody = (body = {}) => {
-  const fullName = String(body.fullName || '').trim().replace(/\s+/g, ' ');
+  const fullName = squash(body.fullName);
   const nisn = onlyDigits(body.nisn);
   const nikRaw = onlyDigits(body.nik);
-  const domicile = String(body.domicile || '').trim().replace(/\s+/g, ' ');
+  const domicile = squash(body.domicile);
   const phone = normalizePhone(body.phone);
   const angkatan = parseInt(body.angkatan, 10);
   const birthRaw = String(body.birthDate || '').trim();
+  const jurusan = squash(body.jurusan);
+  const workStatus = String(body.workStatus || '').trim();
+  const detailRaw = squash(body.detailTempat);
 
   if (fullName.length < 3 || fullName.length > 200) return { error: 'Nama lengkap wajib diisi (3–200 karakter).' };
   if (!/^\d{10}$/.test(nisn)) return { error: 'NISN harus 10 digit angka.' };
@@ -782,47 +792,100 @@ const parseTracerBody = (body = {}) => {
   }
   if (birthDate > new Date() || birthDate.getUTCFullYear() < 1980) return { error: 'Tanggal lahir di luar rentang yang wajar.' };
 
-  if (domicile.length < 3 || domicile.length > 200) return { error: 'Domisili tempat tinggal saat ini wajib diisi.' };
+  if (domicile.length < 3 || domicile.length > 200) return { error: 'Domisili (kecamatan) wajib diisi.' };
   if (!/^08\d{8,12}$/.test(phone)) return { error: 'Nomor HP aktif tidak valid (contoh: 081234567890).' };
   if (!Number.isInteger(angkatan) || angkatan < 1 || angkatan > TRACER_CURRENT_ANGKATAN) {
     return { error: `Angkatan harus antara 1 dan ${TRACER_CURRENT_ANGKATAN}.` };
   }
 
-  return { data: { fullName, nisn, nik: nikRaw || null, birthDate, domicile, phone, angkatan } };
+  if (jurusan.length < 2 || jurusan.length > 100) return { error: 'Jurusan (program keahlian) wajib dipilih.' };
+  if (!TRACER_WORK_STATUSES.includes(workStatus)) return { error: 'Status saat ini wajib dipilih.' };
+
+  let detailTempat = null;
+  if (TRACER_STATUS_WITH_DETAIL.includes(workStatus)) {
+    if (detailRaw.length < 2 || detailRaw.length > 200) return { error: TRACER_DETAIL_ERROR[workStatus] };
+    detailTempat = detailRaw;
+  }
+
+  return {
+    data: {
+      fullName, nisn, nik: nikRaw || null, birthDate, domicile, phone, angkatan,
+      jurusan, workStatus, detailTempat,
+    },
+  };
 };
 
-// Data publik: NISN & no HP disamarkan, NIK & tanggal lahir TIDAK pernah dikirim ke publik
+// Data publik: NISN, NIK, tanggal lahir & no HP TIDAK pernah dikirim ke publik
 const toPublicTracer = (r) => ({
   id: r.id,
   fullName: r.fullName,
   angkatan: r.angkatan,
   domicile: r.domicile,
-  nisn: maskMiddle(r.nisn, 2, 2),
-  phone: maskMiddle(r.phone, 4, 3),
+  jurusan: r.jurusan,
+  workStatus: r.workStatus,
+  detailTempat: r.detailTempat,
 });
 
 // 1. PUBLIK: data yang sudah di-ACCEPT + statistik
 app.get('/api/tracer-study/public', async (req, res) => {
   try {
     const rows = await prisma.tracerEntry.findMany({
-      where: { status: 'approved' },
+      where: { approvalStatus: 'approved' },
       orderBy: [{ angkatan: 'desc' }, { fullName: 'asc' }],
-      select: { id: true, fullName: true, nisn: true, phone: true, domicile: true, angkatan: true },
+      select: {
+        id: true, fullName: true, domicile: true, angkatan: true,
+        jurusan: true, workStatus: true, detailTempat: true,
+      },
     });
 
+    // Per angkatan (angkatan terbaru + beberapa tahun ke belakang)
     const recentFrom = TRACER_CURRENT_ANGKATAN - TRACER_RECENT_RANGE;
     const byAngkatan = [];
     for (let a = TRACER_CURRENT_ANGKATAN; a >= Math.max(1, recentFrom); a--) {
       byAngkatan.push({ angkatan: a, count: rows.filter((r) => r.angkatan === a).length });
     }
-    const cities = new Set(rows.map((r) => r.domicile.trim().toLowerCase()));
+
+    // Sebaran kecamatan
+    const areas = new Set(rows.map((r) => r.domicile.trim().toLowerCase()));
+
+    // Per status kegiatan (baris lama yang belum punya status diabaikan di grafik)
+    const withStatus = rows.filter((r) => r.workStatus);
+    const byStatus = TRACER_WORK_STATUSES.map((s) => ({
+      status: s,
+      count: withStatus.filter((r) => r.workStatus === s).length,
+    }));
+
+    // Per jurusan, masing-masing dipecah per status (untuk bar bertumpuk)
+    const jurusanMap = new Map();
+    rows.forEach((r) => {
+      if (!r.jurusan) return;
+      const row = jurusanMap.get(r.jurusan) || { jurusan: r.jurusan, total: 0, counts: {} };
+      row.total += 1;
+      if (r.workStatus) row.counts[r.workStatus] = (row.counts[r.workStatus] || 0) + 1;
+      jurusanMap.set(r.jurusan, row);
+    });
+    const byJurusan = [...jurusanMap.values()].sort((a, b) => b.total - a.total);
+
+    // Keterserapan = persentase alumni yang sudah punya kegiatan (bukan pencari kerja aktif)
+    const seeking = withStatus.filter((r) => r.workStatus === 'Pencari Kerja Aktif').length;
+    const absorbedRate = withStatus.length
+      ? Math.round(((withStatus.length - seeking) / withStatus.length) * 100)
+      : 0;
 
     res.json({
       success: true,
       data: {
         currentAngkatan: TRACER_CURRENT_ANGKATAN,
         recentRange: TRACER_RECENT_RANGE,
-        stats: { total: rows.length, cities: cities.size, byAngkatan },
+        stats: {
+          total: rows.length,
+          areas: areas.size,
+          absorbedRate,
+          answered: withStatus.length,
+          byStatus,
+          byJurusan,
+          byAngkatan,
+        },
         items: rows.map(toPublicTracer),
       },
     });
@@ -843,7 +906,8 @@ app.get('/api/tracer-study/mine', verifyToken, async (req, res) => {
   }
 });
 
-// 3. KIRIM FORMULIR (wajib login; 1 akun = 1 data; masuk status "pending")
+// 3. KIRIM FORMULIR (wajib login; 1 akun = 1 data; masuk "pending").
+//    Jika data sebelumnya ditolak ("rejected"), alumni boleh memperbaiki & kirim ulang.
 app.post('/api/tracer-study', verifyToken, async (req, res) => {
   try {
     if (['admin', 'editor'].includes(req.user.role)) {
@@ -852,11 +916,11 @@ app.post('/api/tracer-study', verifyToken, async (req, res) => {
     const userId = parseInt(req.user.id);
 
     const existing = await prisma.tracerEntry.findUnique({ where: { userId } });
-    if (existing) {
+    if (existing && existing.approvalStatus !== 'rejected') {
       return res.status(409).json({
         success: false,
         alreadySubmitted: true,
-        message: existing.status === 'approved'
+        message: existing.approvalStatus === 'approved'
           ? 'Datamu sudah terverifikasi dan tampil di tabel.'
           : 'Datamu sedang menunggu verifikasi admin.',
         data: existing,
@@ -866,10 +930,15 @@ app.post('/api/tracer-study', verifyToken, async (req, res) => {
     const parsed = parseTracerBody(req.body);
     if (parsed.error) return res.status(400).json({ success: false, message: parsed.error });
 
-    const created = await prisma.tracerEntry.create({
-      data: { ...parsed.data, userId, status: 'pending' },
-    });
-    res.json({ success: true, message: 'Data terkirim dan menunggu verifikasi admin.', data: created });
+    const saved = existing
+      ? await prisma.tracerEntry.update({
+          where: { id: existing.id },
+          data: { ...parsed.data, approvalStatus: 'pending', reviewedBy: null, reviewedAt: null },
+        })
+      : await prisma.tracerEntry.create({
+          data: { ...parsed.data, userId, approvalStatus: 'pending' },
+        });
+    res.json({ success: true, message: 'Data terkirim dan menunggu verifikasi admin.', data: saved });
   } catch (error) {
     if (error.code === 'P2002') {
       return res.status(409).json({ success: false, message: 'NISN ini sudah terdaftar di Tracer Study.' });
@@ -879,14 +948,17 @@ app.post('/api/tracer-study', verifyToken, async (req, res) => {
   }
 });
 
-// 4. ADMIN/EDITOR: semua data (lengkap, termasuk NIK & tanggal lahir)
+// 4. ADMIN/EDITOR: semua data (lengkap, termasuk NISN, NIK, tanggal lahir & no HP)
 app.get('/api/tracer-study', ...requireStaff, async (req, res) => {
   try {
     const items = await prisma.tracerEntry.findMany({
       orderBy: [{ createdAt: 'desc' }],
       include: { user: { select: { username: true, email: true } } },
     });
-    res.json({ success: true, data: { currentAngkatan: TRACER_CURRENT_ANGKATAN, items } });
+    res.json({
+      success: true,
+      data: { currentAngkatan: TRACER_CURRENT_ANGKATAN, workStatuses: TRACER_WORK_STATUSES, items },
+    });
   } catch (error) {
     console.error('Error tracer staff list:', error);
     res.status(500).json({ success: false, message: 'Gagal memuat data tracer study' });
@@ -898,7 +970,7 @@ app.put('/api/tracer-study/:id/approve', ...requireStaff, async (req, res) => {
   try {
     const updated = await prisma.tracerEntry.update({
       where: { id: parseInt(req.params.id) },
-      data: { status: 'approved', reviewedBy: parseInt(req.user.id), reviewedAt: new Date() },
+      data: { approvalStatus: 'approved', reviewedBy: parseInt(req.user.id), reviewedAt: new Date() },
     });
     res.json({ success: true, message: 'Data disetujui dan tampil di tabel.', data: updated });
   } catch (error) {
@@ -908,11 +980,15 @@ app.put('/api/tracer-study/:id/approve', ...requireStaff, async (req, res) => {
   }
 });
 
-// 6. ADMIN/EDITOR: REJECT -> data langsung dihapus (user boleh mengisi ulang)
+// 6. ADMIN/EDITOR: REJECT -> approval_status "rejected" (data tetap tersimpan, tidak tampil di publik;
+//    alumni bisa memperbaiki & mengirim ulang)
 app.put('/api/tracer-study/:id/reject', ...requireStaff, async (req, res) => {
   try {
-    await prisma.tracerEntry.delete({ where: { id: parseInt(req.params.id) } });
-    res.json({ success: true, message: 'Data ditolak dan dihapus.' });
+    const updated = await prisma.tracerEntry.update({
+      where: { id: parseInt(req.params.id) },
+      data: { approvalStatus: 'rejected', reviewedBy: parseInt(req.user.id), reviewedAt: new Date() },
+    });
+    res.json({ success: true, message: 'Data ditolak.', data: updated });
   } catch (error) {
     if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
     console.error('Error reject tracer:', error);
@@ -926,7 +1002,7 @@ app.post('/api/tracer-study/admin', ...requireStaff, async (req, res) => {
     const parsed = parseTracerBody(req.body);
     if (parsed.error) return res.status(400).json({ success: false, message: parsed.error });
     const created = await prisma.tracerEntry.create({
-      data: { ...parsed.data, status: 'approved', reviewedBy: parseInt(req.user.id), reviewedAt: new Date() },
+      data: { ...parsed.data, approvalStatus: 'approved', reviewedBy: parseInt(req.user.id), reviewedAt: new Date() },
     });
     res.json({ success: true, message: 'Data alumni ditambahkan.', data: created });
   } catch (error) {
@@ -938,7 +1014,7 @@ app.post('/api/tracer-study/admin', ...requireStaff, async (req, res) => {
   }
 });
 
-// 8. ADMIN/EDITOR: hapus data (mis. data yang sudah tampil tapi salah)
+// 8. ADMIN/EDITOR: hapus data permanen
 app.delete('/api/tracer-study/:id', ...requireStaff, async (req, res) => {
   try {
     await prisma.tracerEntry.delete({ where: { id: parseInt(req.params.id) } });

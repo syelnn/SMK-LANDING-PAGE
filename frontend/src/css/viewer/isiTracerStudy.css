@@ -1,7 +1,9 @@
 /* ==========================================================================
-   src/css/viewer/isiTracerStudy.css — tambahan kecil untuk form Tracer Study.
+   src/css/viewer/isiTracerStudy.css — tambahan untuk form Tracer Study.
    Layout utama memakai tulisTestimoni.css (kelas tw-*), jadi ikut 4 tema.
-   Kelas di sini berawalan "tf-" dan menghindari substring yang ditarget theme.css.
+   Kelas di sini berawalan "tf-" dan menghindari substring yang ditarget theme.css
+   (btn, badge, status, card, tag, icon, ...).
+   Warna status (--k) = warna data mid-tone yang sama dengan halaman publik.
    ========================================================================== */
 
 /* Alur 3 langkah di panel kiri (latar gelap -> pakai <div>, bukan p/span) */
@@ -21,24 +23,61 @@
   font-size: 12.5px; line-height: 1.6; color: var(--tw-nav-muted, #E2FBCE);
 }
 
-/* Dua kolom (angkatan + tanggal lahir) */
+/* Dua kolom */
 .tf-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .tf-two .tw-field { min-width: 0; }
+.tf-hint-gap { margin: -6px 0 18px; }
 
 /* Dropdown & date picker ikut tema */
-.tw-shell select.tw-input { appearance: auto; cursor: pointer; }
+.tw-shell select.tw-input { appearance: auto; cursor: pointer; text-overflow: ellipsis; }
 .tw-shell input[type="date"].tw-input { min-height: 52px; }
 [data-theme='dark'] .tw-shell input[type="date"] { color-scheme: dark; }
 
-/* Ringkasan data yang sudah dikirim */
+/* ---------- Pilihan status kegiatan ---------- */
+.tf-opts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.tf-opt {
+  display: flex; align-items: center; gap: 10px; margin: 0; padding: 13px 14px;
+  min-height: 48px; border-radius: 12px; cursor: pointer; text-align: left;
+  border: 1.5px solid var(--compreng-border, #e2e8f0);
+  background: var(--compreng-surface, #fff);
+  color: var(--compreng-text, #06231D);
+  font-family: inherit; font-size: 14px; font-weight: 600; line-height: 1.3;
+  transition: border-color .18s ease, background-color .18s ease;
+}
+.tf-opt:hover { border-color: var(--k); }
+.tf-opt.is-on {
+  border-color: var(--k);
+  background: color-mix(in srgb, var(--k) 14%, var(--compreng-surface, #fff));
+}
+.tf-opt-dot {
+  flex: none; width: 16px; height: 16px; border-radius: 50%;
+  border: 2px solid var(--k); background: transparent;
+  transition: background-color .18s ease, box-shadow .18s ease;
+}
+.tf-opt.is-on .tf-opt-dot { background: var(--k); box-shadow: 0 0 0 3px color-mix(in srgb, var(--k) 25%, transparent); }
+.tf-opt:focus-visible { outline: 3px solid var(--compreng-accent, #2563eb); outline-offset: 2px; }
+/* opsi kelima (Pencari Kerja Aktif) melebar penuh agar rapi */
+.tf-opts .tf-opt:last-child:nth-child(odd) { grid-column: 1 / -1; }
+
+/* ---------- Peringatan data ditolak ---------- */
+.tf-reject {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; padding: 13px 15px;
+  border-radius: 12px; font-size: 13.5px; line-height: 1.55; font-weight: 600;
+  color: var(--compreng-text, #06231D);
+  background: color-mix(in srgb, #f59e0b 16%, var(--compreng-surface, #fff));
+  border: 1px solid color-mix(in srgb, #f59e0b 50%, transparent);
+}
+.tf-reject svg { flex: none; margin-top: 2px; color: #d97706; }
+
+/* ---------- Ringkasan data yang sudah dikirim ---------- */
 .tf-recap {
-  width: 100%; max-width: 400px; margin: 20px 0 8px;
+  width: 100%; max-width: 420px; margin: 20px 0 8px;
   background: var(--compreng-surface, #fff);
   border: 1px solid var(--compreng-border, #e2e8f0);
   border-radius: 14px; overflow: hidden;
 }
 .tf-recap-row {
-  display: flex; justify-content: space-between; gap: 16px;
+  display: flex; justify-content: space-between; align-items: center; gap: 16px;
   padding: 11px 16px; font-size: 13.5px;
   border-bottom: 1px solid var(--compreng-border, #e2e8f0);
   color: var(--compreng-text, #06231D);
@@ -47,8 +86,22 @@
 .tf-recap-row > div:first-child { flex: none; color: var(--compreng-text-secondary, #475569); }
 .tf-recap-row > div:last-child { text-align: right; font-weight: 600; overflow-wrap: anywhere; }
 
+.tf-kind {
+  display: inline-flex; align-items: center; gap: 7px; padding: 3px 11px 3px 9px;
+  border-radius: 999px; font-size: 12.5px; font-weight: 700; white-space: nowrap;
+  color: var(--compreng-text, #06231D);
+  background: color-mix(in srgb, var(--k) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--k) 50%, transparent);
+}
+.tf-kind::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--k); }
+
 @media (max-width: 560px) {
   .tf-two { grid-template-columns: 1fr; gap: 0; }
+  .tf-hint-gap { margin-top: 0; }
+  .tf-opts { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tf-opt, .tf-opt-dot { transition: none; }
 }
 
 .tw-done .tw-go { margin-top: 20px; }

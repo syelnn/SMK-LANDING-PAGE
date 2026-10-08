@@ -53,7 +53,7 @@
 .mt-find { position: relative; flex: 1; max-width: 420px; }
 .mt-find-ico { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--compreng-text-secondary, #64748b); pointer-events: none; }
 .mt-page .mt-find .mt-find-input.mt-find-input { display: block; width: 100%; padding: 10px 14px 10px 38px; font-size: 14px; }
-.mt-page .mt-pick.mt-pick { min-width: 170px; padding: 10px 12px; font-size: 14px; cursor: pointer; }
+.mt-page .mt-pick.mt-pick { min-width: 160px; padding: 10px 12px; font-size: 14px; cursor: pointer; }
 
 /* ---- tabel ---- */
 .mt-sheet {
@@ -62,7 +62,7 @@
   border-radius: 12px; overflow: hidden;
 }
 .mt-scroll { overflow-x: auto; }
-.mt-grid { width: 100%; min-width: 1060px; border-collapse: collapse; }
+.mt-grid { width: 100%; min-width: 1120px; border-collapse: collapse; }
 .mt-grid th {
   padding: 12px 14px; text-align: left; white-space: nowrap;
   font-size: 12px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
@@ -97,8 +97,23 @@
 }
 .mt-pill.is-pending { color: #b45309; background: color-mix(in srgb, #f59e0b 16%, transparent); border: 1px solid color-mix(in srgb, #f59e0b 40%, transparent); }
 .mt-pill.is-ok { color: #15803d; background: color-mix(in srgb, #16a34a 14%, transparent); border: 1px solid color-mix(in srgb, #16a34a 38%, transparent); }
+/* approval_status = rejected */
+.mt-pill.is-no { color: #b91c1c; background: color-mix(in srgb, #dc2626 12%, transparent); border: 1px solid color-mix(in srgb, #dc2626 40%, transparent); }
+[data-theme='dark'] .mt-pill.is-no { color: #f87171; }
 [data-theme='dark'] .mt-pill.is-pending { color: #fbbf24; }
 [data-theme='dark'] .mt-pill.is-ok { color: #4ade80; }
+
+/* ---- kegiatan alumni (warna data = sama dgn halaman publik) ---- */
+.mt-kind {
+  display: inline-flex; align-items: center; gap: 7px; padding: 3px 11px 3px 9px;
+  border-radius: 999px; white-space: nowrap; font-size: 12px; font-weight: 700;
+  color: var(--compreng-text, #0f172a);
+  background: color-mix(in srgb, var(--k) 16%, transparent);
+  border: 1px solid color-mix(in srgb, var(--k) 50%, transparent);
+}
+.mt-kind::before { content: ''; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--k); }
+.mt-detail { margin-top: 5px; font-size: 12.5px; line-height: 1.4; color: var(--compreng-text-secondary, #475569); }
+.mt-th-act, .mt-grid td .mt-acts { min-width: 150px; }
 
 /* ---- aksi ---- */
 .mt-acts { display: flex; justify-content: flex-end; align-items: center; gap: 8px; min-height: 32px; }
@@ -129,6 +144,7 @@
 .mt-kv { display: flex; justify-content: space-between; gap: 14px; padding: 6px 0; font-size: 13px; color: var(--compreng-text, #0f172a); border-top: 1px dashed var(--compreng-border, #e2e8f0); }
 .mt-kv > div:first-child { flex: none; color: var(--compreng-text-secondary, #475569); }
 .mt-kv > div:last-child { text-align: right; overflow-wrap: anywhere; }
+.mt-kv .mt-detail { text-align: right; }
 .mt-tile .mt-acts { justify-content: stretch; margin-top: 10px; }
 .mt-tile .mt-act { flex: 1; justify-content: center; padding: 9px 12px; }
 .mt-mempty { padding: 32px 12px; text-align: center; font-size: 13.5px; color: var(--compreng-text-secondary, #475569); }
@@ -137,8 +153,10 @@
   .mt-head { flex-direction: column; }
   .mt-add { width: 100%; justify-content: center; }
   .mt-bar { flex-direction: column; }
+  .mt-page .mt-pick.mt-pick { width: 100%; }
   .mt-find { max-width: none; }
   .mt-sheet { display: none; }
   .mt-mlist { display: block; }
 }
+@media (min-width: 861px) and (max-width: 1100px) { .mt-bar { flex-wrap: wrap; } .mt-find { flex: 1 1 100%; max-width: none; } }
 @media (prefers-reduced-motion: reduce) { .mt-spin { animation: none; } }
