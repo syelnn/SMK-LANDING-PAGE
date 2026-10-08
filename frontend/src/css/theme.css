@@ -962,8 +962,12 @@ img, video, iframe { background-color: transparent !important; }
 }
 .brand-subtitle {
   color: color-mix(in srgb, var(--compreng-nav-text) 65%, transparent) !important;
-  font-size: .68rem !important;
-  letter-spacing: .09em;
+  /* Font latin yang bersih & mudah dibaca, tetap kapital */
+  font-family: 'Segoe UI', 'Helvetica Neue', Arial, system-ui, sans-serif !important;
+  font-style: italic !important;
+  font-size: .64rem !important;
+  font-weight: 500 !important;
+  letter-spacing: .04em;
   text-transform: uppercase;
 }
 .logo-img { height: 34px !important; }
