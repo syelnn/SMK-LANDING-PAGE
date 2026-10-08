@@ -24,6 +24,7 @@ export default function Login() {
   const from = location.state?.from;
   const sessionExpired = location.state?.reason === 'expired' || new URLSearchParams(location.search).get('expired') === '1';
   const isTestimoniFlow = location.state?.reason === 'testimoni';
+  const isTracerFlow = location.state?.reason === 'tracer';
 
   useEffect(() => {
     if (sessionExpired) setErrorMsg('Sesi Anda tidak valid atau sudah berakhir. Silakan login kembali.');
@@ -82,7 +83,9 @@ export default function Login() {
         <p className="auth-subtitle">
           {isTestimoniFlow
             ? 'Masuk dulu, lalu kamu langsung diarahkan ke form testimoni.'
-            : 'Masuk untuk memberi komentar dan menyukai konten'}
+            : isTracerFlow
+              ? 'Masuk atau daftar dulu, lalu kamu langsung diarahkan ke formulir Tracer Study.'
+              : 'Masuk untuk memberi komentar dan menyukai konten'}
         </p>
 
         {/* Alert: teks merah di tengah, tanpa kotak */}

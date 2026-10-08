@@ -736,6 +736,220 @@ app.put('/api/testimonials/:id', ...requireStaff, uploadSingleSafe('photo'), res
 });
 
 
+// ==========================================================================
+// TRACER STUDY (pelacakan alumni)
+// Alur: alumni/viewer login -> isi formulir -> status "pending" -> admin/editor
+// Accept ("approved", tampil di tabel publik) atau Reject (data langsung DIHAPUS).
+// ==========================================================================
+// Angkatan terbaru (tahun ini). Naikkan lewat env TRACER_CURRENT_ANGKATAN tiap tahun ajaran baru.
+const TRACER_CURRENT_ANGKATAN = parseInt(process.env.TRACER_CURRENT_ANGKATAN, 10) || 10;
+const TRACER_RECENT_RANGE = 2; // filter publik: angkatan terbaru + 2 tahun ke belakang
+
+const onlyDigits = (v) => String(v || '').replace(/\D/g, '');
+
+// Normalisasi no HP: +62812.. / 62812.. / 0812.. -> 0812..
+const normalizePhone = (v) => {
+  let p = String(v || '').replace(/[\s\-().]/g, '');
+  if (p.startsWith('+62')) p = '0' + p.slice(3);
+  else if (p.startsWith('62')) p = '0' + p.slice(2);
+  return p;
+};
+
+const maskMiddle = (v, keepStart, keepEnd) => {
+  const s = String(v || '');
+  if (s.length <= keepStart + keepEnd) return s;
+  return s.slice(0, keepStart) + '*'.repeat(s.length - keepStart - keepEnd) + s.slice(s.length - keepEnd);
+};
+
+// Validasi + bersihkan body formulir (dipakai form alumni & form tambah manual admin)
+const parseTracerBody = (body = {}) => {
+  const fullName = String(body.fullName || '').trim().replace(/\s+/g, ' ');
+  const nisn = onlyDigits(body.nisn);
+  const nikRaw = onlyDigits(body.nik);
+  const domicile = String(body.domicile || '').trim().replace(/\s+/g, ' ');
+  const phone = normalizePhone(body.phone);
+  const angkatan = parseInt(body.angkatan, 10);
+  const birthRaw = String(body.birthDate || '').trim();
+
+  if (fullName.length < 3 || fullName.length > 200) return { error: 'Nama lengkap wajib diisi (3–200 karakter).' };
+  if (!/^\d{10}$/.test(nisn)) return { error: 'NISN harus 10 digit angka.' };
+  if (nikRaw && !/^\d{16}$/.test(nikRaw)) return { error: 'NIK harus 16 digit angka (kosongkan jika belum punya KTP).' };
+
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(birthRaw)) return { error: 'Tanggal lahir tidak valid.' };
+  const birthDate = new Date(`${birthRaw}T00:00:00.000Z`);
+  if (Number.isNaN(birthDate.getTime()) || birthDate.toISOString().slice(0, 10) !== birthRaw) {
+    return { error: 'Tanggal lahir tidak valid.' };
+  }
+  if (birthDate > new Date() || birthDate.getUTCFullYear() < 1980) return { error: 'Tanggal lahir di luar rentang yang wajar.' };
+
+  if (domicile.length < 3 || domicile.length > 200) return { error: 'Domisili tempat tinggal saat ini wajib diisi.' };
+  if (!/^08\d{8,12}$/.test(phone)) return { error: 'Nomor HP aktif tidak valid (contoh: 081234567890).' };
+  if (!Number.isInteger(angkatan) || angkatan < 1 || angkatan > TRACER_CURRENT_ANGKATAN) {
+    return { error: `Angkatan harus antara 1 dan ${TRACER_CURRENT_ANGKATAN}.` };
+  }
+
+  return { data: { fullName, nisn, nik: nikRaw || null, birthDate, domicile, phone, angkatan } };
+};
+
+// Data publik: NISN & no HP disamarkan, NIK & tanggal lahir TIDAK pernah dikirim ke publik
+const toPublicTracer = (r) => ({
+  id: r.id,
+  fullName: r.fullName,
+  angkatan: r.angkatan,
+  domicile: r.domicile,
+  nisn: maskMiddle(r.nisn, 2, 2),
+  phone: maskMiddle(r.phone, 4, 3),
+});
+
+// 1. PUBLIK: data yang sudah di-ACCEPT + statistik
+app.get('/api/tracer-study/public', async (req, res) => {
+  try {
+    const rows = await prisma.tracerEntry.findMany({
+      where: { status: 'approved' },
+      orderBy: [{ angkatan: 'desc' }, { fullName: 'asc' }],
+      select: { id: true, fullName: true, nisn: true, phone: true, domicile: true, angkatan: true },
+    });
+
+    const recentFrom = TRACER_CURRENT_ANGKATAN - TRACER_RECENT_RANGE;
+    const byAngkatan = [];
+    for (let a = TRACER_CURRENT_ANGKATAN; a >= Math.max(1, recentFrom); a--) {
+      byAngkatan.push({ angkatan: a, count: rows.filter((r) => r.angkatan === a).length });
+    }
+    const cities = new Set(rows.map((r) => r.domicile.trim().toLowerCase()));
+
+    res.json({
+      success: true,
+      data: {
+        currentAngkatan: TRACER_CURRENT_ANGKATAN,
+        recentRange: TRACER_RECENT_RANGE,
+        stats: { total: rows.length, cities: cities.size, byAngkatan },
+        items: rows.map(toPublicTracer),
+      },
+    });
+  } catch (error) {
+    console.error('Error tracer public:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data tracer study' });
+  }
+});
+
+// 2. SAYA: status pengisian milik user yang login
+app.get('/api/tracer-study/mine', verifyToken, async (req, res) => {
+  try {
+    const entry = await prisma.tracerEntry.findUnique({ where: { userId: parseInt(req.user.id) } });
+    res.json({ success: true, data: { entry, currentAngkatan: TRACER_CURRENT_ANGKATAN } });
+  } catch (error) {
+    console.error('Error tracer mine:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data Anda' });
+  }
+});
+
+// 3. KIRIM FORMULIR (wajib login; 1 akun = 1 data; masuk status "pending")
+app.post('/api/tracer-study', verifyToken, async (req, res) => {
+  try {
+    if (['admin', 'editor'].includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: 'Admin/editor menambah data lewat dashboard.' });
+    }
+    const userId = parseInt(req.user.id);
+
+    const existing = await prisma.tracerEntry.findUnique({ where: { userId } });
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        alreadySubmitted: true,
+        message: existing.status === 'approved'
+          ? 'Datamu sudah terverifikasi dan tampil di tabel.'
+          : 'Datamu sedang menunggu verifikasi admin.',
+        data: existing,
+      });
+    }
+
+    const parsed = parseTracerBody(req.body);
+    if (parsed.error) return res.status(400).json({ success: false, message: parsed.error });
+
+    const created = await prisma.tracerEntry.create({
+      data: { ...parsed.data, userId, status: 'pending' },
+    });
+    res.json({ success: true, message: 'Data terkirim dan menunggu verifikasi admin.', data: created });
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ success: false, message: 'NISN ini sudah terdaftar di Tracer Study.' });
+    }
+    console.error('Error kirim tracer:', error);
+    res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server.' });
+  }
+});
+
+// 4. ADMIN/EDITOR: semua data (lengkap, termasuk NIK & tanggal lahir)
+app.get('/api/tracer-study', ...requireStaff, async (req, res) => {
+  try {
+    const items = await prisma.tracerEntry.findMany({
+      orderBy: [{ createdAt: 'desc' }],
+      include: { user: { select: { username: true, email: true } } },
+    });
+    res.json({ success: true, data: { currentAngkatan: TRACER_CURRENT_ANGKATAN, items } });
+  } catch (error) {
+    console.error('Error tracer staff list:', error);
+    res.status(500).json({ success: false, message: 'Gagal memuat data tracer study' });
+  }
+});
+
+// 5. ADMIN/EDITOR: ACCEPT -> otomatis tampil di tabel publik
+app.put('/api/tracer-study/:id/approve', ...requireStaff, async (req, res) => {
+  try {
+    const updated = await prisma.tracerEntry.update({
+      where: { id: parseInt(req.params.id) },
+      data: { status: 'approved', reviewedBy: parseInt(req.user.id), reviewedAt: new Date() },
+    });
+    res.json({ success: true, message: 'Data disetujui dan tampil di tabel.', data: updated });
+  } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
+    console.error('Error approve tracer:', error);
+    res.status(500).json({ success: false, message: 'Gagal menyetujui data' });
+  }
+});
+
+// 6. ADMIN/EDITOR: REJECT -> data langsung dihapus (user boleh mengisi ulang)
+app.put('/api/tracer-study/:id/reject', ...requireStaff, async (req, res) => {
+  try {
+    await prisma.tracerEntry.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ success: true, message: 'Data ditolak dan dihapus.' });
+  } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
+    console.error('Error reject tracer:', error);
+    res.status(500).json({ success: false, message: 'Gagal menolak data' });
+  }
+});
+
+// 7. ADMIN/EDITOR: tambah data manual (langsung approved)
+app.post('/api/tracer-study/admin', ...requireStaff, async (req, res) => {
+  try {
+    const parsed = parseTracerBody(req.body);
+    if (parsed.error) return res.status(400).json({ success: false, message: parsed.error });
+    const created = await prisma.tracerEntry.create({
+      data: { ...parsed.data, status: 'approved', reviewedBy: parseInt(req.user.id), reviewedAt: new Date() },
+    });
+    res.json({ success: true, message: 'Data alumni ditambahkan.', data: created });
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ success: false, message: 'NISN ini sudah terdaftar di Tracer Study.' });
+    }
+    console.error('Error tambah tracer:', error);
+    res.status(500).json({ success: false, message: 'Gagal menambah data' });
+  }
+});
+
+// 8. ADMIN/EDITOR: hapus data (mis. data yang sudah tampil tapi salah)
+app.delete('/api/tracer-study/:id', ...requireStaff, async (req, res) => {
+  try {
+    await prisma.tracerEntry.delete({ where: { id: parseInt(req.params.id) } });
+    res.json({ success: true, message: 'Data dihapus.' });
+  } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
+    console.error('Error hapus tracer:', error);
+    res.status(500).json({ success: false, message: 'Gagal menghapus data' });
+  }
+});
+
 // API FAQ (PERTANYAAN)
 
 app.get('/api/faqs', staffIfAdminQuery, async (req, res) => {

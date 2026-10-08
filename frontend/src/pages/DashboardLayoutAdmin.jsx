@@ -21,6 +21,7 @@ import ManagePengajar from './ManagePengajar';
 import ProfilSekolah from './ProfilSekolah';
 import Ekstrakurikuler from './Ekstrakurikuler';
 import TestimonialPage from './TestimonialPage';
+import ManageTracerStudy from './ManageTracerStudy';
 import Galeri from './Galeri';
 import FaqPage from './FaqPage';
 import AchievementSection from './AchievementSection';
@@ -350,6 +351,7 @@ const DashboardLayoutAdmin = () => {
     prestasi: 'Karya & Prestasi',
     'mitra-industri': 'Mitra Industri',
     testimoni: 'Testimoni',
+    'tracer-study': 'Tracer Study',
     galeri: 'Galeri Sekolah',
     faq: 'FAQ',
     downloads: 'Unduhan',
@@ -387,6 +389,7 @@ const DashboardLayoutAdmin = () => {
     { title: 'Tenaga Pengajar', type: 'halaman', url: '/admin/pengajar', icon: <GraduationCap size={16}/>, adminOnly: true },
     { title: 'Karya & Prestasi', type: 'halaman', url: '/admin/prestasi', icon: <Trophy size={16}/> },
     { title: 'Testimoni', type: 'halaman', url: '/admin/testimoni', icon: <MessageSquare size={16}/> },
+    { title: 'Tracer Study', type: 'halaman', url: '/admin/tracer-study', icon: <GraduationCap size={16}/> },
     { title: 'Galeri Sekolah', type: 'halaman', url: '/admin/galeri', icon: <ImageIcon size={16}/> },
     { title: 'Pengaturan Profile & Identitas', type: 'pengaturan', url: '/admin/settings/profile', icon: <SettingsIcon size={16}/>, adminOnly: true },
     { title: 'Pengaturan Tema Web', type: 'pengaturan', url: '/admin/settings/appearance', icon: <SettingsIcon size={16}/>, adminOnly: true },
@@ -570,6 +573,7 @@ const DashboardLayoutAdmin = () => {
               <Route path="prestasi" element={<AchievementSection />} />
               <Route path="mitra-industri" element={<ManageIndustryPartners />} />
               <Route path="testimoni" element={<TestimonialPage />} />
+              <Route path="tracer-study" element={<ManageTracerStudy />} />
               <Route path="galeri" element={<Galeri />} />
               <Route path="faq" element={<FaqPage />} />
               <Route path="downloads" element={<DownloadPage />} />

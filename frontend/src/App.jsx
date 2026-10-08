@@ -6,6 +6,8 @@ import DetailKurikulumViewer from './pages/viewer/DetailKurikulum';
 import NewsDetail from './pages/viewer/NewsDetail';
 import DownloadViewer from './pages/viewer/DownloadViewer';
 import TulisTestimoni from './pages/viewer/TulisTestimoni';
+import TracerStudy from './pages/viewer/TracerStudy';
+import IsiTracerStudy from './pages/viewer/IsiTracerStudy';
 import GaleriAlbumViewer from './pages/viewer/GaleriAlbumViewer';
 
 import Login from './Login';
@@ -134,6 +136,8 @@ const MainApp = () => {
       <Route path="/galeri/:slug" element={<GaleriAlbumViewer />} />
       {LANDING_SECTION_PATHS.map((p) => <Route key={p} path={p} element={<LandingPage />} />)}
       <Route path="/testimoni/tulis" element={<TulisTestimoni />} />
+      <Route path="/tracer-study" element={<TracerStudy />} />
+      <Route path="/tracer-study/isi" element={<IsiTracerStudy />} />
 
     
       <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />

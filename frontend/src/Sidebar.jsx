@@ -7,7 +7,7 @@ import {
   GraduationCap, Trophy, MessageSquare, HelpCircle, 
   Image as ImageIcon, MapPin, LayoutDashboard, Settings,
   X, ChevronRight, Download, LogOut, ChevronsUpDown,
-  Handshake
+  Handshake, ClipboardList
 } from 'lucide-react';
 import logoSekolah from './assets/logo1.png';
 import './css/sidebar.css'; // MENGIMPOR CSS SIDEBAR BARU
@@ -37,7 +37,8 @@ const ICON_MAP = {
   'map-pin': <MapPin size={16} />,
   download: <Download size={16} />,
   mitra: <Handshake size={16} />,
-  handshake: <Handshake size={16} />
+  handshake: <Handshake size={16} />,
+  tracer: <ClipboardList size={16} />
 };
 
 // Pengaturan hak akses per nama menu
@@ -52,6 +53,7 @@ const MENU_ROLES = {
   'Karya & Prestasi': ['ADMIN', 'EDITOR'],
   'Mitra Industri': ['ADMIN', 'EDITOR'],
   'Testimoni': ['ADMIN', 'EDITOR'],
+  'Tracer Study': ['ADMIN', 'EDITOR'],
   'Galeri': ['ADMIN', 'EDITOR'],
   'FAQ': ['ADMIN'],
   'Download': ['ADMIN', 'EDITOR'],
@@ -104,6 +106,7 @@ export default function Sidebar({
     { title: 'Karya & Prestasi', iconKey: 'prestasi', type: 'link', url: '/admin/prestasi', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
     { title: 'Mitra Industri', iconKey: 'mitra', type: 'link', url: '/admin/mitra-industri', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
     { title: 'Testimoni', iconKey: 'testimoni', type: 'link', url: '/admin/testimoni', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
+    { title: 'Tracer Study', iconKey: 'tracer', type: 'link', url: '/admin/tracer-study', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
     { title: 'Galeri', iconKey: 'galeri', type: 'link', url: '/admin/galeri', roles: ['ADMIN', 'EDITOR'], group: 'Pages' },
     { title: 'FAQ', iconKey: 'faq', type: 'link', url: '/admin/faq', roles: ['ADMIN'], group: 'Other' },
     { title: 'Download', iconKey: 'download', type: 'link', url: '/admin/downloads', roles: ['ADMIN', 'EDITOR'], group: 'Other' },
@@ -139,6 +142,7 @@ export default function Sidebar({
             'Tenaga Pengajar': '/admin/pengajar',
             'Karya & Prestasi': '/admin/prestasi',
             'Testimoni': '/admin/testimoni',
+            'Tracer Study': '/admin/tracer-study',
             'Galeri': '/admin/galeri',
             'FAQ': '/admin/faq',
             'Kelola Pengguna': '/admin/users',
@@ -160,7 +164,7 @@ export default function Sidebar({
             }
 
             let groupName = 'General';
-            const pageMenus = ['Jurusan & Program', 'Ekstrakurikuler', 'Tenaga Pengajar', 'Karya & Prestasi', 'Testimoni', 'Galeri'];
+            const pageMenus = ['Jurusan & Program', 'Ekstrakurikuler', 'Tenaga Pengajar', 'Karya & Prestasi', 'Testimoni', 'Tracer Study', 'Galeri'];
             const otherMenus = ['Pengaturan Website', 'FAQ', 'Download'];
             
             if (pageMenus.includes(m.title)) groupName = 'Pages';
@@ -188,6 +192,11 @@ export default function Sidebar({
           const hasBeranda = mapped.find(m => m.url === '/admin/dashboard');
           if (!hasBeranda) {
             mapped.unshift({ title: 'Beranda', iconKey: 'dashboard', type: 'link', url: '/admin/dashboard', roles: ['ADMIN', 'EDITOR', 'VIEWER'], group: 'General' });
+          }
+
+          // Menu moderasi Tracer Study selalu tersedia untuk admin/editor, walau menu publiknya belum dibuat di database
+          if (!mapped.some((m) => m.url === '/admin/tracer-study')) {
+            mapped.push({ title: 'Tracer Study', iconKey: 'tracer', type: 'link', url: '/admin/tracer-study', roles: ['ADMIN', 'EDITOR'], group: 'Pages' });
           }
 
           setDynamicNavs(mapped);

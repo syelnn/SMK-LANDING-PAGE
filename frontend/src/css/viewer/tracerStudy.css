@@ -1,0 +1,217 @@
+/* ==========================================================================
+   src/css/viewer/tracerStudy.css  —  halaman publik /tracer-study
+   Semua warna memakai token tema (--compreng-*) => ikut light / dark / system / custom.
+   Nama class pakai prefix "ts-" dan SENGAJA menghindari substring yang ditarget
+   theme.css secara rakus (badge, stat, card, btn, search, filter, tab, title, icon, nav...).
+   Teks di dalam <td> memakai <div> (theme.css mengecat "td > span" sebagai badge).
+   ========================================================================== */
+
+.ts-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: var(--compreng-bg, #f8fafc);
+  font-family: var(--theme-font, 'Plus Jakarta Sans', sans-serif);
+}
+.ts-main { flex: 1; padding: 110px 24px 72px; }
+.ts-wrap { max-width: 1080px; margin: 0 auto; }
+
+/* ---------------- HEADER ---------------- */
+.ts-head { text-align: center; margin-bottom: 36px; }
+.ts-kicker {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 6px 14px; margin-bottom: 14px;
+  border-radius: 999px;
+  font-size: 12.5px; font-weight: 700; letter-spacing: .02em;
+  color: var(--compreng-accent, #2563eb);
+  background: var(--compreng-surface-soft, #f1f5f9);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+}
+.ts-page .ts-h1 {
+  margin: 0 0 10px;
+  font-size: clamp(26px, 3.6vw, 38px);
+  line-height: 1.15; font-weight: 800; letter-spacing: -.03em;
+  color: var(--compreng-text, #0f172a) !important;
+}
+.ts-lead {
+  max-width: 560px; margin: 0 auto;
+  font-size: 15.5px; line-height: 1.65;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+/* ---------------- STATISTIK ---------------- */
+.ts-figs {
+  display: grid;
+  grid-template-columns: 1fr 1fr 2fr;
+  gap: 16px;
+  margin-bottom: 28px;
+}
+.ts-fig {
+  padding: 20px 22px;
+  background: var(--compreng-surface, #fff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 16px;
+  color: var(--compreng-text-secondary, #475569);
+}
+.ts-fig-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 10px; }
+.ts-fig-top svg { color: var(--compreng-accent, #2563eb); flex: none; }
+.ts-fig-lbl { font-size: 13px; font-weight: 600; color: var(--compreng-text-secondary, #475569); }
+.ts-fig-val {
+  font-size: 36px; line-height: 1; font-weight: 800; letter-spacing: -.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--compreng-text, #0f172a);
+}
+.ts-fig-note { margin-top: 8px; font-size: 12.5px; color: var(--compreng-text-secondary, #475569); }
+
+.ts-meters { display: flex; flex-direction: column; gap: 6px; margin-top: 2px; }
+.ts-meter-row {
+  display: grid; grid-template-columns: minmax(120px, 170px) 1fr 36px;
+  align-items: center; gap: 12px;
+  width: 100%; padding: 7px 10px; margin: 0;
+  border: 1px solid transparent; border-radius: 10px;
+  background: transparent; cursor: pointer; text-align: left;
+  font-family: inherit;
+  transition: background-color .18s ease, border-color .18s ease;
+}
+.ts-meter-row:hover { background: var(--compreng-surface-soft, #f1f5f9); }
+.ts-meter-row.is-on { background: var(--compreng-surface-soft, #f1f5f9); border-color: var(--compreng-accent, #2563eb); }
+.ts-meter-name { font-size: 13px; font-weight: 600; color: var(--compreng-text, #0f172a); }
+.ts-meter-track { height: 8px; border-radius: 999px; background: var(--compreng-surface-soft, #e2e8f0); overflow: hidden; }
+.ts-meter-fill { height: 100%; min-width: 4px; border-radius: 999px; background: var(--compreng-accent, #2563eb); transition: width .5s cubic-bezier(.16, 1, .3, 1); }
+.ts-meter-num { font-size: 14px; font-weight: 800; text-align: right; font-variant-numeric: tabular-nums; color: var(--compreng-text, #0f172a); }
+
+/* ---------------- KONTROL: filter + pencarian + CTA ---------------- */
+.ts-controls {
+  display: flex; align-items: flex-end; justify-content: space-between; gap: 16px;
+  margin-bottom: 16px;
+}
+.ts-controls-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; flex: 1; }
+
+.ts-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ts-chip {
+  padding: 8px 16px; margin: 0;
+  border-radius: 999px;
+  border: 1.5px solid var(--compreng-border, #e2e8f0);
+  background: var(--compreng-surface, #fff);
+  color: var(--compreng-text, #0f172a);
+  font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  transition: border-color .18s ease, background-color .18s ease, color .18s ease;
+}
+.ts-chip:hover { border-color: var(--compreng-accent, #2563eb); }
+.ts-page .ts-chip.is-on {
+  background: var(--compreng-accent, #2563eb);
+  border-color: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #fff);
+}
+
+.ts-find { position: relative; max-width: 380px; }
+.ts-find-ico { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--compreng-text-secondary, #64748b); pointer-events: none; }
+.ts-page .ts-find .ts-find-input.ts-find-input {
+  display: block; width: 100%;
+  padding: 11px 14px 11px 40px;
+  font-size: 14.5px; line-height: 1.4;
+  border-radius: 12px !important;
+}
+
+.ts-cta {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  flex: none; padding: 12px 22px; margin: 0;
+  border: 1px solid var(--compreng-accent, #2563eb);
+  border-radius: 12px;
+  background: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #fff);
+  font-family: inherit; font-size: 14.5px; font-weight: 700; cursor: pointer;
+  transition: transform .18s ease, filter .18s ease;
+}
+.ts-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
+
+.ts-page button:focus-visible,
+.ts-page .ts-find-input:focus-visible { outline: 3px solid var(--compreng-accent, #2563eb); outline-offset: 2px; }
+
+/* ---------------- TABEL ---------------- */
+.ts-sheet {
+  background: var(--compreng-surface, #fff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.ts-scroll { overflow-x: auto; }
+.ts-grid { width: 100%; min-width: 720px; border-collapse: collapse; }
+.ts-grid th {
+  padding: 13px 18px; text-align: left;
+  font-size: 12.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
+  color: var(--compreng-text-secondary, #475569);
+  background: var(--compreng-surface-soft, #f1f5f9);
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+}
+.ts-grid td {
+  padding: 14px 18px; vertical-align: middle;
+  font-size: 14px; color: var(--compreng-text, #0f172a);
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+}
+.ts-grid tbody tr:last-child td { border-bottom: 0; }
+.ts-grid tbody tr:hover td { background: var(--compreng-surface-soft, #f1f5f9); }
+.ts-grid .ts-col-no { width: 56px; text-align: center; color: var(--compreng-text-secondary, #475569); }
+.ts-person { font-weight: 700; }
+.ts-gen {
+  display: inline-block; padding: 3px 11px; border-radius: 999px;
+  font-size: 12.5px; font-weight: 700; white-space: nowrap;
+  color: var(--compreng-accent, #2563eb);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 30%, transparent);
+}
+.ts-mono { font-variant-numeric: tabular-nums; letter-spacing: .02em; color: var(--compreng-text-secondary, #475569); }
+.ts-grid td.ts-empty { padding: 44px 18px; text-align: center; font-size: 14px; color: var(--compreng-text-secondary, #475569); }
+
+.ts-pager {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;
+  padding: 12px 18px;
+  border-top: 1px solid var(--compreng-border, #e2e8f0);
+}
+.ts-pager-info { font-size: 13px; color: var(--compreng-text-secondary, #475569); }
+.ts-pager-ctl { display: flex; align-items: center; gap: 10px; }
+.ts-pager-num { min-width: 52px; text-align: center; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--compreng-text, #0f172a); }
+.ts-step {
+  display: grid; place-items: center; width: 34px; height: 34px; padding: 0; margin: 0;
+  border-radius: 10px;
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  background: var(--compreng-surface, #fff);
+  color: var(--compreng-text, #0f172a); cursor: pointer;
+  transition: border-color .18s ease;
+}
+.ts-step:hover:not(:disabled) { border-color: var(--compreng-accent, #2563eb); }
+.ts-step:disabled { opacity: .4; cursor: not-allowed; }
+
+.ts-alert {
+  display: flex; align-items: center; gap: 10px; padding: 16px 18px;
+  border-radius: 14px; font-size: 14px; font-weight: 600; color: #dc2626;
+  background: color-mix(in srgb, #dc2626 10%, var(--compreng-surface, #fff));
+  border: 1px solid color-mix(in srgb, #dc2626 30%, transparent);
+}
+
+.ts-privacy { margin-top: 16px; text-align: center; font-size: 12.5px; line-height: 1.6; color: var(--compreng-text-secondary, #475569); }
+
+/* ---------------- RESPONSIF ---------------- */
+@media (max-width: 900px) {
+  .ts-figs { grid-template-columns: 1fr 1fr; }
+  .ts-fig-wide { grid-column: 1 / -1; }
+}
+@media (max-width: 720px) {
+  .ts-main { padding: 96px 16px 56px; }
+  .ts-controls { flex-direction: column; align-items: stretch; }
+  .ts-find { max-width: none; }
+  .ts-cta { width: 100%; }
+  .ts-meter-row { grid-template-columns: 1fr 36px; row-gap: 6px; }
+  .ts-meter-name { grid-column: 1; }
+  .ts-meter-num { grid-column: 2; grid-row: 1; }
+  .ts-meter-track { grid-column: 1 / -1; grid-row: 2; }
+  .ts-pager { justify-content: center; }
+}
+@media (max-width: 480px) {
+  .ts-figs { grid-template-columns: 1fr; }
+  .ts-fig-val { font-size: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ts-cta, .ts-meter-fill { transition: none; }
+  .ts-cta:hover { transform: none; }
+}

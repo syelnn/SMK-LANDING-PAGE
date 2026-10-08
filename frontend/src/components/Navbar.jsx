@@ -470,6 +470,11 @@ const Navbar = () => {
     if (location.pathname === '/download' && (menuUrl.includes('download') || menuTitle.includes('download'))) {
       return true;
     }
+
+    // Halaman terpisah Tracer Study (/tracer-study dan /tracer-study/isi)
+    if (location.pathname.startsWith('/tracer-study')) {
+      return menuUrl.startsWith('/tracer-study') || menuTitle.includes('tracer');
+    }
     
     const isDropdownArea = [
       '/ekstrakurikuler', '/ekskul', '/tenagapengajar', 

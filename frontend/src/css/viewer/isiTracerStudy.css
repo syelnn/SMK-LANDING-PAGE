@@ -1,0 +1,54 @@
+/* ==========================================================================
+   src/css/viewer/isiTracerStudy.css — tambahan kecil untuk form Tracer Study.
+   Layout utama memakai tulisTestimoni.css (kelas tw-*), jadi ikut 4 tema.
+   Kelas di sini berawalan "tf-" dan menghindari substring yang ditarget theme.css.
+   ========================================================================== */
+
+/* Alur 3 langkah di panel kiri (latar gelap -> pakai <div>, bukan p/span) */
+.tf-flow { display: flex; flex-direction: column; gap: 14px; }
+.tf-flow-row { display: flex; align-items: flex-start; gap: 14px; }
+.tf-flow-n {
+  flex: none; display: grid; place-items: center;
+  width: 28px; height: 28px; border-radius: 50%;
+  font-size: 13px; font-weight: 800;
+  background: var(--tw-lime, #E3EF26);
+  color: var(--tw-nav-bg, #06231D);
+}
+.tf-flow-txt { padding-top: 3px; font-size: 14.5px; line-height: 1.55; color: var(--tw-nav-muted, #E2FBCE); }
+.tf-note {
+  margin-top: 22px; padding-top: 16px;
+  border-top: 1px solid color-mix(in srgb, var(--tw-nav-text, #FFFDEE) 18%, transparent);
+  font-size: 12.5px; line-height: 1.6; color: var(--tw-nav-muted, #E2FBCE);
+}
+
+/* Dua kolom (angkatan + tanggal lahir) */
+.tf-two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.tf-two .tw-field { min-width: 0; }
+
+/* Dropdown & date picker ikut tema */
+.tw-shell select.tw-input { appearance: auto; cursor: pointer; }
+.tw-shell input[type="date"].tw-input { min-height: 52px; }
+[data-theme='dark'] .tw-shell input[type="date"] { color-scheme: dark; }
+
+/* Ringkasan data yang sudah dikirim */
+.tf-recap {
+  width: 100%; max-width: 400px; margin: 20px 0 8px;
+  background: var(--compreng-surface, #fff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 14px; overflow: hidden;
+}
+.tf-recap-row {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 11px 16px; font-size: 13.5px;
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  color: var(--compreng-text, #06231D);
+}
+.tf-recap-row:last-child { border-bottom: 0; }
+.tf-recap-row > div:first-child { flex: none; color: var(--compreng-text-secondary, #475569); }
+.tf-recap-row > div:last-child { text-align: right; font-weight: 600; overflow-wrap: anywhere; }
+
+@media (max-width: 560px) {
+  .tf-two { grid-template-columns: 1fr; gap: 0; }
+}
+
+.tw-done .tw-go { margin-top: 20px; }
