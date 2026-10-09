@@ -1428,8 +1428,7 @@ app.get('/api/menu-items', async (req, res) => {
   try {
     const menuItems = await prisma.menuItem.findMany({
       where: { status: 1 },
-      orderBy: { sortOrder: 'asc' },
-      include: { page: true }
+      orderBy: { sortOrder: 'asc' }
     });
     res.json({ success: true, data: menuItems });
   } catch (error) {
@@ -1440,7 +1439,7 @@ app.get('/api/menu-items', async (req, res) => {
 
 app.post('/api/menu-items', ...requireAdmin, async (req, res) => {
   try {
-    const { title, url, target, icon, sectionKey, sortOrder, status, type, pageId, parentId } = req.body;
+    const { title, url, target, icon, sectionKey, sortOrder, status, type, parentId } = req.body;
 
     const newMenuItem = await prisma.menuItem.create({
       data: {
@@ -1467,7 +1466,7 @@ app.post('/api/menu-items', ...requireAdmin, async (req, res) => {
 app.put('/api/menu-items/:id', ...requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, url, target, icon, sectionKey, sortOrder, status, type, pageId, parentId } = req.body;
+    const { title, url, target, icon, sectionKey, sortOrder, status, type, parentId } = req.body;
 
     const updatedMenuItem = await prisma.menuItem.update({
       where: { id: Number(id) },
