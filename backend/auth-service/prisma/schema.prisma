@@ -21,7 +21,6 @@ model User {
   lastLogin    DateTime?    @map("last_login") @db.Timestamp(6)
   createdAt    DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
   updatedAt    DateTime?    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  auditLogs    AuditLog[]
   testimonials Testimonial?
 
   @@map("users")
@@ -72,19 +71,6 @@ model Program {
   @@map("programs")
 }
 
-model AuditLog {
-  id          Int       @id @default(autoincrement())
-  userId      Int?      @map("user_id")
-  action      String    @db.VarChar(50)
-  tableName   String    @map("table_name") @db.VarChar(100)
-  recordId    String?   @map("record_id")
-  description String?
-  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  user        User?     @relation(fields: [userId], references: [id], onUpdate: NoAction, map: "fk_audit_user")
-
-  @@map("audit_logs")
-}
-
 model Extracurricular {
   id          Int      @id @default(autoincrement())
   title       String
@@ -125,23 +111,6 @@ model Gallery {
   @@map("galleries")
 }
 
-model Page {
-  id              Int        @id @default(autoincrement())
-  title           String     @db.VarChar(255)
-  slug            String     @unique @db.VarChar(255)
-  content         String?
-  excerpt         String?
-  image           String?    @db.VarChar(255)
-  status          String?    @default("draft") @db.VarChar(50)
-  metaTitle       String?    @map("meta_title") @db.VarChar(255)
-  metaDescription String?    @map("meta_description") @db.VarChar(255)
-  createdAt       DateTime   @default(now()) @map("created_at")
-  updatedAt       DateTime   @updatedAt @map("updated_at")
-  menuItems       MenuItem[]
-
-  @@map("pages")
-}
-
 model MenuItem {
   id         Int        @id @default(autoincrement())
   parentId   Int?       @map("parent_id")
@@ -157,7 +126,6 @@ model MenuItem {
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
   is_public  Boolean    @default(true)
-  page       Page?      @relation(fields: [pageId], references: [id], map: "menu_items_page_fk")
   parent     MenuItem?  @relation("MenuHierarchy", fields: [parentId], references: [id], onDelete: Cascade, map: "menu_items_parent_fk")
   children   MenuItem[] @relation("MenuHierarchy")
 
@@ -191,25 +159,6 @@ model Testimonial {
   users     User?     @relation(fields: [user_id], references: [id])
 
   @@map("testimonials")
-}
-
-model StudentWorkAchievement {
-  id          String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  category    String
-  studentName String    @map("student_name")
-  className   String?   @map("class_name")
-  title       String
-  description String?
-  photoUrl    String?   @map("photo_url")
-  level       String?
-  year        Int?      @db.SmallInt
-  medal       String?
-  sortOrder   Int?      @default(0) @map("sort_order") @db.SmallInt
-  show        Boolean?  @default(true)
-  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(6)
-
-  @@map("student_works_achievements")
 }
 
 model Download {
