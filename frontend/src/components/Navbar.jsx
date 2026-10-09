@@ -467,20 +467,23 @@ const Navbar = () => {
     const menuTitle = menu.title ? menu.title.toLowerCase().trim() : '';
     const menuUrl = getCleanUrl(menu);
 
+      // Halaman terpisah yaitu dowload n Tracer Study ygy
     if (location.pathname === '/download' && (menuUrl.includes('download') || menuTitle.includes('download'))) {
       return true;
     }
 
-    // Halaman terpisah Tracer Study (/tracer-study dan /tracer-study/isi)
+
     if (location.pathname.startsWith('/tracer-study')) {
       return menuUrl.startsWith('/tracer-study') || menuTitle.includes('tracer');
     }
     
+    // ini mh khusus submenu
     const isDropdownArea = [
       '/ekstrakurikuler', '/ekskul', '/tenagapengajar', 
       '/guru', '/karya', '/prestasi', '/achievement', '/mitra-industri', '/mitraindustri'
     ].includes(activePath);
     
+    //ini ga submenu
     if (isDropdownArea) {
       if (menuTitle.includes('jurusan') || menuTitle.includes('program') || menuTitle.includes('berita')) {
         return false;

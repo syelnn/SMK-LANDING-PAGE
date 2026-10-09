@@ -31,19 +31,17 @@ const FooterViewer = () => {
     fetchFooter();
   }, []);
 
-  // Tautan cepat:
-  //  - /download            -> pindah halaman via router
-  //  - sedang di landing    -> smooth scroll ke section
-  //  - sedang di halaman lain -> kembali ke landing lalu scroll ke section
+  // Tautan cepat khusus buat pindah halaman
   const handleQuickLink = (e, path, sectionId) => {
     e.preventDefault();
 
-    if (path === '/download') {
-      navigate('/download');
+    if (path === '/download'|| path === '/tracer-study') {
+      navigate(path);
       window.scrollTo({ top: 0 });
       return;
     }
-
+    
+   
     const onLanding = !!document.getElementById('section-hero');
     const element = sectionId ? document.getElementById(sectionId) : null;
 
@@ -71,7 +69,7 @@ const FooterViewer = () => {
   const schoolName = footerData?.school_name || footerData?.schoolName || settings?.school_name || '';
   const description = footerData?.description || '';
 
-  // KONTAK & SOSMED: dari Pengaturan Website (Contact & Maps). Belum pernah disimpan -> data footer lama.
+  // KONTAK & SOSMED: dari Pengaturan Website (Contact & Maps).
   const c = resolveContact(settings, footerData);
   const address = c.contact_address;
   const phone = c.contact_phone;
@@ -122,7 +120,7 @@ const FooterViewer = () => {
             </div>
           </div>
 
-        {/* KOLOM 2: TAUTAN CEPAT */}
+        {/* TAUTAN CEPAT */}
         <div className="footer-column">
           <h4 className="footer-title">Tautan Cepat</h4>
           <ul className="footer-links-list">
@@ -130,6 +128,7 @@ const FooterViewer = () => {
             <li><a href="/profil" onClick={(e) => handleQuickLink(e, '/profil', 'section-profil')}>Profil Sekolah</a></li>
             <li><a href="/berita" onClick={(e) => handleQuickLink(e, '/berita', 'section-berita')}>Berita & Artikel</a></li>
             <li><a href="/jurusan" onClick={(e) => handleQuickLink(e, '/jurusan', 'section-program')}>Jurusan</a></li>
+            <li><a href="/tracer-study" onClick={(e) => handleQuickLink(e, '/tracer-study', null)}>Tracer Study</a></li>
             <li><a href="/ekstrakurikuler" onClick={(e) => handleQuickLink(e, '/ekstrakurikuler', 'section-ekskul')}>Ekstrakurikuler</a></li>
             <li><a href="/pengajar" onClick={(e) => handleQuickLink(e, '/pengajar', 'section-pengajar')}>Tenaga Pengajar</a></li>
             <li><a href="/prestasi" onClick={(e) => handleQuickLink(e, '/prestasi', 'section-prestasi')}>Karya & Prestasi</a></li>
@@ -142,7 +141,7 @@ const FooterViewer = () => {
           </ul>
         </div>
 
-        {/* KOLOM 3: HUBUNGI KAMI */}
+        {/* HUBUNGI KAMI */}
         <div className="footer-column">
           <h4 className="footer-title">Hubungi Kami</h4>
           <ul className="footer-contact-list">
