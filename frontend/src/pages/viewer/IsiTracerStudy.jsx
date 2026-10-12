@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Check, Loader2, Send, AlertTriangle, Pencil, Info } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Send, AlertTriangle, Pencil, Info, Lock } from 'lucide-react';
 import { getSession, clearSession, isStaff } from '../../utils/auth';
 import logoSekolah from '../../assets/logo1.png';
 import '../../css/viewer/tulisTestimoni.css'; // layout split-panel yang sama dengan form testimoni
@@ -138,6 +138,8 @@ export default function IsiTracerStudy() {
   const firstName = (form.fullName.trim().split(' ')[0]) || session.name || 'kamu';
   const angkatanOptions = Array.from({ length: current }, (_, i) => current - i);
   const kind = KIND_MAP[form.workStatus];
+  // Saat mengedit data yang sudah terkirim, identitas dikunci (hanya admin yang bisa mengubahnya)
+  const locked = !!entry && editing && entry.approvalStatus !== 'rejected';
   const needsDetail = !!kind?.detail;
   // Jurusan lama yang sudah tidak ada di daftar tetap muncul agar tidak hilang saat memperbaiki data
   const jurusanOptions = form.jurusan && !jurusanList.includes(form.jurusan)
@@ -149,14 +151,18 @@ export default function IsiTracerStudy() {
   };
 
   const validate = () => {
-    if (form.fullName.trim().length < 3) return 'Nama lengkap belum diisi.';
-    if (!form.angkatan) return 'Pilih angkatanmu.';
-    if (!form.jurusan) return 'Pilih jurusan (program keahlian) kamu.';
+    if (!locked) {
+      if (form.fullName.trim().length < 3) return 'Nama lengkap belum diisi.';
+      if (!form.angkatan) return 'Pilih angkatanmu.';
+      if (!form.jurusan) return 'Pilih jurusan (program keahlian) kamu.';
+    }
     if (!form.workStatus) return 'Pilih status kamu saat ini.';
     if (needsDetail && form.detailTempat.trim().length < 2) return `${kind.detail} belum diisi.`;
-    if (!/^\d{10}$/.test(form.nisn)) return 'NISN harus 10 digit angka.';
-    if (form.nik && !/^\d{16}$/.test(form.nik)) return 'NIK harus 16 digit. Kosongkan jika belum punya KTP.';
-    if (!form.birthDate) return 'Tanggal lahir belum diisi.';
+    if (!locked) {
+      if (!/^\d{10}$/.test(form.nisn)) return 'NISN harus 10 digit angka.';
+      if (form.nik && !/^\d{16}$/.test(form.nik)) return 'NIK harus 16 digit. Kosongkan jika belum punya KTP.';
+      if (!form.birthDate) return 'Tanggal lahir belum diisi.';
+    }
     if (form.domicile.trim().length < 3) return 'Kecamatan domisili belum diisi.';
     if (!/^08\d{8,12}$/.test(normalizePhone(form.phone))) return 'Nomor HP tidak valid. Contoh: 081234567890.';
     return '';
@@ -334,7 +340,7 @@ export default function IsiTracerStudy() {
                   <div>
                     Kamu sedang mengedit datamu sendiri.
                     {approved
-                      ? ' Datamu tetap tampil di tabel. Jika NISN diubah, data perlu diverifikasi ulang oleh admin.'
+                      ? ' Datamu tetap tampil di tabel. Perubahan pada kegiatan, domisili, dan nomor HP tidak perlu verifikasi ulang.'
                       : ' Datamu masih menunggu verifikasi admin.'}
                   </div>
                 </div>
@@ -343,14 +349,15 @@ export default function IsiTracerStudy() {
               <h2 className="tw-hello">{editMode ? `Edit datamu, ${firstName}.` : `Halo, ${firstName}. Isi data dirimu ya.`}</h2>
               <div className="tw-hello-copy">
                 {editMode
-                  ? 'Ubah bagian yang perlu diperbarui, lalu simpan.'
+                  ? 'Ubah bagian yang perlu diperbarui, lalu simpan. Data identitas (nama, angkatan, jurusan, tanggal lahir, NISN, NIK) dikunci. Hubungi admin sekolah jika ada yang salah.'
                   : 'Pastikan datanya benar dan sesuai dokumen. Data baru tampil di tabel setelah diverifikasi admin.'}
               </div>
 
               <div className="tw-field">
-                <label className="tw-legend" htmlFor="ts-nama">Nama lengkap</label>
+                <label className="tw-legend" htmlFor="ts-nama">Nama lengkap{locked && <Lock size={13} className="tf-lock" aria-label="Dikunci" />}</label>
                 <input
                   id="ts-nama" type="text" className="tw-input" value={form.fullName} maxLength={200}
+                  readOnly={locked} aria-readonly={locked}
                   autoComplete="name" placeholder="Sesuai ijazah / kartu pelajar"
                   onChange={(e) => set('fullName', e.target.value)}
                 />
@@ -358,22 +365,22 @@ export default function IsiTracerStudy() {
 
               <div className="tf-two">
                 <div className="tw-field">
-                  <label className="tw-legend" htmlFor="ts-angkatan">Angkatan</label>
+                  <label className="tw-legend" htmlFor="ts-angkatan">Angkatan{locked && <Lock size={13} className="tf-lock" aria-label="Dikunci" />}</label>
                   <select
-                    id="ts-angkatan" className="tw-input" value={form.angkatan}
+                    id="ts-angkatan" className="tw-input" value={form.angkatan} disabled={locked}
                     onChange={(e) => set('angkatan', e.target.value)}
                   >
                     <button type="button"><selectedcontent /></button>
                     <option value="">Pilih angkatan</option>
                     {angkatanOptions.map((a) => (
-                      <option key={a} value={a}>{a === current ? `Angkatan ${a} (tahun ini)` : `Angkatan ${a}`}</option>
+                      <option key={a} value={a}>{a === current ? `Angkatan ${a}` : `Angkatan ${a}`}</option>
                     ))}
                   </select>
                 </div>
                 <div className="tw-field">
-                  <label className="tw-legend" htmlFor="ts-jurusan">Jurusan</label>
+                  <label className="tw-legend" htmlFor="ts-jurusan">Jurusan{locked && <Lock size={13} className="tf-lock" aria-label="Dikunci" />}</label>
                   <select
-                    id="ts-jurusan" className="tw-input" value={form.jurusan}
+                    id="ts-jurusan" className="tw-input" value={form.jurusan} disabled={locked}
                     onChange={(e) => set('jurusan', e.target.value)}
                   >
                     <button type="button"><selectedcontent /></button>
@@ -414,10 +421,10 @@ export default function IsiTracerStudy() {
 
               <div className="tf-two">
                 <div className="tw-field">
-                  <label className="tw-legend" htmlFor="ts-lahir">Tanggal lahir</label>
+                  <label className="tw-legend" htmlFor="ts-lahir">Tanggal lahir{locked && <Lock size={13} className="tf-lock" aria-label="Dikunci" />}</label>
                   <input
                     id="ts-lahir" type="date" className="tw-input" value={form.birthDate}
-                    max={todayISO()} min="1980-01-01" autoComplete="bday"
+                    max={todayISO()} min="1980-01-01" autoComplete="bday" disabled={locked}
                     onChange={(e) => set('birthDate', e.target.value)}
                   />
                 </div>
@@ -433,10 +440,10 @@ export default function IsiTracerStudy() {
               <div className="tw-hint tf-hint-gap">Tinggal di luar daerah? Tulis kota atau kabupatennya.</div>
 
               <div className="tw-field">
-                <label className="tw-legend" htmlFor="ts-nisn">NISN</label>
+                <label className="tw-legend" htmlFor="ts-nisn">NISN{locked && <Lock size={13} className="tf-lock" aria-label="Dikunci" />}</label>
                 <input
                   id="ts-nisn" type="text" inputMode="numeric" className="tw-input" value={form.nisn}
-                  placeholder="10 digit angka" onChange={setDigits('nisn', 10)}
+                  placeholder="10 digit angka" onChange={setDigits('nisn', 10)} readOnly={locked}
                 />
                 <div className="tw-hint">Nomor Induk Siswa Nasional, 10 digit. Ada di rapor atau kartu pelajar. Hanya dipakai untuk verifikasi.</div>
               </div>
@@ -444,10 +451,11 @@ export default function IsiTracerStudy() {
               <div className="tw-field">
                 <label className="tw-legend" htmlFor="ts-nik">
                   NIK <span className="tw-optional">(opsional)</span>
+                  {locked && <Lock size={13} className="tf-lock" aria-label="Dikunci" />}
                 </label>
                 <input
                   id="ts-nik" type="text" inputMode="numeric" className="tw-input" value={form.nik}
-                  placeholder="16 digit angka" onChange={setDigits('nik', 16)}
+                  placeholder={locked ? '-' : '16 digit angka'} onChange={setDigits('nik', 16)} readOnly={locked}
                 />
                 <div className="tw-hint">Isi jika sudah punya KTP. Kosongkan jika belum mendaftar.</div>
               </div>

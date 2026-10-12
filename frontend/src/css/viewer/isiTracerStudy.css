@@ -217,3 +217,12 @@
   .tw-shell select.tw-input option { padding: 13px 12px; } /* area sentuh lebih besar di HP */
   .tw-shell select.tw-input::picker(select) { max-block-size: min(300px, 46vh); }
 }
+/* ---------- Kolom terkunci (mode edit) ---------- */
+.tw-shell .tw-input[readonly],
+.tw-shell select.tw-input:disabled,
+.tw-shell input.tw-input:disabled {
+  cursor: not-allowed; opacity: .72;
+  background-image: none;
+}
+.tw-shell .tw-input[readonly]:focus { outline: none; box-shadow: none; }
+.tf-lock { margin-left: 6px; vertical-align: -1px; opacity: .6; }

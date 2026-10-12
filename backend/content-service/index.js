@@ -963,11 +963,21 @@ app.put('/api/tracer-study/mine', verifyToken, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Kamu belum mengisi data Tracer Study.' });
     }
 
-    const parsed = parseTracerBody(req.body);
+    // Identitas dikunci: nama, angkatan, jurusan, tanggal lahir, NISN & NIK tidak bisa diubah
+    // lewat edit mandiri (abaikan kiriman klien, pakai nilai yang tersimpan).
+    const locked = {
+      fullName: existing.fullName,
+      angkatan: existing.angkatan,
+      jurusan: existing.jurusan,
+      birthDate: existing.birthDate ? new Date(existing.birthDate).toISOString().slice(0, 10) : '',
+      nisn: existing.nisn,
+      nik: existing.nik || '',
+    };
+    const parsed = parseTracerBody({ ...req.body, ...locked });
     if (parsed.error) return res.status(400).json({ success: false, message: parsed.error });
 
     const data = { ...parsed.data };
-    const needReview = existing.approvalStatus !== 'approved' || data.nisn !== existing.nisn;
+    const needReview = existing.approvalStatus !== 'approved';
     if (needReview) {
       data.approvalStatus = 'pending';
       data.reviewedBy = null;

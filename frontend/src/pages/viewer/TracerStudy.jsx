@@ -11,7 +11,7 @@ import { getSession, isStaff } from '../../utils/auth';
 import '../../css/viewer/tracerStudy.css';
 
 const API = 'https://smkn-compreng-api-pi.vercel.app';
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 5;
 
 // Status kegiatan alumni: urutan = urutan di diagram. Warna sengaja mid-tone supaya terbaca
 // di 4 tema (light / dark / system / custom) tanpa override per tema.
@@ -144,8 +144,7 @@ const Dropdown = ({ value, options, onChange, placeholder, ariaLabel, pill = fal
                 >
                   {o.badge && <div className="ts-dd-badge" aria-hidden="true">{o.badge}</div>}
                   <div className="ts-dd-text">{o.label}</div>
-                  {o.tag && <div className="ts-dd-tag">{o.tag}</div>}
-                  <div className="ts-dd-check" aria-hidden="true">{on && <Check size={16} />}</div>
+
                 </button>
               </li>
             );
@@ -242,7 +241,7 @@ const TracerStudy = () => {
     : mine?.approvalStatus === 'rejected' ? 'Perbaiki Data Saya'
     : mine ? 'Status Data Saya' : 'Isi Data Mandiri';
 
-  const labelOf = (a) => (a === current ? `Angkatan ${a} (tahun ini)` : `Angkatan ${a}`);
+  const labelOf = (a) => (a === current ? `Angkatan ${a}` : `Angkatan ${a}`);
 
   // ---- Edit data: HANYA untuk pemilik data ----
   // Kepemilikan ditentukan server lewat GET /tracer-study/mine (berdasarkan token login), bukan
