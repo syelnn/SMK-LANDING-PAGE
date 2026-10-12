@@ -396,7 +396,6 @@
   }
 
   /* daftar opsi */
-  .mt-page select::picker(select)::-webkit-scrollbar { display: none; }
   .mt-page select::picker(select) {
     box-sizing: border-box; inline-size: max(anchor-size(width), 168px); max-inline-size: calc(100vw - 24px);
     max-block-size: min(320px, calc(100% - 8px)); margin: 8px 0; padding: 6px; /* 100% = ruang kosong di bawah kotak -> tak pernah menimpa kotak */
