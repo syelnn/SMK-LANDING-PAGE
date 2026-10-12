@@ -9,19 +9,20 @@ datasource db {
 }
 
 model User {
-  id           Int          @id @default(autoincrement())
-  username     String       @unique @db.VarChar(100)
-  email        String       @unique @db.VarChar(200)
-  password     String       @db.VarChar(255)
-  fullName     String?      @map("full_name") @db.VarChar(200)
-  avatar       String?      @db.VarChar(255)
-  supabaseId   String?      @unique @map("supabase_id") @db.Uuid
-  role         String?      @default("viewer") @db.VarChar(50)
-  isActive     Int?         @default(1) @map("is_active")
-  lastLogin    DateTime?    @map("last_login") @db.Timestamp(6)
-  createdAt    DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt    DateTime?    @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
-  testimonials Testimonial?
+  id             Int             @id @default(autoincrement())
+  username       String          @unique @db.VarChar(100)
+  email          String          @unique @db.VarChar(200)
+  password       String          @db.VarChar(255)
+  fullName       String?         @map("full_name") @db.VarChar(200)
+  avatar         String?         @db.VarChar(255)
+  role           String?         @default("viewer") @db.VarChar(50)
+  isActive       Int?            @default(1) @map("is_active")
+  lastLogin      DateTime?       @map("last_login") @db.Timestamp(6)
+  createdAt      DateTime?       @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt      DateTime?       @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  supabaseId     String?         @unique @map("supabase_id") @db.Uuid
+  testimonials   Testimonial[]
+  tracer_studies tracer_studies?
 
   @@map("users")
 }
@@ -122,7 +123,6 @@ model MenuItem {
   sortOrder  Int?       @default(0) @map("sort_order")
   status     Int?       @default(1)
   type       String?    @default("section") @db.VarChar(50)
-  pageId     Int?       @map("page_id")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
   is_public  Boolean    @default(true)
@@ -155,23 +155,26 @@ model Testimonial {
   show      Int?      @default(0)
   createdAt DateTime? @default(now()) @map("created_at")
   updatedAt DateTime? @default(now()) @updatedAt @map("updated_at")
-  user_id   Int?      @unique
+  user_id   Int?
   users     User?     @relation(fields: [user_id], references: [id])
 
+  @@index([user_id])
   @@map("testimonials")
 }
 
 model Download {
-  id          Int       @id @default(autoincrement())
-  category    String    @db.VarChar(100)
-  title       String    @db.VarChar(255)
-  description String?
-  url         String    @db.VarChar(500)
-  fileSize    String?   @map("file_size") @db.VarChar(50)
-  sortOrder   Int?      @default(0) @map("sort_order")
-  show        Int?      @default(1)
-  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
-  updatedAt   DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  id            Int       @id @default(autoincrement())
+  category      String    @db.VarChar(100)
+  title         String    @db.VarChar(255)
+  description   String?
+  url           String    @db.VarChar(500)
+  fileSize      String?   @map("file_size") @db.VarChar(50)
+  sortOrder     Int?      @default(0) @map("sort_order")
+  show          Int?      @default(1)
+  createdAt     DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt     DateTime? @default(now()) @updatedAt @map("updated_at") @db.Timestamp(6)
+  public_id     String?   @db.VarChar(500)
+  resource_type String?   @db.VarChar(20)
 
   @@index([category], map: "idx_downloads_category")
   @@index([sortOrder], map: "idx_downloads_sort_order")
@@ -230,4 +233,39 @@ model footer_setting {
   tiktok_url     String?
   twitter_url    String?
   youtube_url    String?
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model industry_partners {
+  id         BigInt   @id @default(autoincrement())
+  name       String   @db.VarChar(255)
+  logo_url   String
+  is_active  Boolean? @default(true)
+  created_at DateTime @default(now())
+  updated_at DateTime @default(now())
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model tracer_studies {
+  id                 Int       @id @default(autoincrement())
+  full_name          String    @db.VarChar(200)
+  nisn               String    @unique @db.VarChar(20)
+  nik                String?   @db.VarChar(20)
+  birth_date         DateTime  @db.Date
+  domisili_kecamatan String    @db.VarChar(200)
+  phone              String    @db.VarChar(20)
+  angkatan           Int
+  approval_status    String    @default("pending") @db.VarChar(20)
+  user_id            Int?      @unique
+  reviewed_by        Int?
+  reviewed_at        DateTime?
+  created_at         DateTime  @default(now())
+  updated_at         DateTime  @default(now())
+  jurusan            String?   @db.VarChar(100)
+  status             String?   @db.VarChar(30)
+  detail_tempat      String?   @db.VarChar(200)
+  users              User?     @relation(fields: [user_id], references: [id])
+
+  @@index([approval_status, angkatan])
 }

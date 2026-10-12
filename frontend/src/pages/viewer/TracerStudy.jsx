@@ -1,9 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import {
   Search, Users, MapPin, Pencil, ChevronLeft, ChevronRight, AlertCircle, ClipboardList,
-  Briefcase, Store, GraduationCap, Laptop, TrendingUp, RotateCcw,
+  Briefcase, Store, GraduationCap, Laptop, TrendingUp, RotateCcw, ChevronDown, Check,
 } from 'lucide-react';
 import Navbar from '../../components/Navbar';
 import FooterViewer from './FooterViewer';
@@ -23,6 +23,16 @@ const KINDS = [
   { key: 'Pencari Kerja Aktif', color: '#f43f5e', Icon: Search },
 ];
 const KIND_MAP = Object.fromEntries(KINDS.map((k) => [k.key, k]));
+
+// Jurusan yang selalu tampil di dropdown (walau belum ada alumni terdata). Data dari API
+// dengan kode singkatan yang sama akan dipakai sebagai nilai filter-nya.
+const JURUSAN_DEFAULT = [
+  'Pengembangan Perangkat Lunak & Gim (PPLG/RPL)',
+  'Agribisnis Tanaman Pangan dan Hortikultura (ATPH)',
+  'Teknik dan Bisnis Sepeda Motor (TBSM)',
+];
+const codeOf = (name) => String(name || '').match(/\(([^)]+)\)\s*$/)?.[1] || '';
+const nameOf = (name) => String(name || '').replace(/\s*\([^)]*\)\s*$/, '');
 
 /* ---------- Diagram donat (SVG murni, tanpa library) ---------- */
 const Donut = ({ parts, total, active, onPick }) => {
@@ -68,6 +78,85 @@ const Donut = ({ parts, total, active, onPick }) => {
   );
 };
 
+/* ---------- Dropdown kustom (menggantikan <select> bawaan browser) ---------- */
+const Dropdown = ({ value, options, onChange, placeholder, ariaLabel, pill = false }) => {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
+  const selected = options.find((o) => o.value === value);
+  const isOn = value !== 'all';
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') setOpen(false); };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('touchstart', onDown);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('touchstart', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const pick = (v) => { onChange(v); setOpen(false); };
+
+  // Navigasi keyboard: panah atas/bawah memindahkan fokus antar opsi
+  const onMenuKey = (e) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const items = Array.from(boxRef.current.querySelectorAll('.ts-dd-item'));
+    const i = items.indexOf(document.activeElement);
+    const next = e.key === 'ArrowDown' ? (i + 1) % items.length : (i - 1 + items.length) % items.length;
+    items[next]?.focus();
+  };
+
+  return (
+    <div className={`ts-dd ${pill ? 'ts-dd-pill' : ''} ${open ? 'is-open' : ''} ${isOn ? 'is-set' : ''}`} ref={boxRef}>
+      <button
+        type="button"
+        className="ts-dd-trigger"
+        onClick={() => setOpen((o) => !o)}
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={ariaLabel}
+      >
+        {isOn && selected?.dot && <div className="ts-dd-dot" style={{ '--k': selected.dot }} aria-hidden="true" />}
+        <div className="ts-dd-value">{isOn && selected ? (selected.short || selected.label) : placeholder}</div>
+        <ChevronDown size={16} className="ts-dd-caret" aria-hidden="true" />
+      </button>
+
+      {open && (
+        <>
+        <div className="ts-dd-backdrop" onClick={() => setOpen(false)} aria-hidden="true" />
+        <ul className="ts-dd-menu" role="listbox" aria-label={ariaLabel} onKeyDown={onMenuKey}>
+          <li role="presentation" className="ts-dd-sheet-title" aria-hidden="true">{ariaLabel}</li>
+          {options.map((o) => {
+            const on = o.value === value;
+            return (
+              <li key={String(o.value)} role="presentation">
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={on}
+                  className={`ts-dd-item ${on ? 'is-on' : ''}`}
+                  onClick={() => pick(o.value)}
+                >
+                  {o.badge && <div className="ts-dd-badge" aria-hidden="true">{o.badge}</div>}
+                  <div className="ts-dd-text">{o.label}</div>
+                  {o.tag && <div className="ts-dd-tag">{o.tag}</div>}
+                  <div className="ts-dd-check" aria-hidden="true">{on && <Check size={16} />}</div>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+        </>
+      )}
+    </div>
+  );
+};
+
 const TracerStudy = () => {
   const navigate = useNavigate();
   const session = useMemo(() => getSession(), []);
@@ -104,17 +193,10 @@ const TracerStudy = () => {
   }, []);
 
   const current = data?.currentAngkatan || 10;
-  const range = data?.recentRange ?? 2;
   const items = data?.items || [];
   const stats = data?.stats || {
     total: 0, areas: 0, absorbedRate: 0, answered: 0, byStatus: [], byJurusan: [], byAngkatan: [],
   };
-
-  const chips = useMemo(() => {
-    const list = [];
-    for (let a = Math.max(1, current - range); a <= current; a++) list.push(a);
-    return list;
-  }, [current, range]);
 
   const parts = useMemo(
     () => KINDS.map((k) => ({
@@ -124,7 +206,6 @@ const TracerStudy = () => {
     [stats.byStatus]
   );
   const answeredTotal = parts.reduce((n, p) => n + p.count, 0);
-  const jurusanList = stats.byJurusan.map((j) => j.jurusan);
   const maxJurusan = Math.max(1, ...stats.byJurusan.map((j) => j.total));
   const maxAngkatan = Math.max(1, ...stats.byAngkatan.map((b) => b.count));
 
@@ -162,6 +243,35 @@ const TracerStudy = () => {
     : mine ? 'Status Data Saya' : 'Isi Data Mandiri';
 
   const labelOf = (a) => (a === current ? `Angkatan ${a} (tahun ini)` : `Angkatan ${a}`);
+
+  // Opsi dropdown: semua angkatan 1..current, status, dan jurusan (dengan jumlah alumni)
+  const angkatanOptions = [
+    ...Array.from({ length: current }, (_, i) => i + 1).map((a) => ({
+      value: a,
+      label: `Angkatan ${a}`,
+      tag: a === current ? 'Tahun ini' : '',
+      badge: String(a),
+      code: String(a),
+      meta: stats.byAngkatan.find((b) => b.angkatan === a)?.count || 0,
+    })),
+  ];
+  const statusOptions = [
+    { value: 'all', label: 'Semua status', Icon: Users },
+    ...parts.map((p) => ({ value: p.key, label: p.key, dot: p.color, Icon: p.Icon, meta: p.count })),
+  ];
+  const jurusanMap = new Map(JURUSAN_DEFAULT.map((n) => [codeOf(n) || n, n]));
+  stats.byJurusan.forEach((j) => jurusanMap.set(codeOf(j.jurusan) || j.jurusan, j.jurusan));
+  const jurusanOptions = [
+    { value: 'all', label: 'Semua jurusan', Icon: Users },
+    ...Array.from(jurusanMap.values()).map((n) => ({
+      value: n,
+      label: n,
+      text: nameOf(n),
+      code: codeOf(n),
+      short: codeOf(n) || n,
+      meta: stats.byJurusan.find((j) => j.jurusan === n)?.total || 0,
+    })),
+  ];
 
   const KindPill = ({ value }) => {
     const k = KIND_MAP[value];
@@ -310,11 +420,7 @@ const TracerStudy = () => {
                 <button type="button" className={`ts-chip ${angkatan === 'all' ? 'is-on' : ''}`} onClick={() => setAngkatan('all')}>
                   Semua
                 </button>
-                {chips.map((a) => (
-                  <button type="button" key={a} className={`ts-chip ${angkatan === a ? 'is-on' : ''}`} onClick={() => setAngkatan(a)}>
-                    {labelOf(a)}
-                  </button>
-                ))}
+                <Dropdown pill value={angkatan} options={angkatanOptions} onChange={setAngkatan} placeholder="Berdasarkan angkatan" ariaLabel="Berdasarkan angkatan" />
               </div>
 
               <div className="ts-row">
@@ -325,14 +431,8 @@ const TracerStudy = () => {
                     value={query} onChange={(e) => setQuery(e.target.value)} aria-label="Cari alumni"
                   />
                 </div>
-                <select className="ts-pick" value={kind} onChange={(e) => setKind(e.target.value)} aria-label="Filter status">
-                  <option value="all">Semua status</option>
-                  {KINDS.map((k) => <option key={k.key} value={k.key}>{k.key}</option>)}
-                </select>
-                <select className="ts-pick" value={jurusan} onChange={(e) => setJurusan(e.target.value)} aria-label="Filter jurusan">
-                  <option value="all">Semua jurusan</option>
-                  {jurusanList.map((j) => <option key={j} value={j}>{j}</option>)}
-                </select>
+                <Dropdown value={kind} options={statusOptions} onChange={setKind} placeholder="Semua status" ariaLabel="Filter status" />
+                <Dropdown value={jurusan} options={jurusanOptions} onChange={setJurusan} placeholder="Semua jurusan" ariaLabel="Filter jurusan" />
                 {hasFilter && (
                   <button type="button" className="ts-reset" onClick={resetAll}>
                     <RotateCcw size={14} aria-hidden="true" /> Reset
@@ -359,16 +459,18 @@ const TracerStudy = () => {
                       <th className="ts-col-no">No</th>
                       <th>Nama Lengkap</th>
                       <th>Jurusan</th>
+                      <th className="ts-col-ang">Angkatan</th>
+                      <th>Domisili</th>
                       <th>Status</th>
-                      <th>Detail Tempat</th>
+                      <th>Detail Tempat Kerja / Universitas</th>
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan="5" className="ts-empty">Memuat data alumni…</td></tr>
+                      <tr><td colSpan="7" className="ts-empty">Memuat data alumni…</td></tr>
                     ) : rows.length === 0 ? (
                       <tr>
-                        <td colSpan="5" className="ts-empty">
+                        <td colSpan="7" className="ts-empty">
                           {items.length === 0 ? 'Belum ada data alumni yang terverifikasi.' : 'Tidak ada data yang cocok dengan filter atau pencarian.'}
                         </td>
                       </tr>
@@ -378,9 +480,10 @@ const TracerStudy = () => {
                           <td className="ts-col-no">{(safePage - 1) * PAGE_SIZE + i + 1}</td>
                           <td>
                             <div className="ts-person">{r.fullName}</div>
-                            <div className="ts-minor">Angkatan {r.angkatan} · {r.domicile}</div>
                           </td>
                           <td><div>{r.jurusan || <div className="ts-muted">Belum diisi</div>}</div></td>
+                          <td className="ts-col-ang"><div>{r.angkatan}</div></td>
+                          <td><div>{r.domicile || '—'}</div></td>
                           <td><KindPill value={r.workStatus} /></td>
                           <td>{r.detailTempat ? <div>{r.detailTempat}</div> : <div className="ts-muted">—</div>}</td>
                         </tr>
@@ -398,19 +501,27 @@ const TracerStudy = () => {
                     {items.length === 0 ? 'Belum ada data alumni yang terverifikasi.' : 'Tidak ada data yang cocok dengan filter atau pencarian.'}
                   </div>
                 )}
-                {rows.map((r) => (
-                  <div key={r.id} className="ts-tile">
-                    <div className="ts-tile-top">
-                      <div>
+                {rows.map((r) => {
+                  const k = KIND_MAP[r.workStatus];
+                  const PlaceIcon = k?.Icon || Briefcase;
+                  return (
+                    <article key={r.id} className="ts-tile" style={k ? { '--k': k.color } : undefined}>
+                      <div className="ts-tile-top">
+                        <div className="ts-initial" aria-hidden="true">{String(r.fullName || '?').trim().charAt(0).toUpperCase()}</div>
                         <div className="ts-person">{r.fullName}</div>
-                        <div className="ts-minor">Angkatan {r.angkatan} · {r.domicile}</div>
                       </div>
-                      <KindPill value={r.workStatus} />
-                    </div>
-                    <div className="ts-kv"><div>Jurusan</div><div>{r.jurusan || '—'}</div></div>
-                    {r.detailTempat && <div className="ts-kv"><div>Tempat</div><div>{r.detailTempat}</div></div>}
-                  </div>
-                ))}
+                      <div className="ts-pills">
+                        <KindPill value={r.workStatus} />
+                        <div className="ts-gen-pill">Angkatan {r.angkatan}</div>
+                      </div>
+                      <div className="ts-facts">
+                        <div className="ts-fact"><GraduationCap size={17} aria-hidden="true" /><div>{r.jurusan || 'Jurusan belum diisi'}</div></div>
+                        <div className="ts-fact"><MapPin size={17} aria-hidden="true" /><div>{r.domicile || '—'}</div></div>
+                        {r.detailTempat && <div className="ts-fact"><PlaceIcon size={17} aria-hidden="true" /><div>{r.detailTempat}</div></div>}
+                      </div>
+                    </article>
+                  );
+                })}
               </div>
 
               {!loading && filtered.length > 0 && (

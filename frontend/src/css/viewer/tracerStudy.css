@@ -17,7 +17,7 @@
   font-family: var(--theme-font, 'Plus Jakarta Sans', sans-serif);
 }
 .ts-main { flex: 1; padding: 110px 24px 72px; }
-.ts-wrap { max-width: 1080px; margin: 0 auto; }
+.ts-wrap { max-width: 1200px; margin: 0 auto; }
 
 /* ---------------- HEADER ---------------- */
 .ts-head { text-align: center; margin-bottom: 34px; }
@@ -152,13 +152,13 @@
 .ts-controls { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
 .ts-controls-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; flex: 1; }
 
-.ts-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ts-chips { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .ts-chip {
-  padding: 8px 16px; margin: 0; border-radius: 999px;
+  padding: 8px 18px; margin: 0; border-radius: 999px;
   border: 1.5px solid var(--compreng-border, #e2e8f0);
   background: var(--compreng-surface, #fff);
   color: var(--compreng-text, #0f172a);
-  font-family: inherit; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  font-family: inherit; font-size: 13.5px; font-weight: 600; line-height: 1.4; cursor: pointer;
   transition: border-color .18s ease, background-color .18s ease, color .18s ease;
 }
 .ts-chip:hover { border-color: var(--compreng-accent, #2563eb); }
@@ -175,10 +175,123 @@
   display: block; width: 100%; padding: 11px 14px 11px 40px;
   font-size: 14.5px; line-height: 1.4; border-radius: 12px !important;
 }
-.ts-page .ts-pick.ts-pick {
-  flex: 0 1 190px; min-width: 0; padding: 11px 12px; font-size: 14px; line-height: 1.4;
-  border-radius: 12px !important; cursor: pointer; text-overflow: ellipsis;
+/* ---- dropdown kustom ---- */
+.ts-dd { position: relative; flex: 0 1 200px; min-width: 0; }
+.ts-dd.is-open { z-index: 40; }
+.ts-dd-trigger {
+  display: flex; align-items: center; gap: 9px; width: 100%; margin: 0; padding: 11px 12px 11px 14px;
+  border-radius: 12px; cursor: pointer; text-align: left;
+  border: 1.5px solid var(--compreng-border, #e2e8f0);
+  background: var(--compreng-surface, #fff); color: var(--compreng-text, #0f172a);
+  font-family: inherit; font-size: 14px; font-weight: 600; line-height: 1.4;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
 }
+.ts-dd-trigger:hover { border-color: var(--compreng-accent, #2563eb); }
+.ts-dd.is-open .ts-dd-trigger {
+  border-color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--compreng-accent, #2563eb) 16%, transparent);
+}
+.ts-dd.is-set .ts-dd-trigger {
+  border-color: var(--compreng-accent, #2563eb);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 9%, var(--compreng-surface, #fff));
+}
+.ts-dd-value { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-dd-caret { flex: none; color: var(--compreng-text-secondary, #64748b); transition: transform .25s cubic-bezier(.16, 1, .3, 1); }
+.ts-dd.is-open .ts-dd-caret { transform: rotate(180deg); color: var(--compreng-accent, #2563eb); }
+.ts-dd-dot { flex: none; width: 9px; height: 9px; border-radius: 50%; background: var(--compreng-accent, #2563eb); }
+
+/* varian pil: sebaris dengan chip "Semua" */
+.ts-dd.ts-dd-pill { flex: none; }
+.ts-dd-pill .ts-dd-trigger { width: auto; padding: 8px 14px 8px 18px; border-radius: 999px; font-size: 13.5px; }
+.ts-dd-pill .ts-dd-value { flex: none; overflow: visible; }
+.ts-dd-pill.is-set .ts-dd-trigger {
+  background: var(--compreng-accent, #2563eb); border-color: var(--compreng-accent, #2563eb);
+  color: var(--compreng-accent-text, #fff);
+}
+.ts-dd-pill.is-set .ts-dd-caret { color: inherit; }
+/* ---- menu opsi (gaya sama dengan filter Tenaga Pengajar: popover di desktop, bottom sheet di HP) ----
+   Selector opsi sengaja diperkuat (class diulang) karena theme.css punya aturan rakus
+   [class*="-item"] { ... !important } yang kalau tidak dikalahkan akan menimpa warna & latar opsi. */
+.ts-dd-pill .ts-dd-menu { min-width: 220px; }
+.ts-dd-menu {
+  position: absolute; top: calc(100% + 6px); left: 0; z-index: 61;
+  min-width: max(100%, 200px); width: max-content; max-width: min(300px, 90vw); max-height: min(280px, 60vh);
+  margin: 0; padding: 6px; box-sizing: border-box; list-style: none;
+  overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+  background: var(--compreng-surface, #fff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  border-radius: 14px;
+  box-shadow: 0 18px 40px -14px rgba(0, 0, 0, .3), 0 2px 6px rgba(0, 0, 0, .06);
+  transform-origin: top left;
+  animation: ts-dd-in .16s ease;
+}
+@keyframes ts-dd-in {
+  from { opacity: 0; transform: translateY(-4px) scale(.98); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes ts-dd-sheet-in { from { transform: translateY(100%); } to { transform: none; } }
+.ts-dd-menu li { margin: 0; padding: 0; list-style: none; }
+.ts-page .ts-dd .ts-dd-menu li button.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  width: 100%; height: auto !important; min-height: 0 !important; margin: 0;
+  padding: 8px 10px !important;
+  border: 0 !important; border-radius: 9px !important;
+  background: transparent !important; background-color: transparent !important; box-shadow: none !important;
+  color: var(--compreng-text, #0f172a) !important;
+  font-family: inherit; font-size: 13.5px !important; font-weight: 500; line-height: 1.35;
+  text-align: left; cursor: pointer; transition: background-color .12s ease;
+}
+.ts-page .ts-dd .ts-dd-menu li button.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item:hover,
+.ts-page .ts-dd .ts-dd-menu li button.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item:focus-visible {
+  outline: none; background: var(--compreng-surface-soft, #f1f5f9) !important; background-color: var(--compreng-surface-soft, #f1f5f9) !important;
+}
+.ts-page .ts-dd .ts-dd-menu li button.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.is-on {
+  color: var(--compreng-accent, #2563eb) !important; font-weight: 600;
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 10%, transparent) !important;
+  background-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 10%, transparent) !important;
+}
+.ts-dd-text { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.ts-dd-check { flex: none; display: grid; place-items: center; width: 16px; height: 16px; color: currentColor; }
+
+/* lapisan transparan penangkap klik di luar menu (sama seperti filter Tenaga Pengajar) */
+.ts-dd-backdrop { position: fixed; inset: 0; z-index: 60; background: transparent; }
+/* judul menu hanya untuk bottom sheet di HP; di desktop disembunyikan */
+.ts-dd-menu li.ts-dd-sheet-title,
+.ts-dd-menu::before { display: none; }
+.ts-dd-menu { scrollbar-color: var(--compreng-border, #cbd5e1) transparent; }
+.ts-dd-menu::-webkit-scrollbar { width: 6px; }
+.ts-dd-menu::-webkit-scrollbar-thumb { background: var(--compreng-border, #cbd5e1); border-radius: 999px; }
+.ts-dd-menu::-webkit-scrollbar-track { background: transparent; }
+
+/* ---- menu angkatan: daftar vertikal modern ---- */
+.ts-dd-pill .ts-dd-menu { min-width: 272px; max-height: min(456px, 70vh); padding: 8px; border-radius: 16px; }
+.ts-dd-pill .ts-dd-menu li.ts-dd-sheet-title {
+  display: block; padding: 6px 10px 8px; margin-bottom: 4px;
+  font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--compreng-text-secondary, #64748b);
+  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+}
+.ts-dd-pill .ts-dd-menu li + li { margin-top: 2px; }
+.ts-dd-pill .ts-dd-text { flex: 1; }
+.ts-dd-badge {
+  flex: none; display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px;
+  font-size: 12.5px; font-weight: 700; font-variant-numeric: tabular-nums;
+  color: var(--compreng-text-secondary, #64748b);
+  background: var(--compreng-surface-soft, #f1f5f9);
+  transition: background-color .15s ease, color .15s ease;
+}
+.ts-dd-item:hover .ts-dd-badge, .ts-dd-item:focus-visible .ts-dd-badge {
+  color: var(--compreng-accent, #2563eb);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 14%, transparent);
+}
+.ts-dd-item.is-on .ts-dd-badge { color: var(--compreng-accent-text, #fff); background: var(--compreng-accent, #2563eb); }
+.ts-dd-tag {
+  flex: none; padding: 2px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; line-height: 1.5; letter-spacing: .01em;
+  color: var(--compreng-accent, #2563eb);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent);
+}
+
 .ts-reset {
   display: inline-flex; align-items: center; gap: 6px; margin: 0; padding: 10px 14px;
   border-radius: 12px; cursor: pointer;
@@ -199,8 +312,7 @@
 .ts-cta:hover { filter: brightness(1.08); transform: translateY(-1px); }
 
 .ts-page button:focus-visible,
-.ts-page .ts-find-input:focus-visible,
-.ts-page .ts-pick:focus-visible { outline: 3px solid var(--compreng-accent, #2563eb); outline-offset: 2px; }
+.ts-page .ts-find-input:focus-visible { outline: 3px solid var(--compreng-accent, #2563eb); outline-offset: 2px; }
 
 /* ---------------- TABEL ---------------- */
 .ts-sheet {
@@ -209,22 +321,26 @@
   border-radius: 16px; overflow: hidden;
 }
 .ts-scroll { overflow-x: auto; }
-.ts-grid { width: 100%; min-width: 640px; border-collapse: collapse; }
+.ts-grid { width: 100%; min-width: 1100px; border-collapse: collapse; }
 .ts-grid th {
-  padding: 13px 18px; text-align: left;
+  padding: 13px 14px; text-align: left; white-space: nowrap;
   font-size: 12.5px; font-weight: 700; letter-spacing: .03em; text-transform: uppercase;
   color: var(--compreng-text-secondary, #475569);
   background: var(--compreng-surface-soft, #f1f5f9);
   border-bottom: 1px solid var(--compreng-border, #e2e8f0);
 }
 .ts-grid td {
-  padding: 14px 18px; vertical-align: middle;
+  padding: 14px; vertical-align: middle;
   font-size: 14px; line-height: 1.45; color: var(--compreng-text, #0f172a);
   border-bottom: 1px solid var(--compreng-border, #e2e8f0);
 }
 .ts-grid tbody tr:last-child td { border-bottom: 0; }
 .ts-grid tbody tr:hover td { background: var(--compreng-surface-soft, #f1f5f9); }
+.ts-grid .ts-col-ang { width: 96px; text-align: center; }
 .ts-grid .ts-col-no { width: 56px; text-align: center; color: var(--compreng-text-secondary, #475569); }
+.ts-grid .ts-person { white-space: nowrap; }
+.ts-grid td:nth-child(5) { white-space: nowrap; }
+.ts-grid td:last-child { min-width: 220px; }
 .ts-person { font-weight: 700; color: var(--compreng-text, #0f172a); }
 .ts-minor { margin-top: 2px; font-size: 12.5px; color: var(--compreng-text-secondary, #475569); }
 .ts-muted { font-size: 13px; color: var(--compreng-text-secondary, #64748b); }
@@ -295,11 +411,79 @@
   .ts-meter-name { grid-column: 1; }
   .ts-meter-num { grid-column: 2; grid-row: 1; }
   .ts-meter-track { grid-column: 1 / -1; grid-row: 2; }
-  .ts-row > .ts-find, .ts-row > .ts-pick { flex: 1 1 100%; }
+  .ts-row > .ts-find { flex: 1 1 100%; }
+  .ts-row > .ts-dd { flex: 1 1 calc(50% - 5px); }
+  .ts-row .ts-dd-trigger { padding: 11px 10px 11px 12px; }
+  /* menu jadi bottom sheet di HP (redup layar lewat box-shadow raksasa, tanpa elemen tambahan) */
+  .ts-dd.is-open { z-index: auto; }
+  .ts-dd-menu, .ts-dd-pill .ts-dd-menu {
+    position: fixed; top: auto; left: 0; right: 0; bottom: 0; z-index: 1300;
+    width: auto; min-width: 0; max-width: none; max-height: 65vh;
+    padding: 8px 10px calc(14px + env(safe-area-inset-bottom, 0px));
+    border-width: 1px 0 0; border-radius: 20px 20px 0 0;
+    box-shadow: 0 0 0 100vmax rgba(0, 0, 0, .4);
+    transform-origin: bottom; animation: ts-dd-sheet-in .22s ease;
+  }
+  .ts-dd-menu::before {
+    content: ""; display: block; width: 36px; height: 4px; margin: 2px auto 8px;
+    border-radius: 999px; background: var(--compreng-border, #e2e8f0);
+  }
+  .ts-dd-menu li.ts-dd-sheet-title {
+    display: block; padding: 2px 10px 8px;
+    font-size: 13px; font-weight: 700; color: var(--compreng-text, #0f172a);
+  }
+  .ts-page .ts-dd .ts-dd-menu li button.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item.ts-dd-item { padding: 11px 12px !important; font-size: 14px !important; }
   .ts-reset { width: 100%; justify-content: center; }
   .ts-scroll { display: none; }
   .ts-mlist { display: block; }
-  .ts-pager { justify-content: center; }
+  /* daftar kartu alumni: tiap alumni satu kartu, tanpa pembungkus tabel */
+  .ts-sheet { background: transparent; border: 0; border-radius: 0; overflow: visible; }
+  .ts-tile {
+    position: relative; margin: 0 0 12px; padding: 16px 16px 16px 20px;
+    background: var(--compreng-surface, #fff);
+    border: 1px solid var(--compreng-border, #e2e8f0); border-radius: 18px;
+    box-shadow: 0 8px 20px -14px rgba(0, 0, 0, .28);
+  }
+  .ts-tile:last-child { border-bottom: 1px solid var(--compreng-border, #e2e8f0); }
+  .ts-tile::before {
+    content: ""; position: absolute; left: 0; top: 16px; bottom: 16px; width: 4px;
+    border-radius: 0 4px 4px 0; background: var(--compreng-accent, #2563eb);
+  }
+  .ts-tile-top { align-items: center; justify-content: flex-start; gap: 12px; margin-bottom: 12px; }
+  .ts-initial {
+    flex: none; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%;
+    font-size: 18px; font-weight: 800; line-height: 1;
+    color: var(--compreng-accent, #2563eb);
+    background: color-mix(in srgb, var(--compreng-accent, #2563eb) 16%, var(--compreng-surface, #fff));
+    border: 1.5px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 35%, transparent);
+  }
+  .ts-tile .ts-person { font-size: 16px; line-height: 1.3; min-width: 0; overflow-wrap: anywhere; }
+  .ts-pills { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 12px; }
+  .ts-gen-pill {
+    display: inline-flex; align-items: center; padding: 4px 11px; border-radius: 999px;
+    font-size: 12.5px; font-weight: 700; line-height: 1.4;
+    color: var(--compreng-text-secondary, #475569);
+    background: var(--compreng-surface-soft, #f1f5f9);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+  }
+  .ts-facts {
+    padding: 2px 14px; border-radius: 14px;
+    background: var(--compreng-surface-soft, #f1f5f9);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+  }
+  .ts-fact { display: flex; align-items: flex-start; gap: 11px; padding: 11px 0; font-size: 14px; line-height: 1.45; color: var(--compreng-text, #0f172a); }
+  .ts-fact + .ts-fact { border-top: 1px solid var(--compreng-border, #e2e8f0); }
+  .ts-fact > svg { flex: none; margin-top: 2px; color: var(--compreng-accent, #2563eb); }
+  .ts-fact > div { min-width: 0; overflow-wrap: anywhere; }
+  .ts-mempty {
+    background: var(--compreng-surface, #fff); border: 1px solid var(--compreng-border, #e2e8f0); border-radius: 18px;
+  }
+  .ts-pager {
+    flex-direction: column; justify-content: center; gap: 10px; padding: 12px 16px; margin-top: 4px;
+    background: var(--compreng-surface, #fff);
+    border: 1px solid var(--compreng-border, #e2e8f0); border-radius: 16px;
+  }
+  .ts-pager-info { text-align: center; }
 }
 @media (max-width: 400px) {
   .ts-kpis { grid-template-columns: 1fr; }
@@ -307,6 +491,7 @@
   .ts-donut { width: 148px; height: 148px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .ts-cta, .ts-meter-fill, .ts-ring-fill, .ts-stack, .ts-donut-seg { transition: none; }
+  .ts-dd-menu, .ts-dd-item { animation: none !important; transition: none; }
+  .ts-dd-caret, .ts-cta, .ts-meter-fill, .ts-ring-fill, .ts-stack, .ts-donut-seg { transition: none; }
   .ts-cta:hover { transform: none; }
 }

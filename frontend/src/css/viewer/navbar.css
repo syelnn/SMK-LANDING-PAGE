@@ -1136,3 +1136,27 @@ nav.viewer-navbar li.nv-user .nv-user__chevron { display: none; }
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   SUBMENU "LAINNYA" BISA DI-SCROLL (scrollbar disembunyikan)
+   ========================================================================== */
+@media (min-width: 869px) {
+  .viewer-navbar .dropdown-menu {
+    max-height: max(220px, calc(100vh - 150px));
+    max-height: max(220px, calc(100dvh - 150px));
+    overflow-x: hidden !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .viewer-navbar .dropdown-menu::-webkit-scrollbar { display: none; width: 0; height: 0; }
+}
+@media (max-width: 868px) {
+  nav.viewer-navbar .navbar-menu {
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  nav.viewer-navbar .navbar-menu::-webkit-scrollbar { display: none; width: 0; height: 0; }
+}
