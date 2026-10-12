@@ -244,6 +244,20 @@ const TracerStudy = () => {
 
   const labelOf = (a) => (a === current ? `Angkatan ${a} (tahun ini)` : `Angkatan ${a}`);
 
+  // ---- Edit data: HANYA untuk pemilik data ----
+  // Kepemilikan ditentukan server lewat GET /tracer-study/mine (berdasarkan token login), bukan
+  // dari input pengguna. Baris lain tidak pernah mendapat tombol Edit. Admin/editor mengelola
+  // data lewat dashboard, jadi tidak ikut di sini.
+  const isMine = (r) =>
+    !staff && !!session && (
+      (mine?.id != null && String(r.id) === String(mine.id)) ||
+      (r.userId != null && String(r.userId) === String(session.id))
+    );
+  const showActionCol = !staff && items.some(isMine);
+  const colCount = showActionCol ? 8 : 7;
+  const goEdit = () => navigate('/tracer-study/isi?edit=1');
+  const mineWaiting = !staff && !!mine && mine.approvalStatus !== 'approved'; // belum tampil di tabel publik
+
   // Opsi dropdown: semua angkatan 1..current, status, dan jurusan (dengan jumlah alumni)
   const angkatanOptions = [
     ...Array.from({ length: current }, (_, i) => i + 1).map((a) => ({
@@ -446,6 +460,23 @@ const TracerStudy = () => {
             </button>
           </section>
 
+          {/* ===== DATA SAYA (belum tampil di tabel publik: menunggu / ditolak) ===== */}
+          {mineWaiting && (
+            <div className={`ts-mine ${mine.approvalStatus === 'rejected' ? 'is-no' : 'is-wait'}`} role="status">
+              <div className="ts-mine-txt">
+                <div className="ts-mine-head">Data milikmu: {mine.approvalStatus === 'rejected' ? 'ditolak admin' : 'menunggu verifikasi'}</div>
+                <div className="ts-mine-sub">
+                  {mine.approvalStatus === 'rejected'
+                    ? 'Perbaiki datanya lalu kirim ulang agar bisa tampil di tabel.'
+                    : 'Belum tampil di tabel. Kamu masih bisa mengubah datanya selama menunggu.'}
+                </div>
+              </div>
+              <button type="button" className="ts-edit" onClick={goEdit}>
+                <Pencil size={14} aria-hidden="true" /> {mine.approvalStatus === 'rejected' ? 'Perbaiki' : 'Edit'}
+              </button>
+            </div>
+          )}
+
           {/* ===== TABEL ===== */}
           {error && <div className="ts-alert" role="alert"><AlertCircle size={20} aria-hidden="true" /> {error}</div>}
 
@@ -463,14 +494,15 @@ const TracerStudy = () => {
                       <th>Domisili</th>
                       <th>Status</th>
                       <th>Detail Tempat Kerja / Universitas</th>
+                      {showActionCol && <th className="ts-col-act">Aksi</th>}
                     </tr>
                   </thead>
                   <tbody>
                     {loading ? (
-                      <tr><td colSpan="7" className="ts-empty">Memuat data alumni…</td></tr>
+                      <tr><td colSpan={colCount} className="ts-empty">Memuat data alumni…</td></tr>
                     ) : rows.length === 0 ? (
                       <tr>
-                        <td colSpan="7" className="ts-empty">
+                        <td colSpan={colCount} className="ts-empty">
                           {items.length === 0 ? 'Belum ada data alumni yang terverifikasi.' : 'Tidak ada data yang cocok dengan filter atau pencarian.'}
                         </td>
                       </tr>
@@ -480,12 +512,22 @@ const TracerStudy = () => {
                           <td className="ts-col-no">{(safePage - 1) * PAGE_SIZE + i + 1}</td>
                           <td>
                             <div className="ts-person">{r.fullName}</div>
+                            {isMine(r) && <div className="ts-own">Data saya</div>}
                           </td>
                           <td><div>{r.jurusan || <div className="ts-muted">Belum diisi</div>}</div></td>
                           <td className="ts-col-ang"><div>{r.angkatan}</div></td>
                           <td><div>{r.domicile || '—'}</div></td>
                           <td><KindPill value={r.workStatus} /></td>
                           <td>{r.detailTempat ? <div>{r.detailTempat}</div> : <div className="ts-muted">—</div>}</td>
+                          {showActionCol && (
+                            <td className="ts-col-act">
+                              {isMine(r) && (
+                                <button type="button" className="ts-edit" onClick={goEdit} aria-label="Edit data saya">
+                                  <Pencil size={14} aria-hidden="true" /> Edit
+                                </button>
+                              )}
+                            </td>
+                          )}
                         </tr>
                       ))
                     )}
@@ -510,6 +552,7 @@ const TracerStudy = () => {
                         <div className="ts-initial" aria-hidden="true">{String(r.fullName || '?').trim().charAt(0).toUpperCase()}</div>
                         <div className="ts-person">{r.fullName}</div>
                       </div>
+                      {isMine(r) && <div className="ts-own ts-own-tile">Data saya</div>}
                       <div className="ts-pills">
                         <KindPill value={r.workStatus} />
                         <div className="ts-gen-pill">Angkatan {r.angkatan}</div>
@@ -519,6 +562,11 @@ const TracerStudy = () => {
                         <div className="ts-fact"><MapPin size={17} aria-hidden="true" /><div>{r.domicile || '—'}</div></div>
                         {r.detailTempat && <div className="ts-fact"><PlaceIcon size={17} aria-hidden="true" /><div>{r.detailTempat}</div></div>}
                       </div>
+                      {isMine(r) && (
+                        <button type="button" className="ts-edit ts-edit-wide" onClick={goEdit}>
+                          <Pencil size={15} aria-hidden="true" /> Edit data saya
+                        </button>
+                      )}
                     </article>
                   );
                 })}

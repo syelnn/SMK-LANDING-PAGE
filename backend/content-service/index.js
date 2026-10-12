@@ -948,6 +948,47 @@ app.post('/api/tracer-study', verifyToken, async (req, res) => {
   }
 });
 
+// 3b. VIEWER/ALUMNI: EDIT data milik sendiri. Kepemilikan HANYA dari token login (req.user.id),
+//     bukan dari id di URL/body, jadi user lain tidak mungkin mengubah data orang lain.
+//     Data yang sudah disetujui tetap tampil; kalau NISN diganti, wajib diverifikasi ulang.
+//     (Harus didaftarkan SEBELUM route PUT /api/tracer-study/:id milik staff.)
+app.put('/api/tracer-study/mine', verifyToken, async (req, res) => {
+  try {
+    if (['admin', 'editor'].includes(req.user.role)) {
+      return res.status(403).json({ success: false, message: 'Admin/editor mengelola data lewat dashboard.' });
+    }
+    const userId = parseInt(req.user.id);
+    const existing = await prisma.tracerEntry.findUnique({ where: { userId } });
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Kamu belum mengisi data Tracer Study.' });
+    }
+
+    const parsed = parseTracerBody(req.body);
+    if (parsed.error) return res.status(400).json({ success: false, message: parsed.error });
+
+    const data = { ...parsed.data };
+    const needReview = existing.approvalStatus !== 'approved' || data.nisn !== existing.nisn;
+    if (needReview) {
+      data.approvalStatus = 'pending';
+      data.reviewedBy = null;
+      data.reviewedAt = null;
+    }
+
+    const saved = await prisma.tracerEntry.update({ where: { id: existing.id }, data });
+    res.json({
+      success: true,
+      message: needReview ? 'Perubahan tersimpan dan menunggu verifikasi admin.' : 'Perubahan tersimpan.',
+      data: saved,
+    });
+  } catch (error) {
+    if (error.code === 'P2002') {
+      return res.status(409).json({ success: false, message: 'NISN ini sudah terdaftar di Tracer Study.' });
+    }
+    console.error('Error edit tracer mine:', error);
+    res.status(500).json({ success: false, message: 'Terjadi kesalahan pada server.' });
+  }
+});
+
 // 4. ADMIN/EDITOR: semua data (lengkap, termasuk NISN, NIK, tanggal lahir & no HP)
 app.get('/api/tracer-study', ...requireStaff, async (req, res) => {
   try {
@@ -993,6 +1034,40 @@ app.put('/api/tracer-study/:id/reject', ...requireStaff, async (req, res) => {
     if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
     console.error('Error reject tracer:', error);
     res.status(500).json({ success: false, message: 'Gagal menolak data' });
+  }
+});
+
+// 6b. ADMIN/EDITOR: EDIT data. Hanya nama, jurusan & angkatan yang boleh diubah.
+//     Field lain (NISN, NIK, tanggal lahir, domisili, no HP, status kegiatan, approval) DIABAIKAN
+//     walaupun dikirim di body, karena `data` di bawah disusun manual dari 3 field saja.
+app.put('/api/tracer-study/:id', ...requireStaff, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    if (!Number.isInteger(id)) return res.status(400).json({ success: false, message: 'ID tidak valid.' });
+
+    const fullName = squash(req.body?.fullName);
+    const jurusan = squash(req.body?.jurusan);
+    const angkatan = parseInt(req.body?.angkatan, 10);
+
+    if (fullName.length < 3 || fullName.length > 200) {
+      return res.status(400).json({ success: false, message: 'Nama lengkap wajib diisi (3–200 karakter).' });
+    }
+    if (jurusan.length < 2 || jurusan.length > 100) {
+      return res.status(400).json({ success: false, message: 'Jurusan (program keahlian) wajib dipilih.' });
+    }
+    if (!Number.isInteger(angkatan) || angkatan < 1 || angkatan > TRACER_CURRENT_ANGKATAN) {
+      return res.status(400).json({ success: false, message: `Angkatan harus antara 1 dan ${TRACER_CURRENT_ANGKATAN}.` });
+    }
+
+    const updated = await prisma.tracerEntry.update({
+      where: { id },
+      data: { fullName, jurusan, angkatan },
+    });
+    res.json({ success: true, message: 'Data diperbarui.', data: updated });
+  } catch (error) {
+    if (error.code === 'P2025') return res.status(404).json({ success: false, message: 'Data tidak ditemukan.' });
+    console.error('Error edit tracer:', error);
+    res.status(500).json({ success: false, message: 'Gagal memperbarui data' });
   }
 });
 
