@@ -1,28 +1,18 @@
-/* ==========================================================================
-   src/css/managetracerstudy.css — moderasi Tracer Study (admin/editor)
-   Memakai token tema (--compreng-*) => rapi di light / dark / system / custom.
+/* src/css/managetracerstudy.css  */
 
-   Warna status (hijau/merah/kuning) TIDAK di-hardcode per tema: teksnya dicampur dengan
-   --compreng-text (color-mix), jadi otomatis gelap di tema terang dan terang di tema gelap,
-   termasuk tema custom.
-
-   Prefix "mt-"; menghindari substring yang ditarget theme.css (badge, status, btn, card,
-   tab, table, search, filter, title, icon, modal, menu, item, panel, box, ...).
-   Teks di <td> pakai <div> (theme.css mengecat "td > span" sebagai badge).
-
-   Tata letak data (container query pada .mt-data, jadi ikut lebar konten sebenarnya,
-   bukan lebar layar -> aman walau sidebar terbuka / mini):
-     >= 800px  : tabel 11 kolom, muat penuh, TANPA scroll horizontal
-     640-799px : kartu 2 kolom
-     < 640px   : kartu 1 kolom
-   ========================================================================== */
-
-.mt-page { padding: 4px 0 40px; }
+.mt-page { --mt-ctl-h: 34px; --mt-ctl-font: 12px; padding: 4px 0 40px; }
 
 .mt-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px; }
-.mt-page .mt-h { margin: 0 0 3px; font-size: 20px; font-weight: 800; letter-spacing: -.02em; color: var(--compreng-text, #0f172a) !important; }
-.mt-sub { max-width: 640px; font-size: 12.5px; line-height: 1.55; color: var(--compreng-text-secondary, #475569); }
-.mt-add { flex: none; display: inline-flex; align-items: center; gap: 6px; }
+.mt-page .mt-h { margin: 0 0 3px; font-size: 19px; font-weight: 800; letter-spacing: -.02em; color: var(--compreng-text, #0f172a) !important; }
+.mt-sub { max-width: 640px; font-size: 12px; line-height: 1.5; color: var(--compreng-text-secondary, #475569); }
+.mt-page .mt-add.mt-add {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  width: auto; height: var(--mt-ctl-h); min-height: 0; margin: 0; padding: 0 12px;
+  font-size: var(--mt-ctl-font); font-weight: 600; line-height: 1; white-space: nowrap;
+  border-radius: 10px !important; box-shadow: none !important;
+}
+.mt-page .mt-add.mt-add:hover { transform: none; filter: brightness(1.06); }
+.mt-page .mt-add.mt-add:active { transform: scale(.97); }
 
 .mt-notice {
   display: flex; align-items: center; gap: 8px; margin-bottom: 14px; padding: 10px 14px;
@@ -48,10 +38,10 @@
 }
 .mt-page .mt-seg .mt-seg-pick {
   display: inline-flex; align-items: center; gap: 8px; margin: 0;
-  padding: 6px 12px; border-radius: 9px; cursor: pointer;
+  padding: 5px 11px; border-radius: 9px; cursor: pointer;
   border: 1px solid transparent; background: transparent;
   color: var(--compreng-text, #0f172a);
-  font-family: inherit; font-size: 12.5px; font-weight: 600; line-height: 1.2;
+  font-family: inherit; font-size: 12px; font-weight: 600; line-height: 1.2;
   transition: background-color .18s ease, color .18s ease, box-shadow .18s ease;
 }
 .mt-page .mt-seg .mt-seg-pick:hover:not(.is-on) { background: color-mix(in srgb, var(--compreng-surface, #fff) 70%, transparent); }
@@ -67,18 +57,48 @@
 }
 .mt-seg-pick.is-on .mt-seg-n { background: color-mix(in srgb, var(--compreng-accent-text, #fff) 22%, transparent); color: var(--compreng-accent-text, #fff); }
 
-/* ---- pencarian + filter: satu baris, tinggi sama ---- */
-.mt-bar { display: grid; grid-template-columns: minmax(0, 1fr) 170px 170px; gap: 8px; margin-bottom: 12px; }
-.mt-find { position: relative; min-width: 0; }
-.mt-find-ico { position: absolute; left: 12px; font-size: 13px; top: 50%; transform: translateY(-50%); color: var(--compreng-text-secondary, #64748b); pointer-events: none; }
-.mt-page .mt-find .mt-find-input.mt-find-input {
-  display: block; width: 100%; box-sizing: border-box; height: 38px;
-  padding: 0 12px 0 36px; font-size: 13px; border-radius: 10px !important;
+/* ---- pencarian + filter: kotak putih ber-border (sama seperti Tenaga Pengajar) ---- */
+.mt-bar { display: grid; grid-template-columns: minmax(0, 1fr) 170px 170px; gap: 8px; margin-bottom: 14px; }
+.mt-find {
+  display: flex; align-items: center; gap: 8px; min-width: 0; height: var(--mt-ctl-h); padding: 0 11px; box-sizing: border-box;
+  background: var(--compreng-surface, #fff);
+  border: 1px solid var(--compreng-border, #e2e8f0); border-radius: 10px;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow, rgba(15, 23, 42, .2)) 35%, transparent);
+  transition: border-color .15s ease, box-shadow .15s ease;
 }
+.mt-find:hover { border-color: color-mix(in srgb, var(--compreng-text-secondary, #64748b) 45%, var(--compreng-border, #e2e8f0)); }
+.mt-find:focus-within {
+  border-color: var(--compreng-accent, #2563eb);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-accent, #2563eb) 18%, transparent);
+}
+.mt-page .mt-find > svg.mt-find-ico {
+  position: static !important; transform: none !important; flex: none; width: 14px; height: 14px; margin: 0;
+  color: var(--compreng-text-secondary, #64748b); pointer-events: none;
+}
+.mt-page .mt-find input.mt-find-input.mt-find-input {
+  flex: 1 1 0; min-width: 0; width: auto; height: 100%; margin: 0; padding: 0; box-sizing: border-box;
+  border: 0 !important; border-radius: 0 !important; outline: none !important; box-shadow: none !important;
+  background: transparent !important; background-image: none !important;
+  color: var(--compreng-text, #0f172a); font-size: var(--mt-ctl-font) !important; font-weight: 500; text-overflow: ellipsis;
+  -webkit-appearance: none; appearance: none;
+}
+.mt-page .mt-find input.mt-find-input::placeholder { color: var(--compreng-text-secondary, #64748b); opacity: .85; }
+/* HP, belum diketuk: ikon + kata "Cari" di tengah */
+.mt-find.is-compact { justify-content: center; cursor: text; }
+.mt-page .mt-find.is-compact input.mt-find-input.mt-find-input { flex: 0 0 auto; width: 4.2ch; text-align: left; }
+
 .mt-page .mt-pick.mt-pick {
-  width: 100%; min-width: 0; box-sizing: border-box; height: 38px;
-  padding: 0 12px; font-size: 13px; cursor: pointer; border-radius: 10px !important;
+  width: 100%; min-width: 0; box-sizing: border-box; height: var(--mt-ctl-h); padding: 0 11px;
+  font-size: var(--mt-ctl-font) !important; font-weight: 500; cursor: pointer; border-radius: 10px !important;
+  background-color: var(--compreng-surface, #fff) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow, rgba(15, 23, 42, .2)) 35%, transparent) !important;
 }
+
+.dashboard-container .mt-page.mt-page.mt-page .mt-find input.mt-find-input.mt-find-input.mt-find-input,
+.dashboard-container .mt-page.mt-page.mt-page select.mt-pick.mt-pick.mt-pick,
+.dashboard-container .mt-page.mt-page.mt-page .mt-find input.mt-find-input:focus,
+.dashboard-container .mt-page.mt-page.mt-page .mt-find input.mt-find-input:focus-visible { font-size: var(--mt-ctl-font) !important; }
 
 /* ---- wadah data: container query ---- */
 .mt-data { container-type: inline-size; container-name: mtdata; }
@@ -88,28 +108,30 @@
   display: none;
   background: var(--compreng-surface, #fff);
   border: 1px solid var(--compreng-border, #e2e8f0);
-  border-radius: 16px; overflow-x: auto; /* hanya jaring pengaman; di lebar normal tidak muncul */
+  border-radius: 18px; overflow-x: auto; /* hanya jaring pengaman; di lebar normal tidak muncul */
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow, rgba(15, 23, 42, .2)) 35%, transparent);
 }
-.mt-grid { width: 100%; border-collapse: collapse; }
+.mt-grid { width: 100%; border-collapse: separate; border-spacing: 0; }
 .mt-grid th {
-  padding: 11px 5px; text-align: left; vertical-align: middle;
-  font-size: 10px; font-weight: 700; letter-spacing: .03em; line-height: 1.3; text-transform: uppercase;
+  padding: 12px 6px; text-align: left; vertical-align: middle;
+  font-size: 10px; font-weight: 700; letter-spacing: .06em; line-height: 1.3; text-transform: uppercase;
   color: var(--compreng-text-secondary, #475569);
   background: var(--compreng-surface-soft, #f1f5f9);
   border-bottom: 1px solid var(--compreng-border, #e2e8f0);
 }
 .mt-grid th.mt-fit { white-space: nowrap; }
 .mt-grid td {
-  padding: 11px 5px; vertical-align: middle; font-size: 12px; line-height: 1.4;
+  padding: 13px 6px; vertical-align: middle; font-size: 12.5px; line-height: 1.4;
   overflow-wrap: break-word; word-break: normal; hyphens: none;
   color: var(--compreng-text, #0f172a);
-  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+  border-bottom: 1px solid color-mix(in srgb, var(--compreng-border, #e2e8f0) 70%, transparent);
+  transition: background-color .15s ease;
 }
-.mt-grid th:first-child, .mt-grid td:first-child { padding-left: 14px; }
-.mt-grid th:last-child, .mt-grid td:last-child { padding-left: 2px; padding-right: 6px; text-align: center; }
+.mt-grid th:first-child, .mt-grid td:first-child { padding-left: 16px; }
+.mt-grid th:last-child, .mt-grid td:last-child { padding-left: 2px; padding-right: 8px; text-align: center; }
 .mt-grid tbody tr:last-child td { border-bottom: 0; }
-.mt-grid tbody tr:hover td { background: var(--compreng-surface-soft, #f1f5f9); }
-.mt-grid td.mt-empty { padding: 44px 14px; text-align: center; font-size: 13.5px; color: var(--compreng-text-secondary, #475569); }
+.mt-grid tbody tr:hover td { background: color-mix(in srgb, var(--compreng-accent, #2563eb) 5%, var(--compreng-surface, #fff)); }
+.mt-grid td.mt-empty { padding: 48px 14px; text-align: center; font-size: 13.5px; color: var(--compreng-text-secondary, #475569); }
 .mt-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .mt-name { font-weight: 700; color: var(--compreng-text, #0f172a); }
@@ -224,25 +246,76 @@
 }
 @media (max-width: 560px) { .mt-lock-grid { grid-template-columns: minmax(0, 1fr); } }
 
-/* ---- kartu (tablet & HP) ---- */
+/* ---- kartu (tablet & HP): mengikuti gaya kartu Berita — aksen kiri, avatar, panel "label : nilai" ---- */
 .mt-mlist { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
-.mt-tile {
-  padding: 14px;
-  background: var(--compreng-surface, #fff);
+.mt-page .mt-tile {
+  position: relative; display: flex; flex-direction: column; gap: 10px; min-width: 0; box-sizing: border-box;
+  padding: 13px 13px 13px 16px; overflow: hidden;
+  background: linear-gradient(160deg,
+    color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 55%, var(--compreng-surface, #fff)),
+    var(--compreng-surface, #fff)) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 20px;
+  box-shadow: 0 1px 2px color-mix(in srgb, var(--compreng-shadow, rgba(0, 0, 0, .2)) 60%, transparent),
+              0 12px 24px -18px var(--compreng-shadow, rgba(0, 0, 0, .3));
+}
+/* aksen tipis di tepi kiri: warna aksen tema; menunggu = amber, ditolak = merah */
+.mt-tile::before {
+  content: ''; position: absolute; left: 0; top: 16px; bottom: 16px; width: 3px; border-radius: 0 4px 4px 0;
+  background: var(--compreng-accent, #2563eb); opacity: .85;
+}
+.mt-tile.is-pending::before { background: #f59e0b; }
+.mt-tile.is-no::before { background: #dc2626; }
+
+.mt-m-head { display: flex; align-items: flex-start; gap: 12px; }
+.mt-ava {
+  flex: none; display: grid; place-items: center; width: 48px; height: 48px; margin: 2px; border-radius: 14px;
+  font-size: 18px; font-weight: 800; line-height: 1;
+  color: var(--compreng-text, #0f172a);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 16%, var(--compreng-surface, #fff));
+  box-shadow: 0 0 0 2px var(--compreng-surface, #fff),
+              0 0 0 3.5px color-mix(in srgb, var(--compreng-accent, #2563eb) 40%, transparent);
+}
+.mt-m-main { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.mt-m-name {
+  font-size: 14.5px; font-weight: 800; letter-spacing: -.01em; line-height: 1.3; color: var(--compreng-text, #0f172a);
+  overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden;
+}
+.mt-m-main .mt-minor { margin: 0; }
+.mt-m-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 4px; }
+.mt-m-tags .mt-kind, .mt-m-tags .mt-minor { margin: 0; }
+.mt-gen-tag {
+  display: inline-block; padding: 2px 9px; border-radius: 999px; white-space: nowrap;
+  font-size: 10.5px; font-weight: 700; color: var(--compreng-text, #0f172a);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 14%, transparent);
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 30%, transparent);
+}
+.mt-tile .mt-m-head .mt-more {
+  flex: none; width: 34px; height: 34px; margin: 0; border-radius: 11px;
+  background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 80%, transparent);
   border: 1px solid var(--compreng-border, #e2e8f0);
-  border-radius: 16px; min-width: 0;
 }
-.mt-tile-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
-.mt-tile-who { min-width: 0; overflow-wrap: anywhere; }
-.mt-tile-top .mt-more { flex: none; margin: -4px -6px 0 0; width: 38px; height: 38px; }
-.mt-kv {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; padding: 7px 0;
-  font-size: 13px; color: var(--compreng-text, #0f172a); border-top: 1px dashed var(--compreng-border, #e2e8f0);
+
+/* panel info */
+.mt-m-details {
+  display: flex; flex-direction: column; overflow: hidden; border-radius: 14px;
+  background: color-mix(in srgb, var(--compreng-bg, #f8fafc) 55%, var(--compreng-surface-soft, #f1f5f9));
+  border: 1px solid color-mix(in srgb, var(--compreng-border, #e2e8f0) 80%, transparent);
 }
-.mt-kv > div:first-child { flex: none; max-width: 42%; color: var(--compreng-text-secondary, #475569); }
-.mt-kv > div:last-child { min-width: 0; text-align: right; overflow-wrap: anywhere; }
-.mt-tile .mt-acts { justify-content: stretch; margin-top: 10px; }
-.mt-tile .mt-act { flex: 1; justify-content: center; padding: 9px 12px; font-size: 12.5px; }
+.mt-m-row {
+  display: grid; grid-template-columns: 70px minmax(0, 1fr); align-items: center; column-gap: 4px;
+  padding: 8px 12px; font-size: 12px;
+}
+.mt-m-row + .mt-m-row { border-top: 1px dashed var(--compreng-border, #e2e8f0); }
+.mt-m-label { display: flex; justify-content: space-between; padding-right: 8px; font-size: 11.5px; color: var(--compreng-text-secondary, #475569); }
+.mt-m-label::after { content: ":"; }
+.mt-m-value { min-width: 0; font-weight: 650; line-height: 1.4; color: var(--compreng-text, #0f172a); overflow-wrap: anywhere; }
+.mt-m-value .mt-mono { white-space: normal; overflow-wrap: anywhere; font-size: 12px; }
+.mt-m-value .mt-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; }
+.mt-m-value .mt-pill::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
+
+.mt-tile .mt-acts { flex-wrap: nowrap; justify-content: stretch; gap: 8px; min-height: 0; margin-top: 0; }
+.mt-tile .mt-act { flex: 1; justify-content: center; min-height: 34px; padding: 7px 12px; border-radius: 10px; font-size: 12px; }
 .mt-mempty { grid-column: 1 / -1; padding: 32px 12px; text-align: center; font-size: 13.5px; color: var(--compreng-text-secondary, #475569); }
 
 /* ---- pemilih tampilan berdasarkan lebar wadah ---- */
@@ -263,50 +336,121 @@
 }
 
 /* ---- responsif halaman ---- */
-@media (max-width: 600px) {
-  .mt-head { flex-direction: column; }
-  .mt-add { width: 100%; justify-content: center; }
-}
 @media (max-width: 860px) {
   .mt-bar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .mt-find { grid-column: 1 / -1; }
 }
-@media (max-width: 520px) {
-  /* 4 tab muat rapi dalam grid 2x2 di HP */
-  .mt-seg { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
-  .mt-page .mt-seg .mt-seg-pick { justify-content: space-between; padding: 8px 12px; min-height: 44px; }
+@media (max-width: 600px) {
+  .mt-page { padding-bottom: 28px; }
+
+  /* judul + tombol Tambah (kecil) sebaris, deskripsi di bawahnya */
+  .mt-head { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 6px 12px; margin-bottom: 14px; }
+  .mt-head > div { display: contents; }
+  .mt-page .mt-h { grid-column: 1; grid-row: 1; margin: 0; font-size: 19px; }
+  .mt-page .mt-add.mt-add { grid-column: 2; grid-row: 1; }
+  .mt-sub { grid-column: 1 / -1; grid-row: 2; font-size: 12px; line-height: 1.5; }
+
+  /* tab: satu baris yang bisa digeser */
+  .mt-seg {
+    display: flex; flex-wrap: nowrap; gap: 3px; width: 100%; margin: 0 0 10px; padding: 3px;
+    overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; border-radius: 12px;
+  }
+  .mt-seg::-webkit-scrollbar { display: none; }
+  .mt-page .mt-seg .mt-seg-pick {
+    flex: none; justify-content: center; gap: 7px; min-height: 32px; padding: 5px 12px;
+    border-radius: 9px; white-space: nowrap; scroll-snap-align: start;
+  }
+
+  /* cari penuh; dua filter di bawahnya */
+  .mt-bar { gap: 8px; margin-bottom: 14px; }
+
+  .mt-mlist { gap: 10px; }
 }
-@media (max-width: 340px) { .mt-bar { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 340px) { .mt-bar { grid-template-columns: minmax(0, 1fr); } .mt-m-row { grid-template-columns: 62px minmax(0, 1fr); padding: 8px 10px; } }
 @media (prefers-reduced-motion: reduce) { .mt-spin { animation: none; } .mt-pop { animation: none; } .mt-seg-pick, .mt-more, .mt-pop-act, .mt-act { transition: none; } }
 
-/* ==========================================================================
-   MODAL TAMBAH / EDIT — modern & simpel
-   theme.css memakai [class*="modal"] + .modern-modal button dengan !important, jadi aturan di sini
-   sengaja memakai spesifisitas lebih tinggi (.mt-page .modern-modal ...) agar tidak kalah.
-   ========================================================================== */
+/* MODAL TAMBAH / EDIT */
 .mt-page .modern-modal { --mt-pad: 20px; }
 @media (min-width: 641px) {
-  .mt-page .modal-overlay .modern-modal.modern-modal { max-width: 460px !important; border-radius: 18px !important; }
+  .mt-page .modal-overlay .modern-modal.modern-modal { max-width: 480px !important; border-radius: 20px !important; }
 }
 
+/* header: judul 18px, bayangan jatuh ke area isi (sama seperti Karya Prestasi) */
 .mt-page .modern-modal .modal-header-modern {
-  padding: 14px var(--mt-pad); margin: 0;
-  background: transparent !important; box-shadow: none !important; border-radius: 0 !important;
+  position: relative; z-index: 3; padding: 14px var(--mt-pad); margin: 0;
+  background: var(--compreng-surface, #fff) !important;
+  box-shadow: 0 25px 50px -12px var(--compreng-shadow, rgba(0, 0, 0, .4)) !important;
+  border-radius: 0 !important;
   border: 0 !important; border-bottom: 1px solid var(--compreng-border, #e2e8f0) !important;
 }
-.mt-page .modern-modal .modal-header-modern h3 { font-size: 15.5px; font-weight: 800; letter-spacing: -.01em; }
+.mt-page .modern-modal .modal-header-modern h3 { font-size: 16px; font-weight: 800; letter-spacing: -.01em; }
 .mt-page .modern-modal .btn-close-modal {
   display: inline-grid; place-items: center; width: 30px; height: 30px; padding: 0;
-  border-radius: 12px !important; box-shadow: none !important;
+  border-radius: 10px !important; box-shadow: none !important;
 }
 
-.mt-page .modern-modal .form-modern-layout { padding: 16px var(--mt-pad) 0; gap: 14px; }
-.mt-page .modern-modal .form-group-modern { gap: 6px; }
+.mt-page .modern-modal .form-modern-layout { flex: 1 1 auto; min-height: 0; padding: 16px var(--mt-pad) 0; gap: 14px; }
+.mt-page .modern-modal .form-group-modern { gap: 6px; min-width: 0; }
 .mt-page .modern-modal .form-group-modern label { font-size: 10.5px; letter-spacing: .05em; }
 .mt-page .modern-modal .input-modern {
-  box-sizing: border-box; height: 40px; padding: 0 12px; font-size: 13.5px;
+  box-sizing: border-box; height: 38px; padding: 0 12px; font-size: 13px;
   border-radius: 10px !important;
 }
+
+/* dua kolom (Angkatan | Kegiatan, NISN | NIK, ...) — menumpuk di layar sempit */
+.mt-page .modern-modal .mt-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+
+/* ---- dropdown kustom di modal (tampilan mengikuti "Tingkat" di Karya Prestasi): selalu terbuka ke bawah ---- */
+.mt-page .mt-dd { position: relative; min-width: 0; }
+.mt-page .modern-modal .mt-dd-trigger.mt-dd-trigger {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; text-align: left; cursor: pointer; font-family: inherit; font-weight: 400; text-transform: none;
+  background: color-mix(in srgb, var(--compreng-surface-soft, #f1f5f9) 55%, transparent) !important;
+  color: var(--compreng-text, #0f172a) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  box-shadow: none !important;
+}
+.mt-page .mt-dd-text { flex: 1 1 0; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mt-page .mt-dd-trigger.is-empty .mt-dd-text { color: var(--compreng-text-secondary, #64748b); }
+.mt-page .mt-dd-chev { flex: none; opacity: .7; transition: transform .2s ease; }
+.mt-page .mt-dd.is-open .mt-dd-chev { transform: rotate(180deg); }
+.mt-page .modern-modal .mt-dd-trigger.mt-dd-trigger:focus-visible,
+.mt-page .modern-modal .mt-dd.is-open .mt-dd-trigger.mt-dd-trigger {
+  outline: none;
+  border-color: var(--compreng-accent, #076653) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-accent, #076653) 22%, transparent) !important;
+}
+.mt-page .mt-dd-list {
+  position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 20;
+  max-height: 208px; overflow-y: auto; overscroll-behavior: contain; scrollbar-width: none;
+  scroll-margin-bottom: 84px; /* jangan tertutup footer tombol saat dibuka */
+  padding: 6px; box-sizing: border-box;
+  background: var(--compreng-surface, #fff) !important;
+  border: 1px solid var(--compreng-border, #e2e8f0); border-radius: 12px;
+  box-shadow: 0 16px 32px -12px var(--compreng-shadow, rgba(15, 23, 42, .28)), 0 2px 8px rgba(15, 23, 42, .08);
+  animation: mtDdIn .14s ease both;
+}
+.mt-page .mt-dd-list::-webkit-scrollbar { width: 0; height: 0; }
+@keyframes mtDdIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+.mt-page .modern-modal .mt-dd-opt.mt-dd-opt {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  width: 100%; margin: 0; padding: 8px 10px; box-sizing: border-box;
+  border: 0 !important; border-radius: 8px !important; box-shadow: none !important;
+  background: transparent !important; color: var(--compreng-text, #0f172a) !important;
+  font-family: inherit; font-size: 13px; font-weight: 400; line-height: 1.4; text-align: left; text-transform: none;
+  white-space: normal; overflow-wrap: anywhere; cursor: pointer;
+}
+.mt-page .modern-modal .mt-dd-opt.mt-dd-opt:hover,
+.mt-page .modern-modal .mt-dd-opt.mt-dd-opt:focus-visible { background: var(--compreng-surface-soft, #f1f5f9) !important; outline: none; }
+.mt-page .modern-modal .mt-dd-opt.mt-dd-opt.is-on {
+  background: var(--compreng-surface-soft, #f1f5f9) !important; color: var(--compreng-accent, #2563eb) !important; font-weight: 700;
+}
+.mt-page .mt-dd-opt svg { flex: none; }
+.mt-page .modern-modal .mt-dd-opt.mt-dd-opt.mt-dd-add {
+  color: var(--compreng-accent, #2563eb) !important; font-weight: 700;
+  border-bottom: 1px dashed var(--compreng-border, #e2e8f0) !important; border-radius: 8px 8px 0 0 !important; margin-bottom: 4px;
+}
+@media (prefers-reduced-motion: reduce) { .mt-page .mt-dd-list { animation: none; } .mt-page .mt-dd-chev { transition: none; } }
 
 /* data terkunci: jarak antar-baris jelas (label tidak menempel ke kotak di atasnya) */
 .mt-page .mt-lock-head { margin: 2px 0 0; padding-top: 14px; font-size: 12px; }
@@ -351,7 +495,40 @@
   .mt-page .modern-modal .modal-actions-modern .btn-modern-primary,
   .mt-page .modern-modal .modal-actions-modern .btn-modern-secondary { flex: none; width: 100%; }
 }
-@media (max-width: 640px) { .mt-page .modern-modal { --mt-pad: 18px; } }
+@media (max-width: 640px) {
+  .mt-page .modern-modal { --mt-pad: 18px; }
+  /* admin-responsive.css menjadikan form bottom-sheet yang menempel kiri-kanan layar.
+     Di sini dikembalikan ke dialog di tengah, dengan jarak aman kiri-kanan (selector lebih spesifik agar menang). */
+  .dashboard-container .mt-page .modal-overlay {
+    align-items: center; justify-content: center; padding: 20px; box-sizing: border-box;
+    padding-left: max(20px, env(safe-area-inset-left, 0px)); padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+  .dashboard-container .mt-page .modal-overlay .modal-content.modern-modal {
+    width: 100%; max-width: 440px !important; margin: auto; box-sizing: border-box; overflow: hidden;
+    max-height: calc(100dvh - 40px);
+    border-radius: 22px !important;
+    border: 1px solid var(--compreng-border, #e2e8f0) !important;
+  }
+  .mt-page .modern-modal .modal-header-modern { padding: 13px var(--mt-pad); }
+  .mt-page .modern-modal .modal-header-modern h3 { font-size: 15px; }
+  .mt-page .modern-modal .form-modern-layout { padding-top: 14px; gap: 14px; }
+  .mt-page .modern-modal .input-modern { height: 40px; border-radius: 11px !important; }
+  /* kalahkan aturan global "font 16px" di HP agar ukuran isian sama dengan halaman lain */
+  .dashboard-container .mt-page.mt-page.mt-page .modern-modal input.input-modern.input-modern.input-modern { font-size: 13px !important; }
+  .mt-page .modern-modal .mt-dd-trigger.mt-dd-trigger { font-size: 13px; }
+}
+@media (max-width: 380px) {
+  .dashboard-container .mt-page .modal-overlay { padding: 14px; }
+  .dashboard-container .mt-page .modal-overlay .modal-content.modern-modal { max-height: calc(100dvh - 28px); border-radius: 18px !important; }
+}
+/* HP landscape: tinggi layar kecil -> kurangi jarak atas-bawah */
+@media (max-height: 480px) and (orientation: landscape) {
+  .dashboard-container .mt-page .modal-overlay { padding: 8px 20px; }
+  .dashboard-container .mt-page .modal-overlay .modal-content.modern-modal { max-height: calc(100dvh - 16px); }
+}
+@media (max-width: 520px) {
+  .mt-page .modern-modal .mt-row { grid-template-columns: minmax(0, 1fr); gap: 14px; } /* kolom menumpuk di HP */
+}
 
 /* ==========================================================================
    DROPDOWN (filter kegiatan/angkatan + semua pilihan di modal)
