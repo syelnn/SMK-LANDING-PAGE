@@ -90,6 +90,7 @@ const LandingPage = () => {
       '/prestasi': 'section-prestasi',     
       '/achievement': 'section-prestasi',
       '/galeri': 'section-galeri',
+      '/dokumentasi': 'section-galeri',
       '/testimoni': 'section-testimoni',
       '/faq': 'section-faq',
       '/mitra-industri': 'section-mitra-industri',

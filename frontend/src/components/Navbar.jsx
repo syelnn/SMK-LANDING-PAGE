@@ -10,8 +10,8 @@ import { getImageUrl } from '../utils/media';
 // Path URL yang membuka landing page, jadi nanti sesuai section yang di panggil)
 const DEEP_LINK_PATHS = [
   '/profil', '/berita', '/program', '/jurusan', '/ekstrakurikuler', '/ekskul',
-  '/tenagapengajar', '/guru', '/pengajar', '/karya', '/prestasi', '/achievement',
-  '/galeri', '/testimoni', '/faq', '/mitra-industri', '/mitraindustri', '/kontak',
+  '/tenagapengajar', '/guru', '/pengajar', '/karya',
+  '/dokumentasi', '/testimoni', '/faq', '/mitra-industri', '/mitraindustri', '/kontak',
 ];
 
 const Navbar = () => {
@@ -91,6 +91,10 @@ const Navbar = () => {
     if (!rawUrl.startsWith('/') && !rawUrl.startsWith('http') && !rawUrl.startsWith('#')) {
       rawUrl = '/' + rawUrl;
     }
+    // /prestasi = halaman penuh sendiri. Section di landing memakai URL /karya.
+    if (rawUrl === '/prestasi' || rawUrl === '/achievement') return '/karya';
+    // /galeri = halaman penuh sendiri. Section galeri di landing memakai URL /dokumentasi.
+    if (rawUrl === '/galeri') return '/dokumentasi';
     return rawUrl;
   }, []);
 
@@ -228,7 +232,7 @@ const Navbar = () => {
     const validLandingPaths = [
       '', '/', '/profil', '/berita', '/program', '/jurusan', 
       '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', 
-      '/pengajar', '/karya', '/prestasi', '/achievement', '/galeri', '/testimoni', '/faq', '/mitra-industri', '/mitraindustri', '/kontak'
+      '/pengajar', '/karya', '/dokumentasi', '/testimoni', '/faq', '/mitra-industri', '/mitraindustri', '/kontak'
     ];
     if (!validLandingPaths.includes(location.pathname)) return;
 
@@ -307,7 +311,7 @@ const Navbar = () => {
               window.history.replaceState(null, '', targetUrl);
             }
           } else if (activeKey === 'section-prestasi') {
-            const targetUrl = '/prestasi';
+            const targetUrl = '/karya';
             if (activePathRef.current !== targetUrl) {
               activePathRef.current = targetUrl;
               setActivePath(targetUrl);
@@ -350,6 +354,8 @@ const Navbar = () => {
   // 5. Automatic IntersectionObserver
   useEffect(() => {
     if (menuItems.length === 0) return;
+    // Hanya di landing (ada section-hero). Di halaman lain (/prestasi, dll) jangan ubah URL.
+    if (!document.getElementById('section-hero')) return;
 
     const observerOptions = {
       root: null,
@@ -416,6 +422,7 @@ const Navbar = () => {
       '/prestasi': 'section-prestasi',  
       '/achievement': 'section-prestasi',
       '/galeri': 'section-galeri',
+      '/dokumentasi': 'section-galeri',
       '/testimoni': 'section-testimoni',
       '/faq': 'section-faq',
    '/mitra-industri': 'section-mitra-industri',
@@ -472,6 +479,16 @@ const Navbar = () => {
       return true;
     }
 
+
+    // Halaman penuh /prestasi: menu Karya & Prestasi tetap menyala
+    if (location.pathname === '/prestasi') {
+      return menuUrl === '/karya' || menuTitle.includes('prestasi') || menuTitle.includes('karya');
+    }
+
+    // Halaman penuh /galeri & halaman album /galeri/:slug: menu Galeri tetap menyala
+    if (location.pathname === '/galeri' || location.pathname.startsWith('/galeri/')) {
+      return menuUrl === '/dokumentasi' || menuTitle.includes('galeri');
+    }
 
     if (location.pathname.startsWith('/tracer-study')) {
       return menuUrl.startsWith('/tracer-study') || menuTitle.includes('tracer');

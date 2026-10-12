@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { Award, Loader2, Sparkles } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Award, ArrowLeft, ArrowRight, Sparkles } from 'lucide-react';
 import { getImageUrl } from '../../utils/media';
+import coverImg from '../../assets/prestasi-cover.jpeg';
 import '../../css/viewer/AchievementViewer.css';
 
-// Helper agar teks otomatis huruf Kapital Awal Kata (Title Case) seperti Gambar 2
+// Teks otomatis huruf Kapital Awal Kata (Title Case)
 const toTitleCase = (str) => {
   if (!str) return '';
   return str.toLowerCase().replace(/(?:^|\s|-)\S/g, (m) => m.toUpperCase());
@@ -13,117 +15,195 @@ const toTitleCase = (str) => {
 // Nilai "Prestasi" di database ditampilkan sebagai "Pendidikan" (alumni lulus perguruan tinggi).
 const LEVEL_LABELS = { prestasi: 'Pendidikan' };
 const getLevelLabel = (level) => LEVEL_LABELS[level?.toLowerCase()] || level || 'Nasional';
+const getLevelSlug = (level) => (level || 'nasional').toLowerCase().trim().replace(/\s+/g, '-');
 
-const AchievementViewer = () => {
+const API_URL = 'https://smkn-compreng-api-pi.vercel.app/api/achievements';
+
+// Jumlah kartu yang tampil di landing page. Sisanya ada di halaman /prestasi.
+const LANDING_LIMIT = 3;
+
+/* --------------------------------------------------------------------------
+   KARTU (dipakai di landing & halaman /prestasi)
+   Susunan teks: label (kelas • tahun) -> nama -> prestasi. Tanpa "Lihat detail".
+   -------------------------------------------------------------------------- */
+const KpCard = ({ item, index }) => {
+  const [imgError, setImgError] = useState(false);
+  const showImg = item.photo && !imgError;
+  const label = [item.class_name || 'SMKN Compreng', item.year || '2026'].join(' • ');
+
+  return (
+    <article className={`kp-tile kp-lv--${getLevelSlug(item.level)}`} style={{ '--i': index }}>
+      <div className="kp-media">
+        {showImg ? (
+          <img
+            src={getImageUrl(item.photo)}
+            alt={item.student_name || 'Foto prestasi'}
+            className="kp-img"
+            loading="lazy"
+            decoding="async"
+            onError={() => setImgError(true)}
+          />
+        ) : (
+          <div className="kp-img-fallback">
+            <Award size={38} />
+          </div>
+        )}
+
+        <div className="kp-level">{getLevelLabel(item.level)}</div>
+      </div>
+
+      <div className="kp-body">
+        <div className="kp-label">{label}</div>
+        <h3 className="kp-name">{item.student_name || 'Siswa SMKN Compreng'}</h3>
+        <div className="kp-desc" title={item.achievement}>
+          {toTitleCase(item.achievement)}
+        </div>
+      </div>
+    </article>
+  );
+};
+
+const KpSkeleton = ({ count }) => (
+  <div className="kp-grid" aria-hidden="true">
+    {Array.from({ length: count }).map((_, i) => (
+      <div className="kp-tile kp-skel" key={i}>
+        <div className="kp-media kp-skel-block" />
+        <div className="kp-body">
+          <div className="kp-skel-bar" style={{ width: '38%', height: 12 }} />
+          <div className="kp-skel-bar" style={{ width: '72%', height: 22 }} />
+          <div className="kp-skel-bar" style={{ width: '95%' }} />
+          <div className="kp-skel-bar" style={{ width: '60%' }} />
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
+/* --------------------------------------------------------------------------
+   KOMPONEN UTAMA
+   variant="landing" -> maksimal 3 kartu + tombol "Lihat Semua" ke /prestasi
+   variant="page"    -> banner foto + semua kartu (route /prestasi)
+   -------------------------------------------------------------------------- */
+const AchievementViewer = ({ variant = 'landing' }) => {
+  const navigate = useNavigate();
+  const isPage = variant === 'page';
   const [achievements, setAchievements] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const API_URL = 'https://smkn-compreng-api-pi.vercel.app/api/achievements';
-
-  const fetchAchievements = async () => {
-    try {
-      setLoading(true);
-      const res = await axios.get(API_URL);
-      if (res.data && res.data.data) {
-        setAchievements(res.data.data);
-      }
-    } catch (err) {
-      console.error('Error fetching viewer achievements:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchAchievements();
+    let alive = true;
+    (async () => {
+      try {
+        const res = await axios.get(API_URL);
+        if (alive && res.data && res.data.data) setAchievements(res.data.data);
+      } catch (err) {
+        console.error('Error fetching viewer achievements:', err);
+      } finally {
+        if (alive) setLoading(false);
+      }
+    })();
+    return () => { alive = false; };
   }, []);
 
-  return (
-    <div className="achievement-viewer-container" id="section-prestasi">
-      {/* HERO SECTION */}
-      <section className="achievement-hero">
-        <div className="hero-content17">
-          <span className="hero-badge-pill117">
-            <Sparkles size={14} className="icon-sparkle" /> KARYA & PRESTASI
-          </span>
+  const visible = isPage ? achievements : achievements.slice(0, LANDING_LIMIT);
+  const hasMore = !isPage && achievements.length > LANDING_LIMIT;
 
-          <h1 className="hero-title17">
-            Karya <span className="highlight-text">& Prestasi</span> Taruna/i SMKN COMPRENG
+  // Kembali ke landing dan langsung scroll ke section Karya & Prestasi
+  const handleBack = () => {
+    sessionStorage.setItem('scrollToSection', 'section-prestasi');
+    navigate('/');
+  };
+
+  const content = loading ? (
+    <KpSkeleton count={LANDING_LIMIT} />
+  ) : achievements.length === 0 ? (
+    <div className="kp-empty">
+      <Award size={44} />
+      <h3>Belum Ada Prestasi Ditemukan</h3>
+      <div>Data karya &amp; prestasi belum tersedia.</div>
+    </div>
+  ) : (
+    <>
+      {isPage && (
+        <div className="kp-count">
+          <div className="kp-count-num">{achievements.length}</div>
+          <div className="kp-count-text">Karya &amp; Prestasi</div>
+          <i className="kp-count-line" />
+        </div>
+      )}
+
+      <div className="kp-grid">
+        {visible.map((item, i) => (
+          <KpCard item={item} index={i} key={item.id} />
+        ))}
+      </div>
+
+      {hasMore && (
+        <div className="kp-more">
+          <Link to="/prestasi" className="kp-more-btn">
+            Lihat Semua Karya &amp; Prestasi
+            <ArrowRight size={18} />
+          </Link>
+        </div>
+      )}
+    </>
+  );
+
+  /* ---------- HALAMAN /prestasi: banner foto + grid ---------- */
+  if (isPage) {
+    return (
+      <>
+        <header className="kp-cover" style={{ '--kp-cover-img': `url(${coverImg})` }}>
+          <div className="kp-cover-inner">
+            <button type="button" className="kp-back" onClick={handleBack}>
+              <i className="kp-back-ico"><ArrowLeft size={16} /></i>
+              Kembali ke Beranda
+            </button>
+
+            <div className="kp-cover-text">
+              <div className="kp-pill">
+                <Sparkles size={14} /> TARUNA/I SMKN COMPRENG
+              </div>
+
+              <h1 className="kp-heading">
+                Karya <span className="kp-heading-accent">&amp; Prestasi</span>
+              </h1>
+
+              <p className="kp-subtitle">
+                Apresiasi atas kerja keras, inovasi, dan dedikasi luar biasa para siswa/i SMK Negeri Compreng dalam mengharumkan nama sekolah.
+              </p>
+            </div>
+          </div>
+        </header>
+
+        <section className="kp-section kp-section--page" id="halaman-prestasi">
+          <div className="kp-inner">{content}</div>
+        </section>
+      </>
+    );
+  }
+
+  /* ---------- LANDING ---------- */
+  return (
+    <section className="kp-section" id="section-prestasi">
+      <div className="kp-inner">
+        <header className="kp-hero">
+          <div className="kp-pill">
+            <Sparkles size={14} /> KARYA &amp; PRESTASI
+          </div>
+
+          <h1 className="kp-heading">
+            Karya <span className="kp-heading-accent">&amp; Prestasi</span> Taruna/i SMKN COMPRENG
           </h1>
 
-          <p className="hero-subtitle17">
+          <p className="kp-subtitle">
             Apresiasi atas kerja keras, inovasi, dan dedikasi luar biasa para siswa/i SMK Negeri Compreng dalam mengharumkan nama sekolah.
           </p>
-        </div>
-      </section>
+        </header>
 
-      {/* GRID SECTION */}
-      <section className="achievement-grid-section">
-        {loading ? (
-          <div className="loading-state">
-            <Loader2 className="animate-spin" size={32} />
-            <p>Memuat data karya & prestasi...</p>
-          </div>
-        ) : achievements.length === 0 ? (
-          <div className="empty-state">
-            <Award size={44} />
-            <h3>Belum Ada Prestasi Ditemukan</h3>
-            <p>Data karya & prestasi belum tersedia.</p>
-          </div>
-        ) : (
-          <div className="achievement-grid">
-            {achievements.map((item) => (
-              <div className="achievement-card" key={item.id}>
-                {/* Banner Image */}
-                <div className="card-image-box">
-                  {item.photo ? (
-                    <img
-                      src={getImageUrl(item.photo)}
-                      alt={item.student_name}
-                      className="card-img"
-                      onError={(e) => {
-                        e.target.onerror = null;
-                        e.target.src = 'https://via.placeholder.com/400x220?text=Foto+Prestasi';
-                      }}
-                    />
-                  ) : (
-                    <div className="card-img-placeholder">
-                      <Award size={36} />
-                    </div>
-                  )}
-
-                  {/* Top Level Badge */}
-                  <span className={`card-top-level level-${item.level?.toLowerCase() || 'nasional'}`}>
-                    {getLevelLabel(item.level)}
-                  </span>
-                </div>
-
-                {/* Content Body */}
-                <div className="card-body">
-                  {/* Nama Siswa */}
-                  <h3 className="student-name">{item.student_name || 'Siswa SMKN Compreng'}</h3>
-                  
-                  {/* Kelas */}
-                  <p className="student-class">
-                    {item.class_name ? item.class_name : 'SMKN Compreng'}
-                  </p>
-
-                  {/* Judul Prestasi / Lomba (Font & Style Presisi Gambar 2) */}
-                  <h4 className="achievement-title" title={item.achievement}>
-                    {toTitleCase(item.achievement)}
-                  </h4>
-
-                  {/* Footer Tag Tahun */}
-                  <div className="card-footer-tags">
-                    <span className="footer-tag year-tag">{item.year || '2026'}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </section>
-    </div>
+        {content}
+      </div>
+    </section>
   );
 };
 

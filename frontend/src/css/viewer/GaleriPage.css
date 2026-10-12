@@ -1,0 +1,219 @@
+/* ==========================================================================
+   GALERI — banner foto, tombol kembali, penanda jumlah, tombol "Lihat Semua"
+   --------------------------------------------------------------------------
+   - Warna dari variabel tema (--compreng-*) => ikut Light/Dark/System/Custom.
+   - Class sengaja berprefix "gx-" tanpa kata -card/-section/badge/-line/-page
+     dst., supaya tidak tertangkap selector wildcard di theme.css.
+   - Banner selalu gelap -> teks di dalamnya selalu terang di semua tema.
+   ========================================================================== */
+
+/* ---------- Halaman /galeri ---------- */
+.tampilan-galeri-wrapper.gx-listpage {
+  flex: 1;
+  min-height: 0;
+  padding-top: 56px;
+  padding-bottom: 88px;
+  overflow-x: clip;
+}
+
+/* ---------- Banner foto ---------- */
+.gx-cover {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 128px 20px 96px; /* atas: ruang navbar fixed */
+  font-family: inherit;
+  background-image:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--compreng-accent, #16a34a) 34%, rgba(3, 8, 12, 0.80)) 0%,
+      rgba(3, 8, 12, 0.84) 100%
+    ),
+    var(--gx-cover-img);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.gx-cover-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.gx-cover-text {
+  width: 100%;
+  max-width: 880px;
+  margin: 40px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.gx-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 18px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
+}
+
+.gx-cover .gx-heading {
+  margin: 0 0 18px;
+  font-size: clamp(2rem, 6vw, 3.8rem);
+  font-weight: 800;
+  line-height: 1.12;
+  letter-spacing: -0.03em;
+  color: #fff !important; /* menang dari h1 {color} global di theme.css */
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+.gx-cover .gx-heading-accent {
+  font-style: normal;
+  color: color-mix(in srgb, var(--compreng-accent, #16a34a) 52%, #ffffff);
+}
+
+.gx-cover .gx-lede {
+  margin: 0;
+  max-width: 640px;
+  font-size: clamp(0.95rem, 1.7vw, 1.05rem);
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+
+/* ---------- Tombol kembali: pill kaca + ikon dalam lingkaran ---------- */
+.gx-back-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 18px 6px 6px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.gx-back-ico {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #06150e;
+  background: color-mix(in srgb, var(--compreng-accent, #16a34a) 55%, #ffffff);
+  transition: transform 0.25s ease;
+}
+.gx-back-pill:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.5);
+}
+.gx-back-pill:hover .gx-back-ico { transform: translateX(-3px); }
+.gx-back-pill:active { transform: scale(0.97); }
+.gx-back-pill:focus-visible,
+.gx-more-btn:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--compreng-accent, #16a34a) 60%, #fff);
+  outline-offset: 3px;
+}
+
+/* ---------- Penanda jumlah album ---------- */
+.gx-count {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 28px;
+}
+.gx-count-num {
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--compreng-accent, #16a34a);
+  background: color-mix(in srgb, var(--compreng-accent, #16a34a) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #16a34a) 28%, transparent);
+}
+.gx-count-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--compreng-text-secondary, #475569);
+  white-space: nowrap;
+}
+.gx-count-rule {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--compreng-text-secondary, #475569) 35%, transparent), transparent);
+}
+
+/* ---------- Tombol "Lihat Semua Album" (landing) ---------- */
+.gx-more {
+  display: flex;
+  justify-content: center;
+  margin-top: 46px;
+}
+.gx-more-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--compreng-accent-text, #fff);
+  background: linear-gradient(
+    135deg,
+    var(--compreng-accent, #16a34a),
+    var(--compreng-accent-hover, var(--compreng-accent, #16a34a))
+  );
+  box-shadow: 0 16px 30px -14px color-mix(in srgb, var(--compreng-accent, #16a34a) 75%, transparent);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+.gx-more-btn svg { transition: transform 0.25s ease; }
+.gx-more-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: 0 20px 34px -14px color-mix(in srgb, var(--compreng-accent, #16a34a) 85%, transparent);
+}
+.gx-more-btn:hover svg { transform: translateX(4px); }
+
+/* ---------- Responsive ---------- */
+@media (max-width: 640px) {
+  .gx-cover { padding: 108px 16px 64px; }
+  .gx-cover-text { margin-top: 30px; }
+  .tampilan-galeri-wrapper.gx-listpage { padding-top: 40px; padding-bottom: 56px; }
+  .gx-count-text { letter-spacing: 0.1em; font-size: 0.72rem; }
+  .gx-more { margin-top: 34px; }
+  .gx-more-btn { width: 100%; justify-content: center; padding: 14px 20px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gx-back-pill, .gx-back-ico, .gx-more-btn, .gx-more-btn svg { transition: none; }
+}

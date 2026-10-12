@@ -9,6 +9,8 @@ import TulisTestimoni from './pages/viewer/TulisTestimoni';
 import TracerStudy from './pages/viewer/TracerStudy';
 import IsiTracerStudy from './pages/viewer/IsiTracerStudy';
 import GaleriAlbumViewer from './pages/viewer/GaleriAlbumViewer';
+import AchievementPage from './pages/viewer/AchievementPage';
+import GaleriPage from './pages/viewer/GaleriPage';
 
 import Login from './Login';
 import Register from './Register';
@@ -25,7 +27,7 @@ import './css/admin-responsive.css'; // RESPONSIVE ADMIN/EDITOR (harus paling ak
 // URL section landing page (hasil scroll-spy) — kalau di-refresh tetap membuka landing & scroll ke section
 const LANDING_SECTION_PATHS = [
   '/profil', '/program', '/ekstrakurikuler', '/ekskul', '/tenagapengajar', '/guru', '/pengajar',
-  '/karya', '/prestasi', '/achievement', '/galeri', '/testimoni', '/faq', '/kontak',
+  '/karya', '/dokumentasi', '/testimoni', '/faq', '/kontak',
   '/berita', '/jurusan', '/mitra-industri', '/mitraindustri',
 ];
 
@@ -133,6 +135,9 @@ const MainApp = () => {
       <Route path="/jurusan/detail-kurikulum/:slug" element={<DetailKurikulumViewer />} />
         <Route path="/berita/:slug" element={<NewsDetail />} />
        <Route path="/download" element={<DownloadViewer />} />
+      <Route path="/prestasi" element={<AchievementPage />} />
+      <Route path="/achievement" element={<Navigate to="/prestasi" replace />} />
+      <Route path="/galeri" element={<GaleriPage />} />
       <Route path="/galeri/:slug" element={<GaleriAlbumViewer />} />
       {LANDING_SECTION_PATHS.map((p) => <Route key={p} path={p} element={<LandingPage />} />)}
       <Route path="/testimoni/tulis" element={<TulisTestimoni />} />

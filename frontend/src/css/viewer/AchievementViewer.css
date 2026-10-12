@@ -1,315 +1,502 @@
 /* ==========================================================================
-   CONTAINER & BACKGROUND
+   KARYA & PRESTASI (viewer)
+   --------------------------------------------------------------------------
+   - Semua warna dari variabel tema (--compreng-*) => otomatis ikut
+     Light / Dark / System / Custom.
+   - Prefix class "kp-" sengaja BUKAN "achievement/prestasi/karya", karena
+     theme.css punya aturan [class*="achievement"] { background: ... !important }
+     yang sebelumnya memaksa kotak/warna solid di header & kartu.
+   - Gradasi latar = glow radial yang memudar ke transparan + mask di tepi atas
+     & bawah, jadi tidak ada garis/kotak, menyatu dengan background halaman.
    ========================================================================== */
-.achievement-viewer-container {
+
+/* ---------- SECTION & LATAR ---------- */
+.kp-section {
+  position: relative;
+  isolation: isolate;
   width: 100%;
-  min-height: 100vh;
-  background-color: var(--compreng-bg, #f8fafc) !important;
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  padding-bottom: 70px;
-  /* [FIX] id="section-prestasi" ada tepat di elemen ini. Tanpa scroll-margin-top,
-     browser men-scroll sampai bagian atas elemen ini pas menempel di bawah
-     .viewer-navbar (position: fixed, tinggi ±88px), sehingga judul "Karya &
-     Prestasi..." ketutupan navbar. Nilai ±112px = tinggi navbar + jarak aman. */
+  padding: 72px 20px 84px;
+  font-family: inherit;
+  color: var(--compreng-text, #0f172a);
+  /* id="section-prestasi" dipakai scroll-spy; sisakan ruang untuk navbar fixed */
   scroll-margin-top: 112px;
 }
 
-/* ==========================================================================
-   HERO / BANNER SECTION
-   ========================================================================== */
-.achievement-viewer-container .achievement-hero {
-  position: relative;
-  width: 100%;
-  padding: 48px 20px 32px;
-  background: linear-gradient(180deg, var(--compreng-surface, #ffffff) 0%, var(--compreng-surface-soft, #f1f5f9) 100%);
-  border-bottom: 1px solid var(--compreng-border, #e2e8f0);
+.kp-section::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(46% 30% at 50% 15%, color-mix(in srgb, var(--compreng-accent, #2563eb) 15%, transparent), transparent 100%),
+    radial-gradient(32% 26% at 8% 52%, color-mix(in srgb, var(--compreng-accent, #2563eb) 8%, transparent), transparent 100%),
+    radial-gradient(34% 28% at 94% 82%, color-mix(in srgb, var(--compreng-accent, #2563eb) 7%, transparent), transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 24%, #000 76%, transparent 100%);
+          mask-image: linear-gradient(to bottom, transparent 0%, #000 24%, #000 76%, transparent 100%);
 }
 
-.achievement-viewer-container .hero-content17 {
-  max-width: 800px;
+.kp-inner {
+  max-width: 1120px;
   margin: 0 auto;
+}
+
+/* ---------- HEADER (tanpa kotak / border / background sendiri) ---------- */
+.kp-hero {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
+  max-width: 820px;
+  margin: 0 auto 44px;
+  background: transparent;
 }
 
-.achievement-viewer-container .hero-badge-pill117 {
+.kp-pill {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 14px;
-  background-color: var(--compreng-surface-soft, #f1f5f9);
-  color: var(--compreng-accent, #2563eb);
-  font-size: 0.75rem;
+  gap: 7px;
+  margin-bottom: 18px;
+  padding: 7px 16px;
+  border-radius: 999px;
+  font-size: 0.74rem;
   font-weight: 700;
-  letter-spacing: 0.8px;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
-  padding: 6px 16px;
-  border-radius: 9999px;
-  border: 1px solid rgba(2, 132, 199, 0.2);
+  color: var(--compreng-accent, #2563eb);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 26%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+          backdrop-filter: blur(8px);
 }
 
-.achievement-viewer-container .hero-title17 {
-  font-size: 2.1rem;
+.kp-heading {
+  margin: 0 0 14px;
+  font-size: clamp(1.7rem, 4.4vw, 2.7rem);
   font-weight: 800;
-  margin-bottom: 12px;
-  line-height: 1.25;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
   color: var(--compreng-text, #0f172a);
-  letter-spacing: -0.02em;
 }
 
-.achievement-viewer-container .highlight-text {
-  color: #10b981;
+.kp-heading-accent {
+  color: var(--compreng-accent, #2563eb);
+  background: linear-gradient(
+    120deg,
+    var(--compreng-accent, #2563eb),
+    color-mix(in srgb, var(--compreng-accent, #2563eb) 55%, var(--compreng-text, #0f172a))
+  );
+  -webkit-background-clip: text;
+          background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.achievement-viewer-container .hero-subtitle17 {
-  font-size: 0.95rem;
-  color: var(--compreng-text-secondary, #475569);
-  line-height: 1.6;
+.kp-subtitle {
+  margin: 0;
   max-width: 620px;
-  margin: 0 auto;
+  font-size: clamp(0.92rem, 1.6vw, 1.02rem);
+  line-height: 1.7;
+  color: var(--compreng-text-secondary, #475569);
 }
 
-/* ==========================================================================
-   GRID CARDS SECTION
-   ========================================================================== */
-.achievement-viewer-container .achievement-grid-section {
-  max-width: 1120px;
-  margin: 36px auto 0;
-  padding: 0 20px;
-  /* Wrapper layout harus transparan agar tidak jadi kotak putih di belakang card */
-  background-color: transparent !important;
-  border-color: transparent !important;
+/* Tombol kembali: pill kaca + ikon panah dalam lingkaran */
+.kp-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 18px 6px 6px;
+  border-radius: 999px;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  -webkit-backdrop-filter: blur(12px);
+          backdrop-filter: blur(12px);
+  cursor: pointer;
+  transition: background 0.25s ease, border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+}
+.kp-back-ico {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  color: #06150e;
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 55%, #ffffff);
+  transition: transform 0.25s ease;
+}
+.kp-back:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.45);
+  box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.5);
+}
+.kp-back:hover .kp-back-ico { transform: translateX(-3px); }
+.kp-back:active { transform: scale(0.97); }
+
+/* Penanda jumlah: chip angka + label kecil + garis tipis memudar */
+.kp-count {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 0 0 28px;
+}
+.kp-count-num {
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 10px;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--compreng-accent, #2563eb);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 28%, transparent);
+}
+.kp-count-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--compreng-text-secondary, #475569);
+  white-space: nowrap;
+}
+.kp-count-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--compreng-text-secondary, #475569) 35%, transparent), transparent);
 }
 
-.achievement-viewer-container .achievement-grid {
+/* ---------- GRID ---------- */
+.kp-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 24px;
-  background-color: transparent !important;
-  border-color: transparent !important;
 }
 
-.achievement-viewer-container .achievement-card {
-  background: var(--compreng-surface, #ffffff);
-  background-color: var(--compreng-surface, #ffffff) !important;
-  border-radius: 16px;
-  overflow: hidden;
-  border: 1px solid var(--compreng-border, #e2e8f0);
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+/* ---------- KARTU (foto penuh di atas, teks di bawah) ---------- */
+.kp-tile {
+  --kp-lv: var(--compreng-accent, #2563eb); /* warna label per level */
+  position: relative;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  padding: 0;
+  overflow: hidden;
+  border-radius: 22px;
+  background: var(--compreng-surface, #fff);
+  border: 1px solid var(--compreng-border, #e2e8f0);
+  box-shadow: 0 10px 26px -18px var(--compreng-shadow, rgba(15, 23, 42, 0.18));
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.35s ease, border-color 0.35s ease;
+  animation: kp-rise 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+.kp-lv--internasional { --kp-lv: #7e22ce; }
+.kp-lv--nasional      { --kp-lv: #15803d; }
+.kp-lv--provinsi      { --kp-lv: #d97706; }
+.kp-lv--kabupaten     { --kp-lv: #2563eb; }
+.kp-lv--prestasi      { --kp-lv: #4f46e5; }
+.kp-lv--pencapaian    { --kp-lv: #e11d48; }
+
+@media (hover: hover) {
+  .kp-tile:not(.kp-skel):hover {
+    transform: translateY(-6px);
+    border-color: color-mix(in srgb, var(--compreng-accent, #2563eb) 42%, var(--compreng-border, #e2e8f0));
+    box-shadow:
+      0 24px 44px -22px color-mix(in srgb, var(--compreng-accent, #2563eb) 45%, transparent),
+      0 10px 20px -14px var(--compreng-shadow, rgba(15, 23, 42, 0.25));
+  }
+  .kp-tile:hover .kp-img { transform: scale(1.05); }
 }
 
-.achievement-viewer-container .achievement-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.09);
-  border-color: var(--compreng-border, #e2e8f0);
+@keyframes kp-rise {
+  from { opacity: 0; transform: translateY(18px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
-/* CARD IMAGE BOX */
-.achievement-viewer-container .card-image-box {
+/* ---------- FOTO ---------- */
+.kp-media {
   position: relative;
   width: 100%;
-  height: 190px;
-  background-color: var(--compreng-surface-soft, #f1f5f9);
+  aspect-ratio: 16 / 10.5;
   overflow: hidden;
+  background: var(--compreng-surface-soft, #f1f5f9);
 }
 
-.achievement-viewer-container .card-img {
+.kp-img {
+  display: block;
   width: 100%;
   height: 100%;
   object-fit: cover;
   object-position: top center;
-  transition: transform 0.4s ease;
+  transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.achievement-viewer-container .achievement-card:hover .card-img {
-  transform: scale(1.04);
-}
-
-.achievement-viewer-container .card-img-placeholder {
+.kp-img-fallback {
   width: 100%;
   height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--compreng-text-secondary, #475569);
-  background: linear-gradient(135deg, var(--compreng-border, #e2e8f0) 0%, var(--compreng-border, #e2e8f0) 100%);
+  background:
+    radial-gradient(70% 70% at 50% 40%, color-mix(in srgb, var(--compreng-accent, #2563eb) 14%, transparent), transparent),
+    var(--compreng-surface-soft, #f1f5f9);
 }
 
-.achievement-viewer-container .card-top-level {
+/* ---------- BADGE LEVEL (glass pill di atas foto) ---------- */
+.kp-level {
   position: absolute;
   top: 12px;
   right: 12px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   max-width: calc(100% - 24px);
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.68rem;
-  font-weight: 700;
+  padding: 5px 11px 5px 9px;
+  border-radius: 999px;
+  font-size: 0.66rem;
+  font-weight: 800;
   line-height: 1.3;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: normal;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-  backdrop-filter: blur(4px);
+  color: var(--kp-lv);
+  background: rgba(255, 255, 255, 0.92);
+  -webkit-backdrop-filter: blur(10px);
+          backdrop-filter: blur(10px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16);
+}
+.kp-level::before {
+  content: '';
+  flex: none;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
 }
 
-.achievement-viewer-container .level-internasional {
-  background: rgba(243, 232, 255, 0.95);
-  color: #7e22ce;
-}
-
-.achievement-viewer-container .level-nasional {
-  background: rgba(220, 252, 231, 0.95);
-  color: #15803d;
-}
-
-.achievement-viewer-container .level-provinsi {
-  background: rgba(254, 243, 199, 0.95);
-  color: #b45309;
-}
-
-.achievement-viewer-container .level-kabupaten {
-  background: rgba(220, 238, 255, 0.95);
-  color: var(--compreng-accent, #2563eb);
-}
-
-/* Khusus alumni: Prestasi (lulus perguruan tinggi) & Pencapaian (bekerja) */
-.achievement-viewer-container .level-prestasi {
-  background: rgba(224, 231, 255, 0.95);
-  color: #4338ca;
-}
-
-.achievement-viewer-container .level-pencapaian {
-  background: rgba(255, 228, 230, 0.95);
-  color: #be123c;
-}
-
-/* ==========================================================================
-   CARD BODY & TYPOGRAPHY
-   ========================================================================== */
-.achievement-viewer-container .card-body {
-  padding: 20px 22px 22px;
+/* ---------- TEKS KARTU ---------- */
+.kp-body {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-width: 0;
+  padding: 26px 28px 30px;
 }
 
-.achievement-viewer-container .student-name {
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: var(--compreng-text, #0f172a);
-  margin: 0 0 4px;
-  line-height: 1.35;
-  letter-spacing: -0.005em;
-  overflow-wrap: anywhere;
-}
-
-.achievement-viewer-container .student-class {
-  font-size: 0.78rem;
-  color: var(--compreng-accent, #2563eb);
+/* label kecil berwarna (kelas • tahun), warna ikut level & tetap terbaca di semua tema */
+.kp-label {
+  margin: 0 0 10px;
+  font-size: 0.76rem;
   font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: 0.13em;
   text-transform: uppercase;
-  letter-spacing: 0.03em;
+  color: color-mix(in srgb, var(--kp-lv) 72%, var(--compreng-text, #0f172a));
+  overflow-wrap: anywhere;
+}
+
+.kp-name {
   margin: 0 0 12px;
+  font-size: clamp(1.12rem, 1.7vw, 1.3rem);
+  font-weight: 650;
+  line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--compreng-text, #0f172a);
   overflow-wrap: anywhere;
 }
 
-/* JUDUL PRESTASI - tampil PENUH, tidak dipotong berapapun panjang teksnya.
-   Tinggi card mengikuti isi; card sebaris otomatis ikut sama tinggi (grid stretch),
-   dan tag tahun tetap menempel di bawah lewat margin-top:auto di .card-footer-tags. */
-.achievement-viewer-container .achievement-title {
-  font-size: 0.9rem;
-  font-weight: 500;
+/* Judul prestasi tampil PENUH (tidak dipotong) */
+.kp-desc {
+  font-size: 0.95rem;
+  font-weight: 400;
+  line-height: 1.7;
   color: var(--compreng-text-secondary, #475569);
-  line-height: 1.6;
-  margin: 0 0 14px;
-  text-transform: capitalize;
-  min-height: 3.2em;            /* minimal 2 baris supaya card pendek tetap rapi */
-  overflow: visible;
-  white-space: normal;
   overflow-wrap: anywhere;
-  word-break: normal;
-  hyphens: auto;
 }
 
-/* FOOTER TAGS (TAHUN) */
-.achievement-viewer-container .card-footer-tags {
+/* ---------- TOMBOL LIHAT SEMUA ---------- */
+.kp-more {
   display: flex;
+  justify-content: center;
+  margin-top: 46px;
+}
+
+.kp-more-btn {
+  display: inline-flex;
   align-items: center;
-  margin-top: auto;
-  padding-top: 12px;
-  border-top: 1px dashed var(--compreng-border, #e2e8f0);
+  gap: 10px;
+  padding: 14px 28px;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-decoration: none;
+  color: var(--compreng-accent-text, #fff);
+  background: linear-gradient(
+    135deg,
+    var(--compreng-accent, #2563eb),
+    var(--compreng-accent-hover, var(--compreng-accent, #2563eb))
+  );
+  box-shadow: 0 16px 30px -14px color-mix(in srgb, var(--compreng-accent, #2563eb) 75%, transparent);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+.kp-more-btn svg { transition: transform 0.25s ease; }
+.kp-more-btn:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.06);
+  box-shadow: 0 20px 34px -14px color-mix(in srgb, var(--compreng-accent, #2563eb) 85%, transparent);
+}
+.kp-more-btn:hover svg { transform: translateX(4px); }
+.kp-more-btn:focus-visible,
+.kp-back:focus-visible {
+  outline: 2px solid var(--compreng-accent, #2563eb);
+  outline-offset: 3px;
 }
 
-.achievement-viewer-container .footer-tag {
-  font-size: 0.72rem;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 6px;
+/* ---------- LOADING (skeleton) & KOSONG ---------- */
+.kp-skel { animation: none; pointer-events: none; }
+.kp-skel-block { aspect-ratio: 16 / 10.5; }
+.kp-skel-block,
+.kp-skel-bar {
+  background: linear-gradient(
+    100deg,
+    color-mix(in srgb, var(--compreng-text, #0f172a) 6%, transparent) 30%,
+    color-mix(in srgb, var(--compreng-text, #0f172a) 12%, transparent) 50%,
+    color-mix(in srgb, var(--compreng-text, #0f172a) 6%, transparent) 70%
+  );
+  background-size: 220% 100%;
+  animation: kp-shimmer 1.4s linear infinite;
+}
+.kp-skel .kp-body { gap: 14px; }
+.kp-skel-bar { height: 12px; border-radius: 6px; }
+@keyframes kp-shimmer {
+  from { background-position: 120% 0; }
+  to   { background-position: -120% 0; }
 }
 
-.achievement-viewer-container .year-tag {
-  background: var(--compreng-surface-soft, #f1f5f9);
-  color: var(--compreng-text-secondary, #475569);
-}
-
-/* LOADING & EMPTY STATE */
-.achievement-viewer-container .loading-state,
-.achievement-viewer-container .empty-state {
+.kp-empty {
   text-align: center;
   padding: 60px 20px;
   color: var(--compreng-text-secondary, #475569);
 }
-
-.achievement-viewer-container .empty-state h3 {
+.kp-empty h3 {
+  margin: 12px 0 4px;
   font-size: 1.1rem;
   color: var(--compreng-text, #0f172a);
-  margin: 12px 0 4px;
+}
+.kp-empty p { margin: 0; }
+
+/* ---------- HALAMAN /prestasi ---------- */
+.kp-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: var(--compreng-bg, #f8fafc);
+}
+.kp-page .kp-section { flex: 1; }
+.kp-section--page { padding-top: 64px; }
+
+/* Banner foto (gaya Showcase Karya): foto + overlay gelap bertint warna aksen tema.
+   Teks di dalamnya SELALU terang karena latarnya SELALU gelap, jadi aman di
+   Light / Dark / System / Custom. !important dipakai agar menang dari aturan
+   global h1 / p / span di theme.css. */
+.kp-cover {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: 128px 20px 96px; /* atas: ruang navbar fixed */
+  background-image:
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--compreng-accent, #2563eb) 34%, rgba(3, 8, 12, 0.80)) 0%,
+      rgba(3, 8, 12, 0.84) 100%
+    ),
+    var(--kp-cover-img);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
-/* RESPONSIVE DESIGN */
+.kp-cover-inner {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start; /* tombol kembali di kiri */
+}
+.kp-cover-text {
+  width: 100%;
+  max-width: 880px;
+  margin: 40px auto 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.kp-cover .kp-heading {
+  margin-bottom: 18px;
+  font-size: clamp(2.2rem, 6.4vw, 4rem);
+  letter-spacing: -0.03em;
+  color: #fff !important;
+  text-shadow: 0 2px 24px rgba(0, 0, 0, 0.35);
+}
+.kp-cover .kp-heading-accent {
+  background: none;
+  -webkit-text-fill-color: currentColor;
+  color: color-mix(in srgb, var(--compreng-accent, #2563eb) 52%, #ffffff) !important;
+}
+.kp-cover .kp-subtitle {
+  max-width: 640px;
+  color: rgba(255, 255, 255, 0.82) !important;
+}
+.kp-cover .kp-pill {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.28);
+}
+
+/* ---------- RESPONSIVE ---------- */
 @media (max-width: 992px) {
-  .achievement-viewer-container .achievement-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .kp-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+
+  /* kartu ganjil terakhir (mis. kartu ke-3) di tengah, bukan menggantung di kiri */
+  .kp-grid > .kp-tile:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+    justify-self: center;
+    width: calc(50% - 10px);
   }
 }
 
-@media (max-width: 600px) {
-  .achievement-viewer-container .achievement-grid-section {
-    padding: 0 16px;
-  }
+@media (max-width: 640px) {
+  .kp-section { padding: 56px 16px 64px; }
+  .kp-section--page { padding-top: 44px; }
+  .kp-cover { padding: 108px 16px 64px; }
+  .kp-cover-text { margin-top: 30px; }
+  .kp-count-text { letter-spacing: 0.1em; font-size: 0.72rem; }
+  .kp-hero { margin-bottom: 32px; }
 
-  .achievement-viewer-container .achievement-grid {
-    gap: 18px;
-  }
+  .kp-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+  .kp-grid > .kp-tile:last-child:nth-child(odd) { width: 100%; }
 
-  .achievement-viewer-container .card-image-box {
-    height: 210px;
-  }
+  .kp-media { aspect-ratio: 16 / 11.5; }
+  .kp-body { padding: 22px 22px 26px; }
 
-  .achievement-viewer-container .card-body {
-    padding: 18px 18px 20px;
-  }
+  .kp-more { margin-top: 34px; }
+  .kp-more-btn { width: 100%; justify-content: center; padding: 14px 20px; }
+}
 
-  .achievement-viewer-container .student-name {
-    font-size: 1rem;
-  }
-
-  .achievement-viewer-container .achievement-title {
-    font-size: 0.88rem;
-    min-height: 0;
-  }
-
-  .achievement-viewer-container .hero-title17 {
-    font-size: 1.5rem;
-  }
-
-  .achievement-viewer-container .achievement-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
+@media (prefers-reduced-motion: reduce) {
+  .kp-tile,
+  .kp-skel-block,
+  .kp-skel-bar { animation: none; }
+  .kp-tile, .kp-img, .kp-more-btn, .kp-more-btn svg, .kp-back { transition: none; }
 }

@@ -130,8 +130,8 @@ const FooterViewer = () => {
             <li><a href="/jurusan" onClick={(e) => handleQuickLink(e, '/jurusan', 'section-program')}>Jurusan</a></li>
             <li><a href="/ekstrakurikuler" onClick={(e) => handleQuickLink(e, '/ekstrakurikuler', 'section-ekskul')}>Ekstrakurikuler</a></li>
             <li><a href="/pengajar" onClick={(e) => handleQuickLink(e, '/pengajar', 'section-pengajar')}>Tenaga Pengajar</a></li>
-            <li><a href="/prestasi" onClick={(e) => handleQuickLink(e, '/prestasi', 'section-prestasi')}>Karya & Prestasi</a></li>
-            <li><a href="/galeri" onClick={(e) => handleQuickLink(e, '/galeri', 'section-galeri')}>Galeri</a></li>
+            <li><a href="/karya" onClick={(e) => handleQuickLink(e, '/karya', 'section-prestasi')}>Karya & Prestasi</a></li>
+            <li><a href="/dokumentasi" onClick={(e) => handleQuickLink(e, '/dokumentasi', 'section-galeri')}>Galeri</a></li>
             <li><a href="/testimoni" onClick={(e) => handleQuickLink(e, '/testimoni', 'section-testimoni')}>Testimoni</a></li>
             <li><a href="/faq" onClick={(e) => handleQuickLink(e, '/faq', 'section-faq')}>FAQ</a></li>
             <li><a href="/mitra-industri" onClick={(e) => handleQuickLink(e, '/mitra-industri', 'section-mitra-industri')}>Mitra Industri</a></li>
