@@ -340,7 +340,8 @@
 .ts-grid .ts-col-no { width: 56px; text-align: center; color: var(--compreng-text-secondary, #475569); }
 .ts-grid .ts-person { white-space: nowrap; }
 .ts-grid td:nth-child(5) { white-space: nowrap; }
-.ts-grid td:last-child { min-width: 220px; }
+.ts-grid td:nth-child(7) { min-width: 220px; }
+.ts-grid .ts-col-act { width: 112px; text-align: right; white-space: nowrap; }
 .ts-person { font-weight: 700; color: var(--compreng-text, #0f172a); }
 .ts-minor { margin-top: 2px; font-size: 12.5px; color: var(--compreng-text-secondary, #475569); }
 .ts-muted { font-size: 13px; color: var(--compreng-text-secondary, #64748b); }
@@ -495,3 +496,38 @@
   .ts-dd-caret, .ts-cta, .ts-meter-fill, .ts-ring-fill, .ts-stack, .ts-donut-seg { transition: none; }
   .ts-cta:hover { transform: none; }
 }
+
+/* ---------------- EDIT DATA SAYA (hanya tampil untuk pemilik data) ---------------- */
+.ts-edit {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  margin: 0; padding: 7px 13px; border-radius: 10px; cursor: pointer;
+  font-family: inherit; font-size: 13px; font-weight: 700; line-height: 1.2;
+  color: var(--compreng-accent, #2563eb);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 10%, var(--compreng-surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 40%, transparent);
+  transition: background-color .18s ease, color .18s ease, border-color .18s ease;
+}
+.ts-edit:hover { background: var(--compreng-accent, #2563eb); border-color: var(--compreng-accent, #2563eb); color: var(--compreng-accent-text, #fff); }
+.ts-edit:focus-visible { outline: 3px solid var(--compreng-accent, #2563eb); outline-offset: 2px; }
+.ts-edit-wide { width: 100%; margin-top: 12px; padding: 11px 14px; font-size: 14px; }
+.ts-own {
+  display: inline-block; margin-top: 4px; padding: 1px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 700; letter-spacing: .02em;
+  color: var(--compreng-accent, #2563eb);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent);
+}
+.ts-own-tile { margin: -4px 0 10px; }
+
+.ts-mine {
+  --tone: #f59e0b;
+  display: flex; align-items: center; justify-content: space-between; gap: 14px; flex-wrap: wrap;
+  margin-bottom: 14px; padding: 14px 18px; border-radius: 14px;
+  background: color-mix(in srgb, var(--tone) 12%, var(--compreng-surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--tone) 45%, transparent);
+}
+.ts-mine.is-no { --tone: #dc2626; }
+.ts-mine-txt { flex: 1 1 260px; min-width: 0; }
+.ts-mine-head { font-size: 14px; font-weight: 800; color: var(--compreng-text, #0f172a); }
+.ts-mine-sub { margin-top: 2px; font-size: 13px; line-height: 1.5; color: var(--compreng-text-secondary, #475569); }
+@media (max-width: 720px) { .ts-mine .ts-edit { width: 100%; padding: 11px 14px; } }
+@media (prefers-reduced-motion: reduce) { .ts-edit { transition: none; } }

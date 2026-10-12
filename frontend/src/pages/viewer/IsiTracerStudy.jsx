@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { ArrowLeft, Check, Loader2, Send, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Check, Loader2, Send, AlertTriangle, Pencil, Info } from 'lucide-react';
 import { getSession, clearSession, isStaff } from '../../utils/auth';
 import logoSekolah from '../../assets/logo1.png';
 import '../../css/viewer/tulisTestimoni.css'; // layout split-panel yang sama dengan form testimoni
@@ -39,13 +39,18 @@ const formatDate = (iso) =>
 
 export default function IsiTracerStudy() {
   const navigate = useNavigate();
+  const location = useLocation();
   const session = useMemo(() => getSession(), []);
+  // Dibuka dari tombol "Edit" di halaman Tracer Study (/tracer-study/isi?edit=1)
+  const wantsEdit = new URLSearchParams(location.search).get('edit') === '1';
 
   const [checking, setChecking] = useState(true);
   const [entry, setEntry] = useState(null); // data milik user ini (kalau sudah pernah isi)
   const [current, setCurrent] = useState(10);
   const [jurusanList, setJurusanList] = useState(FALLBACK_JURUSAN);
   const [justSent, setJustSent] = useState(false);
+  const [justEdited, setJustEdited] = useState(false); // true = baru menyimpan perubahan (bukan kirim pertama)
+  const [editing, setEditing] = useState(false); // mode edit data yang sudah terkirim
   const [sending, setSending] = useState(false);
   const [error, setError] = useState('');
 
@@ -112,6 +117,7 @@ export default function IsiTracerStudy() {
         const e = res.data?.data?.entry || null;
         setEntry(e);
         if (e?.approvalStatus === 'rejected') prefill(e);
+        else if (e && wantsEdit) { prefill(e); setEditing(true); } // edit data sendiri
         if (res.data?.data?.currentAngkatan) setCurrent(res.data.data.currentAngkatan);
       })
       .catch((err) => {
@@ -156,32 +162,53 @@ export default function IsiTracerStudy() {
     return '';
   };
 
+  // Mulai mengedit data sendiri dari layar status (pending / approved)
+  const startEdit = () => {
+    prefill(entry);
+    setError('');
+    setJustSent(false);
+    setJustEdited(false);
+    setEditing(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const cancelEdit = () => {
+    setError('');
+    setEditing(false);
+    // Dibuka langsung lewat ?edit=1 -> kembali ke halaman Tracer Study
+    if (wantsEdit) goBack();
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
     const problem = validate();
     if (problem) return setError(problem);
 
+    const isUpdate = !!entry && entry.approvalStatus !== 'rejected'; // edit data sendiri
+    const payload = {
+      fullName: form.fullName.trim(),
+      angkatan: Number(form.angkatan),
+      jurusan: form.jurusan,
+      workStatus: form.workStatus,
+      detailTempat: needsDetail ? form.detailTempat.trim() : '',
+      nisn: form.nisn,
+      nik: form.nik,
+      birthDate: form.birthDate,
+      domicile: form.domicile.trim(),
+      phone: normalizePhone(form.phone),
+    };
+
     setSending(true);
     try {
-      const res = await axios.post(
-        `${API}/api/tracer-study`,
-        {
-          fullName: form.fullName.trim(),
-          angkatan: Number(form.angkatan),
-          jurusan: form.jurusan,
-          workStatus: form.workStatus,
-          detailTempat: needsDetail ? form.detailTempat.trim() : '',
-          nisn: form.nisn,
-          nik: form.nik,
-          birthDate: form.birthDate,
-          domicile: form.domicile.trim(),
-          phone: normalizePhone(form.phone),
-        },
-        { headers: authHeader(session.token) }
-      );
+      // Edit: PUT /mine (server memakai token untuk menentukan pemilik). Kirim pertama / kirim ulang: POST.
+      const res = isUpdate
+        ? await axios.put(`${API}/api/tracer-study/mine`, payload, { headers: authHeader(session.token) })
+        : await axios.post(`${API}/api/tracer-study`, payload, { headers: authHeader(session.token) });
       setEntry(res.data.data);
       setJustSent(true);
+      setJustEdited(isUpdate);
+      setEditing(false);
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err) {
       const code = err.response?.status;
@@ -203,7 +230,8 @@ export default function IsiTracerStudy() {
   const approval = entry?.approvalStatus; // pending | approved | rejected
   const approved = approval === 'approved';
   const rejected = approval === 'rejected';
-  const showForm = !entry || rejected;
+  const editMode = !!entry && editing && !rejected; // mengedit data yang sudah terkirim
+  const showForm = !entry || rejected || editMode;
   const sentKind = KIND_MAP[entry?.workStatus];
 
   return (
@@ -220,7 +248,7 @@ export default function IsiTracerStudy() {
             <div className="tw-schoolname">SMKN Compreng</div>
           </div>
 
-          <h1 className="tw-heading">Lengkapi data Tracer Study-mu</h1>
+          <h1 className="tw-heading">{editMode ? 'Edit data Tracer Study-mu' : 'Lengkapi data Tracer Study-mu'}</h1>
           <div className="tw-intro">
             Data alumni membantu sekolah menjaga hubungan dengan lulusannya dan menyusun program yang lebih tepat.
           </div>
@@ -249,7 +277,9 @@ export default function IsiTracerStudy() {
             <div className="tw-done">
               <div className="tw-tick"><Check size={28} strokeWidth={3} /></div>
               <h2 className="tw-done-heading">
-                {justSent ? `Terima kasih, ${firstName}!` : approved ? 'Datamu sudah terverifikasi' : 'Datamu sedang diverifikasi'}
+                {justEdited ? 'Perubahan tersimpan!'
+                  : justSent ? `Terima kasih, ${firstName}!`
+                  : approved ? 'Datamu sudah terverifikasi' : 'Datamu sedang diverifikasi'}
               </h2>
               <div className="tw-done-copy">
                 {approved
@@ -281,6 +311,9 @@ export default function IsiTracerStudy() {
               <button type="button" className="tw-go" onClick={goBack}>
                 {approved ? 'Lihat di tabel alumni' : 'Kembali ke Tracer Study'}
               </button>
+              <button type="button" className="tf-edit-btn" onClick={startEdit}>
+                <Pencil size={16} aria-hidden="true" /> Edit data saya
+              </button>
             </div>
           ) : (
             /* ---------- FORM (baru, atau perbaikan data yang ditolak) ---------- */
@@ -295,9 +328,23 @@ export default function IsiTracerStudy() {
                 </div>
               )}
 
-              <h2 className="tw-hello">Halo, {firstName}. Isi data dirimu ya.</h2>
+              {editMode && (
+                <div className="tf-info" role="note">
+                  <Info size={18} aria-hidden="true" />
+                  <div>
+                    Kamu sedang mengedit datamu sendiri.
+                    {approved
+                      ? ' Datamu tetap tampil di tabel. Jika NISN diubah, data perlu diverifikasi ulang oleh admin.'
+                      : ' Datamu masih menunggu verifikasi admin.'}
+                  </div>
+                </div>
+              )}
+
+              <h2 className="tw-hello">{editMode ? `Edit datamu, ${firstName}.` : `Halo, ${firstName}. Isi data dirimu ya.`}</h2>
               <div className="tw-hello-copy">
-                Pastikan datanya benar dan sesuai dokumen. Data baru tampil di tabel setelah diverifikasi admin.
+                {editMode
+                  ? 'Ubah bagian yang perlu diperbarui, lalu simpan.'
+                  : 'Pastikan datanya benar dan sesuai dokumen. Data baru tampil di tabel setelah diverifikasi admin.'}
               </div>
 
               <div className="tw-field">
@@ -316,6 +363,7 @@ export default function IsiTracerStudy() {
                     id="ts-angkatan" className="tw-input" value={form.angkatan}
                     onChange={(e) => set('angkatan', e.target.value)}
                   >
+                    <button type="button"><selectedcontent /></button>
                     <option value="">Pilih angkatan</option>
                     {angkatanOptions.map((a) => (
                       <option key={a} value={a}>{a === current ? `Angkatan ${a} (tahun ini)` : `Angkatan ${a}`}</option>
@@ -328,6 +376,7 @@ export default function IsiTracerStudy() {
                     id="ts-jurusan" className="tw-input" value={form.jurusan}
                     onChange={(e) => set('jurusan', e.target.value)}
                   >
+                    <button type="button"><selectedcontent /></button>
                     <option value="">Pilih jurusan</option>
                     {jurusanOptions.map((j) => <option key={j} value={j}>{j}</option>)}
                   </select>
@@ -417,9 +466,15 @@ export default function IsiTracerStudy() {
               <button type="submit" className="tw-go" disabled={sending}>
                 {sending
                   ? <><Loader2 size={18} className="tw-spin" /> Mengirim…</>
+                  : editMode ? <><Check size={18} /> Simpan perubahan</>
                   : <><Send size={18} /> {rejected ? 'Kirim ulang data' : 'Kirim data'}</>}
               </button>
-              <div className="tw-fine">Data yang dikirim akan diperiksa admin sebelum ditampilkan.</div>
+              {editMode && (
+                <button type="button" className="tf-edit-btn" onClick={cancelEdit} disabled={sending}>Batal</button>
+              )}
+              <div className="tw-fine">
+                {editMode ? 'Hanya kamu yang bisa mengubah data ini.' : 'Data yang dikirim akan diperiksa admin sebelum ditampilkan.'}
+              </div>
             </form>
           )}
         </div>

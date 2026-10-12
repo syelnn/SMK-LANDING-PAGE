@@ -105,3 +105,115 @@
 }
 
 .tw-done .tw-go { margin-top: 20px; }
+/* ---------- Mode edit data sendiri ---------- */
+.tf-info {
+  display: flex; align-items: flex-start; gap: 10px; margin-bottom: 20px; padding: 13px 15px;
+  border-radius: 12px; font-size: 13.5px; line-height: 1.55; font-weight: 600;
+  color: var(--compreng-text, #06231D);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 10%, var(--compreng-surface, #fff));
+  border: 1px solid color-mix(in srgb, var(--compreng-accent, #2563eb) 40%, transparent);
+}
+.tf-info svg { flex: none; margin-top: 2px; color: var(--compreng-accent, #2563eb); }
+
+.tw-shell .tf-edit-btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; margin: 12px 0 0; padding: 14px 24px; box-sizing: border-box;
+  border-radius: 999px; cursor: pointer;
+  font-family: inherit; font-size: 15px; font-weight: 700; line-height: 1.2;
+  color: var(--compreng-text, #06231D); background: transparent;
+  border: 1.5px solid var(--compreng-border, #cbd5e1);
+  transition: background-color .18s ease, border-color .18s ease;
+}
+.tw-shell .tf-edit-btn:hover:not(:disabled) { background: var(--compreng-surface-soft, #f1f5f9); border-color: var(--compreng-accent, #2563eb); }
+.tw-shell .tf-edit-btn:disabled { opacity: .6; cursor: not-allowed; }
+.tw-shell .tf-edit-btn:focus-visible { outline: 3px solid var(--compreng-accent, #2563eb); outline-offset: 2px; }
+/* Layar status: ringkasan & kedua tombol selebar kolom yang sama, rapi sejajar */
+.tw-done .tf-recap { max-width: none; margin: 4px 0 0; }
+.tw-done .tw-go { margin-top: 24px; }
+.tw-done .tf-edit-btn { max-width: none; margin-top: 12px; }
+@media (prefers-reduced-motion: reduce) { .tw-shell .tf-edit-btn { transition: none; } }
+
+/* ---------- Dropdown angkatan & jurusan (CSS saja, tanpa JS) ----------
+   Memakai "customizable select" (appearance: base-select, Chrome/Edge 135+): kotak pilihan DAN daftar
+   opsinya bisa distyling. Browser yang belum mendukung otomatis memakai dropdown bawaan seperti biasa. */
+@supports (appearance: base-select) {
+  .tw-shell select.tw-input,
+  .tw-shell select.tw-input::picker(select) { appearance: base-select; }
+
+  .tw-shell .tw-field select.tw-input.tw-input {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+    cursor: pointer; text-align: left;
+  }
+  .tw-shell select.tw-input::picker-icon {
+    content: ''; flex: none; width: 9px; height: 9px; margin-right: 4px;
+    border-right: 2px solid currentColor; border-bottom: 2px solid currentColor;
+    transform: translateY(-3px) rotate(45deg); opacity: .65;
+    transition: transform .18s ease;
+  }
+  .tw-shell select.tw-input:open::picker-icon { transform: translateY(2px) rotate(225deg); }
+  .tw-shell select.tw-input:open {
+    border-color: var(--compreng-accent, #076653);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--compreng-accent, #076653) 22%, transparent);
+  }
+
+  /* daftar opsi */
+  .tw-shell select.tw-input::picker(select) {
+    box-sizing: border-box; inline-size: anchor-size(width); max-inline-size: calc(100vw - 24px);
+    max-block-size: min(300px, 50vh); margin: 8px 0; padding: 6px;
+    position-area: block-end span-inline-end; position-try-fallbacks: flip-block;
+    overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--compreng-text, #06231D) 28%, transparent) transparent;
+    background: var(--compreng-surface, #fff);
+    border: 1px solid var(--compreng-border, #e2e8f0);
+    border-radius: 16px;
+    box-shadow: 0 18px 36px -12px var(--compreng-shadow, rgba(15, 23, 42, .28)), 0 2px 8px rgba(15, 23, 42, .08);
+    opacity: 0; transform: translateY(-4px);
+    transition: opacity .14s ease, transform .14s ease, overlay .14s allow-discrete, display .14s allow-discrete;
+  }
+  .tw-shell select.tw-input:open::picker(select) { opacity: 1; transform: none; }
+  @starting-style { .tw-shell select.tw-input:open::picker(select) { opacity: 0; transform: translateY(-4px); } }
+
+  .tw-shell select.tw-input option {
+    display: flex; align-items: center; gap: 12px; padding: 11px 12px; border-radius: 11px;
+    font-size: 15px; line-height: 1.4; font-weight: 600; cursor: pointer;
+    white-space: normal; overflow-wrap: anywhere; min-inline-size: 0;
+    color: var(--compreng-text, #06231D); background: transparent;
+    transition: background-color .12s ease;
+  }
+  .tw-shell select.tw-input option:hover,
+  .tw-shell select.tw-input option:focus-visible { background: var(--compreng-surface-soft, #f1f5f9); outline: none; }
+  .tw-shell select.tw-input option:checked {
+    color: var(--compreng-accent, #076653);
+    background: color-mix(in srgb, var(--compreng-accent, #076653) 11%, transparent);
+  }
+  .tw-shell select.tw-input option:first-of-type { opacity: .55; font-weight: 500; } /* "Pilih ..." */
+  .tw-shell select.tw-input option::checkmark { order: 1; margin-left: auto; content: '\2713'; font-weight: 800; }
+  .tw-shell select.tw-input option:not(:checked)::checkmark { visibility: hidden; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tw-shell select.tw-input::picker(select), .tw-shell select.tw-input option { transition: none; }
+}
+
+/* Angkatan & Jurusan: kotak slim satu baris, sama tinggi & sejajar. Teks panjang dipotong dengan "..." */
+.tf-two .tw-field { display: flex; flex-direction: column; }
+.tw-shell .tf-two .tw-field select.tw-input.tw-input {
+  flex: none; width: 100%; min-width: 0; box-sizing: border-box;
+  height: 48px; padding-top: 0; padding-bottom: 0;
+}
+@supports (appearance: base-select) {
+  .tw-shell .tf-two .tw-field select.tw-input.tw-input { min-block-size: 0; }
+  /* tombol di dalam <select> (berisi <selectedcontent>) supaya teks bisa menyusut & dipotong "..." */
+  .tw-shell select.tw-input > button {
+    all: unset; box-sizing: border-box; flex: 1 1 0; min-width: 0; align-self: stretch;
+    display: flex; align-items: center; cursor: pointer;
+  }
+  .tw-shell select.tw-input selectedcontent {
+    display: block; min-width: 0; flex: 1 1 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .tw-shell .tf-two .tw-field select.tw-input::picker-icon { margin-right: 0; }
+}
+@media (max-width: 560px) {
+  .tw-shell select.tw-input option { padding: 13px 12px; } /* area sentuh lebih besar di HP */
+  .tw-shell select.tw-input::picker(select) { max-block-size: min(300px, 46vh); }
+}
