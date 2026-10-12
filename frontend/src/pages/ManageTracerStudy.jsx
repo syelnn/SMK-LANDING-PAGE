@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import axios from 'axios';
-import { Check, X, Plus, Search, Trash2, Loader2, ClipboardList, Pencil, MoreVertical, Lock } from 'lucide-react';
+import { Check, X, Plus, Search, Trash2, Loader2, Pencil, MoreVertical, Lock, ChevronDown } from 'lucide-react';
 import '../css/managetracerstudy.css';
 import '../App.css'; // class modal-overlay, modern-modal, input-modern, dll (sama seperti halaman Testimoni)
 
@@ -18,6 +18,9 @@ const KINDS = [
   { key: 'Pencari Kerja Aktif', color: '#f43f5e', detail: null },
 ];
 const KIND_MAP = Object.fromEntries(KINDS.map((k) => [k.key, k]));
+
+// Angkatan yang ditambahkan manual oleh admin (angkatan baru di atas angkatan "tahun ini")
+const EXTRA_ANGKATAN_KEY = 'tracerExtraAngkatan';
 const FALLBACK_JURUSAN = ['Agribisnis Tanaman Pangan dan Hortikultura', 'Teknik dan Bisnis Sepeda Motor'];
 
 const EMPTY_FORM = {
@@ -83,6 +86,14 @@ const Locked = ({ label, value, id }) => (
   <div className="form-group-modern">
     <label htmlFor={id} className="mt-lock-lbl"><Lock size={12} aria-hidden="true" /> {label}</label>
     <input id={id} type="text" className="input-modern mt-locked" value={value || '—'} readOnly disabled tabIndex={-1} />
+  </div>
+);
+
+// Satu baris "label : nilai" pada kartu HP/tablet (gaya kartu Berita)
+const MRow = ({ label, children }) => (
+  <div className="mt-m-row">
+    <div className="mt-m-label">{label}</div>
+    <div className="mt-m-value">{children}</div>
   </div>
 );
 
@@ -170,9 +181,88 @@ const RowMore = ({ item, disabled, onEdit, onDelete }) => {
   );
 };
 
+// Dropdown kustom untuk form modal (sama seperti dropdown "Tingkat" di Karya Prestasi):
+// selalu terbuka ke bawah, rapi di dalam modal, dan ikut tema. options = [{ value, label }]
+const ModalSelect = ({ id, value, options, placeholder, onChange, addAction }) => {
+  const [open, setOpen] = useState(false);
+  const boxRef = useRef(null);
+  const listRef = useRef(null);
+  const selected = options.find((o) => String(o.value) === String(value));
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const onDown = (e) => { if (boxRef.current && !boxRef.current.contains(e.target)) setOpen(false); };
+    const onKey = (e) => { if (e.key === 'Escape') { e.stopPropagation(); setOpen(false); } };
+    document.addEventListener('mousedown', onDown);
+    document.addEventListener('touchstart', onDown);
+    document.addEventListener('keydown', onKey);
+    const list = listRef.current;
+    if (list) {
+      const sel = list.querySelector('[aria-selected="true"]');
+      if (sel) list.scrollTop = Math.max(0, sel.offsetTop - list.clientHeight / 2 + sel.clientHeight / 2);
+      list.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); // pastikan daftar terlihat penuh di dalam modal
+    }
+    return () => {
+      document.removeEventListener('mousedown', onDown);
+      document.removeEventListener('touchstart', onDown);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const moveFocus = (e) => {
+    if (e.key !== 'ArrowDown' && e.key !== 'ArrowUp') return;
+    e.preventDefault();
+    const opts = [...listRef.current.querySelectorAll('[role="option"]')];
+    const i = opts.indexOf(document.activeElement);
+    const next = e.key === 'ArrowDown' ? Math.min(opts.length - 1, i + 1) : Math.max(0, i - 1);
+    opts[next]?.focus();
+  };
+
+  return (
+    <div className={`mt-dd ${open ? 'is-open' : ''}`} ref={boxRef}>
+      <button
+        type="button" id={id} className={`input-modern mt-dd-trigger ${selected ? '' : 'is-empty'}`}
+        aria-haspopup="listbox" aria-expanded={open} onClick={() => setOpen((o) => !o)}
+      >
+        <span className="mt-dd-text">{selected ? selected.label : placeholder}</span>
+        <ChevronDown size={16} className="mt-dd-chev" aria-hidden="true" />
+      </button>
+      {open && (
+        <div className="mt-dd-list" role="listbox" ref={listRef} onKeyDown={moveFocus}>
+          {addAction && (
+            <button
+              type="button" className="mt-dd-opt mt-dd-add"
+              onClick={() => { addAction.onClick(); setOpen(false); }}
+            >
+              <span>{addAction.label}</span>
+              <Plus size={14} aria-hidden="true" />
+            </button>
+          )}
+          {options.map((o) => {
+            const on = String(o.value) === String(value);
+            return (
+              <button
+                type="button" role="option" aria-selected={on} key={o.value}
+                className={`mt-dd-opt ${on ? 'is-on' : ''}`}
+                onClick={() => { onChange(String(o.value)); setOpen(false); }}
+              >
+                <span>{o.label}</span>
+                {on && <Check size={14} aria-hidden="true" />}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+};
+
 const ManageTracerStudy = () => {
   const [items, setItems] = useState([]);
   const [current, setCurrent] = useState(10);
+  const [extraAngkatan, setExtraAngkatan] = useState(() => {
+    try { return Number(localStorage.getItem(EXTRA_ANGKATAN_KEY)) || 0; } catch { return 0; }
+  });
   const [jurusanList, setJurusanList] = useState(FALLBACK_JURUSAN);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState('');
@@ -185,15 +275,27 @@ const ManageTracerStudy = () => {
   const [notice, setNotice] = useState('');
   const noticeTimer = useRef(null);
 
+  // Kolom cari ala "Tenaga Pengajar": di HP tampil ringkas (ikon + "Cari" di tengah), melebar saat diketuk
+  const [narrow, setNarrow] = useState(() => typeof window !== 'undefined' && window.matchMedia('(max-width: 600px)').matches);
+  const [findFocus, setFindFocus] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 600px)');
+    const on = (e) => setNarrow(e.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+
   // tambah data manual
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [formError, setFormError] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // edit (admin/editor hanya boleh: nama, jurusan, angkatan)
+  // edit (admin/editor boleh: nama, jurusan, angkatan, kegiatan, NISN, NIK, tanggal lahir, no HP, status approval; sisanya terkunci)
   const [editing, setEditing] = useState(null); // item yang sedang diedit
-  const [editForm, setEditForm] = useState({ fullName: '', jurusan: '', angkatan: '' });
+  const [editForm, setEditForm] = useState({
+    fullName: '', jurusan: '', angkatan: '', workStatus: '', detailTempat: '', nisn: '', nik: '', birthDate: '', phone: '', approvalStatus: 'pending',
+  });
   const [editError, setEditError] = useState('');
   const [editSaving, setEditSaving] = useState(false);
 
@@ -290,28 +392,63 @@ const ManageTracerStudy = () => {
       fullName: item.fullName || '',
       jurusan: item.jurusan || '',
       angkatan: item.angkatan ? String(item.angkatan) : '',
+      workStatus: item.workStatus || '',
+      detailTempat: item.detailTempat || '',
+      nisn: item.nisn || '',
+      nik: item.nik || '',
+      birthDate: item.birthDate ? String(item.birthDate).slice(0, 10) : '',
+      phone: item.phone || '',
+      approvalStatus: item.approvalStatus || 'pending',
     });
     setEditError('');
   };
   const closeEdit = () => { if (!editSaving) setEditing(null); };
   const setEditField = (k, v) => setEditForm((f) => ({ ...f, [k]: v }));
+  const setEditDigits = (k, max) => (e) => setEditField(k, e.target.value.replace(/\D/g, '').slice(0, max));
+  // Ganti kegiatan: detail tempat dikosongkan bila kegiatan baru tidak memakainya
+  const pickEditKind = (key) =>
+    setEditForm((f) => ({ ...f, workStatus: key, detailTempat: KIND_MAP[key]?.detail && key === editing?.workStatus ? (editing.detailTempat || '') : '' }));
 
   const handleEdit = async (e) => {
     e.preventDefault();
+    const editKind = KIND_MAP[editForm.workStatus];
     const payload = {
       fullName: editForm.fullName.trim(),
       jurusan: editForm.jurusan,
       angkatan: Number(editForm.angkatan),
+      workStatus: editForm.workStatus,
+      detailTempat: editKind?.detail ? editForm.detailTempat.trim() : '',
+      nisn: editForm.nisn,
+      nik: editForm.nik,
+      birthDate: editForm.birthDate,
+      phone: editForm.phone,
     };
     if (payload.fullName.length < 3) return setEditError('Nama lengkap minimal 3 karakter.');
     if (!payload.jurusan) return setEditError('Pilih jurusan.');
     if (!payload.angkatan) return setEditError('Pilih angkatan.');
+    if (!payload.workStatus) return setEditError('Pilih kegiatan saat ini.');
+    if (editKind?.detail && !payload.detailTempat) return setEditError(`${editKind.detail} wajib diisi.`);
+    if (!/^\d{10}$/.test(payload.nisn)) return setEditError('NISN harus 10 digit.');
+    if (payload.nik && !/^\d{16}$/.test(payload.nik)) return setEditError('NIK harus 16 digit (atau kosongkan).');
+    if (!payload.birthDate) return setEditError('Isi tanggal lahir.');
+    if (!payload.phone) return setEditError('Isi nomor HP.');
 
     setEditError('');
     setEditSaving(true);
     try {
-      const res = await axios.put(`${API}/${editing.id}`, payload, authHeaders());
-      const saved = res.data?.data || {};
+      const statusChanged = editForm.approvalStatus !== (editing.approvalStatus || 'pending');
+      const res = await axios.put(
+        `${API}/${editing.id}`,
+        statusChanged && editForm.approvalStatus === 'pending' ? { ...payload, approvalStatus: 'pending' } : payload,
+        authHeaders()
+      );
+      let saved = res.data?.data || {};
+      // Disetujui / Ditolak memakai endpoint approve & reject yang sudah ada (perilaku sama seperti tombol Accept / Reject)
+      if (statusChanged && editForm.approvalStatus !== 'pending') {
+        const act = editForm.approvalStatus === 'approved' ? 'approve' : 'reject';
+        const r2 = await axios.put(`${API}/${editing.id}/${act}`, {}, authHeaders());
+        saved = { ...saved, ...(r2.data?.data || {}) };
+      }
       setItems((prev) => prev.map((i) => (i.id === editing.id ? { ...i, ...payload, ...saved } : i)));
       flash(`Data ${payload.fullName} diperbarui.`);
       setEditing(null);
@@ -334,9 +471,13 @@ const ManageTracerStudy = () => {
     setForm((f) => ({ ...f, workStatus: key, detailTempat: KIND_MAP[key]?.detail ? f.detailTempat : '' }));
 
   const formKind = KIND_MAP[form.workStatus];
+  const editFormKind = KIND_MAP[editForm.workStatus];
 
   const handleAdd = async (e) => {
     e.preventDefault();
+    if (!form.angkatan) return setFormError('Pilih angkatan.');
+    if (!form.jurusan) return setFormError('Pilih jurusan.');
+    if (!form.workStatus) return setFormError('Pilih kegiatan saat ini.');
     setFormError('');
     setSaving(true);
     try {
@@ -355,11 +496,32 @@ const ManageTracerStudy = () => {
     }
   };
 
-  const angkatanOptions = Array.from({ length: current }, (_, i) => current - i);
+  // Angkatan tertinggi = yang terbesar di antara angkatan berjalan, angkatan tambahan, dan angkatan pada data
+  const maxAngkatan = Math.max(current, extraAngkatan, ...items.map((i) => Number(i.angkatan) || 0));
+  const angkatanOptions = Array.from({ length: maxAngkatan }, (_, i) => maxAngkatan - i);
+  const addAngkatan = (setField) => {
+    const next = maxAngkatan + 1;
+    if (!window.confirm(`Tambah Angkatan ${next}?\n\nAngkatan ${next} akan muncul di daftar pilihan angkatan.`)) return;
+    setExtraAngkatan(next);
+    try { localStorage.setItem(EXTRA_ANGKATAN_KEY, String(next)); } catch { /* abaikan */ }
+    setField('angkatan', String(next));
+    flash(`Angkatan ${next} ditambahkan.`);
+  };
   // Jurusan lama (mis. berkode singkatan) tetap tampil agar tidak hilang saat diedit
   const editJurusanOptions = editForm.jurusan && !jurusanList.includes(editForm.jurusan)
     ? [editForm.jurusan, ...jurusanList]
     : jurusanList;
+  const angkatanSelectOptions = angkatanOptions.map((a) => ({
+    value: String(a), label: `Angkatan ${a}`,
+  }));
+  const jurusanSelectOptions = jurusanList.map((j) => ({ value: j, label: j }));
+  const editJurusanSelectOptions = editJurusanOptions.map((j) => ({ value: j, label: j }));
+  const kindSelectOptions = KINDS.map((k) => ({ value: k.key, label: k.key }));
+  const approvalSelectOptions = [
+    { value: 'pending', label: 'Menunggu verifikasi' },
+    { value: 'approved', label: 'Disetujui' },
+    { value: 'rejected', label: 'Ditolak' },
+  ];
 
   const hasFilter = query || angkatan !== 'all' || kind !== 'all';
   const emptyText = hasFilter
@@ -384,7 +546,7 @@ const ManageTracerStudy = () => {
           <div className="mt-sub">Verifikasi data alumni yang diisi mandiri. Data yang di-Accept tampil di tabel dan statistik publik. Data yang di-Reject tidak tampil, dan alumni bisa memperbaikinya lalu mengirim ulang.</div>
         </div>
         <button type="button" className="btn-modern-primary mt-add" onClick={openAdd}>
-          <Plus size={16} /> Tambah Data
+          <Plus size={14} /> Tambah
         </button>
       </div>
 
@@ -404,11 +566,13 @@ const ManageTracerStudy = () => {
       </div>
 
       <div className="mt-bar">
-        <div className="mt-find">
+        <div className={`mt-find${narrow && !findFocus && !query ? ' is-compact' : ''}`}>
           <Search size={16} className="mt-find-ico" />
           <input
             type="text" className="mt-find-input" value={query}
-            placeholder="Cari nama, NISN, NIK, jurusan, tempat, atau akun…"
+            aria-label="Cari nama, NISN, NIK, jurusan, tempat, atau akun"
+            placeholder={narrow && !findFocus && !query ? 'Cari' : 'Cari nama, NISN, NIK, jurusan, tempat, atau akun…'}
+            onFocus={() => setFindFocus(true)} onBlur={() => setFindFocus(false)}
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
@@ -481,25 +645,27 @@ const ManageTracerStudy = () => {
           {loading && <div className="mt-mempty">Memuat data…</div>}
           {!loading && filtered.length === 0 && <div className="mt-mempty">{emptyText}</div>}
           {filtered.map((i) => (
-            <div key={i.id} className="mt-tile">
-              <div className="mt-tile-top">
-                <div className="mt-tile-who">
-                  <div className="mt-name">{i.fullName}</div>
+            <div key={i.id} className={`mt-tile${i.approvalStatus === 'pending' ? ' is-pending' : i.approvalStatus === 'rejected' ? ' is-no' : ''}`}>
+              <div className="mt-m-head">
+                <div className="mt-ava" aria-hidden="true">{(i.fullName || '?').trim().charAt(0).toUpperCase()}</div>
+                <div className="mt-m-main">
+                  <div className="mt-m-name">{i.fullName}</div>
                   <Owner item={i} />
+                  <div className="mt-m-tags">
+                    <div className="mt-gen-tag">Angkatan {i.angkatan}</div>
+                    <Kind item={i} />
+                  </div>
                 </div>
                 <RowMore item={i} disabled={busyId === i.id} onEdit={openEdit} onDelete={remove} />
               </div>
-              <div className="mt-kv"><div>Jurusan</div><div>{i.jurusan || '-'}</div></div>
-              <div className="mt-kv"><div>Angkatan</div><div>{i.angkatan}</div></div>
-              <div className="mt-kv"><div>Kegiatan</div><div><Kind item={i} /></div></div>
-              <div className="mt-kv"><div>Tempat kerja / kampus</div><div>{i.detailTempat || '-'}</div></div>
-              <div className="mt-kv"><div>NISN</div><div className="mt-mono">{i.nisn || '-'}</div></div>
-              <div className="mt-kv"><div>NIK</div><div className="mt-mono">{i.nik || '-'}</div></div>
-              <div className="mt-kv"><div>Domisili</div><div>{i.domicile || '-'}</div></div>
-              <div className="mt-kv"><div>No. HP</div><div className="mt-mono">{i.phone || '-'}</div></div>
-              <div className="mt-kv mt-kv-end">
-                <div>Approval</div>
-                <div><Pill status={i.approvalStatus} /></div>
+              <div className="mt-m-details">
+                <MRow label="Jurusan">{i.jurusan || '—'}</MRow>
+                {i.detailTempat && <MRow label="Tempat">{i.detailTempat}</MRow>}
+                <MRow label="NISN"><span className="mt-mono">{i.nisn || '—'}</span></MRow>
+                <MRow label="NIK"><span className="mt-mono">{i.nik || '—'}</span></MRow>
+                <MRow label="Domisili">{i.domicile || '—'}</MRow>
+                <MRow label="No. HP"><span className="mt-mono">{i.phone || '—'}</span></MRow>
+                <MRow label="Status"><Pill status={i.approvalStatus} /></MRow>
               </div>
               <Decide {...rowProps(i)} />
             </div>
@@ -507,12 +673,12 @@ const ManageTracerStudy = () => {
         </div>
       </div>
 
-      {/* ===== Modal edit (hanya nama, jurusan, angkatan) ===== */}
+      {/* ===== Modal edit (nama, jurusan, angkatan, kegiatan, NISN, NIK, tgl lahir, HP, status; sisanya terkunci) ===== */}
       {editing && (
         <div className="modal-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) closeEdit(); }}>
           <div className="modal-content modern-modal" role="dialog" aria-modal="true" aria-label="Edit data alumni">
             <div className="modal-header-modern">
-              <h3><Pencil size={18} style={{ verticalAlign: '-3px', marginRight: 8 }} />Edit Data Alumni</h3>
+              <h3>Edit Data Alumni</h3>
               <button onClick={closeEdit} className="btn-close-modal" type="button" aria-label="Tutup"><X size={20} /></button>
             </div>
             <form onSubmit={handleEdit} className="form-modern-layout">
@@ -523,35 +689,66 @@ const ManageTracerStudy = () => {
               </div>
               <div className="form-group-modern">
                 <label htmlFor="mt-edit-jurusan">Jurusan (Program Keahlian)</label>
-                <select id="mt-edit-jurusan" className="input-modern" value={editForm.jurusan} required
-                  onChange={(e) => setEditField('jurusan', e.target.value)}>
-                  <button type="button"><selectedcontent /></button>
-                  <option value="">Pilih jurusan</option>
-                  {editJurusanOptions.map((j) => <option key={j} value={j}>{j}</option>)}
-                </select>
+                <ModalSelect id="mt-edit-jurusan" value={editForm.jurusan} placeholder="Pilih jurusan"
+                  options={editJurusanSelectOptions} onChange={(v) => setEditField('jurusan', v)} />
               </div>
+              <div className="mt-row">
+                <div className="form-group-modern">
+                  <label htmlFor="mt-edit-angkatan">Angkatan</label>
+                  <ModalSelect id="mt-edit-angkatan" value={editForm.angkatan} placeholder="Pilih angkatan"
+                    options={angkatanSelectOptions} onChange={(v) => setEditField('angkatan', v)}
+                    addAction={{ label: `Tambah Angkatan ${maxAngkatan + 1}`, onClick: () => addAngkatan(setEditField) }} />
+                </div>
+                <div className="form-group-modern">
+                  <label htmlFor="mt-edit-kegiatan">Kegiatan Saat Ini</label>
+                  <ModalSelect id="mt-edit-kegiatan" value={editForm.workStatus} placeholder="Pilih status"
+                    options={kindSelectOptions} onChange={pickEditKind} />
+                </div>
+              </div>
+              {editFormKind?.detail && editForm.workStatus !== editing.workStatus && (
+                <div className="form-group-modern">
+                  <label htmlFor="mt-edit-detail">{editFormKind.detail}</label>
+                  <input id="mt-edit-detail" type="text" className="input-modern" value={editForm.detailTempat} maxLength={200} required
+                    onChange={(e) => setEditField('detailTempat', e.target.value)} />
+                </div>
+              )}
+              <div className="mt-row">
+                <div className="form-group-modern">
+                  <label htmlFor="mt-edit-nisn">NISN (10 digit)</label>
+                  <input id="mt-edit-nisn" type="text" inputMode="numeric" className="input-modern" value={editForm.nisn} required
+                    onChange={setEditDigits('nisn', 10)} />
+                </div>
+                <div className="form-group-modern">
+                  <label htmlFor="mt-edit-nik">NIK (opsional, 16 digit)</label>
+                  <input id="mt-edit-nik" type="text" inputMode="numeric" className="input-modern" value={editForm.nik}
+                    onChange={setEditDigits('nik', 16)} />
+                </div>
+              </div>
+              <div className="mt-row">
+                <div className="form-group-modern">
+                  <label htmlFor="mt-edit-lahir">Tanggal Lahir</label>
+                  <input id="mt-edit-lahir" type="date" className="input-modern" value={editForm.birthDate} required min="1980-01-01"
+                    max={new Date().toISOString().slice(0, 10)} onChange={(e) => setEditField('birthDate', e.target.value)} />
+                </div>
+                <div className="form-group-modern">
+                  <label htmlFor="mt-edit-hp">Nomor HP Aktif</label>
+                  <input id="mt-edit-hp" type="tel" className="input-modern" value={editForm.phone} maxLength={16} required
+                    onChange={(e) => setEditField('phone', e.target.value.replace(/[^\d+]/g, ''))} />
+                </div>
+              </div>
+
               <div className="form-group-modern">
-                <label htmlFor="mt-edit-angkatan">Angkatan</label>
-                <select id="mt-edit-angkatan" className="input-modern" value={editForm.angkatan} required
-                  onChange={(e) => setEditField('angkatan', e.target.value)}>
-                  <button type="button"><selectedcontent /></button>
-                  <option value="">Pilih angkatan</option>
-                  {angkatanOptions.map((a) => <option key={a} value={a}>{a === current ? `Angkatan ${a} (tahun ini)` : `Angkatan ${a}`}</option>)}
-                </select>
+                <label htmlFor="mt-edit-status">Status Approval</label>
+                <ModalSelect id="mt-edit-status" value={editForm.approvalStatus} placeholder="Pilih status"
+                  options={approvalSelectOptions} onChange={(v) => setEditField('approvalStatus', v)} />
               </div>
 
               <div className="mt-lock-head"><Lock size={14} aria-hidden="true" /> Data terkunci (tidak dapat diubah)</div>
               <div className="mt-lock-grid">
-                <Locked id="mt-lk-kegiatan" label="Kegiatan Saat Ini" value={editing.workStatus} />
-                {KIND_MAP[editing.workStatus]?.detail && (
-                  <Locked id="mt-lk-detail" label={KIND_MAP[editing.workStatus].detail} value={editing.detailTempat} />
+                {editFormKind?.detail && editForm.workStatus === editing.workStatus && (
+                  <Locked id="mt-lk-detail" label={editFormKind.detail} value={editing.detailTempat} />
                 )}
-                <Locked id="mt-lk-nisn" label="NISN" value={editing.nisn} />
-                <Locked id="mt-lk-nik" label="NIK" value={editing.nik} />
-                <Locked id="mt-lk-lahir" label="Tanggal Lahir" value={fmtDate(editing.birthDate)} />
                 <Locked id="mt-lk-domisili" label="Domisili (Kecamatan)" value={editing.domicile} />
-                <Locked id="mt-lk-hp" label="Nomor HP" value={editing.phone} />
-                <Locked id="mt-lk-approval" label="Status Approval" value={(APPROVAL[editing.approvalStatus] || APPROVAL.pending).label} />
               </div>
 
               {editError && <div className="mt-err" role="alert">{editError}</div>}
@@ -570,71 +767,70 @@ const ManageTracerStudy = () => {
         <div className="modal-overlay">
           <div className="modal-content modern-modal">
             <div className="modal-header-modern">
-              <h3><ClipboardList size={18} style={{ verticalAlign: '-3px', marginRight: 8 }} />Tambah Data Alumni</h3>
+              <h3>Tambah Data Alumni</h3>
               <button onClick={() => setIsModalOpen(false)} className="btn-close-modal" type="button" aria-label="Tutup"><X size={20} /></button>
             </div>
             <form onSubmit={handleAdd} className="form-modern-layout">
               <div className="form-group-modern">
-                <label>Nama Lengkap</label>
-                <input type="text" className="input-modern" value={form.fullName} maxLength={200} required
+                <label htmlFor="mt-add-nama">Nama Lengkap</label>
+                <input id="mt-add-nama" type="text" className="input-modern" value={form.fullName} maxLength={200} required
                   onChange={(e) => setField('fullName', e.target.value)} />
               </div>
-              <div className="form-group-modern">
-                <label>Angkatan</label>
-                <select className="input-modern" value={form.angkatan} required onChange={(e) => setField('angkatan', e.target.value)}>
-                  <button type="button"><selectedcontent /></button>
-                  <option value="">Pilih angkatan</option>
-                  {angkatanOptions.map((a) => <option key={a} value={a}>{a === current ? `Angkatan ${a} (tahun ini)` : `Angkatan ${a}`}</option>)}
-                </select>
+              <div className="mt-row">
+                <div className="form-group-modern">
+                  <label htmlFor="mt-add-angkatan">Angkatan</label>
+                  <ModalSelect id="mt-add-angkatan" value={form.angkatan} placeholder="Pilih angkatan"
+                    options={angkatanSelectOptions} onChange={(v) => setField('angkatan', v)}
+                    addAction={{ label: `Tambah Angkatan ${maxAngkatan + 1}`, onClick: () => addAngkatan(setField) }} />
+                </div>
+                <div className="form-group-modern">
+                  <label htmlFor="mt-add-kegiatan">Kegiatan Saat Ini</label>
+                  <ModalSelect id="mt-add-kegiatan" value={form.workStatus} placeholder="Pilih status"
+                    options={kindSelectOptions} onChange={pickKind} />
+                </div>
               </div>
               <div className="form-group-modern">
-                <label>Jurusan (Program Keahlian)</label>
-                <select className="input-modern" value={form.jurusan} required onChange={(e) => setField('jurusan', e.target.value)}>
-                  <button type="button"><selectedcontent /></button>
-                  <option value="">Pilih jurusan</option>
-                  {jurusanList.map((j) => <option key={j} value={j}>{j}</option>)}
-                </select>
-              </div>
-              <div className="form-group-modern">
-                <label>Kegiatan Saat Ini</label>
-                <select className="input-modern" value={form.workStatus} required onChange={(e) => pickKind(e.target.value)}>
-                  <button type="button"><selectedcontent /></button>
-                  <option value="">Pilih status</option>
-                  {KINDS.map((k) => <option key={k.key} value={k.key}>{k.key}</option>)}
-                </select>
+                <label htmlFor="mt-add-jurusan">Jurusan (Program Keahlian)</label>
+                <ModalSelect id="mt-add-jurusan" value={form.jurusan} placeholder="Pilih jurusan"
+                  options={jurusanSelectOptions} onChange={(v) => setField('jurusan', v)} />
               </div>
               {formKind?.detail && (
                 <div className="form-group-modern">
-                  <label>{formKind.detail}</label>
-                  <input type="text" className="input-modern" value={form.detailTempat} maxLength={200} required
+                  <label htmlFor="mt-add-detail">{formKind.detail}</label>
+                  <input id="mt-add-detail" type="text" className="input-modern" value={form.detailTempat} maxLength={200} required
                     onChange={(e) => setField('detailTempat', e.target.value)} />
                 </div>
               )}
-              <div className="form-group-modern">
-                <label>NISN (10 digit)</label>
-                <input type="text" inputMode="numeric" className="input-modern" value={form.nisn} required
-                  onChange={setDigits('nisn', 10)} />
+              <div className="mt-row">
+                <div className="form-group-modern">
+                  <label htmlFor="mt-add-nisn">NISN (10 digit)</label>
+                  <input id="mt-add-nisn" type="text" inputMode="numeric" className="input-modern" value={form.nisn} required
+                    onChange={setDigits('nisn', 10)} />
+                </div>
+                <div className="form-group-modern">
+                  <label htmlFor="mt-add-nik">NIK (opsional, 16 digit)</label>
+                  <input id="mt-add-nik" type="text" inputMode="numeric" className="input-modern" value={form.nik}
+                    onChange={setDigits('nik', 16)} />
+                </div>
+              </div>
+              <div className="mt-row">
+                <div className="form-group-modern">
+                  <label htmlFor="mt-add-lahir">Tanggal Lahir</label>
+                  <input id="mt-add-lahir" type="date" className="input-modern" value={form.birthDate} required min="1980-01-01"
+                    max={new Date().toISOString().slice(0, 10)} onChange={(e) => setField('birthDate', e.target.value)} />
+                </div>
+                <div className="form-group-modern">
+                  <label htmlFor="mt-add-hp">Nomor HP Aktif</label>
+                  <input id="mt-add-hp" type="tel" className="input-modern" value={form.phone} maxLength={16} required
+                    placeholder="081234567890" onChange={(e) => setField('phone', e.target.value.replace(/[^\d+]/g, ''))} />
+                </div>
               </div>
               <div className="form-group-modern">
-                <label>NIK (opsional, 16 digit)</label>
-                <input type="text" inputMode="numeric" className="input-modern" value={form.nik}
-                  onChange={setDigits('nik', 16)} />
-              </div>
-              <div className="form-group-modern">
-                <label>Tanggal Lahir</label>
-                <input type="date" className="input-modern" value={form.birthDate} required min="1980-01-01"
-                  max={new Date().toISOString().slice(0, 10)} onChange={(e) => setField('birthDate', e.target.value)} />
-              </div>
-              <div className="form-group-modern">
-                <label>Domisili (Kecamatan)</label>
-                <input type="text" className="input-modern" value={form.domicile} maxLength={200} required
+                <label htmlFor="mt-add-domisili">Domisili (Kecamatan)</label>
+                <input id="mt-add-domisili" type="text" className="input-modern" value={form.domicile} maxLength={200} required
                   placeholder="Contoh: Sukaseneng" onChange={(e) => setField('domicile', e.target.value)} />
               </div>
-              <div className="form-group-modern">
-                <label>Nomor HP Aktif</label>
-                <input type="tel" className="input-modern" value={form.phone} maxLength={16} required
-                  placeholder="081234567890" onChange={(e) => setField('phone', e.target.value.replace(/[^\d+]/g, ''))} />
-              </div>
+              
 
               {formError && <div className="mt-err" role="alert">{formError}</div>}
 
