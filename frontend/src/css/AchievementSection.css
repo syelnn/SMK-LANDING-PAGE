@@ -1264,8 +1264,9 @@
   left: 0;
   right: 0;
   z-index: 20;
-  max-height: 260px;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   padding: 6px;
   background: #ffffff !important;
   border: 1px solid var(--compreng-border, #e2e8f0);
@@ -1314,4 +1315,407 @@
   background: var(--compreng-surface-soft, #f1f5f9) !important;
   color: var(--compreng-accent, #2563eb) !important;
   font-weight: 700;
+}
+
+/* Daftar kategori bisa di-scroll; tombol "Tambah kategori baru" selalu terlihat di bawahnya */
+#admin-prestasi .lvl-select .lvl-select-scroll {
+  max-height: 220px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#admin-prestasi .lvl-select .lvl-select-add {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  margin: 6px 0 0;
+  padding: 11px 12px;
+  border: none !important;
+  border-top: 1px solid var(--compreng-border, #e2e8f0) !important;
+  border-radius: 8px;
+  background: transparent !important;
+  box-shadow: none !important;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: left;
+  color: var(--compreng-accent, #2563eb) !important;
+  cursor: pointer;
+}
+
+#admin-prestasi .lvl-select .lvl-select-add:hover {
+  background: var(--compreng-surface-soft, #f1f5f9) !important;
+}
+
+/* ==========================================================================
+   Dialog "Tambah Kategori" + konfirmasi (dirender lewat portal ke <body>,
+   jadi selectornya tidak memakai #admin-prestasi)
+   ========================================================================== */
+.cat-dlg-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(15, 23, 42, 0.5);
+  backdrop-filter: blur(4px);
+  animation: cat-fade 0.18s ease;
+}
+
+.cat-dlg {
+  width: 100%;
+  max-width: 420px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
+  box-sizing: border-box;
+  border-radius: 16px;
+  background: var(--compreng-surface, #ffffff);
+  color: var(--compreng-text, #0f172a);
+  box-shadow: 0 24px 48px -12px rgba(15, 23, 42, 0.35);
+  animation: cat-pop 0.2s cubic-bezier(0.2, 0.9, 0.3, 1.1);
+}
+
+.cat-dlg-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 20px 4px;
+}
+
+.cat-dlg-icon {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  color: var(--compreng-accent, #2563eb);
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent);
+}
+
+.cat-dlg-icon--ask {
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.14);
+}
+
+.cat-dlg-headtext { flex: 1; min-width: 0; }
+
+.cat-dlg-headtext h4 {
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--compreng-text, #0f172a);
+}
+
+.cat-dlg-headtext p {
+  margin: 3px 0 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.cat-dlg-x {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin: -4px -6px 0 0;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--compreng-text-secondary, #475569);
+  cursor: pointer;
+}
+
+.cat-dlg-x:hover { background: var(--compreng-surface-soft, #f1f5f9); }
+
+.cat-dlg-body { padding: 16px 20px 4px; }
+
+.cat-dlg-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.cat-dlg .cat-dlg-invalid {
+  border-color: #ef4444 !important;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15) !important;
+}
+
+.cat-dlg-helprow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 6px;
+  min-height: 18px;
+  font-size: 0.78rem;
+}
+
+.cat-dlg-hint { color: var(--compreng-text-secondary, #64748b); }
+.cat-dlg-error { color: #dc2626; font-weight: 600; }
+.cat-dlg-count { flex-shrink: 0; color: var(--compreng-text-secondary, #64748b); font-variant-numeric: tabular-nums; }
+.cat-dlg-count.over { color: #dc2626; font-weight: 700; }
+
+.cat-dlg-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 14px 16px;
+  border: 1px dashed var(--compreng-border, #cbd5e1);
+  border-radius: 12px;
+  background: var(--compreng-surface-soft, #f8fafc);
+}
+
+.cat-dlg-preview-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.cat-dlg-preview-badge {
+  max-width: 100%;
+  font-size: 0.95rem;
+  padding: 6px 14px;
+  overflow-wrap: anywhere;
+  white-space: normal;
+}
+
+.cat-dlg-note {
+  margin: 12px 0 0;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.cat-dlg-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 16px 20px 20px;
+}
+
+.cat-dlg-actions .btn-modern-secondary,
+.cat-dlg-actions .btn-modern-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  font-family: inherit;
+}
+
+/* Toast sukses */
+.cat-toast {
+  position: fixed;
+  left: 50%;
+  bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100vw - 32px);
+  padding: 12px 18px;
+  border-radius: 12px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #ffffff;
+  background: #15803d;
+  box-shadow: 0 12px 28px -8px rgba(21, 128, 61, 0.55);
+  animation: cat-toast-in 0.25s ease;
+}
+
+.cat-toast svg { flex-shrink: 0; }
+
+@keyframes cat-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes cat-pop { from { opacity: 0; transform: translateY(8px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes cat-sheet { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes cat-toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+
+/* Mobile: dialog menjadi bottom sheet, tombol full-width, input 16px (cegah zoom iOS) */
+@media (max-width: 560px) {
+  .cat-dlg-overlay { align-items: flex-end; padding: 0; }
+
+  .cat-dlg {
+    max-width: none;
+    max-height: 92dvh;
+    border-radius: 20px 20px 0 0;
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    animation: cat-sheet 0.26s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .cat-dlg .input-modern { font-size: 16px; min-height: 46px; }
+
+  .cat-dlg-actions { flex-direction: column-reverse; gap: 8px; }
+  .cat-dlg-actions .btn-modern-secondary,
+  .cat-dlg-actions .btn-modern-primary { width: 100%; min-height: 46px; }
+}
+
+@media (max-height: 480px) and (orientation: landscape) {
+  .cat-dlg-overlay { align-items: center; padding: 8px 16px; }
+  .cat-dlg { max-width: 420px; max-height: calc(100dvh - 16px); border-radius: 16px; animation: cat-pop 0.2s ease; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cat-dlg-overlay, .cat-dlg, .cat-toast { animation: none; }
+}
+
+/* Baris kategori: tombol pilih + (khusus kategori buatan admin) tombol hapus */
+#admin-prestasi .lvl-select .lvl-select-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+#admin-prestasi .lvl-select .lvl-select-row .lvl-select-option {
+  flex: 1;
+  min-width: 0;
+}
+
+#admin-prestasi .lvl-select .lvl-select-edit,
+#admin-prestasi .lvl-select .lvl-select-del {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: none !important;
+  border-radius: 8px;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: var(--compreng-text-secondary, #64748b) !important;
+  cursor: pointer;
+}
+
+#admin-prestasi .lvl-select .lvl-select-del:hover,
+#admin-prestasi .lvl-select .lvl-select-del:focus-visible {
+  background: rgba(239, 68, 68, 0.12) !important;
+  color: #dc2626 !important;
+}
+
+/* Dialog hapus kategori */
+.cat-dlg-icon--danger { color: #dc2626; background: rgba(239, 68, 68, 0.12); }
+.cat-dlg-icon--warn { color: #b45309; background: rgba(245, 158, 11, 0.16); }
+
+.cat-dlg-actions .cat-dlg-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: #dc2626;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.cat-dlg-actions .cat-dlg-danger:hover { background: #b91c1c; }
+
+@media (max-width: 560px) {
+  .cat-dlg-actions .cat-dlg-danger { width: 100%; min-height: 46px; }
+}
+
+/* Layar sentuh: area ketuk tombol hapus lebih besar */
+@media (pointer: coarse) {
+  #admin-prestasi .lvl-select .lvl-select-edit,
+  #admin-prestasi .lvl-select .lvl-select-del { width: 42px; height: 42px; }
+}
+
+/* Tombol ubah kategori */
+#admin-prestasi .lvl-select .lvl-select-edit:hover,
+#admin-prestasi .lvl-select .lvl-select-edit:focus-visible {
+  background: color-mix(in srgb, var(--compreng-accent, #2563eb) 12%, transparent) !important;
+  color: var(--compreng-accent, #2563eb) !important;
+}
+
+/* Nama kategori panjang dipotong dengan titik-titik agar baris tetap rapi */
+#admin-prestasi .lvl-select .lvl-select-option span,
+#admin-prestasi .lvl-select .lvl-select-value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Dialog ubah: nama lama -> nama baru */
+.cat-dlg-change {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  max-width: 100%;
+}
+
+.cat-dlg-arrow {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--compreng-text-secondary, #475569);
+}
+
+.cat-dlg-old { opacity: 0.6; text-decoration: line-through; }
+
+.cat-dlg-x:disabled,
+.cat-dlg-actions button:disabled { opacity: 0.55; cursor: not-allowed; }
+
+/* ==========================================================================
+   Desktop (ada kursor): ikon ubah & hapus disembunyikan, muncul saat baris di-hover
+   atau difokus keyboard. Layar sentuh tidak punya hover, jadi ikon tetap tampil di sana.
+   ========================================================================== */
+@media (hover: hover) and (pointer: fine) {
+  #admin-prestasi .lvl-select .lvl-select-row { position: relative; }
+
+  #admin-prestasi .lvl-select .lvl-select-row .lvl-select-edit,
+  #admin-prestasi .lvl-select .lvl-select-row .lvl-select-del {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+  }
+
+  #admin-prestasi .lvl-select .lvl-select-row .lvl-select-edit { right: 40px; }
+  #admin-prestasi .lvl-select .lvl-select-row .lvl-select-del { right: 6px; }
+
+  #admin-prestasi .lvl-select .lvl-select-row:hover .lvl-select-edit,
+  #admin-prestasi .lvl-select .lvl-select-row:hover .lvl-select-del,
+  #admin-prestasi .lvl-select .lvl-select-row:focus-within .lvl-select-edit,
+  #admin-prestasi .lvl-select .lvl-select-row:focus-within .lvl-select-del {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* Baris tetap tersorot saat kursor berada di atas ikon, dan teks tidak tertutup ikon */
+  #admin-prestasi .lvl-select .lvl-select-row:hover .lvl-select-option,
+  #admin-prestasi .lvl-select .lvl-select-row:focus-within .lvl-select-option {
+    background: var(--compreng-surface-soft, #f1f5f9) !important;
+    padding-right: 84px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #admin-prestasi .lvl-select .lvl-select-row .lvl-select-edit,
+  #admin-prestasi .lvl-select .lvl-select-row .lvl-select-del { transition: none; }
 }
