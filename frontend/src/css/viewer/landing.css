@@ -138,7 +138,7 @@
   box-shadow: 0 0 8px #22c55e !important;
 }
 
-/* Teks bersinar: gradien terang yang berjalan melewati huruf */
+/* Akreditasi */
 .landing-wrapper .badge-akreditasi .shine-text {
   position: relative;
   z-index: 1;
@@ -152,20 +152,20 @@
     var(--compreng-nav-accent, #38bdf8) 62%,
     var(--compreng-nav-accent, #38bdf8) 100%
   );
-  background-size: 250% 100%;
+  background-size: 255% 210%; /*buat teks(font) animasi gerak */
   background-repeat: no-repeat;
   background-position: 160% 0;
   -webkit-background-clip: text;
   background-clip: text;
-  -webkit-text-fill-color: transparent;
+  -webkit-text-fill-color: transparent; /*buat efek teks hilang */
   color: transparent !important;
   text-shadow: none !important;
   animation:
     akrText 4.4s cubic-bezier(0.45, 0, 0.55, 1) infinite,
-    akrTextFade 4.4s linear infinite;
+    akrTextFade 4.4s linear infinite; /*animasi buat gerak*/
 }
 
-/* Bintang kecil yang berkelip di sekitar badge */
+/* Bintang kecil yang berkelip di sekitar badge Akreditasi */
 .landing-wrapper .badge-akreditasi .shine-spark {
   position: absolute;
   z-index: 2;
@@ -407,7 +407,7 @@
 .landing-wrapper .graphic-frame {
   width: 100% !important;
   max-width: 360px !important;
-  /* Foto 2 orang: melayang halus otomatis (tanpa hover). Hanya translateY -> dikerjakan GPU.
+  /* Foto siswa dashboard melayang halus otomatis (tanpa hover). Hanya translateY -> dikerjakan GPU.
      Kurva easeInOutSine + hanya 2 titik keyframe (naik lalu turun) = gerakan sinus kontinu,
      tanpa berhenti di tengah jalan. Tanpa rotate/scale agar gambar tidak di-resample (bergetar). */
   animation: heroFloat 5s cubic-bezier(0.37, 0, 0.63, 1) infinite;
