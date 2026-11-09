@@ -95,7 +95,10 @@ const AchievementViewer = ({ variant = 'landing' }) => {
     (async () => {
       try {
         const res = await axios.get(API_URL);
-        if (alive && res.data && res.data.data) setAchievements(res.data.data);
+        if (alive && res.data && res.data.data) {
+          // Hanya prestasi berstatus "Tampil" yang boleh muncul di halaman publik
+          setAchievements(res.data.data.filter((a) => a.show === undefined || a.show === null || Number(a.show) === 1));
+        }
       } catch (err) {
         console.error('Error fetching viewer achievements:', err);
       } finally {

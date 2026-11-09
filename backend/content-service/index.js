@@ -1589,10 +1589,13 @@ app.delete('/api/menu-items/:id', ...requireAdmin, async (req, res) => {
 
 
 // API KARYA PRESTASI
-app.get('/api/achievements', async (req, res) => {
+app.get('/api/achievements', optionalAuth, async (req, res) => {
   try {
+    // Admin/editor (punya token) melihat SEMUA data agar yang disembunyikan tetap muncul di panel admin.
+    // Pengunjung publik hanya melihat yang berstatus tampil (show = 1).
+    const isStaff = ['admin', 'editor'].includes(req.user?.role);
     const data = await prisma.achievements.findMany({
-      where: { show: 1 },
+      where: isStaff ? {} : { show: 1 },
       orderBy: [
         { sort_order: 'asc' },
         { id: 'desc' },
@@ -1612,7 +1615,8 @@ app.get('/api/achievements', async (req, res) => {
 
 app.post('/api/achievements', ...requireStaff, uploadSingleSafe('photo'), resolveImage('photo', 'achievements'), async (req, res) => {
   try {
-    const { student_name, class_name, achievement, level, year, photo, sort_order } = req.body;
+
+   const { student_name, class_name, achievement, level, year, photo, sort_order, show } = req.body;
 
     const newAchievement = await prisma.achievements.create({
       data: {
@@ -1622,7 +1626,7 @@ app.post('/api/achievements', ...requireStaff, uploadSingleSafe('photo'), resolv
         level: String(level || 'Nasional'),
         year: parseInt(year, 10) || new Date().getFullYear(),
         photo: photo ? String(photo) : null,
-        show: 1,
+        show: show !== undefined ? (Number(show) === 1 ? 1 : 0) : 1,
         sort_order: parseInt(sort_order, 10) || 0
       },
     });
@@ -1645,8 +1649,7 @@ app.post('/api/achievements', ...requireStaff, uploadSingleSafe('photo'), resolv
 app.put('/api/achievements/:id', ...requireStaff, uploadSingleSafe('photo'), resolveImage('photo', 'achievements'), async (req, res) => {
   try {
     const { id } = req.params;
-    const { student_name, class_name, achievement, level, year, sort_order, photo } = req.body;
-
+    const { student_name, class_name, achievement, level, year, sort_order, photo, show } = req.body;
     const targetId = parseInt(id, 10);
     const newOrder = parseInt(sort_order, 10) || 1;
 
@@ -1684,6 +1687,9 @@ app.put('/api/achievements/:id', ...requireStaff, uploadSingleSafe('photo'), res
         year: parseInt(year, 10),
         photo: photo ? String(photo) : null,
         sort_order: newOrder,
+        sort_order: newOrder,
+        // Simpan status tampil/sembunyi; jika tidak dikirim, pertahankan nilai lama
+        show: show !== undefined ? (Number(show) === 1 ? 1 : 0) : currentItem.show,
       },
     });
 

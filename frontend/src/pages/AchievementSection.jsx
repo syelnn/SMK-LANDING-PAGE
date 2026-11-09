@@ -134,7 +134,8 @@ const AchievementSection = () => {
   const fetchAchievements = async () => {
     try {
       setLoading(true);
-      const res = await axios.get(API_URL);
+      // _t = cache-buster agar status terbaru (show) selalu terambil, bukan data lama dari cache
+      const res = await axios.get(API_URL, { params: { _t: Date.now() } });
       if (res.data && res.data.data) {
         setAchievements(res.data.data);
       }
@@ -490,6 +491,9 @@ const AchievementSection = () => {
   const handleToggleShow = async (item) => {
     setActiveMenuId(null);
     const newShow = Number(item.show) === 1 ? 0 : 1;
+    const prevShow = item.show;
+    // Update tampilan langsung agar status berubah seketika
+    setAchievements((list) => list.map((a) => (a.id === item.id ? { ...a, show: newShow } : a)));
     try {
       const fd = new FormData();
       fd.append('student_name', item.student_name || '');
@@ -500,10 +504,18 @@ const AchievementSection = () => {
       fd.append('sort_order', parseInt(item.sort_order, 10) || 1);
       fd.append('show', newShow);
       fd.append('photo', item.photo || '');
-      await axios.put(`${API_URL}/${item.id}`, fd);
+      const res = await axios.put(`${API_URL}/${item.id}`, fd);
+      // Cek balasan server: jika server mengembalikan nilai show yang berbeda dari yang dikirim,
+      // berarti backend tidak menyimpan perubahan (bukan masalah di tampilan ini).
+      const saved = res?.data?.data;
+      if (saved && saved.show !== undefined && Number(saved.show) !== newShow) {
+        console.warn('Backend mengabaikan nilai show:', { dikirim: newShow, tersimpan: saved.show });
+      }
       fetchAchievements();
     } catch (err) {
       console.error('Error toggling show:', err);
+      // Kembalikan ke status semula jika gagal
+      setAchievements((list) => list.map((a) => (a.id === item.id ? { ...a, show: prevShow } : a)));
       alert('Gagal merubah status');
     }
   };
@@ -544,7 +556,7 @@ const AchievementSection = () => {
         item.achievement,
         item.level,
         item.year,
-        item.show === 1 ? 'tampil' : 'sembunyi',
+        Number(item.show) === 1 ? 'tampil' : 'sembunyi',
       ].join(' ')
     );
 
@@ -648,8 +660,8 @@ const AchievementSection = () => {
                     <span className="year-text">{item.year}</span>
                   </td>
                   <td>
-                    <span className={`badge ${item.show === 1 ? 'badge-success' : 'badge-warning'}`}>
-                      {item.show === 1 ? 'Tampil' : 'Sembunyi'}
+                    <span className={`badge ${Number(item.show) === 1 ? 'badge-success' : 'badge-warning'}`}>
+                      {Number(item.show) === 1 ? 'Tampil' : 'Sembunyi'}
                     </span>
                   </td>
                   <td>
@@ -803,8 +815,8 @@ const AchievementSection = () => {
               <div className="ach-mmeta">
                 <span className="badge badge-category">{getLevelLabel(item.level)}</span>
                 <span className="ach-myear">{item.year}</span>
-                <span className={`badge ${item.show === 1 ? 'badge-success' : 'badge-warning'}`}>
-                  {item.show === 1 ? 'Tampil' : 'Sembunyi'}
+                <span className={`badge ${Number(item.show) === 1 ? 'badge-success' : 'badge-warning'}`}>
+                  {Number(item.show) === 1 ? 'Tampil' : 'Sembunyi'}
                 </span>
               </div>
             </div>
