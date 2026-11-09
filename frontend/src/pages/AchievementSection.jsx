@@ -495,25 +495,26 @@ const AchievementSection = () => {
     // Update tampilan langsung agar status berubah seketika
     setAchievements((list) => list.map((a) => (a.id === item.id ? { ...a, show: newShow } : a)));
     try {
-      const fd = new FormData();
-      fd.append('student_name', item.student_name || '');
-      fd.append('class_name', item.class_name || '');
-      fd.append('achievement', item.achievement || '');
-      fd.append('level', item.level || '');
-      fd.append('year', parseInt(item.year, 10) || new Date().getFullYear());
-      fd.append('sort_order', parseInt(item.sort_order, 10) || 1);
-      fd.append('show', newShow);
-      fd.append('photo', item.photo || '');
-      const res = await axios.put(`${API_URL}/${item.id}`, fd);
-      // Cek balasan server: jika server mengembalikan nilai show yang berbeda dari yang dikirim,
-      // berarti backend tidak menyimpan perubahan (bukan masalah di tampilan ini).
-      const saved = res?.data?.data;
-      if (saved && saved.show !== undefined && Number(saved.show) !== newShow) {
-        console.warn('Backend mengabaikan nilai show:', { dikirim: newShow, tersimpan: saved.show });
+      try {
+        // Jalur cepat: hanya mengubah kolom show (1 = tampil, 0 = sembunyi)
+        await axios.put(`${API_URL}/${item.id}/toggle-show`, { show: newShow });
+      } catch (err) {
+        // Cadangan: jika endpoint cepat belum tersedia di server (404), pakai jalur edit biasa
+        if (err.response?.status !== 404) throw err;
+        const fd = new FormData();
+        fd.append('student_name', item.student_name || '');
+        fd.append('class_name', item.class_name || '');
+        fd.append('achievement', item.achievement || '');
+        fd.append('level', item.level || '');
+        fd.append('year', parseInt(item.year, 10) || new Date().getFullYear());
+        fd.append('sort_order', parseInt(item.sort_order, 10) || 1);
+        fd.append('show', newShow);
+        fd.append('photo', item.photo || '');
+        await axios.put(`${API_URL}/${item.id}`, fd);
       }
       fetchAchievements();
     } catch (err) {
-      console.error('Error toggling show:', err);
+      console.error('Error toggling show:', err.response?.data || err);
       // Kembalikan ke status semula jika gagal
       setAchievements((list) => list.map((a) => (a.id === item.id ? { ...a, show: prevShow } : a)));
       alert('Gagal merubah status');
